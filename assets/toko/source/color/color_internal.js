@@ -263,7 +263,7 @@ Toko.prototype._getPaletteListRaw = function (paletteType = 'all', justPrimary =
 //
 //  get a selection of palettes based on name or type
 //
-Toko.prototype._getPaletteSelectionRaw = function(selectionList, sorted) {
+Toko.prototype._getPaletteSelectionRaw = function(selectionList, sorted, justPrimary) {
   if (!this.initColorDone) {
     this._initColor();
   }
@@ -275,6 +275,9 @@ Toko.prototype._getPaletteSelectionRaw = function(selectionList, sorted) {
     filtered = filtered.concat(
       this.palettes.filter(p => (p.name.toLowerCase() === labels[i] || p.type === labels[i]))
     )
+  }
+  if (justPrimary) {
+    filtered = filtered.filter(p => (p.isPrimary))
   }
   //
   //  sort if requested

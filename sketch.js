@@ -62,7 +62,7 @@ function setup() {
     nrAttractors: 1,
     attractorHorizontal: true,
     attractorVertical: true,
-    showAttractors: true,
+    showAttractors: false,
     size: 5,
     gravity: 85,
     velocityMax: 6, 
@@ -73,7 +73,7 @@ function setup() {
     mode: 'lab',
   }
 
-  let palettes = toko.getPaletteSelection('basic, metbrewer, tundra', true);
+  let palettes = toko.getPaletteSelection('basic, golid, metbrewer', true, false);
 
   //
   //  set all the tweakpane controls
