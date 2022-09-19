@@ -85,6 +85,8 @@ Toko.prototype.setup = function (inputOptions) {
   document.getElementById('sketch-title').innerText = this.options.title;
   document.title = this.options.title;
 
+  this.setCanvasSize(this.SIZES.filter(p => p.name === this.options.canvasSize)[0]);
+
 }
 
 Toko.prototype.endSetup = function () {

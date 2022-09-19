@@ -4,15 +4,25 @@ import Toko from './main';
 //  resize canvas to a new size while fitting within the window
 //
 Toko.prototype.setCanvasSize = function(inSize) {
-  const margin = 80;
+  let margin = 80;
   let zoomFactor = 1;
   let displayFactor = inSize.pixelDensity/2;
+  let newWidthString, newHeightString;
 
-  zoomFactor = Math.min(1,(windowWidth - margin)/inSize.width*displayFactor);
-  zoomFactor = Math.min(zoomFactor,(windowHeight -margin)/inSize.height*displayFactor);
+  if (!inSize.fullWindow) {
+    zoomFactor = Math.min(1,(windowWidth - margin)/inSize.width*displayFactor);
+    zoomFactor = Math.min(zoomFactor,(windowHeight -margin)/inSize.height*displayFactor);
 
-  let newWidthString = Math.floor(inSize.width * zoomFactor / displayFactor) + 'px';
-  let newHeightString = Math.floor(inSize.height * zoomFactor / displayFactor) + 'px';
+    newWidthString = Math.floor(inSize.width * zoomFactor / displayFactor) + 'px';
+    newHeightString = Math.floor(inSize.height * zoomFactor / displayFactor) + 'px';
+  } else {
+    console.log('hello there')
+    inSize.width = windowWidth;
+    inSize.height = windowHeight;
+
+    newWidthString = '100vw';
+    newHeightString = '100vh';
+  }
 
   resizeCanvas(inSize.width*displayFactor, inSize.height*displayFactor, true);
 

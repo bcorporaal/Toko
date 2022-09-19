@@ -28,6 +28,14 @@ var Toko = (function () {
     pixelDensity: 2,
   };
 
+  const SIZE_FULL = {
+    name: 'full',
+    width: 100,
+    height: 100,
+    pixelDensity: 2,
+    fullWindow: true,
+  };
+
   const SIZE_SQUARE = {
     name: 'square',
     width: 800,
@@ -68,15 +76,17 @@ var Toko = (function () {
   //
   const SIZES_LIST = {
     default: 'default',
-    square: 'square',
+    // square: 'square',
     square_HD: 'square_XL',
-    fullHD: '1080p',
+    // fullHD: '1080p',
     iphone_11: 'iphone_11',
     macbook_pro: 'macbook_pro',
+    full: 'full',
   };
 
   const SIZES = [
     SIZE_DEFAULT,
+    SIZE_FULL,
     SIZE_SQUARE,
     SIZE_SQUARE_XL,
     SIZE_1080P,
@@ -136,6 +146,7 @@ var Toko = (function () {
     __proto__: null,
     VERSION: VERSION,
     SIZE_DEFAULT: SIZE_DEFAULT,
+    SIZE_FULL: SIZE_FULL,
     SIZE_SQUARE: SIZE_SQUARE,
     SIZE_SQUARE_XL: SIZE_SQUARE_XL,
     SIZE_1080P: SIZE_1080P,
@@ -3029,6 +3040,8 @@ var Toko = (function () {
     document.getElementById('sketch-title').innerText = this.options.title;
     document.title = this.options.title;
 
+    this.setCanvasSize(this.SIZES.filter(p => p.name === this.options.canvasSize)[0]);
+
   };
 
   Toko.prototype.endSetup = function () {
@@ -3113,15 +3126,25 @@ var Toko = (function () {
   //  resize canvas to a new size while fitting within the window
   //
   Toko.prototype.setCanvasSize = function(inSize) {
-    const margin = 80;
+    let margin = 80;
     let zoomFactor = 1;
     let displayFactor = inSize.pixelDensity/2;
+    let newWidthString, newHeightString;
 
-    zoomFactor = Math.min(1,(windowWidth - margin)/inSize.width*displayFactor);
-    zoomFactor = Math.min(zoomFactor,(windowHeight -margin)/inSize.height*displayFactor);
+    if (!inSize.fullWindow) {
+      zoomFactor = Math.min(1,(windowWidth - margin)/inSize.width*displayFactor);
+      zoomFactor = Math.min(zoomFactor,(windowHeight -margin)/inSize.height*displayFactor);
 
-    let newWidthString = Math.floor(inSize.width * zoomFactor / displayFactor) + 'px';
-    let newHeightString = Math.floor(inSize.height * zoomFactor / displayFactor) + 'px';
+      newWidthString = Math.floor(inSize.width * zoomFactor / displayFactor) + 'px';
+      newHeightString = Math.floor(inSize.height * zoomFactor / displayFactor) + 'px';
+    } else {
+      console.log('hello there');
+      inSize.width = windowWidth;
+      inSize.height = windowHeight;
+
+      newWidthString = '100vw';
+      newHeightString = '100vh';
+    }
 
     resizeCanvas(inSize.width*displayFactor, inSize.height*displayFactor, true);
 

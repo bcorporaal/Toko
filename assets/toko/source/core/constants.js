@@ -25,6 +25,14 @@ export const SIZE_DEFAULT = {
   pixelDensity: 2,
 }
 
+export const SIZE_FULL = {
+  name: 'full',
+  width: 100,
+  height: 100,
+  pixelDensity: 2,
+  fullWindow: true,
+}
+
 export const SIZE_SQUARE = {
   name: 'square',
   width: 800,
@@ -65,15 +73,17 @@ export const SIZE_MACBOOK_PRO_WALLPAPER = {
 //
 export const SIZES_LIST = {
   default: 'default',
-  square: 'square',
+  // square: 'square',
   square_HD: 'square_XL',
-  fullHD: '1080p',
+  // fullHD: '1080p',
   iphone_11: 'iphone_11',
   macbook_pro: 'macbook_pro',
+  full: 'full',
 }
 
 export const SIZES = [
   SIZE_DEFAULT,
+  SIZE_FULL,
   SIZE_SQUARE,
   SIZE_SQUARE_XL,
   SIZE_1080P,
