@@ -88,10 +88,10 @@ function setup() {
 
   let fAttractors = toko.pane.tab.addFolder({ title: "Attractors", expanded: true });
   fAttractors.addInput(p, 'nrAttractors', { min: 1, max: 7, step: 1, label: 'attractors'});
+  fAttractors.addInput(p, 'gravity', { min: 0, max: 200, step: 5, label: 'gravity'});
   fAttractors.addInput(p, 'showAttractors', {label: 'show'});
   fAttractors.addInput(p, 'attractorHorizontal', {label: 'horizontal'});
   fAttractors.addInput(p, 'attractorVertical', {label: 'vertical'});
-  fAttractors.addInput(p, 'gravity', { min: 0, max: 200, step: 5, label: 'gravity'});
 
   let fColors = toko.pane.tab.addFolder({ title: 'Colors', expanded: true });
   fColors.addInput(p, 'colors', {
