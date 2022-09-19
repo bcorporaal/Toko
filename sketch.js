@@ -73,7 +73,7 @@ function setup() {
     mode: 'lab',
   }
 
-  let palettes = toko.getPaletteSelection('basic, d3, tundra', true);
+  let palettes = toko.getPaletteSelection('basic, metbrewer, tundra', true);
 
   //
   //  set all the tweakpane controls
