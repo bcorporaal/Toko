@@ -80,14 +80,14 @@ function setup() {
   //
   let fParticles = toko.pane.tab.addFolder({ title: "Particles", expanded: true });
   fParticles.addInput(p, 'nrParticles', { min: 1, max: 100, step: 1, label: 'particles'});
-  fParticles.addInput(p, 'size', { min: 1, max: 40, step: 2, label: 'size'});
+  fParticles.addInput(p, 'size', { min: 1, max: 80, step: 2, label: 'size'});
   fParticles.addInput(p, 'trailLength', { min: 2, max: 500, step: 5, label: 'trail'});
   fParticles.addInput(p, 'fadeTrail');
   fParticles.addInput(p, 'plotMirrorParticle', {label: 'mirror'});
 
   let fAttractors = toko.pane.tab.addFolder({ title: "Attractors", expanded: true });
   fAttractors.addInput(p, 'nrAttractors', { min: 1, max: 7, step: 1, label: 'attractors'});
-  fAttractors.addInput(p, 'gravity', { min: 0, max: 200, step: 5, label: 'gravity'});
+  fAttractors.addInput(p, 'gravity', { min: 0, max: 400, step: 10, label: 'gravity'});
   fAttractors.addInput(p, 'showAttractors', {label: 'show'});
   fAttractors.addInput(p, 'attractorHorizontal', {label: 'horizontal'});
   fAttractors.addInput(p, 'attractorVertical', {label: 'vertical'});
