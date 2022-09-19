@@ -113,8 +113,8 @@ Toko.prototype.getPaletteList = function (paletteType = 'all', justPrimary = tru
 //
 //  get a selection of palettes based on a comma seperated list
 //
-Toko.prototype.getPaletteSelection = function (selectionList, sorted = false, justPrimary = false) {
-  let filtered = this._getPaletteSelectionRaw(selectionList, sorted, justPrimary);
+Toko.prototype.getPaletteSelection = function (selectionList, justPrimary = false, sorted = false) {
+  let filtered = this._getPaletteSelectionRaw(selectionList, justPrimary, sorted);
   return this.formatForTweakpane(filtered, 'name');
 }
 
