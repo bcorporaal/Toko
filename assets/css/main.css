@@ -1,0 +1,139 @@
+:root {
+  --tp-base-background-color: hsla(230, 20%, 11%, 1.00);
+  --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
+  --tp-button-background-color: hsla(230, 10%, 80%, 1.00);
+  --tp-button-background-color-active: hsla(230, 10%, 95%, 1.00);
+  --tp-button-background-color-focus: hsla(230, 10%, 90%, 1.00);
+  --tp-button-background-color-hover: hsla(230, 10%, 85%, 1.00);
+  --tp-button-foreground-color: hsla(230, 20%, 11%, 1.00);
+  --tp-container-background-color: hsla(230, 25%, 16%, 1.00);
+  --tp-container-background-color-active: hsla(230, 25%, 31%, 1.00);
+  --tp-container-background-color-focus: hsla(230, 25%, 26%, 1.00);
+  --tp-container-background-color-hover: hsla(230, 25%, 21%, 1.00);
+  --tp-container-foreground-color: hsla(230, 10%, 80%, 1.00);
+  --tp-groove-foreground-color: hsla(230, 20%, 8%, 1.00);
+  --tp-input-background-color: hsla(230, 20%, 8%, 1.00);
+  --tp-input-background-color-active: hsla(230, 28%, 23%, 1.00);
+  --tp-input-background-color-focus: hsla(230, 28%, 18%, 1.00);
+  --tp-input-background-color-hover: hsla(230, 20%, 13%, 1.00);
+  --tp-input-foreground-color: hsla(230, 10%, 80%, 1.00);
+  --tp-label-foreground-color: hsla(230, 12%, 48%, 1.00);
+  --tp-monitor-background-color: hsla(230, 20%, 8%, 1.00);
+  --tp-monitor-foreground-color: hsla(230, 12%, 48%, 1.00); }
+
+.tp-lblv_l {
+  padding-left: 2px;
+  padding-right: 0;
+}
+
+.tp-dfwv {
+  width: 280px !important; /* Make tweakpane a little wider */
+}
+
+@font-face {
+  font-family: 'Fira Code';
+  src: url("../fonts/eot/FiraCode-Regular.eot");
+  src: url("../fonts/eot/FiraCode-Regular.eot") format("embedded-opentype"), url("../fonts/woff2/FiraCode-Regular.woff2") format("woff2"), url("../fonts/woff/FiraCode-Regular.woff") format("woff"), url("../fonts/ttf/FiraCode-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal; }
+
+body {
+  background-color: #f8f9fa;
+  font-family: "Fira Code";
+  color: #343a40;
+  font-weight: 400; }
+
+html, body {
+  margin: 0;
+  padding: 0; }
+
+.sketch-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; }
+
+.sketch--full {
+  width: 100vw;
+  height: 100vh;
+  background: #f1f3f5; }
+
+.sketch--fixed {
+  max-width: calc(100vw - 2*1.2em);
+  max-height: calc(100vh - 2*1.2em);
+  background: #f1f3f5;
+  width: 1200px;
+  height: 800px; }
+
+.sketch--square {
+  max-width: 800px;
+  max-height: 800px;
+  background: #f1f3f5;
+  width: 80vw;
+  height: 80vw; }
+
+.labels a {
+  color: #343a40;
+  text-decoration: none; }
+
+.labels a:hover {
+  color: #0c8599; }
+
+.labels a:hover span.label--text {
+  border-bottom: solid 1px #0c8599; }
+
+.label--back {
+  position: absolute;
+  float: left;
+  top: 1.2em;
+  left: 1.2em; }
+
+.label--title {
+  position: absolute;
+  float: left;
+  bottom: 1.2em;
+  left: 1.2em; }
+
+.label--github {
+  position: absolute;
+  float: left;
+  bottom: 1.2em;
+  right: 1.2em; }
+
+#icon--back {
+  margin-right: 5px; }
+
+.home {
+  overflow: visible; }
+
+.container {
+  padding: 5em 0 1em 0;
+  text-align: center; }
+
+.sketchlist {
+  padding: 10px;
+  display: inline-block;
+  margin: 0px auto;
+  text-align: left; }
+  .sketchlist a {
+    text-decoration: none;
+    color: #343a40; }
+  .sketchlist a:hover {
+    border-bottom: 1px solid #343a40; }
+  .sketchlist h1 {
+    font-size: calc(0.5vw + 0.55rem);
+    font-weight: 400; }
+  .sketchlist hr {
+    border: 0;
+    border-bottom: 1px solid #343a40; }
+  .sketchlist ul {
+    column-count: 3;
+    column-gap: 4em;
+    list-style-type: none;
+    margin: 0;
+    padding: 0.5em 0 0.5em 0; }
+  .sketchlist li {
+    font-size: calc(0.5vw + 0.55rem);
+    line-height: 1.7em; }
+  .sketchlist p {
+    font-size: calc(0.5vw + 0.55rem); }
