@@ -1,7 +1,6 @@
 //
 //  to do
 //  - reset option to reset all positions
-//  - 100% window size
 //  - full reset when resized / clear trails
 
 p5.disableFriendlyErrors = false; // disables FES
