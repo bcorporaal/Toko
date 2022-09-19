@@ -4,8 +4,6 @@
 //  - 100% window size
 //  - full reset when resized / clear trails
 
-// import Toko from "./assets/toko/source/core/main";
-
 p5.disableFriendlyErrors = false; // disables FES
 
 let toko = new Toko();
@@ -24,9 +22,9 @@ function setup() {
   //
   //  set base canvas
   //
-  var sketchElementId = "sketch-canvas";
-  var canvasWidth = 800;
-  var canvasHeight = 800;
+  let sketchElementId = "sketch-canvas";
+  let canvasWidth = 800;
+  let canvasHeight = 800;
 
   p5Canvas = createCanvas(canvasWidth, canvasHeight, P2D);
   p5Canvas.parent(sketchElementId);
