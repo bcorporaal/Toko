@@ -3141,7 +3141,6 @@ var Toko = (function () {
       newWidthString = Math.floor(inSize.width * zoomFactor / displayFactor) + 'px';
       newHeightString = Math.floor(inSize.height * zoomFactor / displayFactor) + 'px';
     } else {
-      console.log('hello there');
       inSize.width = windowWidth;
       inSize.height = windowHeight;
 
@@ -3153,6 +3152,7 @@ var Toko = (function () {
 
     p5Canvas.canvas.style.width = newWidthString;
     p5Canvas.canvas.style.height = newHeightString;
+    console.log(p5Canvas.canvas.style.height);
   };
 
   // Toko.prototype.steppedRandom = function (min = 0, max = 1, step = 0.1) {

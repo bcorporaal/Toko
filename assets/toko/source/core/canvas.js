@@ -16,7 +16,6 @@ Toko.prototype.setCanvasSize = function(inSize) {
     newWidthString = Math.floor(inSize.width * zoomFactor / displayFactor) + 'px';
     newHeightString = Math.floor(inSize.height * zoomFactor / displayFactor) + 'px';
   } else {
-    console.log('hello there')
     inSize.width = windowWidth;
     inSize.height = windowHeight;
 
@@ -28,4 +27,5 @@ Toko.prototype.setCanvasSize = function(inSize) {
 
   p5Canvas.canvas.style.width = newWidthString;
   p5Canvas.canvas.style.height = newHeightString;
+  console.log(p5Canvas.canvas.style.height);
 }

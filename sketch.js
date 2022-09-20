@@ -1,7 +1,9 @@
 //
 //  to do
+//  - directly go to the right size
 //  - reset option to reset all positions
 //  - full reset when resized / clear trails
+//  - add empty template
 
 p5.disableFriendlyErrors = false; // disables FES
 
@@ -22,12 +24,15 @@ function setup() {
   //  set base canvas
   //
   let sketchElementId = "sketch-canvas";
-  let canvasWidth = 800;
-  let canvasHeight = 800;
+  let canvasWidth = 0;
+  let canvasHeight = 0;
 
+  //
+  //  the size is set using the Toko setup options
+  //
   p5Canvas = createCanvas(canvasWidth, canvasHeight, P2D);
   p5Canvas.parent(sketchElementId);
-  //
+
   //-------------------------------------------------------
   //
   //  start Toko
@@ -45,7 +50,7 @@ function setup() {
     captureFrameCount: 999,             //  max number of frames captured (is this actually used?)
     captureFrameRate: 15,               //  basic frame rate for capture
     captureFormat: 'png',               //  default image format for capture
-    canvasSize: 'default',              //  default canvas size
+    canvasSize: toko.SIZE_DEFAULT.name, //  default canvas size
     logFPS: false,                      //  log the fps in tweakpane (not working properly)
   });
 
@@ -154,7 +159,6 @@ function refresh() {
       attractors[i+pn] = createVector((i+1)*d, height/2);
     }
   }
-
   //
   //  redraw with updated parameters
   //
