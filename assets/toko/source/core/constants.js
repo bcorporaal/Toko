@@ -121,7 +121,7 @@ export const DEFAULT_OPTIONS = {
   captureFrameCount: 500,
   captureFrameRate: 15,
   captureFormat: 'png',
-  canvasSize: 'default',
+  canvasSize: SIZE_DEFAULT,
 };
 
 //

@@ -124,7 +124,7 @@ var Toko = (function () {
     captureFrameCount: 500,
     captureFrameRate: 15,
     captureFormat: 'png',
-    canvasSize: 'default',
+    canvasSize: SIZE_DEFAULT,
   };
 
   //
