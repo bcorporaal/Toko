@@ -2828,7 +2828,7 @@ var Toko = (function () {
   //
   //  get a selection of palettes based on name or type
   //
-  Toko.prototype._getPaletteSelectionRaw = function(selectionList, sorted, justPrimary) {
+  Toko.prototype._getPaletteSelectionRaw = function(selectionList, justPrimary, sorted) {
     if (!this.initColorDone) {
       this._initColor();
     }
