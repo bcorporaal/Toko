@@ -1,6 +1,5 @@
 //
 //  to do
-//  - directly go to the right size
 //  - reset option to reset all positions
 //  - full reset when resized / clear trails
 //  - add empty template
@@ -38,8 +37,15 @@ function setup() {
   //  start Toko
   //
   toko.setup({
+    //
+    //  basic options
+    //
     title: "Toko demo",                 //  title displayed
     sketchElementId: sketchElementId,   //  id used to create the p5 canvas
+    canvasSize: toko.SIZE_DEFAULT,      //  canvas size to use
+    //
+    //  additional options
+    //
     showSaveSketchButton: true,         //  show save image button in tweakpane
     saveSettingsWithSketch: true,       //  save json of settings together with the image
     acceptDroppedSettings: true,        //  accept dropped json files with settings
@@ -50,7 +56,6 @@ function setup() {
     captureFrameCount: 999,             //  max number of frames captured (is this actually used?)
     captureFrameRate: 15,               //  basic frame rate for capture
     captureFormat: 'png',               //  default image format for capture
-    canvasSize: toko.SIZE_DEFAULT,      //  default canvas size
     logFPS: false,                      //  log the fps in tweakpane (not working properly)
   });
 
