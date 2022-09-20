@@ -1,10 +1,4 @@
-//
-//  to do
-//  - reset option to reset all positions
-//  - full reset when resized / clear trails
-//  - add empty template
-
-p5.disableFriendlyErrors = false; // disables FES
+p5.disableFriendlyErrors = false; // disables FES to speed things up a little bit
 
 let toko = new Toko();
 let particles = [];
@@ -109,6 +103,14 @@ function setup() {
   fColors.addInput(p, 'colorReverse', {label: "reverse"});
   fColors.addInput(p, 'originalColors', {label: "original"});
 
+  toko.pane.tab.addSeparator();
+
+  const btnClear = toko.pane.tab.addButton({
+    title: 'Clear trails',
+  }).on('click', () => {
+    clearTrails();
+  });
+
   toko.pane.events.on("change", (value) => {
     refresh();
   });
@@ -168,6 +170,15 @@ function refresh() {
   //  redraw with updated parameters
   //
   redraw();
+}
+
+function clearTrails() {
+  for (let i = 0; i < particles.length; i++) {
+    let curPos = particles[i].pos[0];
+    particles[i].pos = [];
+    particles[i].pos.push(curPos);
+  }
+  refresh();
 }
 
 function draw() {
