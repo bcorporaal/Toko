@@ -50,7 +50,7 @@ function setup() {
     captureFrameCount: 999,             //  max number of frames captured (is this actually used?)
     captureFrameRate: 15,               //  basic frame rate for capture
     captureFormat: 'png',               //  default image format for capture
-    canvasSize: toko.SIZE_DEFAULT.name, //  default canvas size
+    canvasSize: toko.SIZE_DEFAULT,      //  default canvas size
     logFPS: false,                      //  log the fps in tweakpane (not working properly)
   });
 

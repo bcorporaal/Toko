@@ -73,7 +73,8 @@ Toko.prototype.setup = function (inputOptions) {
     // add advanced options
     //
     if (this.options.showAdvancedOptions) {
-      this.basePaneTab.pages[this.TAB_ID_ADVANCED].addInput(this.options, 'canvasSize', {options: this.SIZES_LIST}).on('change', (ev) => {
+      this.options.canvasSizeName = this.options.canvasSize.name; // use this to take the name out of the object
+      this.basePaneTab.pages[this.TAB_ID_ADVANCED].addInput(this.options, 'canvasSizeName', {options: this.SIZES_LIST}).on('change', (ev) => {
         let s = this.SIZES.filter(p => p.name === ev.value)[0];
         this.setCanvasSize(s);
       });
@@ -85,7 +86,7 @@ Toko.prototype.setup = function (inputOptions) {
   document.getElementById('sketch-title').innerText = this.options.title;
   document.title = this.options.title;
 
-  this.setCanvasSize(this.SIZES.filter(p => p.name === this.options.canvasSize)[0]);
+  this.setCanvasSize(this.SIZES.filter(p => p.name === this.options.canvasSize.name)[0]);
 
 }
 
