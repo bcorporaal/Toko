@@ -54,8 +54,8 @@ function setup() {
   //  sketch parameters
   //
   p = {
-    steps: 10,
     colors: 'westCoast',
+    steps: 10,
     interpolated: false,
   }
 
