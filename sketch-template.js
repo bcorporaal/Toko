@@ -1,8 +1,6 @@
 p5.disableFriendlyErrors = false; // disables FES to speed things up a little bit
 
 let toko = new Toko();
-let particles = [];
-let attractors = [];
 
 function preload() {
   //
