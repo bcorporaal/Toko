@@ -1,9 +1,9 @@
 import Toko from '../core/main';
 
 Toko.prototype.generateFilename = function (extension = 'svg', verb = 'sketched') {
-  var adj1 = this.ADJECTIVES[Math.floor(this.ADJECTIVES.length * Math.random())];
-  var adj2 = this.ADJECTIVES[Math.floor(this.ADJECTIVES.length * Math.random())];
-  var noun = this.NOUNS[Math.floor(this.NOUNS.length * Math.random())];
+  var adj1 = this.randomAdjective();
+  var adj2 = this.randomAdjective();
+  var noun = this.randomNoun();
 
   var filename = this._getTimeStamp() + '_';
 

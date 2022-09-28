@@ -3174,6 +3174,20 @@ var Toko = (function () {
     return o;
   };
 
+  //
+  //  pick a random adjective from the list
+  //
+  Toko.prototype.randomAdjective = function() {
+    return this.ADJECTIVES[Math.floor(this.ADJECTIVES.length * Math.random())];
+  };
+
+  //
+  //  pick a random noun from the list
+  //
+  Toko.prototype.randomNoun = function() {
+    return this.NOUNS[Math.floor(this.NOUNS.length * Math.random())];
+  };
+
   Toko.prototype.steppedRandom = function (min = 0, max = 1, step = 0.1) {
     var n = Math.floor((max - min) / step);
     var r = Math.round(Math.random() * n);
@@ -3193,9 +3207,9 @@ var Toko = (function () {
   };
 
   Toko.prototype.generateFilename = function (extension = 'svg', verb = 'sketched') {
-    var adj1 = this.ADJECTIVES[Math.floor(this.ADJECTIVES.length * Math.random())];
-    var adj2 = this.ADJECTIVES[Math.floor(this.ADJECTIVES.length * Math.random())];
-    var noun = this.NOUNS[Math.floor(this.NOUNS.length * Math.random())];
+    var adj1 = this.randomAdjective();
+    var adj2 = this.randomAdjective();
+    var noun = this.randomNoun();
 
     var filename = this._getTimeStamp() + '_';
 
