@@ -132,18 +132,6 @@ function draw() {
   //---------------------------------------------
 }
 
-function attractorForce(attractor, position) {
-  let force = p5.Vector.sub(attractor, position);
-  let distanceSq = constrain(force.magSq(), 100, 1000);
-  let strength = p.gravity / distanceSq;
-  force.setMag(strength);
-  return force;
-}
-
-function saveSettings() {
-  toko.saveSettings();
-}
-
 //---------------------------------------------
 //
 //  EVENTS

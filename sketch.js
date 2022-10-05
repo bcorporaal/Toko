@@ -286,10 +286,6 @@ function attractorForce(attractor, position) {
   return force;
 }
 
-function saveSettings() {
-  toko.saveSettings();
-}
-
 //---------------------------------------------
 //
 //  EVENTS
