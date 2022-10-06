@@ -65,6 +65,9 @@ function setup() {
   toko.pane.tab.addInput(p, 'colors', {
     options:palettes
   })
+  // add next, previous and random buttons
+  toko.addPaneNavButtons(toko.pane.tab, p, 'colors', palettes);
+
   toko.pane.tab.addInput(p, 'steps', { min: 2, max: 40, step: 1});
   toko.pane.tab.addInput(p, 'interpolated');
 

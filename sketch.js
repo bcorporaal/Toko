@@ -100,6 +100,9 @@ function setup() {
   fColors.addInput(p, 'colors', {
     options:palettes
   })
+  // add next, previous and random buttons
+  toko.addPaneNavButtons(fColors, p, 'colors', palettes);
+  
   fColors.addInput(p, 'colorReverse', {label: "reverse"});
   fColors.addInput(p, 'originalColors', {label: "original"});
 
