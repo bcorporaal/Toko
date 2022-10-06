@@ -12,6 +12,7 @@ import './core/loop';
 import './core/canvas';
 import './core/util';
 import './core/math';
+import './core/tweakpane';
 
 import './output/output_util';
 import './output/capture_video';
