@@ -23,6 +23,9 @@ Toko.prototype.formatForTweakpane = function (inList, propertyName) {
   return o;
 }
 
+//
+//  add next, previous and random buttons to the pane to navigate a specific list
+//
 Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, paletteList) {
   pane.addBlade({
     view: 'buttongrid',
@@ -52,6 +55,9 @@ Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, paletteList) 
   });
 }
 
+//
+//  find the next item in a list formatted for TweakPane
+//
 Toko.prototype.findNextInList = function (item, list) {
   let keys = Object.keys(list);
   let i = keys.indexOf(item);
@@ -65,6 +71,9 @@ Toko.prototype.findNextInList = function (item, list) {
   return list[newItem];
 }
 
+//
+//  find the previous item in a list formatted for TweakPane
+//
 Toko.prototype.findPreviousInList = function (item, list) {
   let keys = Object.keys(list);
   let i = keys.indexOf(item);
@@ -78,6 +87,9 @@ Toko.prototype.findPreviousInList = function (item, list) {
   return list[newItem];
 }
 
+//
+//  select a random item in a list formatted for TweakPane
+//
 Toko.prototype.findRandomInList = function (item, list) {
   let keys = Object.keys(list);
   let newItem;
