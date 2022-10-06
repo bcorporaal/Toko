@@ -16,7 +16,7 @@ var Toko = (function () {
   //
   //  current version
   //
-  const VERSION = 'Toko v0.3.0';
+  const VERSION = 'Toko v0.3.1';
 
   //
   //  Set of standard sizes for the canvas and exports
