@@ -13,7 +13,7 @@
 //
 //  current version
 //
-export const VERSION = 'Toko v0.3.1'
+export const VERSION = 'Toko v0.3.2'
 
 //
 //  Set of standard sizes for the canvas and exports
