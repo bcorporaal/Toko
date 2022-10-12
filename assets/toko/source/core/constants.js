@@ -98,7 +98,7 @@ export const DEFAULT_OPTIONS = {
   useParameterPanel: true,
   hideParameterPanel: false,
   showAdvancedOptions: false,
-  additionalSizes: [],
+  additionalCanvasSizes: [],
   logFPS: false,
   captureFrames: false,
   captureFrameCount: 500,
