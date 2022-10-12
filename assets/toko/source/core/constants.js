@@ -71,17 +71,15 @@ export const SIZE_MACBOOK_PRO_WALLPAPER = {
 //
 //  List used for the dropdown in the advanced tab
 //
-export const SIZES_LIST = {
+export var SIZES_LIST = {
   default: 'default',
-  // square: 'square',
   square_HD: 'square_XL',
-  // fullHD: '1080p',
   iphone_11: 'iphone_11',
   macbook_pro: 'macbook_pro',
   full: 'full',
 }
 
-export const SIZES = [
+export var SIZES = [
   SIZE_DEFAULT,
   SIZE_FULL,
   SIZE_SQUARE,
