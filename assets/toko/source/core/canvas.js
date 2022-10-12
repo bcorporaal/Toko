@@ -29,16 +29,10 @@ Toko.prototype.setCanvasSize = function(inSize) {
   p5Canvas.canvas.style.height = newHeightString;
 }
 
-Toko.prototype.addCanvasSize = function(name,width,height,pixelDensity = 1, fullWindow = false) {
-  let o = {
-    name: name,
-    width: width,
-    height: height,
-    pixelDensity: pixelDensity,
-    fullWindow: fullWindow
-  }
-
-  this.SIZES.push(o);
-  this.SIZES_LIST[name] = name;
-  this.basePane.refresh();
+//
+//  add an additional size to the list of sizes - can only be done as Toko is set up
+//
+Toko.prototype.addCanvasSize = function(inSize) {
+  this.SIZES.push(inSize);
+  this.SIZES_LIST[inSize.name] = inSize.name;
 }

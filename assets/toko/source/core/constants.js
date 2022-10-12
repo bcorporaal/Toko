@@ -26,31 +26,17 @@ export const SIZE_DEFAULT = {
 }
 
 export const SIZE_FULL = {
-  name: 'full',
+  name: 'full window',
   width: 100,
   height: 100,
   pixelDensity: 2,
   fullWindow: true,
 }
 
-export const SIZE_SQUARE = {
-  name: 'square',
-  width: 800,
-  height: 800,
-  pixelDensity: 2,
-}
-
 export const SIZE_SQUARE_XL = {
   name: 'square_XL',
   width: 1600,
   height: 1600,
-  pixelDensity: 2,
-}
-
-export const SIZE_1080P = {
-  name: '1080p',
-  width: 1920,
-  height: 1080,
   pixelDensity: 2,
 }
 
@@ -76,15 +62,13 @@ export var SIZES_LIST = {
   square_HD: 'square_XL',
   iphone_11: 'iphone_11',
   macbook_pro: 'macbook_pro',
-  full: 'full',
+  full: 'full window',
 }
 
 export var SIZES = [
   SIZE_DEFAULT,
   SIZE_FULL,
-  SIZE_SQUARE,
   SIZE_SQUARE_XL,
-  SIZE_1080P,
   SIZE_IPHONE_11_WALLPAPER,
   SIZE_MACBOOK_PRO_WALLPAPER,
 ]
@@ -114,6 +98,7 @@ export const DEFAULT_OPTIONS = {
   useParameterPanel: true,
   hideParameterPanel: false,
   showAdvancedOptions: false,
+  additionalSizes: [],
   logFPS: false,
   captureFrames: false,
   captureFrameCount: 500,

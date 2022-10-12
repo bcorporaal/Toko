@@ -69,6 +69,19 @@ Toko.prototype.setup = function (inputOptions) {
           break;
       }
     }
+    
+    //
+    //  add any additional canvas sizes that were passed along
+    //
+    let n = this.options.additionalCanvasSizes.length;
+    if (n > 0) {
+      for (let i = 0; i < n; i++) {
+        this.addCanvasSize(
+          this.options.additionalCanvasSizes[i]
+        )
+      }
+    }
+
     //
     // add advanced options
     //

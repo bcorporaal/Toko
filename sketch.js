@@ -46,6 +46,14 @@ function setup() {
     useParameterPanel: true,            //  use the tweakpane panel for settings
     hideParameterPanel: false,          //  hide the parameter panel by default (show by pressing 'p')
     showAdvancedOptions: true,          //  show advanced settings in tweakpane, like size
+    additionalCanvasSizes: [            //  array of additional canvas sizes
+      {
+        name: "landscape",
+        width: 1200,
+        height: 900,
+        pixelDensity: 2,
+      }
+    ],                
     captureFrames: true,                //  add record option in tweakpane
     captureFrameCount: 999,             //  max number of frames captured (is this actually used?)
     captureFrameRate: 15,               //  basic frame rate for capture

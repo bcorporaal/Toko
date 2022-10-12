@@ -29,31 +29,17 @@ var Toko = (function () {
   };
 
   const SIZE_FULL = {
-    name: 'full',
+    name: 'full window',
     width: 100,
     height: 100,
     pixelDensity: 2,
     fullWindow: true,
   };
 
-  const SIZE_SQUARE = {
-    name: 'square',
-    width: 800,
-    height: 800,
-    pixelDensity: 2,
-  };
-
   const SIZE_SQUARE_XL = {
     name: 'square_XL',
     width: 1600,
     height: 1600,
-    pixelDensity: 2,
-  };
-
-  const SIZE_1080P = {
-    name: '1080p',
-    width: 1920,
-    height: 1080,
     pixelDensity: 2,
   };
 
@@ -74,22 +60,18 @@ var Toko = (function () {
   //
   //  List used for the dropdown in the advanced tab
   //
-  const SIZES_LIST = {
+  var SIZES_LIST = {
     default: 'default',
-    // square: 'square',
     square_HD: 'square_XL',
-    // fullHD: '1080p',
     iphone_11: 'iphone_11',
     macbook_pro: 'macbook_pro',
-    full: 'full',
+    full: 'full window',
   };
 
-  const SIZES = [
+  var SIZES = [
     SIZE_DEFAULT,
     SIZE_FULL,
-    SIZE_SQUARE,
     SIZE_SQUARE_XL,
-    SIZE_1080P,
     SIZE_IPHONE_11_WALLPAPER,
     SIZE_MACBOOK_PRO_WALLPAPER,
   ];
@@ -119,6 +101,7 @@ var Toko = (function () {
     useParameterPanel: true,
     hideParameterPanel: false,
     showAdvancedOptions: false,
+    additionalSizes: [],
     logFPS: false,
     captureFrames: false,
     captureFrameCount: 500,
@@ -147,9 +130,7 @@ var Toko = (function () {
     VERSION: VERSION,
     SIZE_DEFAULT: SIZE_DEFAULT,
     SIZE_FULL: SIZE_FULL,
-    SIZE_SQUARE: SIZE_SQUARE,
     SIZE_SQUARE_XL: SIZE_SQUARE_XL,
-    SIZE_1080P: SIZE_1080P,
     SIZE_IPHONE_11_WALLPAPER: SIZE_IPHONE_11_WALLPAPER,
     SIZE_MACBOOK_PRO_WALLPAPER: SIZE_MACBOOK_PRO_WALLPAPER,
     SIZES_LIST: SIZES_LIST,
@@ -3027,6 +3008,19 @@ var Toko = (function () {
             break;
         }
       };
+      
+      //
+      //  add any additional canvas sizes that were passed along
+      //
+      let n = this.options.additionalCanvasSizes.length;
+      if (n > 0) {
+        for (let i = 0; i < n; i++) {
+          this.addCanvasSize(
+            this.options.additionalCanvasSizes[i]
+          );
+        }
+      }
+
       //
       // add advanced options
       //
@@ -3153,6 +3147,14 @@ var Toko = (function () {
 
     p5Canvas.canvas.style.width = newWidthString;
     p5Canvas.canvas.style.height = newHeightString;
+  };
+
+  //
+  //  add an additional size to the list of sizes - can only be done as Toko is set up
+  //
+  Toko.prototype.addCanvasSize = function(inSize) {
+    this.SIZES.push(inSize);
+    this.SIZES_LIST[inSize.name] = inSize.name;
   };
 
   //
