@@ -29,7 +29,7 @@ var Toko = (function () {
   };
 
   const SIZE_FULL = {
-    name: 'full window',
+    name: 'full_window',
     width: 100,
     height: 100,
     pixelDensity: 2,
@@ -65,7 +65,7 @@ var Toko = (function () {
     square_HD: 'square_XL',
     iphone_11: 'iphone_11',
     macbook_pro: 'macbook_pro',
-    full: 'full window',
+    full_window: 'full_window',
   };
 
   var SIZES = [
