@@ -1,5 +1,5 @@
 //
-//  Used to export the minified version with CodeKit
+//  Used to export the full version with CodeKit
 //  Should be identical to app-min.js
 //
 import Toko from './core/main';

@@ -1,6 +1,6 @@
 //
 //  Used to export the minified version with CodeKit
-//  Should be identical to app
+//  Should be identical to app.js
 //
 import Toko from './core/main';
 
