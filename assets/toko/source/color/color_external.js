@@ -84,7 +84,6 @@ Toko.prototype.getPreviousPalette = function (inPalette, paletteType = 'all', ju
 //  get a random palette
 //
 Toko.prototype.getRandomPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
-
   return this._getRandomPalette(inPalette, paletteType, justPrimary);
 }
 
