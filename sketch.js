@@ -97,6 +97,7 @@ function setup() {
   fParticles.addInput(p, 'fadeTrail');
   fParticles.addInput(p, 'plotMirrorParticle', {label: 'mirror'});
 
+
   let fAttractors = toko.pane.tab.addFolder({ title: "Attractors", expanded: true });
   fAttractors.addInput(p, 'nrAttractors', { min: 1, max: 7, step: 1, label: 'attractors'});
   fAttractors.addInput(p, 'gravity', { min: 0, max: 400, step: 10, label: 'gravity'});
