@@ -1,3 +1,4 @@
 .DS_Store
 .vscode
 *.codekit3
+.gitignore
