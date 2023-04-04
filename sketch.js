@@ -80,12 +80,12 @@ function setup() {
     velocityMax: 6, 
     velocityMin: 2,
     colorReverse: false,
-    colors: 'westCoast',
+    collections: ['basic','golid','metbrewer', 'd3', 'duotone'],
+    collection: 'basic',
+    palette: 'westCoast',
     originalColors: false,
     mode: 'lab',
   }
-
-  let palettes = toko.getPaletteSelection('basic, golid, metbrewer', false, true);
 
   //
   //  set all the tweakpane controls
@@ -106,11 +106,10 @@ function setup() {
   fAttractors.addInput(p, 'attractorVertical', {label: 'vertical'});
 
   let fColors = toko.pane.tab.addFolder({ title: 'Colors', expanded: true });
-  fColors.addInput(p, 'colors', {
-    options:palettes
-  })
+  // add collection and palette selector
+  toko.addCollectionSelector(fColors, p, 'collections', 'collection', 'palette', 0);
   // add next, previous and random buttons
-  toko.addPaneNavButtons(fColors, p, 'colors', palettes);
+  toko.addPaneNavButtons(fColors, p, 'palette', 'collection');
   
   fColors.addInput(p, 'colorReverse', {label: "reverse"});
   fColors.addInput(p, 'originalColors', {label: "original"});
@@ -146,7 +145,7 @@ function refresh() {
   //
   //  get colors
   //
-  colors = toko.getColorScale(this.p.colors,o);
+  colors = toko.getColorScale(this.p.palette,o);
   //
   //  make additional particles if needed
   //
