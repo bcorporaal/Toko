@@ -52,21 +52,18 @@ function setup() {
   //  sketch parameters
   //
   p = {
-    colors: 'westCoast',
     steps: 10,
     interpolated: false,
+    collections: ['basic','golid','metbrewer'],
+    collection: 'basic',
+    palette: 'westCoast',
   }
 
-  let palettes = toko.getPaletteSelection('basic, golid, metbrewer', false, true);
-
   //
-  //  set the tweakpane controls
+  //  add controls to change the colors
   //
-  toko.pane.tab.addInput(p, 'colors', {
-    options:palettes
-  })
-  // add next, previous and random buttons
-  toko.addPaneNavButtons(toko.pane.tab, p, 'colors', palettes);
+  toko.addCollectionSelector(toko.pane.tab, p, 'collections', 'collection', 'palette', 0);
+  toko.addPaneNavButtons(toko.pane.tab, p, 'palette', 'collection');
 
   toko.pane.tab.addInput(p, 'steps', { min: 2, max: 40, step: 1});
   toko.pane.tab.addInput(p, 'interpolated');
@@ -87,6 +84,8 @@ function setup() {
 }
 
 function refresh() {
+  console.log('refresh');
+
   //
   //  set domain range to number of steps
   //
@@ -96,7 +95,7 @@ function refresh() {
   //
   //  get colors
   //
-  colors = toko.getColorScale(this.p.colors,o);
+  colors = toko.getColorScale(this.p.palette,o);
   //
   //  redraw with updated parameters
   //
