@@ -26,7 +26,7 @@ Toko.prototype.formatForTweakpane = function (inList, propertyName) {
 //
 //  add next, previous and random buttons to the pane to navigate a specific list
 //
-Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, paletteList) {
+Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, pCollection) {
   pane.addBlade({
     view: 'buttongrid',
     size: [3, 1],
@@ -37,6 +37,7 @@ Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, paletteList) 
     }),
     label: ' ',
   }).on('click', (ev) => {
+    let paletteList = toko.getPaletteSelection(pObject[pCollection], false, true);
     switch (ev.index[0]) {
       case 0:
         pObject[pName] = this.findPreviousInList(pObject[pName],paletteList);
@@ -53,6 +54,29 @@ Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, paletteList) 
     }
     this.basePane.refresh()
   });
+}
+
+//
+//  add a double selector for color palette
+//
+Toko.prototype.addCollectionSelector = function (pane, pObject, collections, curCollection, palettes, index = 1) {
+  let colorPalettes = this.getPaletteSelection(pObject[curCollection], false, true);
+  var scaleInput = {};
+  pane.addInput(pObject, curCollection, {
+    index:index,
+    options: this.formatForTweakpane(pObject[collections])
+  }).on('change', (ev) => {
+    let colorPalettes = this.getPaletteSelection(pObject[curCollection], false, true);
+    scaleInput.dispose();
+    scaleInput = pane.addInput(pObject, palettes, {
+      index:index+1,
+      options:colorPalettes
+    })
+    this.basePane.refresh()
+  });
+  scaleInput = pane.addInput(pObject, palettes, {
+    options:colorPalettes
+  })
 }
 
 //
