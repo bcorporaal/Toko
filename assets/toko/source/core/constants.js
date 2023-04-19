@@ -13,7 +13,7 @@
 //
 //  current version
 //
-export const VERSION = 'Toko v0.4.0'
+export const VERSION = 'Toko v0.4.1'
 
 //
 //  Set of standard sizes for the canvas and exports
@@ -47,6 +47,13 @@ export const SIZE_1080P = {
   pixelDensity: 2,
 }
 
+export const SIZE_720P = {
+  name: '720p',
+  width: 1280,
+  height: 720,
+  pixelDensity: 2,
+}
+
 export const SIZE_IPHONE_11_WALLPAPER = {
   name: 'iphone_11',
   width: 1436,
@@ -68,6 +75,7 @@ export var SIZES_LIST = {
   default: 'default',
   square_HD: 'square_XL',
   iphone_11: 'iphone_11',
+  HD_720p: '720p',
   HD_1080p: '1080p',
   macbook_pro: 'macbook_pro',
   full_window: 'full_window',
@@ -77,6 +85,7 @@ export var SIZES = [
   SIZE_DEFAULT,
   SIZE_FULL,
   SIZE_SQUARE_XL,
+  SIZE_720P,
   SIZE_1080P,
   SIZE_IPHONE_11_WALLPAPER,
   SIZE_MACBOOK_PRO_WALLPAPER,

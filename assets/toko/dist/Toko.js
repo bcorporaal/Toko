@@ -16,7 +16,7 @@ var Toko = (function () {
   //
   //  current version
   //
-  const VERSION = 'Toko v0.4.0';
+  const VERSION = 'Toko v0.4.1';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -50,6 +50,13 @@ var Toko = (function () {
     pixelDensity: 2,
   };
 
+  const SIZE_720P = {
+    name: '720p',
+    width: 1280,
+    height: 720,
+    pixelDensity: 2,
+  };
+
   const SIZE_IPHONE_11_WALLPAPER = {
     name: 'iphone_11',
     width: 1436,
@@ -71,6 +78,7 @@ var Toko = (function () {
     default: 'default',
     square_HD: 'square_XL',
     iphone_11: 'iphone_11',
+    HD_720p: '720p',
     HD_1080p: '1080p',
     macbook_pro: 'macbook_pro',
     full_window: 'full_window',
@@ -80,6 +88,7 @@ var Toko = (function () {
     SIZE_DEFAULT,
     SIZE_FULL,
     SIZE_SQUARE_XL,
+    SIZE_720P,
     SIZE_1080P,
     SIZE_IPHONE_11_WALLPAPER,
     SIZE_MACBOOK_PRO_WALLPAPER,
@@ -143,6 +152,7 @@ var Toko = (function () {
     SIZES: SIZES,
     SIZES_LIST: SIZES_LIST,
     SIZE_1080P: SIZE_1080P,
+    SIZE_720P: SIZE_720P,
     SIZE_DEFAULT: SIZE_DEFAULT,
     SIZE_FULL: SIZE_FULL,
     SIZE_IPHONE_11_WALLPAPER: SIZE_IPHONE_11_WALLPAPER,
