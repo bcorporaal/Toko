@@ -54,7 +54,7 @@ var Toko = (function () {
     name: '720p',
     width: 1280,
     height: 720,
-    pixelDensity: 2,
+    pixelDensity: 1,
   };
 
   const SIZE_IPHONE_11_WALLPAPER = {
@@ -78,7 +78,7 @@ var Toko = (function () {
     default: 'default',
     square_HD: 'square_XL',
     iphone_11: 'iphone_11',
-    HD_720p: '720p',
+    SD_720p: '720p',
     HD_1080p: '1080p',
     macbook_pro: 'macbook_pro',
     full_window: 'full_window',
