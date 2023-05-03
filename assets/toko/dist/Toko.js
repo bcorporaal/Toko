@@ -724,6 +724,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var cakoPalettes = [
     {
       name: 'cako1',
@@ -755,6 +760,11 @@ var Toko = (function () {
     },
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var colourscafePalettes = [
     {
       name: 'cc239',
@@ -800,6 +810,10 @@ var Toko = (function () {
     }
   ];
 
+  //
+  //  color palettes from D3
+  //  see https://observablehq.com/@d3/color-schemes
+  //
   var d3Palettes = [
   {
     name: 'brownGreen',
@@ -999,6 +1013,11 @@ var Toko = (function () {
   },
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var dalePalettes = [
     {
       name: 'dale_paddle',
@@ -1032,6 +1051,11 @@ var Toko = (function () {
     },
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var ducciPalettes = [
     {
       name: 'ducci_jb',
@@ -1140,6 +1164,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var duotonePalettes = [
     {
       name: 'dt01',
@@ -1241,6 +1270,11 @@ var Toko = (function () {
     },
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var expositoPalettes = [
     {
       name: 'exposito',
@@ -1281,6 +1315,11 @@ var Toko = (function () {
     },
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var flourishPalettes = [
     {
       name: 'empusa',
@@ -1439,6 +1478,11 @@ var Toko = (function () {
     },
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var golidmiscPalettes = [
     {
       name: 'frozen-rose',
@@ -1665,6 +1709,11 @@ var Toko = (function () {
     },
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var hildaPalettes = [
     {
       name: 'hilda01',
@@ -1710,6 +1759,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var iivonenPalettes = [
     {
       name: 'iiso_zeitung',
@@ -1741,6 +1795,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var judsonPalettes = [
     {
       name: 'jud_playground',
@@ -1772,6 +1831,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var jungPalettes = [
     {
       name: 'jung_bird',
@@ -1810,6 +1874,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var kovecsesPalettes = [
     {
       name: 'kov_01',
@@ -1885,6 +1954,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var mayoPalettes = [
     {
       name: 'mayo1',
@@ -2265,6 +2339,11 @@ var Toko = (function () {
   }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var ranganathPalettes = [
     {
       name: 'rag-mysore',
@@ -2304,6 +2383,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var rohlfsPalettes = [
     {
       name: 'rohlfs_1R',
@@ -2349,6 +2433,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var roygbivsPalettes = [
     {
       name: 'retro',
@@ -2430,6 +2519,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var spatialPalettes = [
     {
       name: 'spatial01',
@@ -2469,6 +2563,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var systemPalettes = [
     {
       name: 'system.#01',
@@ -2528,6 +2627,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var tsuchimochiPalettes = [
     {
       name: 'tsu_arcade',
@@ -2552,6 +2656,11 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
   var tundraPalettes = [
     {
       name: 'tundra1',

@@ -1,3 +1,8 @@
+//
+// Original collection by Kjetil Midtgarden Golid
+// https://github.com/kgolid/chromotome
+// https://kgolid.github.io/chromotome-site/
+//
 export default [
   {
     name: 'mayo1',

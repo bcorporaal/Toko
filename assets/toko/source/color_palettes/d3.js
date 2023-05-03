@@ -1,3 +1,7 @@
+//
+//  color palettes from D3
+//  see https://observablehq.com/@d3/color-schemes
+//
 export default [
 {
   name: 'brownGreen',
