@@ -14,6 +14,9 @@ import './core/util';
 import './core/math';
 import './core/tweakpane';
 
+import './geometry/grid';
+import './geometry/gridCell';
+
 import './output/output_util';
 import './output/capture_video';
 import './output/save_sketch';
@@ -22,3 +25,4 @@ import './output/save_settings';
 import './input/receive_settings';
 
 export default Toko;
+ 
