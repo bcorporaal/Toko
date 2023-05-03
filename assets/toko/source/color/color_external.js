@@ -1,16 +1,4 @@
 //
-//  TO DO
-//  - add meta data to each collection so not every palette needs all info
-//  - create setup so it is possible to select by both series dropdown and then palette dropdown
-//  - function to easily add the controls to tweakpane (both for a single and a double dropdown)
-//  - change 'type:' into 'series:' - or 'collection:'
-//  - better contrast colors
-//  - make use of stroke and background color if available
-//  - ensure that contrast colors are in a reliable sequence; first dark then light
-//  - add cosine palettes again
-//
-
-//
 //  colorOptions and defaults
 //
 // Toko.prototype.DEFAULT_COLOR_OPTIONS = {
