@@ -15,4 +15,8 @@ Features:
 
 sketch.js is a more extensive example, while sketch-template.js is a more minimal boilerplate for your own project.
 
+To do:
+- [ ] Add grid generator
+- [ ] Make sure all random functions in Toko can be seeded
+
 See assets/toko/source for details.
