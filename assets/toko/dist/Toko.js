@@ -3460,20 +3460,10 @@ var Toko = (function () {
     return list[newItem];
   };
 
-  //  grid
-
-  //  TO DO
-  //  - add set functions to move / scale the grid
-  //  - integrate into Toko - class within a class?
-  //  - add options to bias other than 0.5
-  //  x round positioning (in cell) to avoid gaps and overlaps
-  //    ** should the height and width be rounded or the coordinates?
-  //  - make sure _pointsAreUpdated is actually updated
-  //  - remove/hide specific cells from the grid
-  //  x give each cell a value that can be used later
-  //  x store size in columns/rows in cell as well
-  //  x optimize points gather to include points on the right side where cells don't align
-  //  x do points for a packed grid too
+  //  grid generators
+  //
+  //  create grids by recursive splitting cells or packing cells
+  //
 
   Toko.Grid = class {
 
@@ -3508,11 +3498,12 @@ var Toko = (function () {
 
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < columns; c++) {
-          let newCell = new Toko.GridCell( this._x + c * cellWidth,
-                                  this._y + r* cellHeight,
-                                  cellWidth,
-                                  cellHeight
-                                  );
+          let newCell = new Toko.GridCell(
+            this._x + c * cellWidth,
+            this._y + r* cellHeight,
+            cellWidth,
+            cellHeight
+          );
           this._cells.push(newCell);
         }
       }
