@@ -5,7 +5,7 @@
 Some handy duct tape to expand p5.js with Tweakpane, chroma.js, color palettes, p5 SVG, and more.
 
 Features:
-- Easy saving capturing options for images and video
+- Easy capturing options for images and video
 - Switching between canvas sizes
 - Larger canvas sizes are scaled to fit on the screen
 - Tweakpane integration
@@ -21,6 +21,8 @@ To do (in no particular order):
 
 ## General
 - [ ] Make sure all random functions in Toko can be seeded
+- [ ] Where possible use p5 functionality for saving images and video
+- [ ] Try to create something resembling code standards and consistency
 
 ## Grid
 - [x] Add grid generators
