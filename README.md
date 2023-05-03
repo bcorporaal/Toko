@@ -18,9 +18,18 @@ sketch.js is a more extensive example, while sketch-template.js is a more minima
 See assets/toko/source for details.
 
 To do (in no particular order):
-- [ ] Add grid generator
-- [ ] Add option to include all collections in palette selection
+
+## General
 - [ ] Make sure all random functions in Toko can be seeded
+
+## Grid
+- [x] Add grid generators
+- [ ] Add set functions to move / scale the grid
+- [ ] Add options to bias other than 0.5
+- [ ] remove / hide specific cells from the grid
+
+## Color
+- [ ] Add option to include all collections in palette selection
 - [ ] Generate contrast colors based on entire palette
 - [ ] Update color palettes
 - [ ] Add gradients for shapes
