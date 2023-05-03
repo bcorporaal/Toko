@@ -1,5 +1,5 @@
 //
-//  colorOptions and defaults
+//  color options and defaults
 //
 // Toko.prototype.DEFAULT_COLOR_OPTIONS = {
 //   reverse: false,          - whether the scale should be reversed
@@ -11,7 +11,7 @@
 //   stepped: false           - whether the scale should be smooth or stepped
 //   steps: 10                - number of steps in the scale. Only used if stepped is true
 //   nrColors: 10             - number of colors used to create the color list array
-// };
+// }
 
 //
 //  returned color object
@@ -25,7 +25,7 @@
 //    randomColor,            - function that provides a random color in the full palette.
 //    randomOriginalColor,    - function that provides a random color from the original palette.
 //    list,                   - list of interpolated colors. Number of colors is defined in the options object.
-//    options,                - the options provided/used for the creation of the object.}
+//    options,                - the options provided/used for the creation of the object.
 //  }
 //
 
