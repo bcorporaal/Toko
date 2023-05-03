@@ -16,7 +16,7 @@ var Toko = (function () {
   //
   //  current version
   //
-  const VERSION = 'Toko v0.4.1';
+  const VERSION = 'Toko v0.4.2';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -3190,12 +3190,18 @@ var Toko = (function () {
     return this.NOUNS[Math.floor(this.NOUNS.length * Math.random())];
   };
 
+  //
+  //  generate a random number snapped to steps
+  //
   Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
     var n = Math.floor((max - min) / step);
     var r = Math.round(Math.random() * n);
     return min + r * step;
   };
 
+  //
+  //  wrap a number around if it goes above the maximum or below the minimum
+  //
   Toko.wrap = function (value, min = 0, max = 100) {
     var vw = value;
 

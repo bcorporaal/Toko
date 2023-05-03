@@ -1,11 +1,17 @@
 import Toko from './main';
 
+//
+//  generate a random number snapped to steps
+//
 Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
   var n = Math.floor((max - min) / step);
   var r = Math.round(Math.random() * n);
   return min + r * step;
 }
 
+//
+//  wrap a number around if it goes above the maximum or below the minimum
+//
 Toko.wrap = function (value, min = 0, max = 100) {
   var vw = value;
 
