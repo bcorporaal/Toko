@@ -13,9 +13,7 @@ Features:
 - Easy selection and usage of (custom) color palettes
 - Saving and loading (through drag and drop on the canvas) of sketch parameters
 
-sketch.js is a more extensive example, while sketch-template.js is a more minimal boilerplate for your own project.
-
-See assets/toko/source for details.
+No dcumentation yet, so see toko/source for details. Also, the examples folder includes sketches using various features.
 
 To do (in no particular order):
 
@@ -24,6 +22,7 @@ To do (in no particular order):
 - [ ] Where possible use p5 functionality for saving images and video
 - [ ] Try to create something resembling code standards and consistency
 - [ ] Add more examples
+- [ ] Restructure folders and repository
 
 ## Grid
 - [x] Add grid generators
