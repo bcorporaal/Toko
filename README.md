@@ -13,7 +13,7 @@ Features:
 - Easy selection and usage of (custom) color palettes
 - Saving and loading (through drag and drop on the canvas) of sketch parameters
 
-No dcumentation yet, so see toko/source for details. Also, the examples folder includes sketches using various features.
+No documentation yet, so see toko/source for details. Also, the examples folder includes sketches using various features.
 
 To do (in no particular order):
 
