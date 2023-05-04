@@ -23,6 +23,7 @@ To do (in no particular order):
 - [ ] Make sure all random functions in Toko can be seeded
 - [ ] Where possible use p5 functionality for saving images and video
 - [ ] Try to create something resembling code standards and consistency
+- [ ] Add more examples
 
 ## Grid
 - [x] Add grid generators
