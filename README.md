@@ -1,5 +1,7 @@
 # Toko: expanding p5.js
 
+<p align="center"><img src="/assets/images/toko_header.png" alt="Toko logo"></p>
+
 ** Work in progress **
 
 Some handy duct tape to expand p5.js with Tweakpane, chroma.js, color palettes, p5 SVG, and more.
@@ -23,18 +25,23 @@ To do (in no particular order):
 - [ ] Try to create something resembling code standards and consistency
 - [ ] Add more examples
 - [ ] Restructure folders and repository
+- [ ] Add post-processing options like grain and noise
+- [ ] Add easy gradients for shapes
 
 ## Grid
 - [x] Add grid generators
+- [ ] Add list of options and defaults
+- [ ] Consistency in ordering of rows and columns in functions
 - [ ] Add set functions to move / scale the grid
 - [ ] Add options to bias other than 0.5
 - [ ] remove / hide specific cells from the grid
 
 ## Color
+- [ ] Make interpolation an option when generating for easier toggling in the sketch and add interpolatedScale
 - [ ] Add option to include all collections in palette selection
 - [ ] Generate contrast colors based on entire palette
 - [ ] Update color palettes
-- [ ] Add gradients for shapes
+
 - [ ] add meta data to each collection so not every palette needs all info
 - [ ] change 'type:' into 'collection:'
 - [ ] Make use of stroke and background color if available
