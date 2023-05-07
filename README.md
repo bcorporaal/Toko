@@ -13,7 +13,8 @@ Handy duct tape to expand p5.js for creative coding with Tweakpane, chroma.js, c
 - Easy selection and usage of (custom) color palettes
 - Saving and loading (through drag and drop on the canvas) of sketch parameters
 
-No documentation yet, so see toko/source for details. Also, the examples folder includes sketches using various features.
+## Usage
+There is no documentation yet, so see `toko/source` for details. Also, the examples folder includes sketches using various features.
 
 
 ## Ideas (that may or may not get implemented in the future)
@@ -62,13 +63,11 @@ If you have any questions or comments you can contact me via [email](mailto:dev@
 
 ## Credits
 
-Toko includes code from the following:
-
+Toko includes code from the following:<br>
 [Chromotome color palettes](https://github.com/kgolid/chromotome) by Kjetil Midtgarden Golid. MIT License.<br>
 [D3 color palettes](https://github.com/d3/d3) by Mike Bostock and others. ISC License.<br>
 
-Makes use of the following:
-
+Makes use of the following:<br>
 [Tweakpane](https://cocopon.github.io/tweakpane/) by Hiroki Kokubun for controls. MIT License.<br>
 [CCapture.js](https://github.com/spite/ccapture.js) by Jaume Sanchez for video capture. MIT License.<br>
 [Chroma.js](https://github.com/gka/chroma.js) by Gregor Aisch for color manipulations. Apache License.<br>
