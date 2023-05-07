@@ -1,7 +1,7 @@
 <p align="center"><img src="/assets/images/toko_header.png" alt="Toko logo"></p>
 
-# Toko: expanding p5.js with useful features
-Handy duct tape to expand p5.js for creative coding with Tweakpane, chroma.js, color palettes, p5 SVG, and more. Very much a work in progress.
+# Toko: expanding p5.js with handy features
+Some useful duct tape to expand p5.js for creative coding with Tweakpane, chroma.js, color palettes, p5 SVG, and more. Very much a work in progress.
 
 
 ## Features
@@ -25,7 +25,6 @@ There is no documentation yet, so see `toko/source` for details. Also, the examp
 - Where possible use p5 functionality for saving images and video
 - Try to create something resembling code standards and consistency
 - Add more examples
-- Restructure folders and repository
 - Add post-processing options like grain and noise
 - Add easy gradients for shapes
 
