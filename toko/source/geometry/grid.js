@@ -20,7 +20,7 @@ Toko.Grid = class {
     this._width = width;
     this._height = height;
     this._cells = [
-      new Toko.GridCell(this._x,this._y,this._width,this._height)
+      new Toko.GridCell(this._x,this._y,this._width,this._height, 0, 0, this._width, this._height)
     ];
     this._points = [];
     this._pointsAreUpdated = false;
@@ -42,7 +42,11 @@ Toko.Grid = class {
           this._x + c * cellWidth,
           this._y + r* cellHeight,
           cellWidth,
-          cellHeight
+          cellHeight,
+          c,
+          r,
+          cellWidth,
+          cellHeight,
         );
         this._cells.push(newCell);
       }
@@ -190,7 +194,7 @@ Toko.Grid = class {
           w = cellShapes[s][0];
           h = cellShapes[s][1];
           if (this.spaceAvailable(i,j,w,h)) {
-            newCell = new Toko.GridCell(this._x+i*cw, this._y+j*rh, w*cw, h*rh);
+            newCell = new Toko.GridCell(this._x+i*cw, this._y+j*rh, w*cw, h*rh, i, j, cw, rh);
             newCell.counter = s;
             this._cells.push(newCell);
             this.fillSpace(i,j,w,h);
