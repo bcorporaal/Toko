@@ -65,6 +65,7 @@ If you have any questions or comments you can contact me via [email](mailto:dev@
 Toko includes code from the following:<br>
 [Chromotome color palettes](https://github.com/kgolid/chromotome) by Kjetil Midtgarden Golid. MIT License.<br>
 [D3 color palettes](https://github.com/d3/d3) by Mike Bostock and others. ISC License.<br>
+[Fira Code font files](https://github.com/tonsky/FiraCode) by Nikita Prokopov. OFL-1.1 License.<br>
 
 Makes use of the following:<br>
 [Tweakpane](https://cocopon.github.io/tweakpane/) by Hiroki Kokubun for controls. MIT License.<br>
