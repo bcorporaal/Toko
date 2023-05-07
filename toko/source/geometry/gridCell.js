@@ -1,5 +1,23 @@
 import Toko from '../core/main';
 
+//
+// Toko.GridCell = {
+//    x          - x position on the canvas
+//    y          - y position on the canvas
+//    width      - width of the cell
+//    height     - height of the cell
+//    column     - x position in columns
+//    row        - y position in rows
+//    gridWidth  - nr of columns wide
+//    gridHeight - nr of rows height
+//    gridWidth and gridHeight are only applicable for a packed grid
+//  }
+//
+// Set separately
+//    value       - value per cell that can be set and used for visual effects
+//    counter     - used to track how often a cell is split
+//
+
 Toko.GridCell = class {
   constructor(x,y,width,height,column=0,row=0,gridWidth=0,gridHeight=0) {
     this._x = x;

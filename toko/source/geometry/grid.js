@@ -1,8 +1,28 @@
 import Toko from '../core/main';
 
+//
 //  grid generators
 //
 //  create grids by recursive splitting cells or packing cells
+//
+//
+// Toko.Grid = {
+//    x          - x position on the canvas
+//    y          - y position on the canvas
+//    width      - width of the complete grid
+//    height     - width of the complete grid
+//  }
+//
+// External functions
+//  setBaseGrid       - reset all cells and start with a rectangular grid of celles
+//  packGrid          - pack the grid with cells of predefined sizes
+//  splitRecursive    - split all the cells recursively for a number of loops
+//
+// Values
+//  minCounter        - lowest number of splits for a recursive grid
+//  maxCounter        - highest number of splits for a recursive grid
+//  cells             - get an array of all the current cells
+//  points            - get an array of all the corner points for the current grid of cells
 //
 
 Toko.Grid = class {
@@ -95,7 +115,14 @@ Toko.Grid = class {
   //  construct a grid by packing shapes
   //  partly inspired by
   //  https://www.gorillasun.de/blog/an-algorithm-for-irregular-grids/
-  //  
+  //
+  //  columns         - number of columns to be packed
+  //  rows            - number of rows to be packed
+  //  cellShapes      - array of cells defining width and height of cell shapes
+  //  fillEmptySpaces - whether left over spaces should be filled with 1x1 cells
+  //  snapToPixel     - if set to true all sizes and positions are rounded to a pixel
+  //                    This can result in the cells not filling the complete grid space
+  //
   packGrid(columns,rows,cellShapes, fillEmptySpaces = true, snapToPixel = true) {
     this._pointsAreValid = false;
     this._cells = [];
@@ -272,6 +299,16 @@ Toko.Grid = class {
   //
   //  split the cells recursively
   //
+  //  nrLoops         - number times all cells are evaluated
+  //  chance          - the chance a cell is split when evaluated
+  //  minSize         - only splits resulting in new cells larger than this size are considered
+  //  splitStyle      - defines how the cells should split
+  //                    SPLIT_HORIZONTAL  = split a cell horizontally into 2 new cells
+  //                    SPLIT_VERTICAL    = split a cell vertically into 2 new cells
+  //                    SPLIT_LONGEST     = split the longest dimension
+  //                    SPLIT_MIX         = split along both axis randomly
+  //                    SPLIT_SQUARE      = split cells into 4 new cells
+  //                    
   splitRecursive(nrLoops = 1, chance = 0.5, minSize = 10, splitStyle = this.SPLIT_MIX) {
     if (splitStyle == this.SPLIT_SQUARE) {
       // reduce the chance because the square split creates 4 cells instead of 2
