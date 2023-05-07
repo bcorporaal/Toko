@@ -30,8 +30,6 @@ There is no documentation yet, so see `toko/source` for details. Also, the examp
 
 ### Grid
 
-- Add list of options and defaults
-- Consistency in ordering of rows and columns in functions
 - Add set functions to move / scale the grid
 - Add options to bias other than 0.5
 - remove / hide specific cells from the grid
