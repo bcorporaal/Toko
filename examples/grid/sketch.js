@@ -56,7 +56,7 @@ function setup() {
   p = {
     // grid
     margin: 0,
-    rows: 2,
+    rows: 10,
     columns: 2,
     nrLoops: 10,
     minSize: 10,
@@ -94,12 +94,12 @@ function setup() {
   f0 = toko.pane.tab.addFolder({
     title: 'Base grid',
   });
-  f0.addInput(p, 'rows', {
+  f0.addInput(p, 'columns', {
     min: 1,
     max: 100,
     step: 1
   });
-  f0.addInput(p, 'columns', {
+  f0.addInput(p, 'rows', {
     min: 1,
     max: 100,
     step: 1
@@ -210,7 +210,7 @@ function draw() {
   //  make grid object with basic positioning and sizing
   gridSet = new Toko.Grid(p.margin,p.margin,width-2*p.margin,height-2*p.margin);
   //  set the base of rows and columns
-  gridSet.setBaseGrid(p.rows,p.columns);
+  gridSet.setBaseGrid(p.columns,p.rows);
   
   if (p.gridType == 'recursive') {
     // split the grid recursively

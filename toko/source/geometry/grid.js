@@ -30,7 +30,7 @@ Toko.Grid = class {
   //
   //  set the base rows and columns for the grid
   //
-  setBaseGrid(rows = 1, columns = 1) {
+  setBaseGrid(columns = 1, rows = 1) {
     let cellWidth = this._width/columns;
     let cellHeight = this._height/rows;
 
@@ -73,7 +73,7 @@ Toko.Grid = class {
       tempPoints.push(`${c.x+c.width}-${c.y+c.height}`);
     }
     //
-    //  deduplicate
+    //  deduplicate using a set
     //
     uniquePoints = [...new Set(tempPoints)];
     //

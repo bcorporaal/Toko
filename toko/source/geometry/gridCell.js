@@ -1,7 +1,7 @@
 import Toko from '../core/main';
 
 Toko.GridCell = class {
-  constructor(x,y,width,height,row=0,column=0,gridWidth=0,gridHeight=0) {
+  constructor(x,y,width,height,column=0,row=0,gridWidth=0,gridHeight=0) {
     this._x = x;
     this._y = y;
     this._width = width;
