@@ -1,6 +1,6 @@
 <p align="center"><img src="/assets/images/toko_header.png" alt="Toko logo"></p>
 
-# Toko: expanding p5.js
+# Toko: expanding p5.js with useful features
 Handy duct tape to expand p5.js for creative coding with Tweakpane, chroma.js, color palettes, p5 SVG, and more. Very much a work in progress.
 
 
@@ -8,7 +8,7 @@ Handy duct tape to expand p5.js for creative coding with Tweakpane, chroma.js, c
 - Easy capturing options for images and video
 - Switching between canvas sizes
 - Larger canvas sizes are scaled to fit on the screen
-- Tweakpane integration
+- Tweakpane integration to easily change sketch parameters
 - Large collection of color palettes
 - Easy selection and usage of (custom) color palettes
 - Saving and loading (through drag and drop on the canvas) of sketch parameters
@@ -63,10 +63,12 @@ If you have any questions or comments you can contact me via [email](mailto:dev@
 ## Credits
 
 Toko includes code from the following:
+
 [Chromotome color palettes](https://github.com/kgolid/chromotome) by Kjetil Midtgarden Golid. MIT License.<br>
 [D3 color palettes](https://github.com/d3/d3) by Mike Bostock and others. ISC License.<br>
 
 Makes use of the following:
+
 [Tweakpane](https://cocopon.github.io/tweakpane/) by Hiroki Kokubun for controls. MIT License.<br>
 [CCapture.js](https://github.com/spite/ccapture.js) by Jaume Sanchez for video capture. MIT License.<br>
 [Chroma.js](https://github.com/gka/chroma.js) by Gregor Aisch for color manipulations. Apache License.<br>
