@@ -11,8 +11,10 @@ import './core/setup';
 import './core/loop';
 import './core/canvas';
 import './core/util';
-import './core/math';
 import './core/tweakpane';
+
+import './math/math';
+import './math/random';
 
 import './geometry/grid';
 import './geometry/gridCell';
