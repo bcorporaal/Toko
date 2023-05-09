@@ -3452,8 +3452,6 @@ var Toko = (function () {
   //  random generators and support
   //
 
-  //  use Toko.random() for a random number between 0 and 1
-
   //
   //  init the random generator for this instance
   //
@@ -3472,15 +3470,6 @@ var Toko = (function () {
       t ^= t + Math.imul(t ^ t >>> 7, t | 61);
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     }
-  };
-
-  //
-  //  generate a random number snapped to steps
-  //
-  Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
-    var n = Math.floor((max - min) / step);
-    var r = Math.round(this.rng() * n);
-    return min + r * step;
   };
 
   //
@@ -3513,6 +3502,15 @@ var Toko = (function () {
 
       return rand * (max - min) + min;
     }
+  };
+
+  //
+  //  generate a random number snapped to steps
+  //
+  Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
+    var n = Math.floor((max - min) / step);
+    var r = Math.round(this.rng() * n);
+    return min + r * step;
   };
 
   //
