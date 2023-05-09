@@ -147,15 +147,15 @@ Toko.Grid = class {
 
     while (keepGoing) {
       // pick random shape
-      shape = random(cellShapes);
+      shape = Toko.random(cellShapes);
       w = shape[0];
       h = shape[1];
 
       keepTryingThisShape = true;
       while (keepTryingThisShape) {
         // pick random location
-        c = floor(random(0, columns - w + 1));
-        r = floor(random(0, rows - h + 1));
+        c = floor(Toko.random(0, columns - w + 1));
+        r = floor(Toko.random(0, rows - h + 1));
 
         // check if space is available
         if (this.spaceAvailable(c,r,w,h)) {
@@ -318,7 +318,7 @@ Toko.Grid = class {
     for (let i = 0; i < nrLoops; i++) {
       let newCells = [];
       for (let n = 0; n < this._cells.length; n++) {
-        if (Math.random() < chance) {
+        if (Toko.random() < chance) {
           let c = this.splitCell(this._cells[n],minSize, splitStyle);
           newCells = newCells.concat(c);
         } else {
@@ -372,7 +372,7 @@ Toko.Grid = class {
   //  split cells randomly along horizontal or vertical axis
   //
   splitCellMix(cell, minSize = 10) {
-    if (Math.random() < 0.5) {
+    if (Toko.random() < 0.5) {
       return this.splitCellHorizontal(cell, minSize);
     } else {
       return this.splitCellVertical(cell, minSize);
