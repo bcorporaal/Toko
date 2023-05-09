@@ -54,6 +54,7 @@ function setup() {
   //  sketch parameters
   //
   p = {
+    seed: 0,
     // grid
     margin: 0,
     rows: 10,
@@ -88,6 +89,12 @@ function setup() {
     },
   });
   toko.pane.tab.addSeparator();
+  toko.pane.tab.addInput(p, 'seed', {
+    min: 1,
+    max: 2000,
+    step: 1
+  });
+
   //
   //  add controls for the base grid rows and columns
   //
@@ -190,6 +197,12 @@ function refresh() {
     f1.expanded = false;
     f2.expanded = true;
   }
+  
+  //
+  //  reseed the random generator
+  //
+  Toko.seedRandom(p.seed);
+
   //
   //  redraw with updated parameters
   //
