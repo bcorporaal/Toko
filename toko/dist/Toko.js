@@ -463,6 +463,11 @@ var Toko = (function () {
         this[k] = words[k];
       }
 
+      //
+      //  seed the random function
+      //
+      this.seedRandom(Date.now());
+
       console.log(this.VERSION);
 
     }
@@ -3445,8 +3450,16 @@ var Toko = (function () {
   //  random generators and support
   //
 
+  //  use toko.random() for a random number between 0 and 1
+
   //
-  //  return seeded random function
+  //  init the random generator for this instance
+  //
+  Toko.prototype.seedRandom = function(seed) {
+    this.random = Toko.rand(seed);
+  };
+  //
+  //  returns seeded random function
   //  see https://github.com/cprosche/mulberry32
   //
   Toko.rand = function (seed) {
