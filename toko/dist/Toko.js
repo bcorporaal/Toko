@@ -3424,7 +3424,7 @@ var Toko = (function () {
     let keys = Object.keys(list);
     let newItem;
     do {
-      newItem = random(keys);
+      newItem = keys[Math.floor(Math.random()*keys.length)];
     } while (newItem == item);
     return list[newItem];
   };
