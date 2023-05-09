@@ -16,7 +16,7 @@ var Toko = (function () {
   //
   //  current version
   //
-  const VERSION = 'Toko v0.4.2';
+  const VERSION = 'Toko v0.5.0';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -462,6 +462,11 @@ var Toko = (function () {
       for (const k in words) {
         this[k] = words[k];
       }
+
+      //
+      //  seed the random function
+      //
+      Toko.seedRandom(Date.now());
 
       console.log(this.VERSION);
 
@@ -2831,14 +2836,14 @@ var Toko = (function () {
     o.originalScale = (i) => {
       return oSC(i).hex();
     };
-    o.randomColor = () => {
-      let r = Math.random();
+    o.randomColor = (useTokoRandom = false) => {
+      let r = (useTokoRandom)?Toko.random():Math.random();
       let d = colorOptions.domain;
 
       return sc(d[0] + r * (d[1] - d[0])).hex();
     };
-    o.randomOriginalColor = () => {
-      let r = Math.random();
+    o.randomOriginalColor = (useTokoRandom = false) => {
+      let r = (useTokoRandom)?Toko.random():Math.random();
       let d = colorOptions.domain;
 
       return oSC(d[0] + r * (d[1] - d[0])).hex();
@@ -3287,6 +3292,7 @@ var Toko = (function () {
 
   //
   //  pick a random adjective from the list
+  //  note this does not use the seeded random function to avoid file name conflicts
   //
   Toko.prototype.randomAdjective = function() {
     return this.ADJECTIVES[Math.floor(this.ADJECTIVES.length * Math.random())];
@@ -3294,47 +3300,10 @@ var Toko = (function () {
 
   //
   //  pick a random noun from the list
+  //  note this does not use the seeded random function to avoid file name conflicts
   //
   Toko.prototype.randomNoun = function() {
     return this.NOUNS[Math.floor(this.NOUNS.length * Math.random())];
-  };
-
-  //
-  //  generate a random number snapped to steps
-  //
-  Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
-    var n = Math.floor((max - min) / step);
-    var r = Math.round(Math.random() * n);
-    return min + r * step;
-  };
-
-  //
-  //  wrap a number around if it goes above the maximum or below the minimum
-  //
-  Toko.wrap = function (value, min = 0, max = 100) {
-    var vw = value;
-
-    if (value < min) {
-      vw = max + (value - min);
-    } else if (value > max) {
-      vw = min + (value - max);
-    }
-
-    return vw
-  };
-
-  //
-  //  return seeded random function
-  //  see https://github.com/cprosche/mulberry32
-  //
-  Toko.rand = function (seed) {
-    if (seed == undefined) { seed = Date.now(); }
-    return function() {
-      let t = seed += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
   };
 
   //
@@ -3455,14 +3424,118 @@ var Toko = (function () {
     let keys = Object.keys(list);
     let newItem;
     do {
-      newItem = random(keys);
+      newItem = keys[Math.floor(Math.random()*keys.length)];
     } while (newItem == item);
     return list[newItem];
   };
 
+  //
+  //  general math functions
+  //
+
+  //
+  //  wrap a number around if it goes above the maximum or below the minimum
+  //
+  Toko.wrap = function (value, min = 0, max = 100) {
+    var vw = value;
+
+    if (value < min) {
+      vw = max + (value - min);
+    } else if (value > max) {
+      vw = min + (value - max);
+    }
+
+    return vw
+  };
+
+  //
+  //  random generators and support
+  //
+
+  //
+  //  init the random generator for this instance
+  //
+  Toko.seedRandom = function(seed) {
+    this.rng = Toko.rand(seed);
+  };
+  //
+  //  returns seeded random function
+  //  see https://github.com/cprosche/mulberry32
+  //
+  Toko.rand = function (seed) {
+    if (seed == undefined) { seed = Date.now(); }
+    return function() {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+  };
+
+  //
+  //  Return a random floating-point number
+  //
+  //  0 arguments - random number between 0 and 1
+  //  1 argument & number - random number between 0 and the number (but not including)
+  //  1 argument & array  - random element from the array
+  //  2 arguments & number - random number from 1st number to 2nd number (but not including)
+  //
+  //  adapted from p5.js code
+  //
+  Toko.random = function(min, max) {
+    let rand = this.rng();
+
+    if (typeof min === 'undefined') {
+      return rand;
+    } else if (typeof max === 'undefined') {
+      if (min instanceof Array) {
+        return min[Math.floor(rand * min.length)];
+      } else {
+        return rand * min;
+      }
+    } else {
+      if (min > max) {
+        const tmp = min;
+        min = max;
+        max = tmp;
+      }
+
+      return rand * (max - min) + min;
+    }
+  };
+
+  //
+  //  generate a random number snapped to steps
+  //
+  Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
+    var n = Math.floor((max - min) / step);
+    var r = Math.round(this.rng() * n);
+    return min + r * step;
+  };
+
+  //
   //  grid generators
   //
   //  create grids by recursive splitting cells or packing cells
+  //
+  //
+  // Toko.Grid = {
+  //    x          - x position on the canvas
+  //    y          - y position on the canvas
+  //    width      - width of the complete grid
+  //    height     - width of the complete grid
+  //  }
+  //
+  // External functions
+  //  setBaseGrid       - reset all cells and start with a rectangular grid of celles
+  //  packGrid          - pack the grid with cells of predefined sizes
+  //  splitRecursive    - split all the cells recursively for a number of loops
+  //
+  // Values
+  //  minCounter        - lowest number of splits for a recursive grid
+  //  maxCounter        - highest number of splits for a recursive grid
+  //  cells             - get an array of all the current cells
+  //  points            - get an array of all the corner points for the current grid of cells
   //
 
   Toko.Grid = class {
@@ -3480,7 +3553,7 @@ var Toko = (function () {
       this._width = width;
       this._height = height;
       this._cells = [
-        new Toko.GridCell(this._x,this._y,this._width,this._height)
+        new Toko.GridCell(this._x,this._y,this._width,this._height, 0, 0, this._width, this._height)
       ];
       this._points = [];
       this._pointsAreUpdated = false;
@@ -3490,7 +3563,7 @@ var Toko = (function () {
     //
     //  set the base rows and columns for the grid
     //
-    setBaseGrid(rows = 1, columns = 1) {
+    setBaseGrid(columns = 1, rows = 1) {
       let cellWidth = this._width/columns;
       let cellHeight = this._height/rows;
 
@@ -3502,7 +3575,11 @@ var Toko = (function () {
             this._x + c * cellWidth,
             this._y + r* cellHeight,
             cellWidth,
-            cellHeight
+            cellHeight,
+            c,
+            r,
+            cellWidth,
+            cellHeight,
           );
           this._cells.push(newCell);
         }
@@ -3533,7 +3610,7 @@ var Toko = (function () {
         tempPoints.push(`${c.x+c.width}-${c.y+c.height}`);
       }
       //
-      //  deduplicate
+      //  deduplicate using a set
       //
       uniquePoints = [...new Set(tempPoints)];
       //
@@ -3551,7 +3628,14 @@ var Toko = (function () {
     //  construct a grid by packing shapes
     //  partly inspired by
     //  https://www.gorillasun.de/blog/an-algorithm-for-irregular-grids/
-    //  
+    //
+    //  columns         - number of columns to be packed
+    //  rows            - number of rows to be packed
+    //  cellShapes      - array of cells defining width and height of cell shapes
+    //  fillEmptySpaces - whether left over spaces should be filled with 1x1 cells
+    //  snapToPixel     - if set to true all sizes and positions are rounded to a pixel
+    //                    This can result in the cells not filling the complete grid space
+    //
     packGrid(columns,rows,cellShapes, fillEmptySpaces = true, snapToPixel = true) {
       this._pointsAreValid = false;
       this._cells = [];
@@ -3576,15 +3660,15 @@ var Toko = (function () {
 
       while (keepGoing) {
         // pick random shape
-        shape = random(cellShapes);
+        shape = Toko.random(cellShapes);
         w = shape[0];
         h = shape[1];
 
         keepTryingThisShape = true;
         while (keepTryingThisShape) {
           // pick random location
-          c = floor(random(0, columns - w + 1));
-          r = floor(random(0, rows - h + 1));
+          c = floor(Toko.random(0, columns - w + 1));
+          r = floor(Toko.random(0, rows - h + 1));
 
           // check if space is available
           if (this.spaceAvailable(c,r,w,h)) {
@@ -3650,7 +3734,7 @@ var Toko = (function () {
             w = cellShapes[s][0];
             h = cellShapes[s][1];
             if (this.spaceAvailable(i,j,w,h)) {
-              newCell = new Toko.GridCell(this._x+i*cw, this._y+j*rh, w*cw, h*rh);
+              newCell = new Toko.GridCell(this._x+i*cw, this._y+j*rh, w*cw, h*rh, i, j, cw, rh);
               newCell.counter = s;
               this._cells.push(newCell);
               this.fillSpace(i,j,w,h);
@@ -3728,6 +3812,16 @@ var Toko = (function () {
     //
     //  split the cells recursively
     //
+    //  nrLoops         - number times all cells are evaluated
+    //  chance          - the chance a cell is split when evaluated
+    //  minSize         - only splits resulting in new cells larger than this size are considered
+    //  splitStyle      - defines how the cells should split
+    //                    SPLIT_HORIZONTAL  = split a cell horizontally into 2 new cells
+    //                    SPLIT_VERTICAL    = split a cell vertically into 2 new cells
+    //                    SPLIT_LONGEST     = split the longest dimension
+    //                    SPLIT_MIX         = split along both axis randomly
+    //                    SPLIT_SQUARE      = split cells into 4 new cells
+    //                    
     splitRecursive(nrLoops = 1, chance = 0.5, minSize = 10, splitStyle = this.SPLIT_MIX) {
       if (splitStyle == this.SPLIT_SQUARE) {
         // reduce the chance because the square split creates 4 cells instead of 2
@@ -3737,7 +3831,7 @@ var Toko = (function () {
       for (let i = 0; i < nrLoops; i++) {
         let newCells = [];
         for (let n = 0; n < this._cells.length; n++) {
-          if (Math.random() < chance) {
+          if (Toko.random() < chance) {
             let c = this.splitCell(this._cells[n],minSize, splitStyle);
             newCells = newCells.concat(c);
           } else {
@@ -3791,7 +3885,7 @@ var Toko = (function () {
     //  split cells randomly along horizontal or vertical axis
     //
     splitCellMix(cell, minSize = 10) {
-      if (Math.random() < 0.5) {
+      if (Toko.random() < 0.5) {
         return this.splitCellHorizontal(cell, minSize);
       } else {
         return this.splitCellVertical(cell, minSize);
@@ -3912,8 +4006,26 @@ var Toko = (function () {
     }
   };
 
+  //
+  // Toko.GridCell = {
+  //    x          - x position on the canvas
+  //    y          - y position on the canvas
+  //    width      - width of the cell
+  //    height     - height of the cell
+  //    column     - x position in columns
+  //    row        - y position in rows
+  //    gridWidth  - nr of columns wide
+  //    gridHeight - nr of rows height
+  //    gridWidth and gridHeight are only applicable for a packed grid
+  //  }
+  //
+  // Set separately
+  //    value       - value per cell that can be set and used for visual effects
+  //    counter     - used to track how often a cell is split
+  //
+
   Toko.GridCell = class {
-    constructor(x,y,width,height,row=0,column=0,gridWidth=0,gridHeight=0) {
+    constructor(x,y,width,height,column=0,row=0,gridWidth=0,gridHeight=0) {
       this._x = x;
       this._y = y;
       this._width = width;

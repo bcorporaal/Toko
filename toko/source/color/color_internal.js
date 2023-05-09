@@ -157,14 +157,14 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions) {
   o.originalScale = (i) => {
     return oSC(i).hex();
   };
-  o.randomColor = () => {
-    let r = Math.random();
+  o.randomColor = (useTokoRandom = false) => {
+    let r = (useTokoRandom)?Toko.random():Math.random();
     let d = colorOptions.domain;
 
     return sc(d[0] + r * (d[1] - d[0])).hex();
   };
-  o.randomOriginalColor = () => {
-    let r = Math.random();
+  o.randomOriginalColor = (useTokoRandom = false) => {
+    let r = (useTokoRandom)?Toko.random():Math.random();
     let d = colorOptions.domain;
 
     return oSC(d[0] + r * (d[1] - d[0])).hex();

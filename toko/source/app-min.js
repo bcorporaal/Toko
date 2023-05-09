@@ -1,6 +1,6 @@
 //
-//  Used to export the full version with CodeKit
-//  Should be identical to app-min.js
+//  Used to export the minified version with CodeKit
+//  Should be identical to app.js
 //
 import Toko from './core/main';
 
@@ -11,8 +11,10 @@ import './core/setup';
 import './core/loop';
 import './core/canvas';
 import './core/util';
-import './core/math';
 import './core/tweakpane';
+
+import './math/math';
+import './math/random';
 
 import './geometry/grid';
 import './geometry/gridCell';
@@ -25,4 +27,3 @@ import './output/save_settings';
 import './input/receive_settings';
 
 export default Toko;
- 

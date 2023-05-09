@@ -12,6 +12,11 @@ class Toko {
       this[k] = words[k];
     }
 
+    //
+    //  seed the random function
+    //
+    Toko.seedRandom(Date.now());
+
     console.log(this.VERSION);
 
   }
