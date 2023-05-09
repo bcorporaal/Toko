@@ -466,7 +466,7 @@ var Toko = (function () {
       //
       //  seed the random function
       //
-      this.seedRandom(Date.now());
+      Toko.seedRandom(Date.now());
 
       console.log(this.VERSION);
 
@@ -3452,13 +3452,13 @@ var Toko = (function () {
   //  random generators and support
   //
 
-  //  use toko.random() for a random number between 0 and 1
+  //  use Toko.random() for a random number between 0 and 1
 
   //
   //  init the random generator for this instance
   //
-  Toko.prototype.seedRandom = function(seed) {
-    this.random = Toko.rand(seed);
+  Toko.seedRandom = function(seed) {
+    this.rng = Toko.rand(seed);
   };
   //
   //  returns seeded random function
@@ -3479,8 +3479,40 @@ var Toko = (function () {
   //
   Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
     var n = Math.floor((max - min) / step);
-    var r = Math.round(this.random() * n);
+    var r = Math.round(this.rng() * n);
     return min + r * step;
+  };
+
+  //
+  //  Return a random floating-point number
+  //
+  //  0 arguments - random number between 0 and 1
+  //  1 argument & number - random number between 0 and the number (but not including)
+  //  1 argument & array  - random element from the array
+  //  2 arguments & number - random number from 1st number to 2nd number (but not including)
+  //
+  //  adapted from p5.js code
+  //
+  Toko.random = function(min, max) {
+    let rand = this.rng();
+
+    if (typeof min === 'undefined') {
+      return rand;
+    } else if (typeof max === 'undefined') {
+      if (min instanceof Array) {
+        return min[Math.floor(rand * min.length)];
+      } else {
+        return rand * min;
+      }
+    } else {
+      if (min > max) {
+        const tmp = min;
+        min = max;
+        max = tmp;
+      }
+
+      return rand * (max - min) + min;
+    }
   };
 
   //
