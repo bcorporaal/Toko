@@ -19,3 +19,11 @@ Toko.wrap = function (value, min = 0, max = 100) {
   return vw
 }
 
+//
+//  number of integer digits
+//  see https://stackoverflow.com/questions/14879691/get-number-of-digits-with-javascript
+//
+Toko.numDigits = function(x) {
+  return (Math.log10((x ^ (x >> 31)) - (x >> 31)) | 0) + 1;
+}
+

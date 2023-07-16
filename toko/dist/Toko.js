@@ -3449,6 +3449,14 @@ var Toko = (function () {
   };
 
   //
+  //  number of integer digits
+  //  see https://stackoverflow.com/questions/14879691/get-number-of-digits-with-javascript
+  //
+  Toko.numDigits = function(x) {
+    return (Math.log10((x ^ (x >> 31)) - (x >> 31)) | 0) + 1;
+  };
+
+  //
   //  random number generators and support
   //
 
@@ -3465,6 +3473,10 @@ var Toko = (function () {
   Toko.random = function(min, max) {
     return this._rng.random(min, max);
   };
+
+  //  ****************
+  //  add placeholder functions for others as well 
+  //  ****************
 
   //
   //  main random number generator class
@@ -3555,8 +3567,8 @@ var Toko = (function () {
     //  generate a random number snapped to steps
     //
     steppedRandom = function (min = 0, max = 1, step = 0.1) {
-      var n = Math.floor((max - min) / step);
-      var r = Math.round(this._rng() * n);
+      let n = Math.floor((max - min) / step);
+      let r = Math.round(this._rng() * n);
       return min + r * step;
     }
 
