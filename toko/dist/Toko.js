@@ -3437,7 +3437,7 @@ var Toko = (function () {
   //  wrap a number around if it goes above the maximum or below the minimum
   //
   Toko.wrap = function (value, min = 0, max = 100) {
-    var vw = value;
+    let vw = value;
 
     if (value < min) {
       vw = max + (value - min);
@@ -3449,7 +3449,7 @@ var Toko = (function () {
   };
 
   //
-  //  number of integer digits
+  //  return number of integer digits
   //  see https://stackoverflow.com/questions/14879691/get-number-of-digits-with-javascript
   //
   Toko.numDigits = function(x) {
