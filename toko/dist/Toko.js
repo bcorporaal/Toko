@@ -3468,15 +3468,48 @@ var Toko = (function () {
   };
 
   //
-  //  get a random number
+  //  random number, element from array
   //
   Toko.random = function(min, max) {
     return this._rng.random(min, max);
   };
 
-  //  ****************
-  //  add placeholder functions for others as well 
-  //  ****************
+  //
+  //  random integer
+  //
+  Toko.intRange = function(min = 0, max = 100) {
+    return this._rng.intRange(min, max);
+  };
+  //
+  //  random boolean
+  //
+  Toko.randomBool = function() {
+    return this._rng.randomBool();
+  };
+  //
+  //  random charactor from string or lowercase
+  //
+  Toko.randomChar = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
+    return this._rng.randomChar();
+  };
+  //
+  //  stepped random number in range
+  //
+  Toko.steppedRandom = function(min = 0, max = 1, step = 0.1) {
+    return this._rng.steppedRandom(min, max, step);
+  };
+  //
+  //  shuffle array in place
+  //
+  Toko.shuffle = function(inArray) {
+    return this._rng.shuffle(inArray);
+  };
+  //
+  //  all integers between min and max in random order
+  //
+  Toko.intSequence = function (min = 0, max = 100) {
+    return this._rng.intSequence(min, max);
+  };
 
   //
   //  main random number generator class
@@ -3545,7 +3578,7 @@ var Toko = (function () {
     //
     //  random boolean
     //
-    bool = function() {
+    randomBool = function() {
       if (this._rng() < 0.5) {
         return true;
       } else {
@@ -3557,7 +3590,7 @@ var Toko = (function () {
     //  random character from a string
     //  without input it returns a random lowercase letter
     //
-    char = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
+    randomChar = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
       let l = inString.length;
       let r = Math.floor(this.random(0,l));
       return inString.charAt(r);
@@ -3735,6 +3768,7 @@ var Toko = (function () {
     //                    This can result in the cells not filling the complete grid space
     //
     packGrid(columns,rows,cellShapes, fillEmptySpaces = true, snapToPixel = true) {
+      console.log('packGrid');
       this._pointsAreValid = false;
       this._cells = [];
       let cw, rh;
@@ -3752,8 +3786,8 @@ var Toko = (function () {
       let shape, w, h, c, r, newCell, keepTryingThisShape;
       let k = 0;
       let fails = 0;
-      let maxFails = 10000;
-      let triesPerShape = 2500; 
+      let maxFails = 1000;
+      let triesPerShape = 250; 
       let tryCounter = 0;
 
       while (keepGoing) {
@@ -3798,12 +3832,12 @@ var Toko = (function () {
           keepGoing = false;
         }
       }
-      //
-      //  fill left over spaces
-      //
-      if (fillEmptySpaces) {
-        this.fillEmptySpaces(columns,rows,cellShapes, snapToPixel);
-      }
+      // //
+      // //  fill left over spaces
+      // //
+      // if (fillEmptySpaces) {
+      //   this.fillEmptySpaces(columns,rows,cellShapes, snapToPixel);
+      // }
       
     }
 
@@ -3882,6 +3916,7 @@ var Toko = (function () {
     //  reset all the space back to open
     //
     resetOpenSpaces(columns, rows) {
+      console.log('resetOpenSpaces');
       this._openSpaces = [];
       for (let i = 0; i < columns; i++) {
         this._openSpaces[i] = new Array();

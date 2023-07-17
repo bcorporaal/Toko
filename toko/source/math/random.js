@@ -12,15 +12,48 @@ Toko.reseed = function(seed) {
 }
 
 //
-//  get a random number
+//  random number, element from array
 //
 Toko.random = function(min, max) {
   return this._rng.random(min, max);
 }
 
-//  ****************
-//  add placeholder functions for others as well 
-//  ****************
+//
+//  random integer
+//
+Toko.intRange = function(min = 0, max = 100) {
+  return this._rng.intRange(min, max);
+}
+//
+//  random boolean
+//
+Toko.randomBool = function() {
+  return this._rng.randomBool();
+}
+//
+//  random charactor from string or lowercase
+//
+Toko.randomChar = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
+  return this._rng.randomChar();
+}
+//
+//  stepped random number in range
+//
+Toko.steppedRandom = function(min = 0, max = 1, step = 0.1) {
+  return this._rng.steppedRandom(min, max, step);
+}
+//
+//  shuffle array in place
+//
+Toko.shuffle = function(inArray) {
+  return this._rng.shuffle(inArray);
+}
+//
+//  all integers between min and max in random order
+//
+Toko.intSequence = function (min = 0, max = 100) {
+  return this._rng.intSequence(min, max);
+}
 
 //
 //  main random number generator class
@@ -89,7 +122,7 @@ Toko.rng = class {
   //
   //  random boolean
   //
-  bool = function() {
+  randomBool = function() {
     if (this._rng() < 0.5) {
       return true;
     } else {
@@ -101,7 +134,7 @@ Toko.rng = class {
   //  random character from a string
   //  without input it returns a random lowercase letter
   //
-  char = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
+  randomChar = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
     let l = inString.length;
     let r = Math.floor(this.random(0,l));
     return inString.charAt(r);
