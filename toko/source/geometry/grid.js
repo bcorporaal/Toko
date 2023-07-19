@@ -134,14 +134,17 @@ Toko.Grid = class {
       cw = this._width/columns;
       rh = this._height/rows;
     }
+
+    let tracker = 0;
     
     this.resetOpenSpaces(columns,rows);
+    
     let spaceCheckInterval = 10;
     let keepGoing = true;
     let shape, w, h, c, r, newCell, keepTryingThisShape;
     let k = 0;
     let fails = 0;
-    let maxFails = 10000;
+    let maxFails = 1000;
     let triesPerShape = 2500; 
     let tryCounter = 0;
 
@@ -154,15 +157,18 @@ Toko.Grid = class {
       keepTryingThisShape = true;
       while (keepTryingThisShape) {
         // pick random location
-        c = floor(Toko.random(0, columns - w + 1));
-        r = floor(Toko.random(0, rows - h + 1));
+        c = Toko.intRange(0, columns - w + 1);
+        r = Toko.intRange(0, rows - h + 1);
 
         // check if space is available
         if (this.spaceAvailable(c,r,w,h)) {
+          // if it is available, add a cell with the picked size
           newCell = new Toko.GridCell(this._x+c*cw, this._y+r*rh, w*cw, h*rh, c, r, w, h);
           newCell.counter = tryCounter;
           this._cells.push(newCell);
+          // claim the space
           this.fillSpace(c,r,w,h);
+          // reset
           keepTryingThisShape = false;
           tryCounter = 0;
         } else {
@@ -211,7 +217,7 @@ Toko.Grid = class {
     }
     let s, tryingShapes, w, h, newCell;
     //
-    //  go through the entire grid and try every space in every open spot
+    //  go through the entire grid and try every shape in every open spot
     //
     for (let i = 0; i < columns; i++) {
       for (let j = 0; j < rows; j++) {

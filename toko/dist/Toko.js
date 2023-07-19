@@ -3768,7 +3768,6 @@ var Toko = (function () {
     //                    This can result in the cells not filling the complete grid space
     //
     packGrid(columns,rows,cellShapes, fillEmptySpaces = true, snapToPixel = true) {
-      console.log('packGrid');
       this._pointsAreValid = false;
       this._cells = [];
       let cw, rh;
@@ -3781,13 +3780,14 @@ var Toko = (function () {
       }
       
       this.resetOpenSpaces(columns,rows);
+      
       let spaceCheckInterval = 10;
       let keepGoing = true;
       let shape, w, h, c, r, newCell, keepTryingThisShape;
       let k = 0;
       let fails = 0;
       let maxFails = 1000;
-      let triesPerShape = 250; 
+      let triesPerShape = 2500; 
       let tryCounter = 0;
 
       while (keepGoing) {
@@ -3799,15 +3799,18 @@ var Toko = (function () {
         keepTryingThisShape = true;
         while (keepTryingThisShape) {
           // pick random location
-          c = floor(Toko.random(0, columns - w + 1));
-          r = floor(Toko.random(0, rows - h + 1));
+          c = Toko.intRange(0, columns - w + 1);
+          r = Toko.intRange(0, rows - h + 1);
 
           // check if space is available
           if (this.spaceAvailable(c,r,w,h)) {
+            // if it is available, add a cell with the picked size
             newCell = new Toko.GridCell(this._x+c*cw, this._y+r*rh, w*cw, h*rh, c, r, w, h);
             newCell.counter = tryCounter;
             this._cells.push(newCell);
+            // claim the space
             this.fillSpace(c,r,w,h);
+            // reset
             keepTryingThisShape = false;
             tryCounter = 0;
           } else {
@@ -3832,12 +3835,12 @@ var Toko = (function () {
           keepGoing = false;
         }
       }
-      // //
-      // //  fill left over spaces
-      // //
-      // if (fillEmptySpaces) {
-      //   this.fillEmptySpaces(columns,rows,cellShapes, snapToPixel);
-      // }
+      //
+      //  fill left over spaces
+      //
+      if (fillEmptySpaces) {
+        this.fillEmptySpaces(columns,rows,cellShapes, snapToPixel);
+      }
       
     }
 
@@ -3856,7 +3859,7 @@ var Toko = (function () {
       }
       let s, tryingShapes, w, h, newCell;
       //
-      //  go through the entire grid and try every space in every open spot
+      //  go through the entire grid and try every shape in every open spot
       //
       for (let i = 0; i < columns; i++) {
         for (let j = 0; j < rows; j++) {
@@ -3916,7 +3919,6 @@ var Toko = (function () {
     //  reset all the space back to open
     //
     resetOpenSpaces(columns, rows) {
-      console.log('resetOpenSpaces');
       this._openSpaces = [];
       for (let i = 0; i < columns; i++) {
         this._openSpaces[i] = new Array();
