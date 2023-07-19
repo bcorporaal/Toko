@@ -1,8 +1,6 @@
 p5.disableFriendlyErrors = false; // disables FES to speed things up a little bit
 
 let toko = new Toko();
-let f0, f1, f2, f3, f4, f5, f6;
-let colors;
 
 function preload() {
   //
@@ -34,7 +32,7 @@ function setup() {
     //
     //  basic options
     //
-    title: "Toko template",                 //  title displayed
+    title: "Toko grid",                 //  title displayed
     sketchElementId: sketchElementId,   //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT,      //  canvas size to use
     //
@@ -53,29 +51,31 @@ function setup() {
   //
   //  sketch parameters
   //
+  let g = new Toko.Grid();
+
   p = {
-    seed: 0,
+    seed: 29,
     // grid
-    margin: 0,
-    rows: 10,
-    columns: 2,
-    nrLoops: 10,
+    margin: 30,
+    rows: 12,
+    columns: 12,
+    nrLoops: 5,
+    splitChance: 0.5,
     minSize: 10,
-    gridType: 'recursive',
-    cellShapes: '[1,2],[2,1],[2,2]',
+    gridType: 'packed',
+    splitType: g.SPLIT_MIX,
+    cellShapes: '[2,2],[3,1],[1,3]',
     noEmptySpaces: true,
     snapToPixel: true,
     // color
     collections: ['basic','d3','duotone','golid', 'system'],
     collection: 'basic',
-    palette: 'westCoast',
-    invertBgnd: false,
-    invertScale: false,
+    palette: 'district2',
+    invertBgnd: true,
     useScale: true,
     stroke: true,
-    strokeWeight: 0.1,
+    strokeWeight: 1.5,
     strokeAlpha: 100,
-    interpolate: true,
   }
 
   //
@@ -94,7 +94,6 @@ function setup() {
     max: 2000,
     step: 1
   });
-
   //
   //  add controls for the base grid rows and columns
   //
@@ -122,6 +121,20 @@ function setup() {
     max: 25,
     step: 1
   });
+  f1.addInput(p, 'splitType', {
+    options: {
+      horizontal: g.SPLIT_HORIZONTAL,
+      vertical: g.SPLIT_VERTICAL,
+      longest: g.SPLIT_LONGEST,
+      mix: g.SPLIT_MIX,
+      square: g.SPLIT_SQUARE,
+    },
+  });
+  f1.addInput(p, 'splitChance', {
+    min: 0,
+    max: 1,
+    step: 0.1
+  });
   f1.addInput(p, 'minSize', {
     min: 1,
     max: 25,
@@ -141,17 +154,16 @@ function setup() {
   //
   f6 = toko.pane.tab.addFolder({
     title: 'Colors',
+    expanded: false,
   });
   toko.addCollectionSelector(f6, p, 'collections', 'collection', 'palette', 0);
   toko.addPaneNavButtons(f6, p, 'palette', 'collection');
-  f6.addInput(p, 'useScale');
-  f6.addInput(p, 'invertScale');
-  f6.addInput(p, 'interpolate');
   //
   //  add controls to change the colors
   //
   f7 = toko.pane.tab.addFolder({
     title: 'Grid frame',
+    expanded: false,
   });
   f7.addInput(p, 'margin', {
     min: 0,
@@ -186,7 +198,6 @@ function setup() {
 }
 
 function refresh() {
-  console.log('refresh');
   //
   //  toggle panels
   //
@@ -197,12 +208,10 @@ function refresh() {
     f1.expanded = false;
     f2.expanded = true;
   }
-  
   //
   //  reseed the random generator
   //
-  Toko.seedRandom(p.seed);
-
+  Toko.reseed(p.seed);
   //
   //  redraw with updated parameters
   //
@@ -216,25 +225,25 @@ function draw() {
   
   let c, n;
   clear();
-
   //
   //  grid
   //
   //  make grid object with basic positioning and sizing
   gridSet = new Toko.Grid(p.margin,p.margin,width-2*p.margin,height-2*p.margin);
-  //  set the base of rows and columns
-  gridSet.setBaseGrid(p.columns,p.rows);
-  
+
+  //
+  //  create the grid
+  //
   if (p.gridType == 'recursive') {
-    // split the grid recursively
-    gridSet.splitRecursive(p.nrLoops, 0.5, p.minSize, gridSet.SPLIT_MIX);
+    // create a recursive grid starting with a base set of rows and columns
+    gridSet.setBaseGrid(p.columns,p.rows);
+    gridSet.splitRecursive(p.nrLoops, p.splitChance, p.minSize, p.splitType);
   } else {
-    // pack the grid with cells
-    cellShapes = JSON.parse('['+p.cellShapes+']');
+    // create a packed grid
+    let cellShapes = JSON.parse('['+p.cellShapes+']');
     gridSet.packGrid(p.columns,p.rows,cellShapes, p.noEmptySpaces, p.snapToPixel);
   }
-
-  // 
+  
   //
   //  set domain range to number of cells
   //
@@ -250,7 +259,7 @@ function draw() {
   colors = toko.getColorScale(this.p.palette,o);
 
   //
-  //  set the colors
+  //  set the background and stroke colors
   //
   background(colors.contrastColors[(p.invertBgnd?1:0)]);
   if (p.stroke) {
@@ -263,19 +272,10 @@ function draw() {
   }
   
   //
-  //  plot cells
+  //  draw the cells
   //
   for (var i = 0; i < n; i++) {
-    if (p.useScale) {
-      if (p.interpolate) {
-        fill(colors.scale(i));
-      } else {
-        fill(colors.originalScale(i));
-      }
-      
-    } else {
-      fill(colors.contrastColors[(p.invert?0:1)]);
-    }
+    fill(colors.randomOriginalColor());
     
     c = gridSet.cells[i];
     rect(c.x,c.y,c.width,c.height);
