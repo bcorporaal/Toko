@@ -15,7 +15,7 @@ class Toko {
     //
     //  seed the random function
     //
-    Toko.seedRandom(Date.now());
+    Toko.reseed(Date.now());
 
     console.log(this.VERSION);
 

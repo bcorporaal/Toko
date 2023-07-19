@@ -21,7 +21,6 @@ There is no documentation yet, so see `toko/source` for details. Also, the examp
 
 ### General
 
-- Make sure all random functions in Toko can be seeded
 - Where possible use p5 functionality for saving images and video
 - Try to create something resembling code standards and consistency
 - Add more examples

@@ -16,7 +16,7 @@ var Toko = (function () {
   //
   //  current version
   //
-  const VERSION = 'Toko v0.5.0';
+  const VERSION = 'Toko v0.5.1';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -466,7 +466,7 @@ var Toko = (function () {
       //
       //  seed the random function
       //
-      Toko.seedRandom(Date.now());
+      Toko.reseed(Date.now());
 
       console.log(this.VERSION);
 
@@ -3437,7 +3437,7 @@ var Toko = (function () {
   //  wrap a number around if it goes above the maximum or below the minimum
   //
   Toko.wrap = function (value, min = 0, max = 100) {
-    var vw = value;
+    let vw = value;
 
     if (value < min) {
       vw = max + (value - min);
@@ -3449,68 +3449,199 @@ var Toko = (function () {
   };
 
   //
-  //  random generators and support
+  //  return number of integer digits
+  //  see https://stackoverflow.com/questions/14879691/get-number-of-digits-with-javascript
+  //
+  Toko.numDigits = function(x) {
+    return (Math.log10((x ^ (x >> 31)) - (x >> 31)) | 0) + 1;
+  };
+
+  //
+  //  random number generators and support
   //
 
   //
-  //  init the random generator for this instance
+  //  init the random number generator for this instance of Toko
   //
-  Toko.seedRandom = function(seed) {
-    this.rng = Toko.rand(seed);
+  Toko.reseed = function(seed) {
+    this._rng = new Toko.rng(seed);
+  };
+
+  //
+  //  random number, element from array
+  //
+  Toko.random = function(min, max) {
+    return this._rng.random(min, max);
+  };
+
+  //
+  //  random integer
+  //
+  Toko.intRange = function(min = 0, max = 100) {
+    return this._rng.intRange(min, max);
   };
   //
-  //  returns seeded random function
-  //  see https://github.com/cprosche/mulberry32
+  //  random boolean
   //
-  Toko.rand = function (seed) {
-    if (seed == undefined) { seed = Date.now(); }
-    return function() {
-      let t = seed += 0x6D2B79F5;
+  Toko.randomBool = function() {
+    return this._rng.randomBool();
+  };
+  //
+  //  random charactor from string or lowercase
+  //
+  Toko.randomChar = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
+    return this._rng.randomChar();
+  };
+  //
+  //  stepped random number in range
+  //
+  Toko.steppedRandom = function(min = 0, max = 1, step = 0.1) {
+    return this._rng.steppedRandom(min, max, step);
+  };
+  //
+  //  shuffle array in place
+  //
+  Toko.shuffle = function(inArray) {
+    return this._rng.shuffle(inArray);
+  };
+  //
+  //  all integers between min and max in random order
+  //
+  Toko.intSequence = function (min = 0, max = 100) {
+    return this._rng.intSequence(min, max);
+  };
+
+  //
+  //  main random number generator class
+  //
+  Toko.rng = class {
+
+    constructor(seed) {
+      if (seed == undefined) { 
+        this.seed = Date.now(); 
+      } else {
+        this.seed = seed;
+      }
+    }
+
+    //
+    //  reseed the random number generator
+    //
+    reseed = function(newSeed) {
+      this.seed = newSeed;
+    }
+
+    //
+    //  Return a random floating-point number
+    //
+    //  0 arguments - random number between 0 and 1
+    //  1 argument & number - random number between 0 and the number (but not including)
+    //  1 argument & array  - random element from the array
+    //  2 arguments & number - random number from 1st number to 2nd number (but not including)
+    //
+    //  adapted from p5.js code
+    //
+    random = function(min, max) {
+      let rand = this._rng();
+    
+      if (typeof min === 'undefined') {
+        return rand;
+      } else if (typeof max === 'undefined') {
+        if (min instanceof Array) {
+          return min[Math.floor(rand * min.length)];
+        } else {
+          return rand * min;
+        }
+      } else {
+        if (min > max) {
+          const tmp = min;
+          min = max;
+          max = tmp;
+        }
+    
+        return rand * (max - min) + min;
+      }
+    }
+
+    //
+    //  random integer from a range
+    //
+    intRange = function(min = 0, max = 100) {
+      let rand = this._rng();
+
+      min = Math.floor(min);
+      max = Math.floor(max);
+    
+      return Math.floor(rand * (max - min) + min);
+    }
+
+    //
+    //  random boolean
+    //
+    randomBool = function() {
+      if (this._rng() < 0.5) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    //
+    //  random character from a string
+    //  without input it returns a random lowercase letter
+    //
+    randomChar = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
+      let l = inString.length;
+      let r = Math.floor(this.random(0,l));
+      return inString.charAt(r);
+    }
+
+    //
+    //  generate a random number snapped to steps
+    //
+    steppedRandom = function (min = 0, max = 1, step = 0.1) {
+      let n = Math.floor((max - min) / step);
+      let r = Math.round(this._rng() * n);
+      return min + r * step;
+    }
+
+    //
+    //  shuffle an array in place
+    //
+    shuffle = function (array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(this._rng() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    //
+    //  generate random integer sequence from min to max
+    //
+    intSequence = function (min = 0, max = 100) {
+      min = Math.floor(min);
+      max = Math.floor(max);
+      if (max < min) {
+        let temp = max;
+        max = min;
+        min = temp;
+      }
+      let seq = Array.from(Array(max - min)).map((e,i)=>i+min);
+      this.shuffle(seq);
+      return seq;
+    }
+
+    //
+    //  the psuedo random number generator
+    //  adapted from https://github.com/cprosche/mulberry32
+    //
+    _rng = function() {
+      let t = this.seed += 0x6D2B79F5;
       t = Math.imul(t ^ t >>> 15, t | 1);
       t ^= t + Math.imul(t ^ t >>> 7, t | 61);
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     }
-  };
 
-  //
-  //  Return a random floating-point number
-  //
-  //  0 arguments - random number between 0 and 1
-  //  1 argument & number - random number between 0 and the number (but not including)
-  //  1 argument & array  - random element from the array
-  //  2 arguments & number - random number from 1st number to 2nd number (but not including)
-  //
-  //  adapted from p5.js code
-  //
-  Toko.random = function(min, max) {
-    let rand = this.rng();
-
-    if (typeof min === 'undefined') {
-      return rand;
-    } else if (typeof max === 'undefined') {
-      if (min instanceof Array) {
-        return min[Math.floor(rand * min.length)];
-      } else {
-        return rand * min;
-      }
-    } else {
-      if (min > max) {
-        const tmp = min;
-        min = max;
-        max = tmp;
-      }
-
-      return rand * (max - min) + min;
-    }
-  };
-
-  //
-  //  generate a random number snapped to steps
-  //
-  Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
-    var n = Math.floor((max - min) / step);
-    var r = Math.round(this.rng() * n);
-    return min + r * step;
   };
 
   //
@@ -3649,12 +3780,13 @@ var Toko = (function () {
       }
       
       this.resetOpenSpaces(columns,rows);
+      
       let spaceCheckInterval = 10;
       let keepGoing = true;
       let shape, w, h, c, r, newCell, keepTryingThisShape;
       let k = 0;
       let fails = 0;
-      let maxFails = 10000;
+      let maxFails = 1000;
       let triesPerShape = 2500; 
       let tryCounter = 0;
 
@@ -3667,15 +3799,18 @@ var Toko = (function () {
         keepTryingThisShape = true;
         while (keepTryingThisShape) {
           // pick random location
-          c = floor(Toko.random(0, columns - w + 1));
-          r = floor(Toko.random(0, rows - h + 1));
+          c = Toko.intRange(0, columns - w + 1);
+          r = Toko.intRange(0, rows - h + 1);
 
           // check if space is available
           if (this.spaceAvailable(c,r,w,h)) {
+            // if it is available, add a cell with the picked size
             newCell = new Toko.GridCell(this._x+c*cw, this._y+r*rh, w*cw, h*rh, c, r, w, h);
             newCell.counter = tryCounter;
             this._cells.push(newCell);
+            // claim the space
             this.fillSpace(c,r,w,h);
+            // reset
             keepTryingThisShape = false;
             tryCounter = 0;
           } else {
@@ -3724,7 +3859,7 @@ var Toko = (function () {
       }
       let s, tryingShapes, w, h, newCell;
       //
-      //  go through the entire grid and try every space in every open spot
+      //  go through the entire grid and try every shape in every open spot
       //
       for (let i = 0; i < columns; i++) {
         for (let j = 0; j < rows; j++) {
