@@ -88,7 +88,7 @@ Toko.prototype.getCaptureOptions = function(format = 'png') {
     case 'gif':
       o.format = 'gif';
       o.quality = 10;
-      o.workersPath = 'assets/jnordberg/';
+      o.workersPath = 'assets/js/gif/0.2.0/';
       break;
     case 'jpg':
       o.format = 'jpg';
