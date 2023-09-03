@@ -87,7 +87,7 @@ Toko.prototype.setup = function (inputOptions) {
     //
     if (this.options.showAdvancedOptions) {
       this.options.canvasSizeName = this.options.canvasSize.name; // use this to take the name out of the object
-      this.basePaneTab.pages[this.TAB_ID_ADVANCED].addInput(this.options, 'canvasSizeName', {options: this.SIZES_LIST}).on('change', (ev) => {
+      this.basePaneTab.pages[this.TAB_ID_ADVANCED].addBinding(this.options, 'canvasSizeName', {options: this.SIZES_LIST}).on('change', (ev) => {
         let s = this.SIZES.filter(p => p.name === ev.value)[0];
         this.setCanvasSize(s);
       });
@@ -121,24 +121,25 @@ Toko.prototype.endSetup = function () {
 
     var f = this.basePaneTab.pages[this.TAB_ID_FPS];
 
-    f.addMonitor(this.pt, 'fps', {interval: 200});
+    f.addBinding(this.pt, 'fps', {interval: 200, readonly: true});
 
-    f.addMonitor(this.pt, 'graph', {
+    f.addBinding(this.pt, 'graph', {
       view: 'graph',
       interval: 100,
       min: 0,
-      max: 120
+      max: 120,
+      readonly: true
     });
   }
 
   if (this.options.useParameterPanel) {
     if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {
-      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addSeparator();
+      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
       this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch'}).on('click', (value) => {
         this.saveSketch();
       });
     } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
-      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addSeparator();
+      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
       this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch & settings'}).on('click', (value) => {
         this.saveSketchAndSettings();
       });

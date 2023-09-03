@@ -3159,7 +3159,7 @@ var Toko = (function () {
       //
       if (this.options.showAdvancedOptions) {
         this.options.canvasSizeName = this.options.canvasSize.name; // use this to take the name out of the object
-        this.basePaneTab.pages[this.TAB_ID_ADVANCED].addInput(this.options, 'canvasSizeName', {options: this.SIZES_LIST}).on('change', (ev) => {
+        this.basePaneTab.pages[this.TAB_ID_ADVANCED].addBinding(this.options, 'canvasSizeName', {options: this.SIZES_LIST}).on('change', (ev) => {
           let s = this.SIZES.filter(p => p.name === ev.value)[0];
           this.setCanvasSize(s);
         });
@@ -3193,24 +3193,25 @@ var Toko = (function () {
 
       var f = this.basePaneTab.pages[this.TAB_ID_FPS];
 
-      f.addMonitor(this.pt, 'fps', {interval: 200});
+      f.addBinding(this.pt, 'fps', {interval: 200, readonly: true});
 
-      f.addMonitor(this.pt, 'graph', {
+      f.addBinding(this.pt, 'graph', {
         view: 'graph',
         interval: 100,
         min: 0,
-        max: 120
+        max: 120,
+        readonly: true
       });
     }
 
     if (this.options.useParameterPanel) {
       if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addSeparator();
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch'}).on('click', (value) => {
           this.saveSketch();
         });
       } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addSeparator();
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch & settings'}).on('click', (value) => {
           this.saveSketchAndSettings();
         });
@@ -3368,19 +3369,19 @@ var Toko = (function () {
   Toko.prototype.addCollectionSelector = function (pane, pObject, collections, curCollection, palettes, index = 1) {
     let colorPalettes = this.getPaletteSelection(pObject[curCollection], false, true);
     var scaleInput = {};
-    pane.addInput(pObject, curCollection, {
+    pane.addBinding(pObject, curCollection, {
       index:index,
       options: this.formatForTweakpane(pObject[collections])
     }).on('change', (ev) => {
       let colorPalettes = this.getPaletteSelection(pObject[curCollection], false, true);
       scaleInput.dispose();
-      scaleInput = pane.addInput(pObject, palettes, {
+      scaleInput = pane.addBinding(pObject, palettes, {
         index:index+1,
         options:colorPalettes
       });
       this.basePane.refresh();
     });
-    scaleInput = pane.addInput(pObject, palettes, {
+    scaleInput = pane.addBinding(pObject, palettes, {
       options:colorPalettes
     });
   };

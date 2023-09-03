@@ -62,19 +62,19 @@ Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, pCollection) 
 Toko.prototype.addCollectionSelector = function (pane, pObject, collections, curCollection, palettes, index = 1) {
   let colorPalettes = this.getPaletteSelection(pObject[curCollection], false, true);
   var scaleInput = {};
-  pane.addInput(pObject, curCollection, {
+  pane.addBinding(pObject, curCollection, {
     index:index,
     options: this.formatForTweakpane(pObject[collections])
   }).on('change', (ev) => {
     let colorPalettes = this.getPaletteSelection(pObject[curCollection], false, true);
     scaleInput.dispose();
-    scaleInput = pane.addInput(pObject, palettes, {
+    scaleInput = pane.addBinding(pObject, palettes, {
       index:index+1,
       options:colorPalettes
     })
     this.basePane.refresh()
   });
-  scaleInput = pane.addInput(pObject, palettes, {
+  scaleInput = pane.addBinding(pObject, palettes, {
     options:colorPalettes
   })
 }
