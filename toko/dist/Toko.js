@@ -3431,6 +3431,64 @@ var Toko = (function () {
   };
 
   //
+  //  turn the long Tweakpane state into a more compact set of values
+  //
+  Toko.prototype._stateToPreset = function(stateObject) {
+    let presetObject = {};
+
+    function traverse(obj) {
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          // check if the current property is 'binding' and an object
+          if (key === 'binding' && typeof obj[key] === 'object') {
+            // if it is, extract the key value combination and add it to the presets
+            let o = {};
+            o[obj[key].key] = obj[key].value;
+            presetObject = {...presetObject, ...o};
+          } else if (typeof obj[key] === 'object') {
+            // if it is not binding but is and object, dig deeper
+            traverse(obj[key]);
+          }
+        }
+      }
+    }
+
+    // start traversing the state object
+    traverse(stateObject);
+
+    return presetObject;
+  };
+
+  //
+  //  use the compact preset to create a new Tweakpane state
+  //
+  Toko.prototype._presetToState = function(presetObject) {
+    let stateObject = this.basePane.exportState();
+
+    function traverse(obj) {
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          // check if the current property is 'binding' and an object
+          if (key === 'binding' && typeof obj[key] === 'object') {
+            // update the 'binding' object with values from newPreset
+            if (presetObject.hasOwnProperty(obj[key].key)) {
+              obj[key].value = presetObject[obj[key].key];
+            }
+          } else if (typeof obj[key] === 'object') {
+            // if the property is an object, recursively traverse it
+            traverse(obj[key]);
+          }
+        }
+      }
+    }
+
+    // start traversing the current state to add the preset values
+    traverse(stateObject);
+
+    return stateObject;
+  };
+
+  //
   //  general math functions
   //
 
@@ -4428,6 +4486,11 @@ var Toko = (function () {
     this.saveSettings(filename);
   };
 
+  //
+  //  save all the current settings in a simple JSON file
+  //
+  //  WARNING: basically no error checking is done here
+  //
   Toko.prototype.saveSettings = function (filename = 'default') {
     
     if (typeof filename === 'undefined' || filename == 'default') {
@@ -4438,14 +4501,23 @@ var Toko = (function () {
       filename += '.json';
     }
 
-    let settings = this.basePane.exportPreset();
+    let state = this.basePane.exportState();
+    let settings = this._stateToPreset(state);
     createStringDict(settings).saveJSON(filename);
   };
 
+  //
+  //  receive a json file with settings dropped on the canvas
+  //
+  //  WARNING: basically no error checking is done here
+  //
   Toko.prototype.receiveSettings = function (file) {
+
     if (file.subtype == 'json') {
-      this.basePane.importPreset(file.data);
+      let newState = this._presetToState(file.data);
+      this.basePane.importState(newState);
     }
+    
     window.receivedFile?.(file);
   };
 

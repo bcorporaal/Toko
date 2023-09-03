@@ -1,5 +1,10 @@
 import Toko from '../core/main';
 
+//
+//  save all the current settings in a simple JSON file
+//
+//  WARNING: basically no error checking is done here
+//
 Toko.prototype.saveSettings = function (filename = 'default') {
   
   if (typeof filename === 'undefined' || filename == 'default') {
@@ -10,6 +15,7 @@ Toko.prototype.saveSettings = function (filename = 'default') {
     filename += '.json';
   }
 
-  let settings = this.basePane.exportPreset();
+  let state = this.basePane.exportState();
+  let settings = this._stateToPreset(state);
   createStringDict(settings).saveJSON(filename);
 }

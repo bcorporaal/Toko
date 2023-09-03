@@ -122,3 +122,61 @@ Toko.prototype.findRandomInList = function (item, list) {
   } while (newItem == item);
   return list[newItem];
 }
+
+//
+//  turn the long Tweakpane state into a more compact set of values
+//
+Toko.prototype._stateToPreset = function(stateObject) {
+  let presetObject = {};
+
+  function traverse(obj) {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        // check if the current property is 'binding' and an object
+        if (key === 'binding' && typeof obj[key] === 'object') {
+          // if it is, extract the key value combination and add it to the presets
+          let o = {}
+          o[obj[key].key] = obj[key].value;
+          presetObject = {...presetObject, ...o};
+        } else if (typeof obj[key] === 'object') {
+          // if it is not binding but is and object, dig deeper
+          traverse(obj[key]);
+        }
+      }
+    }
+  }
+
+  // start traversing the state object
+  traverse(stateObject);
+
+  return presetObject;
+}
+
+//
+//  use the compact preset to create a new Tweakpane state
+//
+Toko.prototype._presetToState = function(presetObject) {
+  let stateObject = this.basePane.exportState();
+
+  function traverse(obj) {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        // check if the current property is 'binding' and an object
+        if (key === 'binding' && typeof obj[key] === 'object') {
+          // update the 'binding' object with values from newPreset
+          if (presetObject.hasOwnProperty(obj[key].key)) {
+            obj[key].value = presetObject[obj[key].key];
+          }
+        } else if (typeof obj[key] === 'object') {
+          // if the property is an object, recursively traverse it
+          traverse(obj[key]);
+        }
+      }
+    }
+  }
+
+  // start traversing the current state to add the preset values
+  traverse(stateObject);
+
+  return stateObject;
+}
