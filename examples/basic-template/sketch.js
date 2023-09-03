@@ -65,8 +65,8 @@ function setup() {
   toko.addCollectionSelector(toko.pane.tab, p, 'collections', 'collection', 'palette', 0);
   toko.addPaneNavButtons(toko.pane.tab, p, 'palette', 'collection');
 
-  toko.pane.tab.addInput(p, 'steps', { min: 2, max: 40, step: 1});
-  toko.pane.tab.addInput(p, 'interpolated');
+  toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1});
+  toko.pane.tab.addBinding(p, 'interpolated');
 
   //
   //  listen to tweakpane changes

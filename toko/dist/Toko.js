@@ -4283,11 +4283,11 @@ var Toko = (function () {
   Toko.prototype.createCapturePanel = function(tabID) {
     var t = this.basePaneTab.pages[tabID];
 
-    t.addInput(this.captureOptions, 'format', {
+    t.addBinding(this.captureOptions, 'format', {
       options: this.CAPTURE_FORMATS,
     });
 
-    t.addSeparator();
+    t.addBlade({view: 'separator'});
 
     this.startCaptureButton = t.addButton({
       title: '🔴 Record',
