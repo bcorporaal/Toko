@@ -52,7 +52,7 @@ Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, pCollection) 
         console.log('a non-existing button was pressed:',ev.index[0]);
         break;
     }
-    this.basePane.refresh();
+    this.pane.tab.refresh();
   });
 }
 
@@ -72,7 +72,7 @@ Toko.prototype.addCollectionSelector = function (pane, pObject, collections, cur
       index:index+1,
       options:colorPalettes
     })
-    this.basePane.refresh();
+    this.pane.tab.refresh();
   });
   scaleInput = pane.addBinding(pObject, palettes, {
     options:colorPalettes
