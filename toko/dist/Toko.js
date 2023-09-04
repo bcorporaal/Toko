@@ -3359,7 +3359,7 @@ var Toko = (function () {
           console.log('a non-existing button was pressed:',ev.index[0]);
           break;
       }
-      this.basePane.refresh();
+      this.pane.tab.refresh();
     });
   };
 
@@ -3379,7 +3379,7 @@ var Toko = (function () {
         index:index+1,
         options:colorPalettes
       });
-      this.basePane.refresh();
+      this.pane.tab.refresh();
     });
     scaleInput = pane.addBinding(pObject, palettes, {
       options:colorPalettes
@@ -4516,6 +4516,7 @@ var Toko = (function () {
     if (file.subtype == 'json') {
       let newState = this._presetToState(file.data);
       this.basePane.importState(newState);
+      this.pane.tab.refresh();
     }
     
     window.receivedFile?.(file);
