@@ -1,4 +1,4 @@
-/*! Tweakpane 4.0.0 (c) 2016 cocopon, licensed under the MIT license. */
+/*! Tweakpane 4.0.1 (c) 2016 cocopon, licensed under the MIT license. */
 function forceCast(v) {
     return v;
 }
@@ -1596,7 +1596,7 @@ class Semver {
     }
 }
 
-const VERSION$1 = new Semver('2.0.0');
+const VERSION$1 = new Semver('2.0.1');
 
 function createPlugin(plugin) {
     return Object.assign({ core: VERSION$1 }, plugin);
@@ -1724,6 +1724,9 @@ class ContainerBladeApi extends BladeApi {
     constructor(controller, pool) {
         super(controller);
         this.rackApi_ = new RackApi(controller.rackController, pool);
+    }
+    refresh() {
+        this.rackApi_.refresh();
     }
 }
 
@@ -2205,9 +2208,6 @@ class FolderApi extends ContainerBladeApi {
         });
         return this;
     }
-    refresh() {
-        this.rackApi_.refresh();
-    }
 }
 
 const bladeContainerClassName = ClassName('cnt');
@@ -2605,9 +2605,6 @@ class TabPageApi extends ContainerBladeApi {
     }
     addBlade(params) {
         return this.rackApi_.addBlade(params);
-    }
-    refresh() {
-        this.rackApi_.refresh();
     }
 }
 
@@ -7786,6 +7783,6 @@ class Pane extends RootApi {
     }
 }
 
-const VERSION = new Semver('4.0.0');
+const VERSION = new Semver('4.0.1');
 
 export { BladeApi, ButtonApi, FolderApi, ListBladeApi, ListInputBindingApi, Pane, Semver, SeparatorBladeApi, SliderBladeApi, SliderInputBindingApi, TabApi, TabPageApi, TextBladeApi, TpChangeEvent, VERSION };
