@@ -62,8 +62,7 @@ function setup() {
   //
   //  add controls to change the colors
   //
-  toko.addPaletteSelector(toko.pane.tab, p, 'collections', 'collection', 'palette', 0, true, true);
-  toko.addPaneNavButtons(toko.pane.tab, p, 'palette', 'collection', true, true);
+  toko.addPaletteSelector(toko.pane.tab, p, 'collections', 'collection', 'palette', 0, true, true, true);
 
   toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1});
   toko.pane.tab.addBinding(p, 'interpolated');

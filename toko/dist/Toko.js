@@ -3483,7 +3483,7 @@ var Toko = (function () {
   //
   //  add a double drop down to select a color palette
   //
-  Toko.prototype.addPaletteSelector = function(paneRef, pObject, collectionsList, collectionKey, paletteKey, selectorIndex = 1, justPrimary = false, sorted = false) {
+  Toko.prototype.addPaletteSelector = function(paneRef, pObject, collectionsList, collectionKey, paletteKey, selectorIndex = 1, justPrimary = false, sorted = false, addNavButtons = true) {
     let o = {};
     o.paneRef = paneRef;
     o.pObject = pObject;
@@ -3515,6 +3515,13 @@ var Toko = (function () {
     });
 
     this.paletteSelectorData = o;
+
+    //
+    //  add nav buttons below the dropdowns
+    //
+    if (addNavButtons) {
+      this.addPaneNavButtons(paneRef, pObject, paletteKey, collectionKey, justPrimary, sorted);
+    }
 
   };
 
