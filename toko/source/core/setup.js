@@ -9,6 +9,10 @@ Toko.prototype.setup = function (inputOptions) {
   this.capturer = {};
   this.captureOptions = {};
 
+  this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
+
+  this.receivingFileNow = false;
+
   //
   // merge incoming options with the defaults
   //
