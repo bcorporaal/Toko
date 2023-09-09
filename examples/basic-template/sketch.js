@@ -32,7 +32,7 @@ function setup() {
     //
     //  basic options
     //
-    title: "Toko template",                 //  title displayed
+    title: "Toko basic template",       //  title displayed
     sketchElementId: sketchElementId,   //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT,      //  canvas size to use
     //
@@ -54,7 +54,7 @@ function setup() {
   p = {
     steps: 10,
     interpolated: false,
-    collections: ['basic','golid','metbrewer'],
+    collections: ['basic','golid','metbrewer', 'flourish'],
     collection: 'basic',
     palette: 'westCoast',
   }
@@ -62,11 +62,11 @@ function setup() {
   //
   //  add controls to change the colors
   //
-  toko.addCollectionSelector(toko.pane.tab, p, 'collections', 'collection', 'palette', 0);
+  toko.addPaletteSelector(toko.pane.tab, p, 'collections', 'collection', 'palette', 0);
   toko.addPaneNavButtons(toko.pane.tab, p, 'palette', 'collection');
 
-  toko.pane.tab.addInput(p, 'steps', { min: 2, max: 40, step: 1});
-  toko.pane.tab.addInput(p, 'interpolated');
+  toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1});
+  toko.pane.tab.addBinding(p, 'interpolated');
 
   //
   //  listen to tweakpane changes
@@ -85,6 +85,7 @@ function setup() {
 
 function refresh() {
   console.log('refresh');
+  // console.log(p);
 
   //
   //  set domain range to number of steps

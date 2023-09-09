@@ -16,7 +16,7 @@ var Toko = (function () {
   //
   //  current version
   //
-  const VERSION = 'Toko v0.5.2';
+  const VERSION = 'Toko v0.6.0';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -3081,6 +3081,10 @@ var Toko = (function () {
     this.capturer = {};
     this.captureOptions = {};
 
+    this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
+
+    this.receivingFileNow = false;
+
     //
     // merge incoming options with the defaults
     //
@@ -3159,7 +3163,7 @@ var Toko = (function () {
       //
       if (this.options.showAdvancedOptions) {
         this.options.canvasSizeName = this.options.canvasSize.name; // use this to take the name out of the object
-        this.basePaneTab.pages[this.TAB_ID_ADVANCED].addInput(this.options, 'canvasSizeName', {options: this.SIZES_LIST}).on('change', (ev) => {
+        this.basePaneTab.pages[this.TAB_ID_ADVANCED].addBinding(this.options, 'canvasSizeName', {options: this.SIZES_LIST}).on('change', (ev) => {
           let s = this.SIZES.filter(p => p.name === ev.value)[0];
           this.setCanvasSize(s);
         });
@@ -3193,24 +3197,25 @@ var Toko = (function () {
 
       var f = this.basePaneTab.pages[this.TAB_ID_FPS];
 
-      f.addMonitor(this.pt, 'fps', {interval: 200});
+      f.addBinding(this.pt, 'fps', {interval: 200, readonly: true});
 
-      f.addMonitor(this.pt, 'graph', {
+      f.addBinding(this.pt, 'graph', {
         view: 'graph',
         interval: 100,
         min: 0,
-        max: 120
+        max: 120,
+        readonly: true
       });
     }
 
     if (this.options.useParameterPanel) {
       if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addSeparator();
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch'}).on('click', (value) => {
           this.saveSketch();
         });
       } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addSeparator();
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch & settings'}).on('click', (value) => {
           this.saveSketchAndSettings();
         });
@@ -3363,29 +3368,6 @@ var Toko = (function () {
   };
 
   //
-  //  add a double selector for color palette
-  //
-  Toko.prototype.addCollectionSelector = function (pane, pObject, collections, curCollection, palettes, index = 1) {
-    let colorPalettes = this.getPaletteSelection(pObject[curCollection], false, true);
-    var scaleInput = {};
-    pane.addInput(pObject, curCollection, {
-      index:index,
-      options: this.formatForTweakpane(pObject[collections])
-    }).on('change', (ev) => {
-      let colorPalettes = this.getPaletteSelection(pObject[curCollection], false, true);
-      scaleInput.dispose();
-      scaleInput = pane.addInput(pObject, palettes, {
-        index:index+1,
-        options:colorPalettes
-      });
-      this.basePane.refresh();
-    });
-    scaleInput = pane.addInput(pObject, palettes, {
-      options:colorPalettes
-    });
-  };
-
-  //
   //  find the next item in a list formatted for TweakPane
   //
   Toko.prototype.findNextInList = function (item, list) {
@@ -3427,6 +3409,119 @@ var Toko = (function () {
       newItem = keys[Math.floor(Math.random()*keys.length)];
     } while (newItem == item);
     return list[newItem];
+  };
+
+  //
+  //  turn the long Tweakpane state into a more compact set of values
+  //
+  Toko.prototype._stateToPreset = function(stateObject) {
+    let presetObject = {};
+
+    function traverse(obj) {
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          // check if the current property is 'binding' and an object
+          if (key === 'binding' && typeof obj[key] === 'object') {
+            // if it is, extract the key value combination and add it to the presets
+            let o = {};
+            o[obj[key].key] = obj[key].value;
+            presetObject = {...presetObject, ...o};
+          } else if (typeof obj[key] === 'object') {
+            // if it is not binding but is and object, dig deeper
+            traverse(obj[key]);
+          }
+        }
+      }
+    }
+
+    // start traversing the state object
+    traverse(stateObject);
+
+    return presetObject;
+  };
+
+  //
+  //  use the compact preset to create a new Tweakpane state
+  //
+  Toko.prototype._presetToState = function(presetObject) {
+    let stateObject = this.basePane.exportState();
+
+    function traverse(obj) {
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          // check if the current property is 'binding' and an object
+          if (key === 'binding' && typeof obj[key] === 'object') {
+            // update the 'binding' object with values from newPreset
+            if (presetObject.hasOwnProperty(obj[key].key)) {
+              obj[key].value = presetObject[obj[key].key];
+            }
+          } else if (typeof obj[key] === 'object') {
+            // if the property is an object, recursively traverse it
+            traverse(obj[key]);
+          }
+        }
+      }
+    }
+
+    // start traversing the current state to add the preset values
+    traverse(stateObject);
+
+    return stateObject;
+  };
+
+  //
+  //  add a double drop down to select a color palette
+  //
+  Toko.prototype.addPaletteSelector = function(paneRef, pObject, collectionsList, collectionKey, paletteKey, selectorIndex = 1) {
+    let o = {};
+    o.paneRef = paneRef;
+    o.pObject = pObject;
+    o.collectionsList = collectionsList;
+    o.collectionKey = collectionKey;
+    o.paletteKey = paletteKey;
+    o.selectorIndex = selectorIndex;
+
+    o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], false, true);
+    o.collectionsList = Toko.prototype.formatForTweakpane(o.pObject[o.collectionsList]);
+
+    o.collectionInput = o.paneRef.addBinding(o.pObject, o.collectionKey, {
+      index: o.selectorIndex,
+      options: o.collectionsList
+    }).on('change', (ev) => {
+      o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[collectionKey], false, true);
+      o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
+      o.scaleInput.dispose();
+      o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
+        index:o.selectorIndex+1,
+        options:o.colorPalettes
+      });
+    });
+
+    o.scaleInput = paneRef.addBinding(o.pObject, o.paletteKey, {
+      options:o.colorPalettes
+    });
+
+    this.paletteSelectorData = o;
+
+  };
+
+  //
+  //  update the color palette selector
+  //
+  Toko.prototype.updatePaletteSelector = function(receivedCollection, receivedPalette) {
+    let o;
+    o = this.paletteSelectorData;
+    o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, false, true);
+    o.scaleInput.dispose();
+    o.pObject[o.paletteKey] = receivedPalette;
+    o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
+      index:o.selectorIndex+1,
+      options:o.colorPalettes
+    });
+    //
+    //  call main refresh function to update everything
+    //
+    refresh();
   };
 
   //
@@ -4282,11 +4377,11 @@ var Toko = (function () {
   Toko.prototype.createCapturePanel = function(tabID) {
     var t = this.basePaneTab.pages[tabID];
 
-    t.addInput(this.captureOptions, 'format', {
+    t.addBinding(this.captureOptions, 'format', {
       options: this.CAPTURE_FORMATS,
     });
 
-    t.addSeparator();
+    t.addBlade({view: 'separator'});
 
     this.startCaptureButton = t.addButton({
       title: '🔴 Record',
@@ -4427,6 +4522,11 @@ var Toko = (function () {
     this.saveSettings(filename);
   };
 
+  //
+  //  save all the current settings in a simple JSON file
+  //
+  //  WARNING: basically no error checking is done here
+  //
   Toko.prototype.saveSettings = function (filename = 'default') {
     
     if (typeof filename === 'undefined' || filename == 'default') {
@@ -4437,14 +4537,35 @@ var Toko = (function () {
       filename += '.json';
     }
 
-    let settings = this.basePane.exportPreset();
+    let state = this.basePane.exportState();
+    let settings = this._stateToPreset(state);
     createStringDict(settings).saveJSON(filename);
   };
 
+  //
+  //  receive a json file with settings dropped on the canvas
+  //
+  //  WARNING: basically no error checking is done here
+  //
   Toko.prototype.receiveSettings = function (file) {
+
+    let receivedCollection, receivedPalette;
+
+    this.receivingFileNow = true;
+
     if (file.subtype == 'json') {
-      this.basePane.importPreset(file.data);
+      let newState = this._presetToState(file.data);
+      this.basePane.importState(newState);
+      // console.log(file.data);
+
+      receivedCollection = file.data.collection;
+      receivedPalette = file.data.palette;
+
     }
+    
+    this.receivingFileNow = false;
+    this.updatePaletteSelector(receivedCollection, receivedPalette);
+
     window.receivedFile?.(file);
   };
 

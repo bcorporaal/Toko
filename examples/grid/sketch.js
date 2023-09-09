@@ -81,15 +81,15 @@ function setup() {
   //
   //  add controls for the grid selector
   //
-  toko.pane.tab.addSeparator();
-  toko.pane.tab.addInput(p, 'gridType', {
+  toko.pane.tab.addBlade({view: 'separator'});
+  toko.pane.tab.addBinding(p, 'gridType', {
     options: {
       recursive: 'recursive',
       packed: 'packed',
     },
   });
-  toko.pane.tab.addSeparator();
-  toko.pane.tab.addInput(p, 'seed', {
+  toko.pane.tab.addBlade({view: 'separator'});
+  toko.pane.tab.addBinding(p, 'seed', {
     min: 1,
     max: 2000,
     step: 1
@@ -100,12 +100,12 @@ function setup() {
   f0 = toko.pane.tab.addFolder({
     title: 'Base grid',
   });
-  f0.addInput(p, 'columns', {
+  f0.addBinding(p, 'columns', {
     min: 1,
     max: 100,
     step: 1
   });
-  f0.addInput(p, 'rows', {
+  f0.addBinding(p, 'rows', {
     min: 1,
     max: 100,
     step: 1
@@ -116,12 +116,12 @@ function setup() {
   f1 = toko.pane.tab.addFolder({
     title: 'Recursive grid',
   });
-  f1.addInput(p, 'nrLoops', {
+  f1.addBinding(p, 'nrLoops', {
     min: 1,
     max: 25,
     step: 1
   });
-  f1.addInput(p, 'splitType', {
+  f1.addBinding(p, 'splitType', {
     options: {
       horizontal: g.SPLIT_HORIZONTAL,
       vertical: g.SPLIT_VERTICAL,
@@ -130,12 +130,12 @@ function setup() {
       square: g.SPLIT_SQUARE,
     },
   });
-  f1.addInput(p, 'splitChance', {
+  f1.addBinding(p, 'splitChance', {
     min: 0,
     max: 1,
     step: 0.1
   });
-  f1.addInput(p, 'minSize', {
+  f1.addBinding(p, 'minSize', {
     min: 1,
     max: 25,
     step: 1
@@ -146,9 +146,9 @@ function setup() {
   f2 = toko.pane.tab.addFolder({
     title: 'Packed grid',
   });
-  f2.addInput(p, 'cellShapes');
-  f2.addInput(p, 'noEmptySpaces');
-  f2.addInput(p, 'snapToPixel');
+  f2.addBinding(p, 'cellShapes');
+  f2.addBinding(p, 'noEmptySpaces');
+  f2.addBinding(p, 'snapToPixel');
   //
   //  add controls to change the colors
   //
@@ -156,7 +156,7 @@ function setup() {
     title: 'Colors',
     expanded: false,
   });
-  toko.addCollectionSelector(f6, p, 'collections', 'collection', 'palette', 0);
+  toko.addPaletteSelector(f6, p, 'collections', 'collection', 'palette', 0);
   toko.addPaneNavButtons(f6, p, 'palette', 'collection');
   //
   //  add controls to change the colors
@@ -165,19 +165,19 @@ function setup() {
     title: 'Grid frame',
     expanded: false,
   });
-  f7.addInput(p, 'margin', {
+  f7.addBinding(p, 'margin', {
     min: 0,
     max: 100,
     step: 1
   });
-  f7.addInput(p, 'invertBgnd');
-  f7.addInput(p, 'stroke');
-  f7.addInput(p, 'strokeWeight', {
+  f7.addBinding(p, 'invertBgnd');
+  f7.addBinding(p, 'stroke');
+  f7.addBinding(p, 'strokeWeight', {
     min: 0.1,
     max: 4,
     step: 0.1
   });
-  f7.addInput(p, 'strokeAlpha', {
+  f7.addBinding(p, 'strokeAlpha', {
     min: 0,
     max: 100,
     step: 5
