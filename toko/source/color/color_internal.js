@@ -366,6 +366,17 @@ Toko.prototype._preprocessPalettes = function () {
     mayoPalettes,
     expositoPalettes,
   );
+  //
+  //  add missing fields
+  //
+  this.palettes.forEach(o => {
+    //
+    //  make them primary by default if field is empty
+    //
+    if (o.isPrimary == undefined) {
+      o.isPrimary = true;
+    }
+  });
 }
 
 

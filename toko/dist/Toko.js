@@ -3045,6 +3045,17 @@ var Toko = (function () {
       mayoPalettes,
       expositoPalettes,
     );
+    //
+    //  add missing fields
+    //
+    this.palettes.forEach(o => {
+      //
+      //  make them primary by default if field is empty
+      //
+      if (o.isPrimary == undefined) {
+        o.isPrimary = true;
+      }
+    });
   };
 
 
@@ -3337,7 +3348,7 @@ var Toko = (function () {
   //
   //  add next, previous and random buttons to the pane to navigate a specific list
   //
-  Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, pCollection) {
+  Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, pCollection, justPrimary = false, sorted = false) {
     pane.addBlade({
       view: 'buttongrid',
       size: [3, 1],
@@ -3348,7 +3359,7 @@ var Toko = (function () {
       }),
       label: ' ',
     }).on('click', (ev) => {
-      let paletteList = toko.getPaletteSelection(pObject[pCollection], false, true);
+      let paletteList = toko.getPaletteSelection(pObject[pCollection], justPrimary, sorted);
       switch (ev.index[0]) {
         case 0:
           pObject[pName] = this.findPreviousInList(pObject[pName],paletteList);
@@ -3472,7 +3483,7 @@ var Toko = (function () {
   //
   //  add a double drop down to select a color palette
   //
-  Toko.prototype.addPaletteSelector = function(paneRef, pObject, collectionsList, collectionKey, paletteKey, selectorIndex = 1) {
+  Toko.prototype.addPaletteSelector = function(paneRef, pObject, collectionsList, collectionKey, paletteKey, selectorIndex = 1, justPrimary = false, sorted = false) {
     let o = {};
     o.paneRef = paneRef;
     o.pObject = pObject;
@@ -3480,15 +3491,17 @@ var Toko = (function () {
     o.collectionKey = collectionKey;
     o.paletteKey = paletteKey;
     o.selectorIndex = selectorIndex;
+    o.justPrimary = justPrimary;
+    o.sorted = sorted;
 
-    o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], false, true);
+    o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
     o.collectionsList = Toko.prototype.formatForTweakpane(o.pObject[o.collectionsList]);
 
     o.collectionInput = o.paneRef.addBinding(o.pObject, o.collectionKey, {
       index: o.selectorIndex,
       options: o.collectionsList
     }).on('change', (ev) => {
-      o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[collectionKey], false, true);
+      o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[collectionKey], o.justPrimary, o.sorted);
       o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
       o.scaleInput.dispose();
       o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
@@ -3511,7 +3524,7 @@ var Toko = (function () {
   Toko.prototype.updatePaletteSelector = function(receivedCollection, receivedPalette) {
     let o;
     o = this.paletteSelectorData;
-    o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, false, true);
+    o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);
     o.scaleInput.dispose();
     o.pObject[o.paletteKey] = receivedPalette;
     o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
