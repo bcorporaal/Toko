@@ -68,7 +68,7 @@ function setup() {
     noEmptySpaces: true,
     snapToPixel: true,
     // color
-    collections: ['basic','d3','duotone','golid', 'system'],
+    collections: ['basic','d3','duotone','golid', 'system', 'orbifold'],
     collection: 'basic',
     palette: 'district2',
     invertBgnd: true,
@@ -156,8 +156,7 @@ function setup() {
     title: 'Colors',
     expanded: false,
   });
-  toko.addPaletteSelector(f6, p, 'collections', 'collection', 'palette', 0);
-  toko.addPaneNavButtons(f6, p, 'palette', 'collection');
+  toko.addPaletteSelector(f6, p, 'collections', 'collection', 'palette', 0, true, true);
   //
   //  add controls to change the colors
   //

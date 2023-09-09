@@ -579,7 +579,7 @@ var Toko = (function () {
     {
       name: 'summer',
       colors: ['#f5f02b', '#19AAD1'],
-      isPrimary: true,
+      isPrimary: false,
       type: 'basic',
     },
     {
@@ -615,13 +615,13 @@ var Toko = (function () {
     {
       name: 'greyhound',
       colors: ['#696969', '#696969', '#696969', '#00A6B5'],
-      isPrimary: true,
+      isPrimary: false,
       type: 'basic',
     },
     {
       name: 'almostBlack',
       colors: ['#202020', '#404040'],
-      isPrimary: true,
+      isPrimary: false,
       type: 'basic',
     },
     {
