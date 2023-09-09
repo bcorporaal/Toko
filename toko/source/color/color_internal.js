@@ -24,6 +24,7 @@ import spatialPalettes from '../color_palettes/spatial';
 import systemPalettes from '../color_palettes/system';
 import tsuchimochiPalettes from '../color_palettes/tsuchimochi';
 import tundraPalettes from '../color_palettes/tundra';
+import orbifoldPalettes from '../color_palettes/orbifold';
 
 Toko.prototype.CONTRAST_MIX_COLORS = ['#111', '#eee'];
 Toko.prototype.CONTRAST_MIX_FACTOR = 0.8;
@@ -365,6 +366,7 @@ Toko.prototype._preprocessPalettes = function () {
     cakoPalettes,
     mayoPalettes,
     expositoPalettes,
+    orbifoldPalettes,
   );
   //
   //  add missing fields

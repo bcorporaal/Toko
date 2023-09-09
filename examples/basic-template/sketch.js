@@ -54,7 +54,7 @@ function setup() {
   p = {
     steps: 10,
     interpolated: false,
-    collections: ['basic','golid','metbrewer', 'flourish'],
+    collections: ['basic','golid','metbrewer', 'flourish', 'orbifold'],
     collection: 'basic',
     palette: 'westCoast',
   }
