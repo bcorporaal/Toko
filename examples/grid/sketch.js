@@ -156,7 +156,7 @@ function setup() {
     title: 'Colors',
     expanded: false,
   });
-  toko.addCollectionSelector(f6, p, 'collections', 'collection', 'palette', 0);
+  toko.addPaletteSelector(f6, p, 'collections', 'collection', 'palette', 0);
   toko.addPaneNavButtons(f6, p, 'palette', 'collection');
   //
   //  add controls to change the colors
