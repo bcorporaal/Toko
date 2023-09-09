@@ -3348,8 +3348,8 @@ var Toko = (function () {
   //
   //  add next, previous and random buttons to the pane to navigate a specific list
   //
-  Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, pCollection, justPrimary = false, sorted = false) {
-    pane.addBlade({
+  Toko.prototype.addPaneNavButtons = function (paneRef, pObject, paletteKey, collectionKey, justPrimary = false, sorted = false) {
+    paneRef.addBlade({
       view: 'buttongrid',
       size: [3, 1],
       cells: (x, y) => ({
@@ -3359,16 +3359,16 @@ var Toko = (function () {
       }),
       label: ' ',
     }).on('click', (ev) => {
-      let paletteList = toko.getPaletteSelection(pObject[pCollection], justPrimary, sorted);
+      let paletteList = toko.getPaletteSelection(pObject[collectionKey], justPrimary, sorted);
       switch (ev.index[0]) {
         case 0:
-          pObject[pName] = this.findPreviousInList(pObject[pName],paletteList);
+          pObject[paletteKey] = this.findPreviousInList(pObject[paletteKey],paletteList);
           break;
         case 1:
-          pObject[pName] = this.findRandomInList(pObject[pName],paletteList);
+          pObject[paletteKey] = this.findRandomInList(pObject[paletteKey],paletteList);
           break;
         case 2:
-          pObject[pName] = this.findNextInList(pObject[pName],paletteList);
+          pObject[paletteKey] = this.findNextInList(pObject[paletteKey],paletteList);
           break;
         default:
           console.log('a non-existing button was pressed:',ev.index[0]);
