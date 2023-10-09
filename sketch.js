@@ -107,7 +107,15 @@ function setup() {
 
   let fColors = toko.pane.tab.addFolder({ title: 'Colors', expanded: true });
   // add collection and palette selector, with next, previous and random buttons
-  toko.addPaletteSelector(fColors, p, 'collections', 'collection', 'palette', 0, false, false, true);
+  toko.addPaletteSelector(fColors, p, {
+    selectorIndex: 1,
+    justPrimary: false,
+    sorted: false,
+    addNavButtons: true,
+    collectionsList: 'collections',
+    collectionKey: 'collection',
+    paletteKey: 'palette'
+  });
   
   fColors.addBinding(p, 'colorReverse', {label: "reverse"});
   fColors.addBinding(p, 'originalColors', {label: "original"});

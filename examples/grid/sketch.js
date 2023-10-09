@@ -156,7 +156,15 @@ function setup() {
     title: 'Colors',
     expanded: false,
   });
-  toko.addPaletteSelector(f6, p, 'collections', 'collection', 'palette', 0, true, true);
+  toko.addPaletteSelector(f6, p, {
+    selectorIndex: 0,
+    justPrimary: true,
+    sorted: true,
+    addNavButtons: true,
+    collectionsList: 'collections',
+    collectionKey: 'collection',
+    paletteKey: 'palette'
+  });
   //
   //  add controls to change the colors
   //

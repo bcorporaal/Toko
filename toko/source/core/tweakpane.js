@@ -161,16 +161,23 @@ Toko.prototype._presetToState = function(presetObject) {
 //
 //  add a double drop down to select a color palette
 //
-Toko.prototype.addPaletteSelector = function(paneRef, pObject, collectionsList, collectionKey, paletteKey, selectorIndex = 1, justPrimary = false, sorted = false, addNavButtons = true) {
-  let o = {};
+Toko.prototype.addPaletteSelector = function(paneRef, pObject, incomingOptions) {
+  //
+  //  set default options
+  //
+  let o = {
+    selectorIndex: 1,
+    justPrimary: false,
+    sorted: false,
+    addNavButtons: true,
+  };
+
+  //
+  // merge with default options
+  //
+  o = Object.assign({}, incomingOptions, o);
   o.paneRef = paneRef;
   o.pObject = pObject;
-  o.collectionsList = collectionsList;
-  o.collectionKey = collectionKey;
-  o.paletteKey = paletteKey;
-  o.selectorIndex = selectorIndex;
-  o.justPrimary = justPrimary;
-  o.sorted = sorted;
 
   o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
   o.collectionsList = Toko.prototype.formatForTweakpane(o.pObject[o.collectionsList]);
@@ -179,7 +186,7 @@ Toko.prototype.addPaletteSelector = function(paneRef, pObject, collectionsList, 
     index: o.selectorIndex,
     options: o.collectionsList
   }).on('change', (ev) => {
-    o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[collectionKey], o.justPrimary, o.sorted);
+    o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[o.collectionKey], o.justPrimary, o.sorted);
     o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
     o.scaleInput.dispose();
     o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
@@ -197,8 +204,8 @@ Toko.prototype.addPaletteSelector = function(paneRef, pObject, collectionsList, 
   //
   //  add nav buttons below the dropdowns
   //
-  if (addNavButtons) {
-    this.addPaneNavButtons(paneRef, pObject, paletteKey, collectionKey, justPrimary, sorted);
+  if (o.addNavButtons) {
+    this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted);
   }
 
 }
