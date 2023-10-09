@@ -11,8 +11,12 @@ Toko.prototype.saveSketch = function () {
   }
 
   if (isCanvas) {
+    //
+    //  save canvas as png
+    //
     var filename = this.generateFilename('png');
-    var url = document.getElementById(this.options.sketchElementId).firstChild.toDataURL("image/png;base64");
+    saveCanvas(filename, 'png');
+    return filename;
   } else if (isSVG) {
     //
     // add attributes to ensure proper preview of the SVG file in the Finder
@@ -26,22 +30,25 @@ Toko.prototype.saveSketch = function () {
 
     var blob = new Blob([svgString], {'type': 'image/svg+xml'})
     var url = window.URL.createObjectURL(blob);
+
+    //
+    // create a hidden url with the image and click it
+    //
+    var a = document.createElement('a');
+    document.body.appendChild(a);
+    a.style = 'display: none';
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+    return filename;
+
   } else {
     console.log("Toko - saveSketch: unkown type");
     return;
   }
-  //
-  // create a hidden url with the image and click it
-  //
-  var a = document.createElement('a');
-  document.body.appendChild(a);
-  a.style = 'display: none';
-  a.href = url;
-  a.download = filename;
-  a.click();
-  window.URL.revokeObjectURL(url);
   
-  return filename;
 }
 
 //
