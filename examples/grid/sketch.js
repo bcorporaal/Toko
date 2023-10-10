@@ -157,10 +157,10 @@ function setup() {
     expanded: false,
   });
   toko.addPaletteSelector(f6, p, {
-    selectorIndex: 0,
+    index: 1,
     justPrimary: true,
     sorted: true,
-    addNavButtons: true,
+    navButtons: true,
     collectionsList: 'collections',
     collectionKey: 'collection',
     paletteKey: 'palette'

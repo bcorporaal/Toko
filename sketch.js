@@ -108,10 +108,10 @@ function setup() {
   let fColors = toko.pane.tab.addFolder({ title: 'Colors', expanded: true });
   // add collection and palette selector, with next, previous and random buttons
   toko.addPaletteSelector(fColors, p, {
-    selectorIndex: 1,
+    index: 1,
     justPrimary: false,
-    sorted: false,
-    addNavButtons: true,
+    sorted: true,
+    navButtons: true,
     collectionsList: 'collections',
     collectionKey: 'collection',
     paletteKey: 'palette'

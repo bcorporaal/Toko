@@ -3634,16 +3634,17 @@ var Toko = (function () {
     //  set default options
     //
     let o = {
-      selectorIndex: 1,
-      justPrimary: false,
-      sorted: false,
-      addNavButtons: true,
+      index: 1,
+      justPrimary: true,
+      sorted: true,
+      navButtons: true,
     };
 
     //
     // merge with default options
     //
-    o = Object.assign({}, incomingOptions, o);
+    // o = Object.assign({}, incomingOptions, o);
+    o = Object.assign({}, o, incomingOptions);
     o.paneRef = paneRef;
     o.pObject = pObject;
 
@@ -3673,8 +3674,8 @@ var Toko = (function () {
     //
     //  add nav buttons below the dropdowns
     //
-    if (o.addNavButtons) {
-      this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted, o.selectorIndex+1);
+    if (o.navButtons) {
+      this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted, o.index+1);
     }
 
   };

@@ -63,10 +63,10 @@ function setup() {
   //  add controls to change the colors
   //
   toko.addPaletteSelector(toko.pane.tab, p, {
-    selectorIndex: 1,
+    index: 1,
     justPrimary: true,
     sorted: true,
-    addNavButtons: true,
+    navButtons: true,
     collectionsList: 'collections',
     collectionKey: 'collection',
     paletteKey: 'palette'
