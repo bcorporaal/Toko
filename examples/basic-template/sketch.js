@@ -54,7 +54,7 @@ function setup() {
   p = {
     steps: 10,
     interpolated: false,
-    collections: ['basic','golid','metbrewer', 'flourish'],
+    collections: ['basic','golid','metbrewer', 'flourish', 'orbifold'],
     collection: 'basic',
     palette: 'westCoast',
   }
@@ -62,8 +62,15 @@ function setup() {
   //
   //  add controls to change the colors
   //
-  toko.addPaletteSelector(toko.pane.tab, p, 'collections', 'collection', 'palette', 0);
-  toko.addPaneNavButtons(toko.pane.tab, p, 'palette', 'collection');
+  toko.addPaletteSelector(toko.pane.tab, p, {
+    index: 1,
+    justPrimary: true,
+    sorted: true,
+    navButtons: true,
+    collectionsList: 'collections',
+    collectionKey: 'collection',
+    paletteKey: 'palette'
+  });
 
   toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1});
   toko.pane.tab.addBinding(p, 'interpolated');

@@ -106,10 +106,16 @@ function setup() {
   fAttractors.addBinding(p, 'attractorVertical', {label: 'vertical'});
 
   let fColors = toko.pane.tab.addFolder({ title: 'Colors', expanded: true });
-  // add collection and palette selector
-  toko.addPaletteSelector(fColors, p, 'collections', 'collection', 'palette', 0);
-  // add next, previous and random buttons
-  toko.addPaneNavButtons(fColors, p, 'palette', 'collection');
+  // add collection and palette selector, with next, previous and random buttons
+  toko.addPaletteSelector(fColors, p, {
+    index: 1,
+    justPrimary: false,
+    sorted: true,
+    navButtons: true,
+    collectionsList: 'collections',
+    collectionKey: 'collection',
+    paletteKey: 'palette'
+  });
   
   fColors.addBinding(p, 'colorReverse', {label: "reverse"});
   fColors.addBinding(p, 'originalColors', {label: "original"});

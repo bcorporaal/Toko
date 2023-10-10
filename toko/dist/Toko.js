@@ -579,7 +579,7 @@ var Toko = (function () {
     {
       name: 'summer',
       colors: ['#f5f02b', '#19AAD1'],
-      isPrimary: true,
+      isPrimary: false,
       type: 'basic',
     },
     {
@@ -615,13 +615,13 @@ var Toko = (function () {
     {
       name: 'greyhound',
       colors: ['#696969', '#696969', '#696969', '#00A6B5'],
-      isPrimary: true,
+      isPrimary: false,
       type: 'basic',
     },
     {
       name: 'almostBlack',
       colors: ['#202020', '#404040'],
-      isPrimary: true,
+      isPrimary: false,
       type: 'basic',
     },
     {
@@ -2704,6 +2704,143 @@ var Toko = (function () {
     }
   ];
 
+  //
+  // Original collection by Kjetil Midtgarden Golid
+  // https://github.com/kgolid/chromotome
+  // https://kgolid.github.io/chromotome-site/
+  //
+  var orbifoldPalettes = [
+    {
+      name: "candy-wrap",
+      colors: [
+        "#f19797",
+        "#f9b73e",
+        "#ee5151",
+        "#fb671f",
+        "#6bbe3a",
+        "#0c75b7",
+        "#0b9e4e",
+        "#763f68",
+      ],
+      stroke: "#302319",
+      background: "#e7ded5",
+      type: "orbifold"
+    },
+    {
+      name: "slicks",
+      colors: ["#e1decd", "#d95336", "#e6ac1d"],
+      stroke: "#302319",
+      background: "#e1decd",
+      type: "orbifold"
+    },
+    {
+      name: "circus",
+      colors: ["#3eb79e", "#f4a910", "#f37377", "#207986", "#f26003", "#afce95"],
+      stroke: "#302319",
+      background: "#eadcb6",
+      type: "orbifold"
+    },
+    {
+      name: "spotlight",
+      colors: ["#f34312", "#00a49e", "#ef888f", "#f5b408", "#412432"],
+      stroke: "#412432",
+      background: "#dfdcd5",
+      type: "orbifold"
+    },
+    {
+      name: "five-stars",
+      colors: [
+        "#f5e8c7",
+        "#d9dcad",
+        "#cf3933",
+        "#f3f4f4",
+        "#74330d",
+        "#8bb896",
+        "#eba824",
+        "#f05c03",
+      ],
+      stroke: "#380c05",
+      background: "#ecd598",
+      type: "orbifold"
+    },
+    {
+      name: "full-moon",
+      colors: ["#f7e8be", "#aa879f", "#f6634e"],
+      stroke: "#2a1f39",
+      background: "#f7e8be",
+      type: "orbifold"
+    },
+    {
+      name: "sunday-stroll",
+      colors: [
+        "#d44c4c",
+        "#e47781",
+        "#f5d274",
+        "#f7e8be",
+        "#acbe55",
+        "#6fb97a",
+        "#5ba150",
+        "#037750",
+        "#003e5e",
+        "#595373",
+        "#73659e",
+        "#ac879f",
+      ],
+      background: "#e5cbb5",
+      w: 2,
+      type: "orbifold"
+    },
+    {
+      name: "vegetable-soup",
+      colors: [
+        "#ec6a22",
+        "#f7e9c5",
+        "#399a3f",
+        "#9ac764",
+        "#fff7e0",
+        "#ffcd6b",
+        "#634754",
+        "#98c195",
+        "#708658",
+      ],
+      background: "#fff7e0",
+      w: 2,
+      type: "orbifold"
+    },
+    {
+      name: "risograph",
+      colors: ["#f56f64", "#f9cb1f", "#f0eace"],
+      stroke: "#295042",
+      background: "#f0eace",
+      w: 1,
+      type: "orbifold"
+    },
+    {
+      name: "tote-bag",
+      colors: ["#f5f5f5", "#ffc6cf", "#fd5105", "#4124b0"],
+      stroke: "#231e22",
+      background: "#ffc6cf",
+      w: 1,
+      type: "orbifold"
+    },
+    {
+      name: "slicks",
+      colors: [
+        "#ffbdd0",
+        "#ff4328",
+        "#e88526",
+        "#21b929",
+        "#2193c9",
+        "#fffcea",
+        "#ffcc21",
+      ],
+      stroke: "#fffcea",
+      background: "#212121",
+      w: 1,
+      type: "orbifold"
+    },
+  ];
+
   Toko.prototype.CONTRAST_MIX_COLORS = ['#111', '#eee'];
   Toko.prototype.CONTRAST_MIX_FACTOR = 0.8;
   Toko.prototype.CONTRAST_MIX_MODE = 'lab';
@@ -3044,7 +3181,19 @@ var Toko = (function () {
       cakoPalettes,
       mayoPalettes,
       expositoPalettes,
+      orbifoldPalettes,
     );
+    //
+    //  add missing fields
+    //
+    this.palettes.forEach(o => {
+      //
+      //  make them primary by default if field is empty
+      //
+      if (o.isPrimary == undefined) {
+        o.isPrimary = true;
+      }
+    });
   };
 
 
@@ -3337,8 +3486,9 @@ var Toko = (function () {
   //
   //  add next, previous and random buttons to the pane to navigate a specific list
   //
-  Toko.prototype.addPaneNavButtons = function (pane, pObject, pName, pCollection) {
-    pane.addBlade({
+  Toko.prototype.addPaneNavButtons = function (paneRef, pObject, paletteKey, collectionKey, justPrimary = false, sorted = false, index = -1) {
+
+    let o = {
       view: 'buttongrid',
       size: [3, 1],
       cells: (x, y) => ({
@@ -3347,17 +3497,24 @@ var Toko = (function () {
         ][y][x],
       }),
       label: ' ',
-    }).on('click', (ev) => {
-      let paletteList = toko.getPaletteSelection(pObject[pCollection], false, true);
+    };
+
+    if (index != -1) {
+      o.index = index;
+    }
+
+    paneRef.addBlade( o
+    ).on('click', (ev) => {
+      let paletteList = toko.getPaletteSelection(pObject[collectionKey], justPrimary, sorted);
       switch (ev.index[0]) {
         case 0:
-          pObject[pName] = this.findPreviousInList(pObject[pName],paletteList);
+          pObject[paletteKey] = this.findPreviousInList(pObject[paletteKey],paletteList);
           break;
         case 1:
-          pObject[pName] = this.findRandomInList(pObject[pName],paletteList);
+          pObject[paletteKey] = this.findRandomInList(pObject[paletteKey],paletteList);
           break;
         case 2:
-          pObject[pName] = this.findNextInList(pObject[pName],paletteList);
+          pObject[paletteKey] = this.findNextInList(pObject[paletteKey],paletteList);
           break;
         default:
           console.log('a non-existing button was pressed:',ev.index[0]);
@@ -3472,36 +3629,54 @@ var Toko = (function () {
   //
   //  add a double drop down to select a color palette
   //
-  Toko.prototype.addPaletteSelector = function(paneRef, pObject, collectionsList, collectionKey, paletteKey, selectorIndex = 1) {
-    let o = {};
+  Toko.prototype.addPaletteSelector = function(paneRef, pObject, incomingOptions) {
+    //
+    //  set default options
+    //
+    let o = {
+      index: 1,
+      justPrimary: true,
+      sorted: true,
+      navButtons: true,
+    };
+
+    //
+    // merge with default options
+    //
+    // o = Object.assign({}, incomingOptions, o);
+    o = Object.assign({}, o, incomingOptions);
     o.paneRef = paneRef;
     o.pObject = pObject;
-    o.collectionsList = collectionsList;
-    o.collectionKey = collectionKey;
-    o.paletteKey = paletteKey;
-    o.selectorIndex = selectorIndex;
 
-    o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], false, true);
+    o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
     o.collectionsList = Toko.prototype.formatForTweakpane(o.pObject[o.collectionsList]);
 
     o.collectionInput = o.paneRef.addBinding(o.pObject, o.collectionKey, {
       index: o.selectorIndex,
       options: o.collectionsList
     }).on('change', (ev) => {
-      o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[collectionKey], false, true);
+      o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[o.collectionKey], o.justPrimary, o.sorted);
       o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
       o.scaleInput.dispose();
       o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
-        index:o.selectorIndex+1,
+        index:o.selectorIndex,
         options:o.colorPalettes
       });
     });
 
     o.scaleInput = paneRef.addBinding(o.pObject, o.paletteKey, {
-      options:o.colorPalettes
+      options:o.colorPalettes,
+      index: o.selectorIndex
     });
 
     this.paletteSelectorData = o;
+
+    //
+    //  add nav buttons below the dropdowns
+    //
+    if (o.navButtons) {
+      this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted, o.index+1);
+    }
 
   };
 
@@ -3509,11 +3684,13 @@ var Toko = (function () {
   //  update the color palette selector
   //
   Toko.prototype.updatePaletteSelector = function(receivedCollection, receivedPalette) {
+    console.log('updatePaletteSelector');
     let o;
     o = this.paletteSelectorData;
-    o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, false, true);
+    o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);
     o.scaleInput.dispose();
     o.pObject[o.paletteKey] = receivedPalette;
+    console.log(o.selectorIndex+1);
     o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
       index:o.selectorIndex+1,
       options:o.colorPalettes
@@ -4477,8 +4654,12 @@ var Toko = (function () {
     }
 
     if (isCanvas) {
+      //
+      //  save canvas as png
+      //
       var filename = this.generateFilename('png');
-      var url = document.getElementById(this.options.sketchElementId).firstChild.toDataURL("image/png;base64");
+      saveCanvas(filename, 'png');
+      return filename;
     } else if (isSVG) {
       //
       // add attributes to ensure proper preview of the SVG file in the Finder
@@ -4492,22 +4673,25 @@ var Toko = (function () {
 
       var blob = new Blob([svgString], {'type': 'image/svg+xml'});
       var url = window.URL.createObjectURL(blob);
+
+      //
+      // create a hidden url with the image and click it
+      //
+      var a = document.createElement('a');
+      document.body.appendChild(a);
+      a.style = 'display: none';
+      a.href = url;
+      a.download = filename;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      return filename;
+
     } else {
       console.log("Toko - saveSketch: unkown type");
       return;
     }
-    //
-    // create a hidden url with the image and click it
-    //
-    var a = document.createElement('a');
-    document.body.appendChild(a);
-    a.style = 'display: none';
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
     
-    return filename;
   };
 
   //
