@@ -192,21 +192,21 @@ Toko.prototype.addPaletteSelector = function(paneRef, pObject, incomingOptions) 
   o.collectionsList = Toko.prototype.formatForTweakpane(o.pObject[o.collectionsList]);
 
   o.collectionInput = o.paneRef.addBinding(o.pObject, o.collectionKey, {
-    index: o.selectorIndex,
+    index: o.index,
     options: o.collectionsList
   }).on('change', (ev) => {
     o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[o.collectionKey], o.justPrimary, o.sorted);
     o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
     o.scaleInput.dispose();
     o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
-      index:o.selectorIndex,
+      index:o.index,
       options:o.colorPalettes
     });
   });
 
   o.scaleInput = paneRef.addBinding(o.pObject, o.paletteKey, {
     options:o.colorPalettes,
-    index: o.selectorIndex
+    index: o.index
   });
 
   this.paletteSelectorData = o;
