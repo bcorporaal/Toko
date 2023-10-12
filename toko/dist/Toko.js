@@ -2292,6 +2292,7 @@ var Toko = (function () {
     colors: ['#802417', '#c06636', '#ce9344', '#e8b960', '#646e3b', '#2b5851', '#508ea2', '#17486f'],
     isPrimary: true,
     sortOrder: [1, 2, 8, 4, 3, 5, 7, 6],
+    type: 'metbrewer',
   },
   {
     name: 'troy',
@@ -2674,7 +2675,8 @@ var Toko = (function () {
     },
     {
       name: 'tundra2',
-      colors: ['#5f9e93', '#3d3638', '#733632', '#b66239', '#b0a1a4', '#e3dad2']
+      colors: ['#5f9e93', '#3d3638', '#733632', '#b66239', '#b0a1a4', '#e3dad2'],
+      type: 'tundra',
     },
     {
       name: 'tundra3',
@@ -2845,6 +2847,8 @@ var Toko = (function () {
   Toko.prototype.CONTRAST_MIX_FACTOR = 0.8;
   Toko.prototype.CONTRAST_MIX_MODE = 'lab';
   Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
+
+  Toko.prototype.COLOR_COLLECTIONS = [];
 
   Toko.prototype.MODELIST = [
     'rgb',
@@ -3158,34 +3162,35 @@ var Toko = (function () {
     // ];
 
     this.palettes = basicPalettes.concat(
-      d3Palettes,
-      metBrewerPalettes,
-      golidmiscPalettes,
-      ranganathPalettes,
-      roygbivsPalettes,
-      tundraPalettes,
-      colourscafePalettes,
-      rohlfsPalettes,
-      ducciPalettes,
-      judsonPalettes,
-      iivonenPalettes,
-      kovecsesPalettes,
-      tsuchimochiPalettes,
-      duotonePalettes,
-      hildaPalettes,
-      spatialPalettes,
-      jungPalettes,
-      systemPalettes,
-      flourishPalettes,
-      dalePalettes,
       cakoPalettes,
-      mayoPalettes,
+      colourscafePalettes,
+      d3Palettes,
+      dalePalettes,
+      ducciPalettes,
+      duotonePalettes,
       expositoPalettes,
+      flourishPalettes,
+      golidmiscPalettes,
+      hildaPalettes,
+      iivonenPalettes,
+      judsonPalettes,
+      jungPalettes,
+      kovecsesPalettes,
+      mayoPalettes,
+      metBrewerPalettes,
       orbifoldPalettes,
+      ranganathPalettes,
+      rohlfsPalettes,
+      roygbivsPalettes,
+      spatialPalettes,
+      systemPalettes,
+      tsuchimochiPalettes,
+      tundraPalettes,
     );
     //
-    //  add missing fields
+    //  add missing fields and make list of all palettes
     //
+
     this.palettes.forEach(o => {
       //
       //  make them primary by default if field is empty
@@ -3193,12 +3198,10 @@ var Toko = (function () {
       if (o.isPrimary == undefined) {
         o.isPrimary = true;
       }
+      this.COLOR_COLLECTIONS.push(o.type);
     });
+    this.COLOR_COLLECTIONS = [...new Set(this.COLOR_COLLECTIONS)];
   };
-
-
-
-
 
   //
   // from

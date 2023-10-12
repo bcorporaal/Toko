@@ -31,6 +31,8 @@ Toko.prototype.CONTRAST_MIX_FACTOR = 0.8;
 Toko.prototype.CONTRAST_MIX_MODE = 'lab';
 Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
 
+Toko.prototype.COLOR_COLLECTIONS = [];
+
 Toko.prototype.MODELIST = [
   'rgb',
   'lrgb',
@@ -343,34 +345,35 @@ Toko.prototype._preprocessPalettes = function () {
   // ];
 
   this.palettes = basicPalettes.concat(
-    d3Palettes,
-    metBrewerPalettes,
-    golidmiscPalettes,
-    ranganathPalettes,
-    roygbivsPalettes,
-    tundraPalettes,
-    colourscafePalettes,
-    rohlfsPalettes,
-    ducciPalettes,
-    judsonPalettes,
-    iivonenPalettes,
-    kovecsesPalettes,
-    tsuchimochiPalettes,
-    duotonePalettes,
-    hildaPalettes,
-    spatialPalettes,
-    jungPalettes,
-    systemPalettes,
-    flourishPalettes,
-    dalePalettes,
     cakoPalettes,
-    mayoPalettes,
+    colourscafePalettes,
+    d3Palettes,
+    dalePalettes,
+    ducciPalettes,
+    duotonePalettes,
     expositoPalettes,
+    flourishPalettes,
+    golidmiscPalettes,
+    hildaPalettes,
+    iivonenPalettes,
+    judsonPalettes,
+    jungPalettes,
+    kovecsesPalettes,
+    mayoPalettes,
+    metBrewerPalettes,
     orbifoldPalettes,
+    ranganathPalettes,
+    rohlfsPalettes,
+    roygbivsPalettes,
+    spatialPalettes,
+    systemPalettes,
+    tsuchimochiPalettes,
+    tundraPalettes,
   );
   //
-  //  add missing fields
+  //  add missing fields and make list of all palettes
   //
+
   this.palettes.forEach(o => {
     //
     //  make them primary by default if field is empty
@@ -378,12 +381,10 @@ Toko.prototype._preprocessPalettes = function () {
     if (o.isPrimary == undefined) {
       o.isPrimary = true;
     }
+    this.COLOR_COLLECTIONS.push(o.type);
   });
+  this.COLOR_COLLECTIONS = [...new Set(this.COLOR_COLLECTIONS)];
 }
-
-
-
-
 
 //
 // from
