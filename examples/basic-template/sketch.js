@@ -54,7 +54,7 @@ function setup() {
   p = {
     steps: 10,
     interpolated: false,
-    collections: ['basic','golid','metbrewer', 'flourish', 'orbifold'],
+    collections: toko.COLOR_COLLECTIONS,
     collection: 'basic',
     palette: 'westCoast',
   }
