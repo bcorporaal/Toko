@@ -57,6 +57,7 @@ function setup() {
     collections: toko.COLOR_COLLECTIONS,
     collection: 'basic',
     palette: 'westCoast',
+    inverse: false,
   }
 
   //
@@ -74,6 +75,7 @@ function setup() {
 
   toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1});
   toko.pane.tab.addBinding(p, 'interpolated');
+  toko.pane.tab.addBinding(p, 'inverse');
 
   //
   //  listen to tweakpane changes
@@ -114,13 +116,22 @@ function draw() {
   //---------------------------------------------
   toko.startDraw(); // do not remove
   //---------------------------------------------
-  
-  clear();
-  stroke('#fff');
-  strokeWeight(2);
 
-  let w = width/p.steps;
-  let h = height/p.steps;
+  clear();
+  noStroke();
+
+  let cc = (p.inverse) ? 1:0;
+
+  fill(colors.contrastColors[cc]);
+  rect(0,0,width,height);
+
+  stroke(colors.contrastColors[1-cc]);
+  strokeWeight(1);
+
+  let m = 75; // margin
+  let s = 10; // spacing
+  let w = (width-m*2-(p.steps-1)*s)/p.steps;
+  let h = (height-m*2-(p.steps-1)*s)/p.steps;
 
   //
   //  draw a grid with the colors from the palette
@@ -133,7 +144,7 @@ function draw() {
         fill(colors.originalScale(i+j*p.steps));
       }
       
-      rect(i*w,j*h,w,h);
+      rect(i*(w+s)+m,j*(h+s)+m,w,h);
     }
   }
 
