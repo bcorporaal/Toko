@@ -11,7 +11,8 @@ export default [
   },
   {
     name: 'tundra2',
-    colors: ['#5f9e93', '#3d3638', '#733632', '#b66239', '#b0a1a4', '#e3dad2']
+    colors: ['#5f9e93', '#3d3638', '#733632', '#b66239', '#b0a1a4', '#e3dad2'],
+    type: 'tundra',
   },
   {
     name: 'tundra3',

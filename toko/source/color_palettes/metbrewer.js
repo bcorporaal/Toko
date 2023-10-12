@@ -302,6 +302,7 @@ export default [
   colors: ['#802417', '#c06636', '#ce9344', '#e8b960', '#646e3b', '#2b5851', '#508ea2', '#17486f'],
   isPrimary: true,
   sortOrder: [1, 2, 8, 4, 3, 5, 7, 6],
+  type: 'metbrewer',
 },
 {
   name: 'troy',
