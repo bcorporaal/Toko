@@ -486,8 +486,8 @@ var Toko = (function () {
   //
   //  create color scales based on a set of colors in an array
   //
-  Toko.prototype.createColorScale = function (colorSet, colorOptions) {
-    let o = this._createColorScale(colorSet, colorOptions);
+  Toko.prototype.createColorScale = function (colorSet, colorOptions, extraColors) {
+    let o = this._createColorScale(colorSet, colorOptions, extraColors);
     return o;
   };
 
@@ -2905,8 +2905,7 @@ var Toko = (function () {
     return colorOptions;
   };
 
-
-  Toko.prototype._createColorScale = function (colorSet, colorOptions) {
+  Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors) {
     if (!this.initColorDone) {
       this._initColor();
     }
@@ -2917,12 +2916,7 @@ var Toko = (function () {
       colorOptions = this._validateColorOptions(colorOptions);
     }
 
-    //
-    // make contrast colors from colors from both ends of the scale
-    //
-    let contrastColors = [];
-    contrastColors[0] = chroma.mix(colorSet[0], this.CONTRAST_MIX_COLORS[0], this.CONTRAST_MIX_FACTOR, this.CONTRAST_MIX_MODE).hex();
-    contrastColors[1] = chroma.mix(colorSet[colorSet.length - 1], this.CONTRAST_MIX_COLORS[1], this.CONTRAST_MIX_FACTOR, this.CONTRAST_MIX_MODE).hex();
+    let contrastColors = this._defineContrastColors(colorSet, extraColors);
 
     //
     // reverse input colors
@@ -2962,7 +2956,6 @@ var Toko = (function () {
     if (colorOptions.stepped && colorOptions.steps > 0) {
       sc = sc.classes(colorOptions.steps);
     }
-
     
     o.scaleChroma = sc;
     o.contrastColors = contrastColors;
@@ -3006,14 +2999,24 @@ var Toko = (function () {
     let p, colorSet;
     let o = {};
 
+    let extraColors = [];
+
     if (typeof inPalette === 'object') {
       colorSet = [... inPalette];
     } else if (typeof inPalette === 'string') {
       p = this.findPaletteByName(inPalette);
       colorSet = [... p.colors]; // clone the array to not mess up the original
+
+      if ('stroke' in p) {
+        extraColors.push(p.stroke);
+      }
+      if ('background' in p) {
+        extraColors.push(p.background);
+      }
     } else {
       console.log("ERROR: palette should be a string or an array");
-    } o = this.createColorScale(colorSet, colorOptions);
+    } 
+    o = this._createColorScale(colorSet, colorOptions, extraColors);
 
     return o;
   };
@@ -3224,6 +3227,97 @@ var Toko = (function () {
   // interpolateCosineV6 = this._interpolateCosine([0.8, 0.5, 0.4], [0.2, 0.4, 0.2], [2.0, 1.0, 1.0], [0.00, 0.25, 0.25]);
   // interpolateCosineV7 = this._interpolateCosine([1.000, 0.500, 0.500], [0.500, 0.500, 0.500], [0.750, 1.000, 0.667], [0.800, 1.000, 0.333]);
   // interpolateCosineV8 = this._interpolateCosine([0.093, 0.629, 0.825], [0.800, 0.269, 0.087], [0.906, 1.470, 1.544], [5.345, 4.080, 0.694]);
+
+  Toko.prototype._defineContrastColors = function (colorSet, extraColors) {
+    //
+    // make contrast colors from colors from both ends of the scale
+    //
+    // 0 is the light background and 1 is the dark background
+    //
+    let contrastColors = [];
+    let hsl = [];
+    let lightContrastSet = false;
+    let darkContrastSet = false;
+    let n = colorSet.length;
+    //
+    //  sort colors from light to dark
+    //
+    let sortedColorSet = colorSet.sort((a, b) => (chroma(b).hsl()[2]) - (chroma(a).hsl()[2]));
+    // console.log(sortedColorSet[0])
+
+    //
+    //  parse provided extra colors – if there are more then last dark and light are used
+    //
+    if (Array.isArray(extraColors) && extraColors.length) {
+      extraColors.forEach(c => {
+        let l = chroma(c).hsl()[2];
+        if (l > 0.5) {
+          contrastColors[0] = c;
+          lightContrastSet = true;
+        } else {
+          contrastColors[1] = c;
+          darkContrastSet = true;
+        }
+      });
+    }
+    
+    //
+    //  generate contrast colors by adjusting the saturation and lightness of the lightest and darkest color
+    //
+    if (!lightContrastSet) {
+      //  
+      //  light - saturation
+      let ls = {
+        shift: 0,
+        factor: 0.8,
+        max: 0.25,
+        min: 0.1,
+      };
+      //  light - lightness
+      let ll = {
+        shift: 0,
+        factor: 1.2,
+        max: 0.95,
+        min: 0.9,
+      };
+
+      hsl = chroma(sortedColorSet[0]).hsl();
+      let lightH = hsl[0];
+      let lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
+      let lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
+      contrastColors[0] = chroma.hsl(lightH,lightS,lightL).hex();
+    }
+    if (!darkContrastSet) {
+      //  dark - saturation
+      let ds = {
+        shift: 0,
+        factor: 1.25,
+        max: 0.8,
+        min: 0.15,
+      };
+      //  dark - lightness
+      let dl = {
+        shift: -0.1,
+        factor: 0.7,
+        max: 0.09,
+        min: 0.05,
+      };
+
+      hsl = chroma(sortedColorSet[n-1]).hsl();
+      let darkH = hsl[0];
+      let darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
+      let darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
+      contrastColors[1] = chroma.hsl(darkH,darkS,darkL).hex();
+    }
+
+    // check and flip order if needed
+    if (chroma(contrastColors[0]).hsl()[2] < chroma(contrastColors[1]).hsl()[2]) {
+      contrastColors.reverse();
+    }
+
+    return contrastColors;
+
+  };
 
   Toko.prototype.setup = function (inputOptions) {
 

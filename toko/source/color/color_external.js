@@ -42,8 +42,8 @@ Toko.prototype.getColorScale = function (inPalette, colorOptions) {
 //
 //  create color scales based on a set of colors in an array
 //
-Toko.prototype.createColorScale = function (colorSet, colorOptions) {
-  let o = this._createColorScale(colorSet, colorOptions);
+Toko.prototype.createColorScale = function (colorSet, colorOptions, extraColors) {
+  let o = this._createColorScale(colorSet, colorOptions, extraColors);
   return o;
 }
 
