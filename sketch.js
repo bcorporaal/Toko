@@ -85,6 +85,7 @@ function setup() {
     palette: 'westCoast',
     originalColors: false,
     mode: 'lab',
+    darkBgnd: false,
   }
 
   //
@@ -119,6 +120,7 @@ function setup() {
   
   fColors.addBinding(p, 'colorReverse', {label: "reverse"});
   fColors.addBinding(p, 'originalColors', {label: "original"});
+  fColors.addBinding(p, 'darkBgnd', {label: "dark bgnd"});
 
   toko.pane.tab.addBlade({view: 'separator'});
 
@@ -205,7 +207,12 @@ function draw() {
   
   clear();
   noStroke();
-  background(colors.contrastColors[0]);
+  
+  if (p.darkBgnd) {
+    background(colors.contrastColors[1]);
+  } else {
+    background(colors.contrastColors[0]);
+  }
 
   //
   //  plot the attractors
