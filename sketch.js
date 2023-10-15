@@ -86,6 +86,7 @@ function setup() {
     originalColors: false,
     mode: 'lab',
     darkBgnd: false,
+    blendMode: BLEND
   }
 
   //
@@ -116,6 +117,10 @@ function setup() {
     collectionsList: 'collections',
     collectionKey: 'collection',
     paletteKey: 'palette'
+  });
+  // add blendmode selector
+  toko.addBlendModeSelector(fColors, p, {
+    blendModeKey: 'blendMode'
   });
   
   fColors.addBinding(p, 'colorReverse', {label: "reverse"});
@@ -151,9 +156,10 @@ function refresh() {
     reverse: p.colorReverse,
   }
   //
-  //  get colors
+  //  get colors and set the blendmode
   //
   colors = toko.getColorScale(this.p.palette,o);
+  blendMode(p.blendMode);
   //
   //  make additional particles if needed
   //

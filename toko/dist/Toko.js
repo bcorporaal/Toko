@@ -3740,7 +3740,6 @@ var Toko = (function () {
     //
     // merge with default options
     //
-    // o = Object.assign({}, incomingOptions, o);
     o = Object.assign({}, o, incomingOptions);
     o.paneRef = paneRef;
     o.pObject = pObject;
@@ -3774,7 +3773,6 @@ var Toko = (function () {
     if (o.navButtons) {
       this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted, o.index+1);
     }
-
   };
 
   //
@@ -3796,6 +3794,42 @@ var Toko = (function () {
     //  call main refresh function to update everything
     //
     refresh();
+  };
+
+  //
+  //  add blendmode palette selector
+  //
+  Toko.prototype.addBlendModeSelector = function(paneRef, pObject, incomingOptions) {
+    //
+    //  set default options
+    //
+    let o = {
+      // reserved for future defaults
+    };
+    //
+    // merge with default options
+    //
+    o = Object.assign({}, o, incomingOptions);
+    //
+    //  not all p5 blendmodes are included
+    //
+    paneRef.addBinding(pObject, o.blendModeKey, {
+      options: {
+        Default: BLEND,
+        Multiply: MULTIPLY,
+        Screen: SCREEN,
+        Overlay: OVERLAY,
+        Darkest: DARKEST,
+        Lightest: LIGHTEST,
+        Difference: DIFFERENCE,
+        Exclusion: EXCLUSION,
+        // Add: ADD,
+        // Hard-light: HARD_LIGHT,
+        // Soft-light: SOFT_LIGHT,
+        // Dodge: DODGE,
+        // Burn: BURN,
+      }
+    });
   };
 
   //
