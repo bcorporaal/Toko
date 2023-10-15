@@ -222,15 +222,13 @@ Toko.prototype.addPaletteSelector = function(paneRef, pObject, incomingOptions) 
 //  update the color palette selector
 //
 Toko.prototype.updatePaletteSelector = function(receivedCollection, receivedPalette) {
-  console.log('updatePaletteSelector');
   let o;
   o = this.paletteSelectorData;
   o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);
   o.scaleInput.dispose();
   o.pObject[o.paletteKey] = receivedPalette;
-  console.log(o.selectorIndex+1);
   o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
-    index:o.selectorIndex+1,
+    index:o.index+1,
     options:o.colorPalettes
   });
   //
