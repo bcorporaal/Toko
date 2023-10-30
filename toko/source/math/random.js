@@ -34,7 +34,7 @@ Toko.randomBool = function() {
 //  random charactor from string or lowercase
 //
 Toko.randomChar = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
-  return this._rng.randomChar();
+  return this._rng.randomChar(inString);
 }
 //
 //  stepped random number in range
@@ -187,3 +187,30 @@ Toko.rng = class {
   }
 
 }
+
+Toko.randomSeedString = function(stringLength = 6) {
+  const BASE62_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  let result = "";
+  
+  for (let i = 0; i < stringLength; i++) {
+    let n = Math.floor(Math.random()*62);
+    result = BASE62_ALPHABET[n] + result;
+  }
+  return result;
+}
+
+//
+//  from: https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
+//
+Toko.cyrb53a = function(str, seed = 0) {
+  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  for(let i = 0, ch; i < str.length; i++) {
+    ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 0x85ebca77);
+    h2 = Math.imul(h2 ^ ch, 0xc2b2ae3d);
+  }
+  h1 ^= Math.imul(h1 ^ (h2 >>> 15), 0x735a2d97);
+  h2 ^= Math.imul(h2 ^ (h1 >>> 15), 0xcaf649a9);
+  h1 ^= h2 >>> 16; h2 ^= h1 >>> 16;
+    return 2097152 * (h2 >>> 0) + (h1 >>> 11);
+};
