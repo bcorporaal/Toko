@@ -2,20 +2,19 @@ p5.disableFriendlyErrors = false; // disables FES to speed things up a little bi
 
 let toko = new Toko();
 
-function preload() {
+function preload () {
   //
   // All loading calls here
   //
 }
 
-function setup() {
-
+function setup () {
   //------------------------------------------------------
   //
   //  set base canvas
   //
-  let sketchElementId = "sketch-canvas";
-  let canvasWidth = 0;  // can be 0 because it is set based on the size in the html
+  let sketchElementId = 'sketch-canvas';
+  let canvasWidth = 0; // can be 0 because it is set based on the size in the html
   let canvasHeight = 0;
 
   //
@@ -32,18 +31,18 @@ function setup() {
     //
     //  basic options
     //
-    title: "Toko grid",                 //  title displayed
-    sketchElementId: sketchElementId,   //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT,      //  canvas size to use
+    title: 'Toko grid', //  title displayed
+    sketchElementId: sketchElementId, //  id used to create the p5 canvas
+    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
     //  additional options
     //
-    showSaveSketchButton: true,         //  show save image button in tweakpane
-    saveSettingsWithSketch: true,       //  save json of settings together with the image
-    acceptDroppedSettings: true,        //  accept dropped json files with settings
-    useParameterPanel: true,            //  use the tweakpane panel for settings
-    showAdvancedOptions: true,          //  show advanced settings in tweakpane, like size
-    captureFrames: false,               //  no record option
+    showSaveSketchButton: true, //  show save image button in tweakpane
+    saveSettingsWithSketch: true, //  save json of settings together with the image
+    acceptDroppedSettings: true, //  accept dropped json files with settings
+    useParameterPanel: true, //  use the tweakpane panel for settings
+    showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
+    captureFrames: false, //  no record option
   });
 
   //
@@ -68,7 +67,7 @@ function setup() {
     noEmptySpaces: true,
     snapToPixel: true,
     // color
-    collections: ['basic','d3','duotone','golid', 'system', 'orbifold'],
+    collections: ['basic', 'd3', 'duotone', 'golid', 'system', 'orbifold'],
     collection: 'basic',
     palette: 'district2',
     invertBgnd: true,
@@ -76,7 +75,7 @@ function setup() {
     stroke: true,
     strokeWeight: 1.5,
     strokeAlpha: 100,
-  }
+  };
 
   //
   //  add controls for the grid selector
@@ -92,7 +91,7 @@ function setup() {
   toko.pane.tab.addBinding(p, 'seed', {
     min: 1,
     max: 2000,
-    step: 1
+    step: 1,
   });
   //
   //  add controls for the base grid rows and columns
@@ -103,12 +102,12 @@ function setup() {
   f0.addBinding(p, 'columns', {
     min: 1,
     max: 100,
-    step: 1
+    step: 1,
   });
   f0.addBinding(p, 'rows', {
     min: 1,
     max: 100,
-    step: 1
+    step: 1,
   });
   //
   //  add controls for the recursive grid
@@ -119,7 +118,7 @@ function setup() {
   f1.addBinding(p, 'nrLoops', {
     min: 1,
     max: 25,
-    step: 1
+    step: 1,
   });
   f1.addBinding(p, 'splitType', {
     options: {
@@ -133,12 +132,12 @@ function setup() {
   f1.addBinding(p, 'splitChance', {
     min: 0,
     max: 1,
-    step: 0.1
+    step: 0.1,
   });
   f1.addBinding(p, 'minSize', {
     min: 1,
     max: 25,
-    step: 1
+    step: 1,
   });
   //
   //  add controls for the packed grid
@@ -163,7 +162,7 @@ function setup() {
     navButtons: true,
     collectionsList: 'collections',
     collectionKey: 'collection',
-    paletteKey: 'palette'
+    paletteKey: 'palette',
   });
   //
   //  add controls to change the colors
@@ -175,27 +174,27 @@ function setup() {
   f7.addBinding(p, 'margin', {
     min: 0,
     max: 100,
-    step: 1
+    step: 1,
   });
   f7.addBinding(p, 'invertBgnd');
   f7.addBinding(p, 'stroke');
   f7.addBinding(p, 'strokeWeight', {
     min: 0.1,
     max: 4,
-    step: 0.1
+    step: 0.1,
   });
   f7.addBinding(p, 'strokeAlpha', {
     min: 0,
     max: 100,
-    step: 5
+    step: 5,
   });
   //
   //  listen to tweakpane changes
   //
-  toko.pane.events.on("change", (value) => {
+  toko.pane.events.on('change', value => {
     refresh();
   });
-  
+
   refresh();
   noLoop();
 
@@ -204,7 +203,7 @@ function setup() {
   //---------------------------------------------
 }
 
-function refresh() {
+function refresh () {
   //
   //  toggle panels
   //
@@ -225,32 +224,32 @@ function refresh() {
   redraw();
 }
 
-function draw() {
+function draw () {
   //---------------------------------------------
   toko.startDraw(); // do not remove
   //---------------------------------------------
-  
+
   let c, n;
   clear();
   //
   //  grid
   //
   //  make grid object with basic positioning and sizing
-  gridSet = new Toko.Grid(p.margin,p.margin,width-2*p.margin,height-2*p.margin);
+  gridSet = new Toko.Grid(p.margin, p.margin, width - 2 * p.margin, height - 2 * p.margin);
 
   //
   //  create the grid
   //
   if (p.gridType == 'recursive') {
     // create a recursive grid starting with a base set of rows and columns
-    gridSet.setBaseGrid(p.columns,p.rows);
+    gridSet.setBaseGrid(p.columns, p.rows);
     gridSet.splitRecursive(p.nrLoops, p.splitChance, p.minSize, p.splitType);
   } else {
     // create a packed grid
-    let cellShapes = JSON.parse('['+p.cellShapes+']');
-    gridSet.packGrid(p.columns,p.rows,cellShapes, p.noEmptySpaces, p.snapToPixel);
+    let cellShapes = JSON.parse('[' + p.cellShapes + ']');
+    gridSet.packGrid(p.columns, p.rows, cellShapes, p.noEmptySpaces, p.snapToPixel);
   }
-  
+
   //
   //  set domain range to number of cells
   //
@@ -258,34 +257,34 @@ function draw() {
   const o = {
     reverse: p.invertScale,
     domain: [0, n],
-  }
+  };
 
   //
   //  get colors
   //
-  colors = toko.getColorScale(this.p.palette,o);
+  colors = toko.getColorScale(this.p.palette, o);
 
   //
   //  set the background and stroke colors
   //
-  background(colors.contrastColors[(p.invertBgnd?1:0)]);
+  background(colors.contrastColors[p.invertBgnd ? 1 : 0]);
   if (p.stroke) {
     strokeWeight(p.strokeWeight);
-    let sc = color(colors.contrastColors[(p.invertBgnd?1:0)]);
-    sc.setAlpha(p.strokeAlpha/100*255);
+    let sc = color(colors.contrastColors[p.invertBgnd ? 1 : 0]);
+    sc.setAlpha((p.strokeAlpha / 100) * 255);
     stroke(sc);
   } else {
     noStroke();
   }
-  
+
   //
   //  draw the cells
   //
   for (var i = 0; i < n; i++) {
     fill(colors.randomOriginalColor());
-    
+
     c = gridSet.cells[i];
-    rect(c.x,c.y,c.width,c.height);
+    rect(c.x, c.y, c.width, c.height);
   }
 
   //---------------------------------------------
@@ -299,45 +298,45 @@ function draw() {
 //
 //---------------------------------------------
 
-function captureStarted() {
+function captureStarted () {
   //
   //  called when capture has started, use to reset visuals
   //
-  console.log("Toko - captureStarted");
+  console.log('Toko - captureStarted');
 }
 
-function captureStopped() {
+function captureStopped () {
   //
   //  called when capture is stopped, use to reset visuals
   //
-  console.log("Toko - captureStopped");
+  console.log('Toko - captureStopped');
 }
 
-function canvasResized() {
+function canvasResized () {
   //
   //  called when the canvas was resized
   //
-  console.log("Toko - canvasResized");
+  console.log('Toko - canvasResized');
 }
 
-function windowResized() {
+function windowResized () {
   //
   //  resize the canvas when the framing div was resized
   //
-  console.log("Toko - windowResized");
+  console.log('Toko - windowResized');
 
-  var newWidth = document.getElementById("sketch-canvas").offsetWidth;
-  var newHeight = document.getElementById("sketch-canvas").offsetHeight;
+  var newWidth = document.getElementById('sketch-canvas').offsetWidth;
+  var newHeight = document.getElementById('sketch-canvas').offsetHeight;
 
   if (newWidth != width || newHeight != height) {
     canvasResized();
   }
 }
 
-function receivedFile(file) {
+function receivedFile (file) {
   //
   //  called when a JSON file is dropped on the sketch
   //  tweakpane settings are automatically updated
   //
-  console.log("Toko - receivedFile")
+  console.log('Toko - receivedFile');
 }

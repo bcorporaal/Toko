@@ -4,19 +4,18 @@ let toko = new Toko();
 let particles = [];
 let attractors = [];
 
-function preload() {
+function preload () {
   //
   // All loading calls here
   //
 }
 
-function setup() {
-
+function setup () {
   //------------------------------------------------------
   //
   //  set base canvas
   //
-  let sketchElementId = "sketch-canvas";
+  let sketchElementId = 'sketch-canvas';
   let canvasWidth = 0;
   let canvasHeight = 0;
 
@@ -34,31 +33,32 @@ function setup() {
     //
     //  basic options
     //
-    title: "Toko demo",                 //  title displayed
-    sketchElementId: sketchElementId,   //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT,      //  canvas size to use
+    title: 'Toko demo', //  title displayed
+    sketchElementId: sketchElementId, //  id used to create the p5 canvas
+    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
     //  additional options
     //
-    showSaveSketchButton: true,         //  show save image button in tweakpane
-    saveSettingsWithSketch: true,       //  save json of settings together with the image
-    acceptDroppedSettings: true,        //  accept dropped json files with settings
-    useParameterPanel: true,            //  use the tweakpane panel for settings
-    hideParameterPanel: false,          //  hide the parameter panel by default (show by pressing 'p')
-    showAdvancedOptions: true,          //  show advanced settings in tweakpane, like size
-    additionalCanvasSizes: [            //  array of additional canvas sizes
+    showSaveSketchButton: true, //  show save image button in tweakpane
+    saveSettingsWithSketch: true, //  save json of settings together with the image
+    acceptDroppedSettings: true, //  accept dropped json files with settings
+    useParameterPanel: true, //  use the tweakpane panel for settings
+    hideParameterPanel: false, //  hide the parameter panel by default (show by pressing 'p')
+    showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
+    additionalCanvasSizes: [
+      //  array of additional canvas sizes
       {
-        name: "landscape",
+        name: 'landscape',
         width: 1200,
         height: 900,
         pixelDensity: 2,
-      }
-    ],                
-    captureFrames: true,                //  add record option in tweakpane
-    captureFrameCount: 999,             //  max number of frames captured (is this actually used?)
-    captureFrameRate: 15,               //  basic frame rate for capture
-    captureFormat: 'png',               //  default image format for capture
-    logFPS: false,                      //  log the fps in tweakpane (not working properly)
+      },
+    ],
+    captureFrames: true, //  add record option in tweakpane
+    captureFrameCount: 999, //  max number of frames captured (is this actually used?)
+    captureFrameRate: 15, //  basic frame rate for capture
+    captureFormat: 'png', //  default image format for capture
+    logFPS: false, //  log the fps in tweakpane (not working properly)
   });
 
   //
@@ -77,37 +77,36 @@ function setup() {
     showAttractors: false,
     size: 5,
     gravity: 85,
-    velocityMax: 6, 
+    velocityMax: 6,
     velocityMin: 2,
     colorReverse: false,
-    collections: ['basic','golid','metbrewer', 'd3', 'duotone'],
+    collections: ['basic', 'golid', 'metbrewer', 'd3', 'duotone'],
     collection: 'basic',
     palette: 'westCoast',
     originalColors: false,
     mode: 'lab',
     darkBgnd: false,
-    blendMode: BLEND
-  }
+    blendMode: BLEND,
+  };
 
   //
   //  set all the tweakpane controls
   //
-  let fParticles = toko.pane.tab.addFolder({ title: "Particles", expanded: true });
-  fParticles.addBinding(p, 'nrParticles', { min: 1, max: 100, step: 1, label: 'particles'});
-  fParticles.addBinding(p, 'size', { min: 1, max: 80, step: 2, label: 'size'});
-  fParticles.addBinding(p, 'trailLength', { min: 2, max: 500, step: 5, label: 'trail'});
+  let fParticles = toko.pane.tab.addFolder({title: 'Particles', expanded: true});
+  fParticles.addBinding(p, 'nrParticles', {min: 1, max: 100, step: 1, label: 'particles'});
+  fParticles.addBinding(p, 'size', {min: 1, max: 80, step: 2, label: 'size'});
+  fParticles.addBinding(p, 'trailLength', {min: 2, max: 500, step: 5, label: 'trail'});
   fParticles.addBinding(p, 'fadeTrail');
   fParticles.addBinding(p, 'plotMirrorParticle', {label: 'mirror'});
 
-
-  let fAttractors = toko.pane.tab.addFolder({ title: "Attractors", expanded: true });
-  fAttractors.addBinding(p, 'nrAttractors', { min: 1, max: 7, step: 1, label: 'attractors'});
-  fAttractors.addBinding(p, 'gravity', { min: 0, max: 400, step: 10, label: 'gravity'});
+  let fAttractors = toko.pane.tab.addFolder({title: 'Attractors', expanded: true});
+  fAttractors.addBinding(p, 'nrAttractors', {min: 1, max: 7, step: 1, label: 'attractors'});
+  fAttractors.addBinding(p, 'gravity', {min: 0, max: 400, step: 10, label: 'gravity'});
   fAttractors.addBinding(p, 'showAttractors', {label: 'show'});
   fAttractors.addBinding(p, 'attractorHorizontal', {label: 'horizontal'});
   fAttractors.addBinding(p, 'attractorVertical', {label: 'vertical'});
 
-  let fColors = toko.pane.tab.addFolder({ title: 'Colors', expanded: true });
+  let fColors = toko.pane.tab.addFolder({title: 'Colors', expanded: true});
   // add collection and palette selector, with next, previous and random buttons
   toko.addPaletteSelector(fColors, p, {
     index: 1,
@@ -116,29 +115,31 @@ function setup() {
     navButtons: true,
     collectionsList: 'collections',
     collectionKey: 'collection',
-    paletteKey: 'palette'
+    paletteKey: 'palette',
   });
   // add blendmode selector
   toko.addBlendModeSelector(fColors, p, {
-    blendModeKey: 'blendMode'
+    blendModeKey: 'blendMode',
   });
-  
-  fColors.addBinding(p, 'colorReverse', {label: "reverse"});
-  fColors.addBinding(p, 'originalColors', {label: "original"});
-  fColors.addBinding(p, 'darkBgnd', {label: "dark bgnd"});
+
+  fColors.addBinding(p, 'colorReverse', {label: 'reverse'});
+  fColors.addBinding(p, 'originalColors', {label: 'original'});
+  fColors.addBinding(p, 'darkBgnd', {label: 'dark bgnd'});
 
   toko.pane.tab.addBlade({view: 'separator'});
 
-  const btnClear = toko.pane.tab.addButton({
-    title: 'Clear trails',
-  }).on('click', () => {
-    clearTrails();
-  });
+  const btnClear = toko.pane.tab
+    .addButton({
+      title: 'Clear trails',
+    })
+    .on('click', () => {
+      clearTrails();
+    });
 
-  toko.pane.events.on("change", (value) => {
+  toko.pane.events.on('change', value => {
     refresh();
   });
-  
+
   refresh();
 
   //---------------------------------------------
@@ -146,7 +147,7 @@ function setup() {
   //---------------------------------------------
 }
 
-function refresh() {
+function refresh () {
   //
   //  set color parameters
   //
@@ -154,11 +155,11 @@ function refresh() {
     domain: [0, p.trailLength],
     mode: this.p.mode,
     reverse: p.colorReverse,
-  }
+  };
   //
   //  get colors and set the blendmode
   //
-  colors = toko.getColorScale(this.p.palette,o);
+  colors = toko.getColorScale(this.p.palette, o);
   blendMode(p.blendMode);
   //
   //  make additional particles if needed
@@ -167,28 +168,28 @@ function refresh() {
     let c = p.nrParticles - particles.length;
     for (let i = 0; i < c; i++) {
       let p1 = createVector(random(width), random(height));
-      let v1 = p5.Vector.random2D().setMag(random(p.velocityMin,p.velocityMax));
+      let v1 = p5.Vector.random2D().setMag(random(p.velocityMin, p.velocityMax));
       particles.push({
-        pos: [ p1 ],
-        vel: v1
-      })
+        pos: [p1],
+        vel: v1,
+      });
     }
   }
   //
   //  position the attractors
   //
   attractors = [];
-  let d = height/(p.nrAttractors+1);
+  let d = height / (p.nrAttractors + 1);
   if (p.attractorVertical) {
     for (let i = 0; i < p.nrAttractors; i++) {
-      attractors[i] = createVector(width/2, (i+1)*d);
+      attractors[i] = createVector(width / 2, (i + 1) * d);
     }
   }
   let pn = attractors.length;
-  d = width/(p.nrAttractors+1);
+  d = width / (p.nrAttractors + 1);
   if (p.attractorHorizontal) {
     for (let i = 0; i < p.nrAttractors; i++) {
-      attractors[i+pn] = createVector((i+1)*d, height/2);
+      attractors[i + pn] = createVector((i + 1) * d, height / 2);
     }
   }
   //
@@ -197,7 +198,7 @@ function refresh() {
   redraw();
 }
 
-function clearTrails() {
+function clearTrails () {
   for (let i = 0; i < particles.length; i++) {
     let curPos = particles[i].pos[0];
     particles[i].pos = [];
@@ -206,14 +207,14 @@ function clearTrails() {
   refresh();
 }
 
-function draw() {
+function draw () {
   //---------------------------------------------
   toko.startDraw();
   //---------------------------------------------
-  
+
   clear();
   noStroke();
-  
+
   if (p.darkBgnd) {
     background(colors.contrastColors[1]);
   } else {
@@ -230,7 +231,7 @@ function draw() {
       circle(attractors[i].x, attractors[i].y, 10);
     }
   }
-  
+
   let pos, vel, n, posNew, col, force, af;
 
   for (let i = 0; i < p.nrParticles; i++) {
@@ -241,7 +242,7 @@ function draw() {
     //
     //  attract to attractors
     //
-    force = createVector(0,0);
+    force = createVector(0, 0);
     for (let i = 0; i < p.nrAttractors; i++) {
       af = attractorForce(attractors[i], pos[0]);
       force.add(af);
@@ -255,7 +256,7 @@ function draw() {
     pos.unshift(posNew);
     pos.splice(p.trailLength);
 
-    n = pos.length-1;
+    n = pos.length - 1;
     noFill();
     strokeWeight(p.size);
     for (let j = 0; j < n; j++) {
@@ -275,7 +276,7 @@ function draw() {
         col.setAlpha(a);
       }
       stroke(col);
-      line(pos[j].x,pos[j].y,pos[j+1].x,pos[j+1].y);
+      line(pos[j].x, pos[j].y, pos[j + 1].x, pos[j + 1].y);
     }
 
     //
@@ -292,13 +293,13 @@ function draw() {
         } else {
           col = color(colors.originalScale(j));
         }
-        
+
         if (p.fadeTrail) {
           let a = map(j, 0, n, 255, 0);
           col.setAlpha(a);
         }
         stroke(col);
-        line(width-pos[j].x,height-pos[j].y,width-pos[j+1].x,height-pos[j+1].y);
+        line(width - pos[j].x, height - pos[j].y, width - pos[j + 1].x, height - pos[j + 1].y);
       }
     }
   }
@@ -308,7 +309,7 @@ function draw() {
   //---------------------------------------------
 }
 
-function attractorForce(attractor, position) {
+function attractorForce (attractor, position) {
   let force = p5.Vector.sub(attractor, position);
   let distanceSq = constrain(force.magSq(), 100, 1000);
   let strength = p.gravity / distanceSq;
@@ -322,45 +323,45 @@ function attractorForce(attractor, position) {
 //
 //---------------------------------------------
 
-function captureStarted() {
+function captureStarted () {
   //
   //  called when capture has started, use to reset visuals
   //
-  console.log("Toko - captureStarted");
+  console.log('Toko - captureStarted');
 }
 
-function captureStopped() {
+function captureStopped () {
   //
   //  called when capture is stopped, use to reset visuals
   //
-  console.log("Toko - captureStopped");
+  console.log('Toko - captureStopped');
 }
 
-function canvasResized() {
+function canvasResized () {
   //
   //  called when the canvas was resized
   //
-  console.log("Toko - canvasResized");
+  console.log('Toko - canvasResized');
 }
 
-function windowResized() {
+function windowResized () {
   //
   //  resize the canvas when the framing div was resized
   //
-  console.log("Toko - windowResized");
+  console.log('Toko - windowResized');
 
-  var newWidth = document.getElementById("sketch-canvas").offsetWidth;
-  var newHeight = document.getElementById("sketch-canvas").offsetHeight;
+  var newWidth = document.getElementById('sketch-canvas').offsetWidth;
+  var newHeight = document.getElementById('sketch-canvas').offsetHeight;
 
   if (newWidth != width || newHeight != height) {
     canvasResized();
   }
 }
 
-function receivedFile(file) {
+function receivedFile (file) {
   //
   //  called when a JSON file is dropped on the sketch
   //  tweakpane settings are automatically updated
   //
-  console.log("Toko - receivedFile")
+  console.log('Toko - receivedFile');
 }
