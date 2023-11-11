@@ -24,22 +24,22 @@ Toko.prototype.setup = function (inputOptions) {
   if (this.options.useParameterPanel) {
     this.basePane = new Tweakpane.Pane();
 
-    var tabs = [{title: this.TABS_PARAMETERS}];
+    var tabs = [{ title: this.TABS_PARAMETERS }];
     if (this.options.showAdvancedOptions) {
-      tabs.push({title: this.TABS_ADVANCED});
+      tabs.push({ title: this.TABS_ADVANCED });
       this.TAB_ID_ADVANCED = tabs.length - 1;
     }
 
     if (this.options.captureFrames) {
-      tabs.push({title: this.TABS_CAPTURE});
+      tabs.push({ title: this.TABS_CAPTURE });
       this.TAB_ID_CAPTURE = tabs.length - 1;
     }
     if (this.options.logFPS) {
-      tabs.push({title: this.TABS_FPS});
+      tabs.push({ title: this.TABS_FPS });
       this.TAB_ID_FPS = tabs.length - 1;
     }
 
-    this.basePaneTab = this.basePane.addTab({pages: tabs});
+    this.basePaneTab = this.basePane.addTab({ pages: tabs });
 
     //
     // register the tweakpane plugins
@@ -98,7 +98,9 @@ Toko.prototype.setup = function (inputOptions) {
   document.getElementById('sketch-title').innerText = this.options.title;
   document.title = this.options.title;
 
-  this.setCanvasSize(this.SIZES.filter(p => p.name === this.options.canvasSize.name)[0]);
+  this.setCanvasSize(
+    this.SIZES.filter(p => p.name === this.options.canvasSize.name)[0],
+  );
 };
 
 Toko.prototype.endSetup = function () {
@@ -111,11 +113,11 @@ Toko.prototype.endSetup = function () {
   this.SIZE_DEFAULT.height = height;
 
   if (this.options.logFPS) {
-    this.pt = {fps: 0, graph: 0};
+    this.pt = { fps: 0, graph: 0 };
 
     var f = this.basePaneTab.pages[this.TAB_ID_FPS];
 
-    f.addBinding(this.pt, 'fps', {interval: 200, readonly: true});
+    f.addBinding(this.pt, 'fps', { interval: 200, readonly: true });
 
     f.addBinding(this.pt, 'graph', {
       view: 'graph',
@@ -127,20 +129,30 @@ Toko.prototype.endSetup = function () {
   }
 
   if (this.options.useParameterPanel) {
-    if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {
+    if (
+      this.options.showSaveSketchButton &&
+      !this.options.saveSettingsWithSketch
+    ) {
       this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
         view: 'separator',
       });
-      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch'}).on('click', value => {
-        this.saveSketch();
-      });
-    } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
+      this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
+        .addButton({ title: 'Save sketch' })
+        .on('click', value => {
+          this.saveSketch();
+        });
+    } else if (
+      this.options.showSaveSketchButton &&
+      this.options.saveSettingsWithSketch
+    ) {
       this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
         view: 'separator',
       });
-      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch & settings'}).on('click', value => {
-        this.saveSketchAndSettings();
-      });
+      this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
+        .addButton({ title: 'Save sketch & settings' })
+        .on('click', value => {
+          this.saveSketchAndSettings();
+        });
     }
     if (this.options.hideParameterPanel) {
       var e = document.getElementsByClassName('tp-dfwv')[0];

@@ -3825,22 +3825,22 @@ var Toko = (function () {
     if (this.options.useParameterPanel) {
       this.basePane = new Tweakpane.Pane();
 
-      var tabs = [{title: this.TABS_PARAMETERS}];
+      var tabs = [{ title: this.TABS_PARAMETERS }];
       if (this.options.showAdvancedOptions) {
-        tabs.push({title: this.TABS_ADVANCED});
+        tabs.push({ title: this.TABS_ADVANCED });
         this.TAB_ID_ADVANCED = tabs.length - 1;
       }
 
       if (this.options.captureFrames) {
-        tabs.push({title: this.TABS_CAPTURE});
+        tabs.push({ title: this.TABS_CAPTURE });
         this.TAB_ID_CAPTURE = tabs.length - 1;
       }
       if (this.options.logFPS) {
-        tabs.push({title: this.TABS_FPS});
+        tabs.push({ title: this.TABS_FPS });
         this.TAB_ID_FPS = tabs.length - 1;
       }
 
-      this.basePaneTab = this.basePane.addTab({pages: tabs});
+      this.basePaneTab = this.basePane.addTab({ pages: tabs });
 
       //
       // register the tweakpane plugins
@@ -3899,7 +3899,9 @@ var Toko = (function () {
     document.getElementById('sketch-title').innerText = this.options.title;
     document.title = this.options.title;
 
-    this.setCanvasSize(this.SIZES.filter(p => p.name === this.options.canvasSize.name)[0]);
+    this.setCanvasSize(
+      this.SIZES.filter(p => p.name === this.options.canvasSize.name)[0],
+    );
   };
 
   Toko.prototype.endSetup = function () {
@@ -3912,11 +3914,11 @@ var Toko = (function () {
     this.SIZE_DEFAULT.height = height;
 
     if (this.options.logFPS) {
-      this.pt = {fps: 0, graph: 0};
+      this.pt = { fps: 0, graph: 0 };
 
       var f = this.basePaneTab.pages[this.TAB_ID_FPS];
 
-      f.addBinding(this.pt, 'fps', {interval: 200, readonly: true});
+      f.addBinding(this.pt, 'fps', { interval: 200, readonly: true });
 
       f.addBinding(this.pt, 'graph', {
         view: 'graph',
@@ -3928,20 +3930,30 @@ var Toko = (function () {
     }
 
     if (this.options.useParameterPanel) {
-      if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {
+      if (
+        this.options.showSaveSketchButton &&
+        !this.options.saveSettingsWithSketch
+      ) {
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
           view: 'separator',
         });
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch'}).on('click', value => {
-          this.saveSketch();
-        });
-      } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
+          .addButton({ title: 'Save sketch' })
+          .on('click', value => {
+            this.saveSketch();
+          });
+      } else if (
+        this.options.showSaveSketchButton &&
+        this.options.saveSettingsWithSketch
+      ) {
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
           view: 'separator',
         });
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch & settings'}).on('click', value => {
-          this.saveSketchAndSettings();
-        });
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
+          .addButton({ title: 'Save sketch & settings' })
+          .on('click', value => {
+            this.saveSketchAndSettings();
+          });
       }
       if (this.options.hideParameterPanel) {
         var e = document.getElementsByClassName('tp-dfwv')[0];
@@ -4073,7 +4085,7 @@ var Toko = (function () {
       view: 'buttongrid',
       size: [3, 1],
       cells: (x, y) => ({
-        title: [['← prev', 'rnd', 'next →']][y][x],
+        title: [['← prev', 'next →', 'rnd']][y][x],
       }),
       label: ' ',
     };
@@ -4083,17 +4095,31 @@ var Toko = (function () {
     }
 
     paneRef.addBlade(o).on('click', ev => {
-      let paletteList = toko.getPaletteSelection(pObject[collectionKey], justPrimary, sorted);
+      let paletteList = toko.getPaletteSelection(
+        pObject[collectionKey],
+        justPrimary,
+        sorted,
+      );
       switch (ev.index[0]) {
         case 0:
-          pObject[paletteKey] = this.findPreviousInList(pObject[paletteKey], paletteList);
+          pObject[paletteKey] = this.findPreviousInList(
+            pObject[paletteKey],
+            paletteList,
+          );
           break;
         case 1:
-          pObject[paletteKey] = this.findRandomInList(pObject[paletteKey], paletteList);
+          pObject[paletteKey] = this.findNextInList(
+            pObject[paletteKey],
+            paletteList,
+          );
           break;
         case 2:
-          pObject[paletteKey] = this.findNextInList(pObject[paletteKey], paletteList);
+          pObject[paletteKey] = this.findRandomInList(
+            pObject[paletteKey],
+            paletteList,
+          );
           break;
+
         default:
           console.log('a non-existing button was pressed:', ev.index[0]);
           break;
@@ -4160,7 +4186,7 @@ var Toko = (function () {
             // if it is, extract the key value combination and add it to the presets
             let o = {};
             o[obj[key].key] = obj[key].value;
-            presetObject = {...presetObject, ...o};
+            presetObject = { ...presetObject, ...o };
           } else if (typeof obj[key] === 'object') {
             // if it is not binding but is and object, dig deeper
             traverse(obj[key]);
@@ -4207,7 +4233,11 @@ var Toko = (function () {
   //
   //  add a double drop down to select a color palette
   //
-  Toko.prototype.addPaletteSelector = function (paneRef, pObject, incomingOptions) {
+  Toko.prototype.addPaletteSelector = function (
+    paneRef,
+    pObject,
+    incomingOptions,
+  ) {
     //
     //  set default options
     //
@@ -4225,8 +4255,14 @@ var Toko = (function () {
     o.paneRef = paneRef;
     o.pObject = pObject;
 
-    o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
-    o.collectionsList = Toko.prototype.formatForTweakpane(o.pObject[o.collectionsList]);
+    o.colorPalettes = Toko.prototype.getPaletteSelection(
+      o.pObject[o.collectionKey],
+      o.justPrimary,
+      o.sorted,
+    );
+    o.collectionsList = Toko.prototype.formatForTweakpane(
+      o.pObject[o.collectionsList],
+    );
 
     o.collectionInput = o.paneRef
       .addBinding(o.pObject, o.collectionKey, {
@@ -4234,7 +4270,11 @@ var Toko = (function () {
         options: o.collectionsList,
       })
       .on('change', ev => {
-        o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[o.collectionKey], o.justPrimary, o.sorted);
+        o.colorPalettes = Toko.prototype.getPaletteSelection(
+          pObject[o.collectionKey],
+          o.justPrimary,
+          o.sorted,
+        );
         o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
         o.scaleInput.dispose();
         o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
@@ -4254,17 +4294,32 @@ var Toko = (function () {
     //  add nav buttons below the dropdowns
     //
     if (o.navButtons) {
-      this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted, o.index + 1);
+      this.addPaneNavButtons(
+        o.paneRef,
+        o.pObject,
+        o.paletteKey,
+        o.collectionKey,
+        o.justPrimary,
+        o.sorted,
+        o.index + 1,
+      );
     }
   };
 
   //
   //  update the color palette selector
   //
-  Toko.prototype.updatePaletteSelector = function (receivedCollection, receivedPalette) {
+  Toko.prototype.updatePaletteSelector = function (
+    receivedCollection,
+    receivedPalette,
+  ) {
     let o;
     o = this.paletteSelectorData;
-    o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);
+    o.colorPalettes = Toko.prototype.getPaletteSelection(
+      receivedCollection,
+      o.justPrimary,
+      o.sorted,
+    );
     o.scaleInput.dispose();
     o.pObject[o.paletteKey] = receivedPalette;
     o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
@@ -4280,7 +4335,11 @@ var Toko = (function () {
   //
   //  add blendmode palette selector
   //
-  Toko.prototype.addBlendModeSelector = function (paneRef, pObject, incomingOptions) {
+  Toko.prototype.addBlendModeSelector = function (
+    paneRef,
+    pObject,
+    incomingOptions,
+  ) {
     //
     //  set default options
     //

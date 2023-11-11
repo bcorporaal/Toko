@@ -39,7 +39,7 @@ Toko.prototype.addPaneNavButtons = function (
     view: 'buttongrid',
     size: [3, 1],
     cells: (x, y) => ({
-      title: [['← prev', 'rnd', 'next →']][y][x],
+      title: [['← prev', 'next →', 'rnd']][y][x],
     }),
     label: ' ',
   };
@@ -49,17 +49,31 @@ Toko.prototype.addPaneNavButtons = function (
   }
 
   paneRef.addBlade(o).on('click', ev => {
-    let paletteList = toko.getPaletteSelection(pObject[collectionKey], justPrimary, sorted);
+    let paletteList = toko.getPaletteSelection(
+      pObject[collectionKey],
+      justPrimary,
+      sorted,
+    );
     switch (ev.index[0]) {
       case 0:
-        pObject[paletteKey] = this.findPreviousInList(pObject[paletteKey], paletteList);
+        pObject[paletteKey] = this.findPreviousInList(
+          pObject[paletteKey],
+          paletteList,
+        );
         break;
       case 1:
-        pObject[paletteKey] = this.findRandomInList(pObject[paletteKey], paletteList);
+        pObject[paletteKey] = this.findNextInList(
+          pObject[paletteKey],
+          paletteList,
+        );
         break;
       case 2:
-        pObject[paletteKey] = this.findNextInList(pObject[paletteKey], paletteList);
+        pObject[paletteKey] = this.findRandomInList(
+          pObject[paletteKey],
+          paletteList,
+        );
         break;
+
       default:
         console.log('a non-existing button was pressed:', ev.index[0]);
         break;
@@ -126,7 +140,7 @@ Toko.prototype._stateToPreset = function (stateObject) {
           // if it is, extract the key value combination and add it to the presets
           let o = {};
           o[obj[key].key] = obj[key].value;
-          presetObject = {...presetObject, ...o};
+          presetObject = { ...presetObject, ...o };
         } else if (typeof obj[key] === 'object') {
           // if it is not binding but is and object, dig deeper
           traverse(obj[key]);
@@ -173,7 +187,11 @@ Toko.prototype._presetToState = function (presetObject) {
 //
 //  add a double drop down to select a color palette
 //
-Toko.prototype.addPaletteSelector = function (paneRef, pObject, incomingOptions) {
+Toko.prototype.addPaletteSelector = function (
+  paneRef,
+  pObject,
+  incomingOptions,
+) {
   //
   //  set default options
   //
@@ -191,8 +209,14 @@ Toko.prototype.addPaletteSelector = function (paneRef, pObject, incomingOptions)
   o.paneRef = paneRef;
   o.pObject = pObject;
 
-  o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
-  o.collectionsList = Toko.prototype.formatForTweakpane(o.pObject[o.collectionsList]);
+  o.colorPalettes = Toko.prototype.getPaletteSelection(
+    o.pObject[o.collectionKey],
+    o.justPrimary,
+    o.sorted,
+  );
+  o.collectionsList = Toko.prototype.formatForTweakpane(
+    o.pObject[o.collectionsList],
+  );
 
   o.collectionInput = o.paneRef
     .addBinding(o.pObject, o.collectionKey, {
@@ -200,7 +224,11 @@ Toko.prototype.addPaletteSelector = function (paneRef, pObject, incomingOptions)
       options: o.collectionsList,
     })
     .on('change', ev => {
-      o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[o.collectionKey], o.justPrimary, o.sorted);
+      o.colorPalettes = Toko.prototype.getPaletteSelection(
+        pObject[o.collectionKey],
+        o.justPrimary,
+        o.sorted,
+      );
       o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
       o.scaleInput.dispose();
       o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
@@ -220,17 +248,32 @@ Toko.prototype.addPaletteSelector = function (paneRef, pObject, incomingOptions)
   //  add nav buttons below the dropdowns
   //
   if (o.navButtons) {
-    this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted, o.index + 1);
+    this.addPaneNavButtons(
+      o.paneRef,
+      o.pObject,
+      o.paletteKey,
+      o.collectionKey,
+      o.justPrimary,
+      o.sorted,
+      o.index + 1,
+    );
   }
 };
 
 //
 //  update the color palette selector
 //
-Toko.prototype.updatePaletteSelector = function (receivedCollection, receivedPalette) {
+Toko.prototype.updatePaletteSelector = function (
+  receivedCollection,
+  receivedPalette,
+) {
   let o;
   o = this.paletteSelectorData;
-  o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);
+  o.colorPalettes = Toko.prototype.getPaletteSelection(
+    receivedCollection,
+    o.justPrimary,
+    o.sorted,
+  );
   o.scaleInput.dispose();
   o.pObject[o.paletteKey] = receivedPalette;
   o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
@@ -246,7 +289,11 @@ Toko.prototype.updatePaletteSelector = function (receivedCollection, receivedPal
 //
 //  add blendmode palette selector
 //
-Toko.prototype.addBlendModeSelector = function (paneRef, pObject, incomingOptions) {
+Toko.prototype.addBlendModeSelector = function (
+  paneRef,
+  pObject,
+  incomingOptions,
+) {
   //
   //  set default options
   //
