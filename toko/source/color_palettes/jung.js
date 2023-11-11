@@ -38,5 +38,5 @@ export default [
     stroke: '#000000',
     background: '#ffffff',
     type: 'jung',
-  }
+  },
 ];

@@ -134,7 +134,7 @@ var Toko = (function () {
   const CAPTURE_FORMATS = {
     PNG: 'png',
     JPG: 'jpg',
-    GIF: 'gif'
+    GIF: 'gif',
   };
 
   //
@@ -172,7 +172,7 @@ var Toko = (function () {
   //
   //  Word lists from various sources.
   //  Used to create random file names for the exports
-  //  
+  //
   //  Sources (among others and random additions)
   //  https://en.wikipedia.org/wiki/List_of_Crayola_crayon_colors
   //  https://github.com/Atrox/haikunatorjs
@@ -453,8 +453,7 @@ var Toko = (function () {
   });
 
   class Toko {
-    constructor() {
-
+    constructor () {
       for (const k in constants) {
         this[k] = constants[k];
       }
@@ -469,7 +468,6 @@ var Toko = (function () {
       Toko.reseed(Date.now());
 
       console.log(this.VERSION);
-
     }
   }
 
@@ -486,7 +484,11 @@ var Toko = (function () {
   //
   //  create color scales based on a set of colors in an array
   //
-  Toko.prototype.createColorScale = function (colorSet, colorOptions, extraColors) {
+  Toko.prototype.createColorScale = function (
+    colorSet,
+    colorOptions,
+    extraColors,
+  ) {
     let o = this._createColorScale(colorSet, colorOptions, extraColors);
     return o;
   };
@@ -501,21 +503,33 @@ var Toko = (function () {
   //
   //  get the previous palette based on the type and isPrimary status. Loops at the beginning
   //
-  Toko.prototype.getNextPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
+  Toko.prototype.getNextPalette = function (
+    inPalette,
+    paletteType = 'all',
+    justPrimary = true,
+  ) {
     return this._getAnotherPalette(inPalette, paletteType, justPrimary, 1);
   };
 
   //
   //  get the next palette based on the type and isPrimary status. Loops at the end
   //
-  Toko.prototype.getPreviousPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
+  Toko.prototype.getPreviousPalette = function (
+    inPalette,
+    paletteType = 'all',
+    justPrimary = true,
+  ) {
     return this._getAnotherPalette(inPalette, paletteType, justPrimary, -1);
   };
 
   //
   //  get a random palette
   //
-  Toko.prototype.getRandomPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
+  Toko.prototype.getRandomPalette = function (
+    inPalette,
+    paletteType = 'all',
+    justPrimary = true,
+  ) {
     return this._getRandomPalette(inPalette, paletteType, justPrimary);
   };
 
@@ -530,13 +544,17 @@ var Toko = (function () {
     if (p === undefined) {
       console.log('palette not found: ' + paletteName);
     }
-    return p
+    return p;
   };
 
   //
   //  get a list of palettes based on type and isPrimary status
   //
-  Toko.prototype.getPaletteList = function (paletteType = 'all', justPrimary = true, sorted = false) {
+  Toko.prototype.getPaletteList = function (
+    paletteType = 'all',
+    justPrimary = true,
+    sorted = false,
+  ) {
     let filtered = this._getPaletteListRaw(paletteType, justPrimary, sorted);
     return this.formatForTweakpane(filtered, 'name');
   };
@@ -544,8 +562,16 @@ var Toko = (function () {
   //
   //  get a selection of palettes based on a comma seperated list
   //
-  Toko.prototype.getPaletteSelection = function (selectionList, justPrimary = false, sorted = false) {
-    let filtered = this._getPaletteSelectionRaw(selectionList, justPrimary, sorted);
+  Toko.prototype.getPaletteSelection = function (
+    selectionList,
+    justPrimary = false,
+    sorted = false,
+  ) {
+    let filtered = this._getPaletteSelectionRaw(
+      selectionList,
+      justPrimary,
+      sorted,
+    );
     return this.formatForTweakpane(filtered, 'name');
   };
 
@@ -553,7 +579,7 @@ var Toko = (function () {
     {
       name: 'logical',
       colors: ['#F7A13D', '#54ADFD', '#FE766C', '#112264', '#005BF7', '#FC0340'],
-      stroke:'#21202E',
+      stroke: '#21202E',
       background: '#F8F8F8',
       isPrimary: true,
       type: 'basic',
@@ -632,13 +658,35 @@ var Toko = (function () {
     },
     {
       name: 'fullRainbow',
-      colors: ['#1B1334', '#262A4A', '#00545A', '#027350', '#08C383', '#AAD962', '#FBBF46', '#EF6A32', '#ED0445', '#A12A5E', '#710262', '#110141'],
+      colors: [
+        '#1B1334',
+        '#262A4A',
+        '#00545A',
+        '#027350',
+        '#08C383',
+        '#AAD962',
+        '#FBBF46',
+        '#EF6A32',
+        '#ED0445',
+        '#A12A5E',
+        '#710262',
+        '#110141',
+      ],
       isPrimary: true,
       type: 'basic',
     },
     {
       name: 'pastel',
-      colors: ['#F7884B', '#E87A7A', '#B8609A', '#8F64B0', '#7171C4', '#5381E3', '#41ADD4', '#5CB592'],
+      colors: [
+        '#F7884B',
+        '#E87A7A',
+        '#B8609A',
+        '#8F64B0',
+        '#7171C4',
+        '#5381E3',
+        '#41ADD4',
+        '#5CB592',
+      ],
       isPrimary: false,
       type: 'basic',
     },
@@ -651,13 +699,34 @@ var Toko = (function () {
     // colors from d3
     {
       name: 'paired',
-      colors: ['#A6CEE3', '#1F78B4', '#B2DF8A', '#33A02C', '#FB9A99', '#E31A1C', '#FDBF6F', '#FF7F00', '#CAB2D6', '#6A3D9A', '#FFFF99', '#B15928'],
+      colors: [
+        '#A6CEE3',
+        '#1F78B4',
+        '#B2DF8A',
+        '#33A02C',
+        '#FB9A99',
+        '#E31A1C',
+        '#FDBF6F',
+        '#FF7F00',
+        '#CAB2D6',
+        '#6A3D9A',
+        '#FFFF99',
+        '#B15928',
+      ],
       isPrimary: false,
       type: 'basic',
     },
     {
       name: 'sand',
-      colors: ['#FCE29C', '#FCD67A', '#F0B46C', '#D59262', '#B47457', '#81514B', '#4C3C45'],
+      colors: [
+        '#FCE29C',
+        '#FCD67A',
+        '#F0B46C',
+        '#D59262',
+        '#B47457',
+        '#81514B',
+        '#4C3C45',
+      ],
       isPrimary: true,
       type: 'basic',
     },
@@ -675,7 +744,15 @@ var Toko = (function () {
     },
     {
       name: 'westCoast',
-      colors: ['#D9CCC0', '#F19D1A', '#DC306A', '#7E245A', '#398589', '#093578', '#0F1A5E'],
+      colors: [
+        '#D9CCC0',
+        '#F19D1A',
+        '#DC306A',
+        '#7E245A',
+        '#398589',
+        '#093578',
+        '#0F1A5E',
+      ],
       isPrimary: true,
       type: 'basic',
     },
@@ -717,7 +794,16 @@ var Toko = (function () {
     },
     {
       name: 'soft',
-      colors: ['#F2F5E7', '#EBDED1', '#E5B5B7', '#D68097', '#B06683', '#705771', '#294353', '#0B3039'],
+      colors: [
+        '#F2F5E7',
+        '#EBDED1',
+        '#E5B5B7',
+        '#D68097',
+        '#B06683',
+        '#705771',
+        '#294353',
+        '#0B3039',
+      ],
       isPrimary: false,
       type: 'basic',
     },
@@ -726,7 +812,7 @@ var Toko = (function () {
       colors: ['#FFB7BC', '#FF5181', '#FFCF49', '#FFA43F', '#5CCAEF'],
       isPrimary: true,
       type: 'basic',
-    }
+    },
   ];
 
   //
@@ -812,7 +898,7 @@ var Toko = (function () {
       colors: ['#363d4a', '#7b8a56', '#ff9369', '#f4c172'],
       background: '#f0efe2',
       type: 'colourscafe',
-    }
+    },
   ];
 
   //
@@ -820,202 +906,650 @@ var Toko = (function () {
   //  see https://observablehq.com/@d3/color-schemes
   //
   var d3Palettes = [
-  {
-    name: 'brownGreen',
-    colors: ['#543005', '#7c480a', '#a1661b', '#c28c3d', '#d9b671', '#ebd7a4', '#f4ead0', '#eef1ea', '#d2ece8', '#a8ddd5', '#75c3b8', '#429f96', '#197b73', '#045a51', '#003c30'],
-    id: 'interpolateBrBG',
-    isPrimary: true,
-    type: 'd3',
-  },
-  {
-    name: 'greys',
-    colors: ['#ffffff', '#f6f6f6', '#ececec', '#dfdfdf', '#d1d1d1', '#c0c0c0', '#acacac', '#979797', '#828282', '#6e6e6e', '#5b5b5b', '#444444', '#2c2c2c', '#151515', '#000000'],
-    id: 'interpolateGreys',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'inferno',
-    colors: ['#000004', '#0d0829', '#280b53', '#470b6a', '#65156e', '#82206c', '#9f2a63', '#bc3754', '#d44842', '#e8602d', '#f57d15', '#fc9f07', '#fac228', '#f3e55d', '#fcffa4'],
-    id: 'interpolateInferno',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'magma',
-    colors: ['#000004', '#0c0926', '#221150', '#400f74', '#5f187f', '#7b2382', '#982d80', '#b73779', '#d3436e', '#eb5760', '#f8765c', '#fd9a6a', '#febb81', '#fddc9e', '#fcfdbf'],
-    id: 'interpolateMagma',
-    isPrimary: true,
-    type: 'd3',
-  },
-  {
-    name: 'plasma',
-    colors: ['#0d0887', '#350498', '#5302a3', '#6f00a8', '#8b0aa5', '#a31e9a', '#b83289', '#cc4778', '#db5c68', '#e97158', '#f48849', '#fba238', '#febd2a', '#fada24', '#f0f921'],
-    id: 'interpolatePlasma',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'puBuGn',
-    colors: ['#fff7fb', '#f4ebf5', '#e7e0ef', '#d7d6e9', '#c3cbe3', '#aac0dc', '#8bb4d6', '#69a8cf', '#4b9bc5', '#2e8fb4', '#14859a', '#057b7c', '#016d61', '#015b4a', '#014636'],
-    id: 'interpolatePuBuGn',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'rainbow',
-    colors: ['#6e40aa', '#a83cb3', '#df40a1', '#ff507a', '#ff704e', '#f89b31', '#d2c934', '#aff05b', '#6bf75c', '#34f07e', '#1bd9ac', '#1fb3d3', '#3988e1', '#585fd2', '#6e40aa'],
-    id: 'interpolateRainbow',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'RedPurple',
-    colors: ['#fff7f3', '#feeae6', '#fddcd8', '#fcccc9', '#fbb9be', '#faa3b6', '#f887ac', '#f369a3', '#e74a9b', '#d42d92', '#bb1386', '#9f047d', '#820177', '#650171', '#49006a'],
-    id: 'interpolateRdPu',
-    isPrimary: true,
-    type: 'd3',
-  },
-  {
-    name: 'sinebow',
-    colors: ['#ff4040', '#f27616', '#cfae01', '#9cdd06', '#63f922', '#30fe51', '#0de989', '#00bfbf', '#0d89e9', '#3051fe', '#6322f9', '#9c06dd', '#cf01ae', '#f21676', '#ff4040'],
-    id: 'interpolateSinebow',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'spectral',
-    colors: ['#9e0142', '#c42c4a', '#e1524a', '#f3784c', '#fba35e', '#fdca79', '#fee89a', '#fbf8b0', '#ebf7a6', '#ccea9f', '#a0d9a3', '#72c3a7', '#4ba0b1', '#4478b2', '#5e4fa2'],
-    id: 'interpolateSpectral',
-    isPrimary: true,
-    type: 'd3',
-  },
-  {
-    name: 'turbo',
-    colors: ['#23171b', '#4a44bc', '#4076f5', '#2ca6f1', '#26d0cd', '#37ed9f', '#5ffc73', '#95fb51', '#cbe839', '#f5c72b', '#ff9b21', '#fb6919', '#d6390f', '#a81604', '#900c00'],
-    id: 'interpolateTurbo',
-    isPrimary: true,
-    type: 'd3',
-  },
-  {
-    name: 'viridis',
-    colors: ['#440154', '#481b6d', '#46327e', '#3f4788', '#365c8d', '#2e6e8e', '#277f8e', '#21918c', '#1fa187', '#2db27d', '#4ac16d', '#73d056', '#a0da39', '#d0e11c', '#fde725'],
-    id: 'interpolateViridis',
-    isPrimary: true,
-    type: 'd3',
-  },
-  {
-    name: 'YlGnBu',
-    colors: ['#ffffd9', '#f4fbc3', '#e5f5b6', '#d0ecb4', '#b0e0b6', '#8ad2ba', '#65c3bf', '#45b4c2', '#2ea0c1', '#2288ba', '#216daf', '#2353a2', '#213c93', '#182b79', '#081d58'],
-    id: 'interpolateYlGnBu',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'YlOrBr',
-    colors: ['#ffffe5', '#ffface', '#fff3b6', '#fee89c', '#fed97d', '#fec75b', '#feb140', '#fb992c', '#f3821d', '#e66b12', '#d45708', '#bc4604', '#a03804', '#832e05', '#662506'],
-    id: 'interpolateYlOrBr',
-    isPrimary: true,
-    type: 'd3',
-  },
-  {
-    name: 'YlOrRd',
-    colors: ['#ffffcc', '#fff5b3', '#ffea9a', '#fede82', '#fecd6a', '#feb855', '#fea246', '#fd893c', '#fc6932', '#f64828', '#e92a21', '#d71420', '#c00624', '#a20126', '#800026'],
-    id: 'interpolateYlOrRd',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'blueGreen',
-    colors: ['#f7fcfd', '#ecf8fa', '#e1f3f5', '#d2eeeb', '#bce6dd', '#a0dbcc', '#83cfb9', '#68c2a3', '#51b68a', '#3da76f', '#2b9554', '#19833f', '#097030', '#015b25', '#00441b'],
-    id: 'interpolateBuGn',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'bluePurple',
-    colors: ['#f7fcfd', '#eaf3f8', '#dae7f1', '#c8daea', '#b6cce3', '#a4bedb', '#97abd1', '#8f95c6', '#8c7dba', '#8b65ae', '#894da2', '#863293', '#7d1a7f', '#690a67', '#4d004b'],
-    id: 'interpolateBuPu',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'cividis',
-    colors: ['#002051', '#032d66', '#173a6d', '#30476e', '#48546d', '#5d616e', '#706e71', '#7f7c75', '#8e8978', '#9e9878', '#b1a775', '#c6b76c', '#ddc75f', '#f1d851', '#fdea45'],
-    id: 'interpolateCividis',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'cool',
-    colors: ['#6e40aa', '#654ec0', '#585fd2', '#4973dd', '#3988e1', '#2b9ede', '#1fb3d3', '#1ac7c2', '#1bd9ac', '#24e695', '#34f07e', '#4df56a', '#6bf75c', '#8cf457', '#aff05b'],
-    id: 'interpolateCool',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'cubeHelix',
-    colors: ['#000000', '#170d22', '#1a2442', '#15434f', '#1b6145', '#387434', '#6a7b30', '#a07949', '#c77b7b', '#d588b5', '#cda3e1', '#c2c4f3', '#c6e1f1', '#def4ef', '#ffffff'],
-    id: 'interpolateCubehelixDefault',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'greenBlue',
-    colors: ['#f7fcf0', '#eaf7e4', '#ddf2d8', '#d1edcc', '#c1e7c1', '#acdfbb', '#94d6bc', '#7bcbc4', '#62bdcb', '#4aaccc', '#3597c4', '#2182b9', '#116dac', '#095799', '#084081'],
-    id: 'interpolateGnBu',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'orangeRed',
-    colors: ['#fff7ec', '#feeed7', '#fee5c1', '#fdd9ab', '#fdcc97', '#fdbc86', '#fca771', '#fa8e5d', '#f4764f', '#ea5c40', '#dd3f2b', '#cc2317', '#b60c08', '#9c0101', '#7f0000'],
-    id: 'interpolateOrRd',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'plasma',
-    colors: ['#0d0887', '#350498', '#5302a3', '#6f00a8', '#8b0aa5', '#a31e9a', '#b83289', '#cc4778', '#db5c68', '#e97158', '#f48849', '#fba238', '#febd2a', '#fada24', '#f0f921'],
-    id: 'interpolatePlasma',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'purpleBlue',
-    colors: ['#fff7fb', '#f4eef6', '#e7e3f0', '#d7d7e9', '#c3cbe3', '#abc0dc', '#90b4d6', '#72a8cf', '#519ac6', '#308bbe', '#167ab3', '#086aa5', '#045c90', '#034b76', '#023858'],
-    id: 'interpolatePuBu',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'purpleRed',
-    colors: ['#f7f4f9', '#eee8f3', '#e4d9eb', '#dac5e0', '#d1afd5', '#ce98c9', '#d37fbd', '#dd63ae', '#e2449a', '#e02a81', '#d31967', '#bd0d53', '#a00444', '#830133', '#67001f'],
-    id: 'interpolatePuRd',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'RdBu',
-    colors: ['#67001f', '#9a1429', '#c0383b', '#da6a57', '#ee9a7c', '#f8c3a9', '#fae1d3', '#f2efee', '#dae9f1', '#b5d7e8', '#85bcd9', '#539bc7', '#3079b4', '#195693', '#053061'],
-    id: 'interpolateRdBu',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'warm',
-    colors: ['#6e40aa', '#8a3eb2', '#a83cb3', '#c53dad', '#df40a1', '#f4468f', '#ff507a', '#ff5e63', '#ff704e', '#ff843d', '#f89b31', '#e6b32e', '#d2c934', '#bfde43', '#aff05b'],
-    id: 'interpolateWarm',
-    isPrimary: false,
-    type: 'd3',
-  },
-  {
-    name: 'YlGn',
-    colors: ['#ffffe5', '#fafdcd', '#f0f9b8', '#e1f3a9', '#ccea9d', '#b2df91', '#96d385', '#78c578', '#59b669', '#3fa45a', '#2b904b', '#197d40', '#096b39', '#015931', '#004529'],
-    id: 'interpolateYlGn',
-    isPrimary: false,
-    type: 'd3',
-  },
+    {
+      name: 'brownGreen',
+      colors: [
+        '#543005',
+        '#7c480a',
+        '#a1661b',
+        '#c28c3d',
+        '#d9b671',
+        '#ebd7a4',
+        '#f4ead0',
+        '#eef1ea',
+        '#d2ece8',
+        '#a8ddd5',
+        '#75c3b8',
+        '#429f96',
+        '#197b73',
+        '#045a51',
+        '#003c30',
+      ],
+      id: 'interpolateBrBG',
+      isPrimary: true,
+      type: 'd3',
+    },
+    {
+      name: 'greys',
+      colors: [
+        '#ffffff',
+        '#f6f6f6',
+        '#ececec',
+        '#dfdfdf',
+        '#d1d1d1',
+        '#c0c0c0',
+        '#acacac',
+        '#979797',
+        '#828282',
+        '#6e6e6e',
+        '#5b5b5b',
+        '#444444',
+        '#2c2c2c',
+        '#151515',
+        '#000000',
+      ],
+      id: 'interpolateGreys',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'inferno',
+      colors: [
+        '#000004',
+        '#0d0829',
+        '#280b53',
+        '#470b6a',
+        '#65156e',
+        '#82206c',
+        '#9f2a63',
+        '#bc3754',
+        '#d44842',
+        '#e8602d',
+        '#f57d15',
+        '#fc9f07',
+        '#fac228',
+        '#f3e55d',
+        '#fcffa4',
+      ],
+      id: 'interpolateInferno',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'magma',
+      colors: [
+        '#000004',
+        '#0c0926',
+        '#221150',
+        '#400f74',
+        '#5f187f',
+        '#7b2382',
+        '#982d80',
+        '#b73779',
+        '#d3436e',
+        '#eb5760',
+        '#f8765c',
+        '#fd9a6a',
+        '#febb81',
+        '#fddc9e',
+        '#fcfdbf',
+      ],
+      id: 'interpolateMagma',
+      isPrimary: true,
+      type: 'd3',
+    },
+    {
+      name: 'plasma',
+      colors: [
+        '#0d0887',
+        '#350498',
+        '#5302a3',
+        '#6f00a8',
+        '#8b0aa5',
+        '#a31e9a',
+        '#b83289',
+        '#cc4778',
+        '#db5c68',
+        '#e97158',
+        '#f48849',
+        '#fba238',
+        '#febd2a',
+        '#fada24',
+        '#f0f921',
+      ],
+      id: 'interpolatePlasma',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'puBuGn',
+      colors: [
+        '#fff7fb',
+        '#f4ebf5',
+        '#e7e0ef',
+        '#d7d6e9',
+        '#c3cbe3',
+        '#aac0dc',
+        '#8bb4d6',
+        '#69a8cf',
+        '#4b9bc5',
+        '#2e8fb4',
+        '#14859a',
+        '#057b7c',
+        '#016d61',
+        '#015b4a',
+        '#014636',
+      ],
+      id: 'interpolatePuBuGn',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'rainbow',
+      colors: [
+        '#6e40aa',
+        '#a83cb3',
+        '#df40a1',
+        '#ff507a',
+        '#ff704e',
+        '#f89b31',
+        '#d2c934',
+        '#aff05b',
+        '#6bf75c',
+        '#34f07e',
+        '#1bd9ac',
+        '#1fb3d3',
+        '#3988e1',
+        '#585fd2',
+        '#6e40aa',
+      ],
+      id: 'interpolateRainbow',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'RedPurple',
+      colors: [
+        '#fff7f3',
+        '#feeae6',
+        '#fddcd8',
+        '#fcccc9',
+        '#fbb9be',
+        '#faa3b6',
+        '#f887ac',
+        '#f369a3',
+        '#e74a9b',
+        '#d42d92',
+        '#bb1386',
+        '#9f047d',
+        '#820177',
+        '#650171',
+        '#49006a',
+      ],
+      id: 'interpolateRdPu',
+      isPrimary: true,
+      type: 'd3',
+    },
+    {
+      name: 'sinebow',
+      colors: [
+        '#ff4040',
+        '#f27616',
+        '#cfae01',
+        '#9cdd06',
+        '#63f922',
+        '#30fe51',
+        '#0de989',
+        '#00bfbf',
+        '#0d89e9',
+        '#3051fe',
+        '#6322f9',
+        '#9c06dd',
+        '#cf01ae',
+        '#f21676',
+        '#ff4040',
+      ],
+      id: 'interpolateSinebow',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'spectral',
+      colors: [
+        '#9e0142',
+        '#c42c4a',
+        '#e1524a',
+        '#f3784c',
+        '#fba35e',
+        '#fdca79',
+        '#fee89a',
+        '#fbf8b0',
+        '#ebf7a6',
+        '#ccea9f',
+        '#a0d9a3',
+        '#72c3a7',
+        '#4ba0b1',
+        '#4478b2',
+        '#5e4fa2',
+      ],
+      id: 'interpolateSpectral',
+      isPrimary: true,
+      type: 'd3',
+    },
+    {
+      name: 'turbo',
+      colors: [
+        '#23171b',
+        '#4a44bc',
+        '#4076f5',
+        '#2ca6f1',
+        '#26d0cd',
+        '#37ed9f',
+        '#5ffc73',
+        '#95fb51',
+        '#cbe839',
+        '#f5c72b',
+        '#ff9b21',
+        '#fb6919',
+        '#d6390f',
+        '#a81604',
+        '#900c00',
+      ],
+      id: 'interpolateTurbo',
+      isPrimary: true,
+      type: 'd3',
+    },
+    {
+      name: 'viridis',
+      colors: [
+        '#440154',
+        '#481b6d',
+        '#46327e',
+        '#3f4788',
+        '#365c8d',
+        '#2e6e8e',
+        '#277f8e',
+        '#21918c',
+        '#1fa187',
+        '#2db27d',
+        '#4ac16d',
+        '#73d056',
+        '#a0da39',
+        '#d0e11c',
+        '#fde725',
+      ],
+      id: 'interpolateViridis',
+      isPrimary: true,
+      type: 'd3',
+    },
+    {
+      name: 'YlGnBu',
+      colors: [
+        '#ffffd9',
+        '#f4fbc3',
+        '#e5f5b6',
+        '#d0ecb4',
+        '#b0e0b6',
+        '#8ad2ba',
+        '#65c3bf',
+        '#45b4c2',
+        '#2ea0c1',
+        '#2288ba',
+        '#216daf',
+        '#2353a2',
+        '#213c93',
+        '#182b79',
+        '#081d58',
+      ],
+      id: 'interpolateYlGnBu',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'YlOrBr',
+      colors: [
+        '#ffffe5',
+        '#ffface',
+        '#fff3b6',
+        '#fee89c',
+        '#fed97d',
+        '#fec75b',
+        '#feb140',
+        '#fb992c',
+        '#f3821d',
+        '#e66b12',
+        '#d45708',
+        '#bc4604',
+        '#a03804',
+        '#832e05',
+        '#662506',
+      ],
+      id: 'interpolateYlOrBr',
+      isPrimary: true,
+      type: 'd3',
+    },
+    {
+      name: 'YlOrRd',
+      colors: [
+        '#ffffcc',
+        '#fff5b3',
+        '#ffea9a',
+        '#fede82',
+        '#fecd6a',
+        '#feb855',
+        '#fea246',
+        '#fd893c',
+        '#fc6932',
+        '#f64828',
+        '#e92a21',
+        '#d71420',
+        '#c00624',
+        '#a20126',
+        '#800026',
+      ],
+      id: 'interpolateYlOrRd',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'blueGreen',
+      colors: [
+        '#f7fcfd',
+        '#ecf8fa',
+        '#e1f3f5',
+        '#d2eeeb',
+        '#bce6dd',
+        '#a0dbcc',
+        '#83cfb9',
+        '#68c2a3',
+        '#51b68a',
+        '#3da76f',
+        '#2b9554',
+        '#19833f',
+        '#097030',
+        '#015b25',
+        '#00441b',
+      ],
+      id: 'interpolateBuGn',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'bluePurple',
+      colors: [
+        '#f7fcfd',
+        '#eaf3f8',
+        '#dae7f1',
+        '#c8daea',
+        '#b6cce3',
+        '#a4bedb',
+        '#97abd1',
+        '#8f95c6',
+        '#8c7dba',
+        '#8b65ae',
+        '#894da2',
+        '#863293',
+        '#7d1a7f',
+        '#690a67',
+        '#4d004b',
+      ],
+      id: 'interpolateBuPu',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'cividis',
+      colors: [
+        '#002051',
+        '#032d66',
+        '#173a6d',
+        '#30476e',
+        '#48546d',
+        '#5d616e',
+        '#706e71',
+        '#7f7c75',
+        '#8e8978',
+        '#9e9878',
+        '#b1a775',
+        '#c6b76c',
+        '#ddc75f',
+        '#f1d851',
+        '#fdea45',
+      ],
+      id: 'interpolateCividis',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'cool',
+      colors: [
+        '#6e40aa',
+        '#654ec0',
+        '#585fd2',
+        '#4973dd',
+        '#3988e1',
+        '#2b9ede',
+        '#1fb3d3',
+        '#1ac7c2',
+        '#1bd9ac',
+        '#24e695',
+        '#34f07e',
+        '#4df56a',
+        '#6bf75c',
+        '#8cf457',
+        '#aff05b',
+      ],
+      id: 'interpolateCool',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'cubeHelix',
+      colors: [
+        '#000000',
+        '#170d22',
+        '#1a2442',
+        '#15434f',
+        '#1b6145',
+        '#387434',
+        '#6a7b30',
+        '#a07949',
+        '#c77b7b',
+        '#d588b5',
+        '#cda3e1',
+        '#c2c4f3',
+        '#c6e1f1',
+        '#def4ef',
+        '#ffffff',
+      ],
+      id: 'interpolateCubehelixDefault',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'greenBlue',
+      colors: [
+        '#f7fcf0',
+        '#eaf7e4',
+        '#ddf2d8',
+        '#d1edcc',
+        '#c1e7c1',
+        '#acdfbb',
+        '#94d6bc',
+        '#7bcbc4',
+        '#62bdcb',
+        '#4aaccc',
+        '#3597c4',
+        '#2182b9',
+        '#116dac',
+        '#095799',
+        '#084081',
+      ],
+      id: 'interpolateGnBu',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'orangeRed',
+      colors: [
+        '#fff7ec',
+        '#feeed7',
+        '#fee5c1',
+        '#fdd9ab',
+        '#fdcc97',
+        '#fdbc86',
+        '#fca771',
+        '#fa8e5d',
+        '#f4764f',
+        '#ea5c40',
+        '#dd3f2b',
+        '#cc2317',
+        '#b60c08',
+        '#9c0101',
+        '#7f0000',
+      ],
+      id: 'interpolateOrRd',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'plasma',
+      colors: [
+        '#0d0887',
+        '#350498',
+        '#5302a3',
+        '#6f00a8',
+        '#8b0aa5',
+        '#a31e9a',
+        '#b83289',
+        '#cc4778',
+        '#db5c68',
+        '#e97158',
+        '#f48849',
+        '#fba238',
+        '#febd2a',
+        '#fada24',
+        '#f0f921',
+      ],
+      id: 'interpolatePlasma',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'purpleBlue',
+      colors: [
+        '#fff7fb',
+        '#f4eef6',
+        '#e7e3f0',
+        '#d7d7e9',
+        '#c3cbe3',
+        '#abc0dc',
+        '#90b4d6',
+        '#72a8cf',
+        '#519ac6',
+        '#308bbe',
+        '#167ab3',
+        '#086aa5',
+        '#045c90',
+        '#034b76',
+        '#023858',
+      ],
+      id: 'interpolatePuBu',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'purpleRed',
+      colors: [
+        '#f7f4f9',
+        '#eee8f3',
+        '#e4d9eb',
+        '#dac5e0',
+        '#d1afd5',
+        '#ce98c9',
+        '#d37fbd',
+        '#dd63ae',
+        '#e2449a',
+        '#e02a81',
+        '#d31967',
+        '#bd0d53',
+        '#a00444',
+        '#830133',
+        '#67001f',
+      ],
+      id: 'interpolatePuRd',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'RdBu',
+      colors: [
+        '#67001f',
+        '#9a1429',
+        '#c0383b',
+        '#da6a57',
+        '#ee9a7c',
+        '#f8c3a9',
+        '#fae1d3',
+        '#f2efee',
+        '#dae9f1',
+        '#b5d7e8',
+        '#85bcd9',
+        '#539bc7',
+        '#3079b4',
+        '#195693',
+        '#053061',
+      ],
+      id: 'interpolateRdBu',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'warm',
+      colors: [
+        '#6e40aa',
+        '#8a3eb2',
+        '#a83cb3',
+        '#c53dad',
+        '#df40a1',
+        '#f4468f',
+        '#ff507a',
+        '#ff5e63',
+        '#ff704e',
+        '#ff843d',
+        '#f89b31',
+        '#e6b32e',
+        '#d2c934',
+        '#bfde43',
+        '#aff05b',
+      ],
+      id: 'interpolateWarm',
+      isPrimary: false,
+      type: 'd3',
+    },
+    {
+      name: 'YlGn',
+      colors: [
+        '#ffffe5',
+        '#fafdcd',
+        '#f0f9b8',
+        '#e1f3a9',
+        '#ccea9d',
+        '#b2df91',
+        '#96d385',
+        '#78c578',
+        '#59b669',
+        '#3fa45a',
+        '#2b904b',
+        '#197d40',
+        '#096b39',
+        '#015931',
+        '#004529',
+      ],
+      id: 'interpolateYlGn',
+      isPrimary: false,
+      type: 'd3',
+    },
   ];
 
   //
@@ -1026,16 +1560,7 @@ var Toko = (function () {
   var dalePalettes = [
     {
       name: 'dale_paddle',
-      colors: [
-        '#ff7a5a',
-        '#765aa6',
-        '#fee7bc',
-        '#515e8c',
-        '#ffc64a',
-        '#b460a6',
-        '#ffffff',
-        '#4781c1',
-      ],
+      colors: ['#ff7a5a', '#765aa6', '#fee7bc', '#515e8c', '#ffc64a', '#b460a6', '#ffffff', '#4781c1'],
       stroke: '#000000',
       background: '#abe9e8',
       type: 'dale',
@@ -1166,7 +1691,7 @@ var Toko = (function () {
       stroke: '#1a1e4f',
       background: '#fbb900',
       type: 'ducci',
-    }
+    },
   ];
 
   //
@@ -1283,16 +1808,7 @@ var Toko = (function () {
   var expositoPalettes = [
     {
       name: 'exposito',
-      colors: [
-        '#8bc9c3',
-        '#ffae43',
-        '#ea432c',
-        '#228345',
-        '#d1d7d3',
-        '#524e9c',
-        '#9dc35e',
-        '#f0a1a1',
-      ],
+      colors: ['#8bc9c3', '#ffae43', '#ea432c', '#228345', '#d1d7d3', '#524e9c', '#9dc35e', '#f0a1a1'],
       stroke: '#fff',
       background: '#000000',
       type: 'exposito',
@@ -1342,16 +1858,7 @@ var Toko = (function () {
     },
     {
       name: 'mably',
-      colors: [
-        '#13477b',
-        '#2f1b10',
-        '#d18529',
-        '#d72a25',
-        '#e42184',
-        '#138898',
-        '#9d2787',
-        '#7f311b',
-      ],
+      colors: ['#13477b', '#2f1b10', '#d18529', '#d72a25', '#e42184', '#138898', '#9d2787', '#7f311b'],
       stroke: '#2a1f1d',
       background: '#dfc792',
       type: 'flourish',
@@ -1372,16 +1879,7 @@ var Toko = (function () {
     },
     {
       name: 'hersche',
-      colors: [
-        '#df9f00',
-        '#1f6f50',
-        '#8e6d7f',
-        '#da0607',
-        '#a4a5a7',
-        '#d3d1c3',
-        '#42064f',
-        '#25393a',
-      ],
+      colors: ['#df9f00', '#1f6f50', '#8e6d7f', '#da0607', '#a4a5a7', '#d3d1c3', '#42064f', '#25393a'],
       stroke: '#0a0a0a',
       background: '#f0f5f6',
       type: 'flourish',
@@ -1395,16 +1893,7 @@ var Toko = (function () {
     },
     {
       name: 'harvest',
-      colors: [
-        '#313a42',
-        '#9aad2e',
-        '#f0ae3c',
-        '#df4822',
-        '#8eac9b',
-        '#cc3d3f',
-        '#ec8b1c',
-        '#1b9268',
-      ],
+      colors: ['#313a42', '#9aad2e', '#f0ae3c', '#df4822', '#8eac9b', '#cc3d3f', '#ec8b1c', '#1b9268'],
       stroke: '#463930',
       background: '#e5e2cf',
       type: 'flourish',
@@ -1418,16 +1907,7 @@ var Toko = (function () {
     },
     {
       name: 'jungle',
-      colors: [
-        '#adb100',
-        '#e5f4e9',
-        '#f4650f',
-        '#4d6838',
-        '#cb9e00',
-        '#689c7d',
-        '#e2a1a8',
-        '#151c2e',
-      ],
+      colors: ['#adb100', '#e5f4e9', '#f4650f', '#4d6838', '#cb9e00', '#689c7d', '#e2a1a8', '#151c2e'],
       stroke: '#0e0f27',
       background: '#cecaa9',
       type: 'flourish',
@@ -1467,16 +1947,7 @@ var Toko = (function () {
     },
     {
       name: 'giftcard_sub',
-      colors: [
-        '#FBF5E9',
-        '#FF514E',
-        '#FDBC2E',
-        '#4561CC',
-        '#2A303E',
-        '#6CC283',
-        '#238DA5',
-        '#9BD7CB',
-      ],
+      colors: ['#FBF5E9', '#FF514E', '#FDBC2E', '#4561CC', '#2A303E', '#6CC283', '#238DA5', '#9BD7CB'],
       stroke: '#000',
       background: '#FBF5E9',
       type: 'flourish',
@@ -1761,7 +2232,7 @@ var Toko = (function () {
       stroke: '#0e0603',
       background: '#f6ecd4',
       type: 'hilda',
-    }
+    },
   ];
 
   //
@@ -1797,7 +2268,7 @@ var Toko = (function () {
       stroke: '#000100',
       background: '#e2ded2',
       type: 'iivonen',
-    }
+    },
   ];
 
   //
@@ -1833,7 +2304,7 @@ var Toko = (function () {
       stroke: '#020508',
       background: '#e3ded8',
       type: 'judson',
-    }
+    },
   ];
 
   //
@@ -1876,7 +2347,7 @@ var Toko = (function () {
       stroke: '#000000',
       background: '#ffffff',
       type: 'jung',
-    }
+    },
   ];
 
   //
@@ -1922,30 +2393,14 @@ var Toko = (function () {
     },
     {
       name: 'kov_06',
-      colors: [
-        '#a87c2a',
-        '#bdc9b1',
-        '#f14616',
-        '#ecbfaf',
-        '#017724',
-        '#0e2733',
-        '#2b9ae9'
-      ],
+      colors: ['#a87c2a', '#bdc9b1', '#f14616', '#ecbfaf', '#017724', '#0e2733', '#2b9ae9'],
       stroke: '#292319',
       background: '#dfd4c1',
       type: 'kovesecs',
     },
     {
       name: 'kov_06b',
-      colors: [
-        '#d57846',
-        '#dfe0cc',
-        '#de442f',
-        '#e7d3c5',
-        '#5ec227',
-        '#302f35',
-        '#63bdb3'
-      ],
+      colors: ['#d57846', '#dfe0cc', '#de442f', '#e7d3c5', '#5ec227', '#302f35', '#63bdb3'],
       stroke: '#292319',
       background: '#dfd4c1',
       type: 'kovesecs',
@@ -1956,7 +2411,7 @@ var Toko = (function () {
       stroke: '#111',
       background: '#89c2cd',
       type: 'kovesecs',
-    }
+    },
   ];
 
   //
@@ -1993,356 +2448,443 @@ var Toko = (function () {
   //  https://github.com/BlakeRMills/metbrewer
   //
   var metBrewerPalettes = [
-  {
-    name: 'austria',
-    colors: ['#a40000', '#16317d', '#007e2f', '#ffcd12', '#b86092', '#721b3e', '#00b7a7'],
-    isPrimary: true,
-    sortOrder: [1, 2, 3, 4, 6, 5, 7],
-    type: 'metbrewer',
-  },
-  {
-    name: 'cassatt1',
-    colors: ['#b1615c', '#d88782', '#e3aba7', '#edd7d9', '#c9c9dd', '#9d9dc7', '#8282aa', '#5a5a83'],
-    isPrimary: true,
-    sortOrder: [3, 6, 1, 8, 4, 5, 2, 7],
-    type: 'metbrewer',
-  },
-  {
-    name: 'cassatt2',
-    colors: ['#2d223c', '#574571', '#90719f', '#b695bc', '#dec5da', '#c1d1aa', '#7fa074', '#466c4b', '#2c4b27', '#0e2810'],
-    isPrimary: true,
-    sortOrder: [7, 3, 9, 1, 5, 6, 2, 10, 4, 8],
-    type: 'metbrewer',
-  },
-  {
-    name: 'cross',
-    colors: ['#c969a1', '#ce4441', '#ee8577', '#eb7926', '#ffbb44', '#859b6c', '#62929a', '#004f63', '#122451'],
-    isPrimary: true,
-    sortOrder: [4, 7, 1, 8, 2, 6, 3, 5, 9],
-    type: 'metbrewer',
-  },
-  {
-    name: 'degas',
-    colors: ['#591d06', '#96410e', '#e5a335', '#556219', '#418979', '#2b614e', '#053c29'],
-    isPrimary: true,
-    sortOrder: [5, 2, 1, 3, 4, 7, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'derain',
-    colors: ['#efc86e', '#97c684', '#6f9969', '#aab5d5', '#808fe1', '#5c66a8', '#454a74'],
-    isPrimary: true,
-    sortOrder: [4, 2, 5, 7, 1, 3, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'egypt',
-    colors: ['#dd5129', '#0f7ba2', '#43b284', '#fab255'],
-    isPrimary: true,
-    sortOrder: [1, 2, 3, 4],
-    type: 'metbrewer',
-  },
-  {
-    name: 'gauguin',
-    colors: ['#b04948', '#811e18', '#9e4013', '#c88a2c', '#4c6216', '#1a472a'],
-    isPrimary: true,
-    sortOrder: [2, 5, 4, 3, 1, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'greek',
-    colors: ['#3c0d03', '#8d1c06', '#e67424', '#ed9b49', '#f5c34d'],
-    isPrimary: true,
-    sortOrder: [2, 3, 5, 1, 4],
-    type: 'metbrewer',
-  },
-  {
-    name: 'hiroshige',
-    colors: ['#e76254', '#ef8a47', '#f7aa58', '#ffd06f', '#ffe6b7', '#aadce0', '#72bcd5', '#528fad', '#376795', '#1e466e'],
-    isPrimary: true,
-    sortOrder: [6, 2, 9, 3, 7, 5, 1, 10, 4, 8],
-    type: 'metbrewer',
-  },
-  {
-    name: 'hokusai1',
-    colors: ['#6d2f20', '#b75347', '#df7e66', '#e09351', '#edc775', '#94b594', '#224b5e'],
-    isPrimary: true,
-    sortOrder: [2, 7, 4, 6, 5, 1, 3],
-    type: 'metbrewer',
-  },
-  {
-    name: 'hokusai2',
-    colors: ['#abc9c8', '#72aeb6', '#4692b0', '#2f70a1', '#134b73', '#0a3351'],
-    isPrimary: true,
-    sortOrder: [5, 2, 4, 1, 6, 3],
-    type: 'metbrewer',
-  },
-  {
-    name: 'hokusai3',
-    colors: ['#d8d97a', '#95c36e', '#74c8c3', '#5a97c1', '#295384', '#0a2e57'],
-    isPrimary: true,
-    sortOrder: [4, 2, 5, 3, 1, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'homer1',
-    colors: ['#551f00', '#a62f00', '#df7700', '#f5b642', '#fff179', '#c3f4f6', '#6ad5e8', '#32b2da'],
-    isPrimary: true,
-    sortOrder: [6, 3, 2, 7, 4, 8, 5, 1],
-    type: 'metbrewer',
-  },
-  {
-    name: 'homer2',
-    colors: ['#bf3626', '#e9724c', '#e9851d', '#f9c53b', '#aeac4c', '#788f33', '#165d43'],
-    isPrimary: true,
-    sortOrder: [3, 7, 1, 4, 6, 2, 5],
-    type: 'metbrewer',
-  },
-  {
-    name: 'ingres',
-    colors: ['#041d2c', '#06314e', '#18527e', '#2e77ab', '#d1b252', '#a97f2f', '#7e5522', '#472c0b'],
-    isPrimary: true,
-    sortOrder: [4, 5, 3, 6, 2, 7, 1, 8],
-    type: 'metbrewer',
-  },
-  {
-    name: 'isfahan1',
-    colors: ['#4e3910', '#845d29', '#d8c29d', '#4fb6ca', '#178f92', '#175f5d', '#1d1f54'],
-    isPrimary: true,
-    sortOrder: [5, 2, 4, 6, 1, 7, 3],
-    type: 'metbrewer',
-  },
-  {
-    name: 'isfahan2',
-    colors: ['#d7aca1', '#ddc000', '#79ad41', '#34b6c6', '#4063a3'],
-    isPrimary: true,
-    sortOrder: [4, 2, 3, 5, 1],
-    type: 'metbrewer',
-  },
-  {
-    name: 'juarez',
-    colors: ['#a82203', '#208cc0', '#f1af3a', '#cf5e4e', '#637b31', '#003967'],
-    isPrimary: true,
-    sortOrder: [1, 2, 3, 4, 5, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'klimt',
-    colors: ['#df9ed4', '#c93f55', '#eacc62', '#469d76', '#3c4b99', '#924099'],
-    isPrimary: true,
-    sortOrder: [5, 2, 3, 4, 6, 1],
-    type: 'metbrewer',
-  },
-  {
-    name: 'lakota',
-    colors: ['#04a3bd', '#f0be3d', '#931e18', '#da7901', '#247d3f', '#20235b'],
-    isPrimary: true,
-    sortOrder: [1, 2, 3, 4, 5, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'manet',
-    colors: ['#3b2319', '#80521c', '#d29c44', '#ebc174', '#ede2cc', '#7ec5f4', '#4585b7', '#225e92', '#183571', '#43429b', '#5e65be'],
-    isPrimary: true,
-    sortOrder: [8, 3, 10, 4, 7, 9, 11, 2, 6, 1, 5],
-    type: 'metbrewer',
-  },
-  {
-    name: 'monet',
-    colors: ['#4e6d58', '#749e89', '#abccbe', '#e3cacf', '#c399a2', '#9f6e71', '#41507b', '#7d87b2', '#c2cae3'],
-    isPrimary: true,
-    sortOrder: [2, 5, 8, 3, 4, 9, 1, 6, 7],
-    type: 'metbrewer',
-  },
-  {
-    name: 'moreau',
-    colors: ['#421600', '#792504', '#bc7524', '#8dadca', '#527baa', '#104839', '#082844'],
-    isPrimary: true,
-    sortOrder: [2, 5, 3, 4, 7, 1, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'morgenstern',
-    colors: ['#7c668c', '#b08ba5', '#dfbbc8', '#ffc680', '#ffb178', '#db8872', '#a56457'],
-    isPrimary: true,
-    sortOrder: [7, 5, 4, 6, 3, 2, 1],
-    type: 'metbrewer',
-  },
-  {
-    name: 'nattier',
-    colors: ['#52271c', '#944839', '#c08e39', '#7f793c', '#565c33', '#184948', '#022a2a'],
-    isPrimary: true,
-    sortOrder: [1, 6, 3, 4, 7, 2, 5],
-    type: 'metbrewer',
-  },
-  {
-    name: 'navajo',
-    colors: ['#660d20', '#e59a52', '#edce79', '#094568', '#e1c59a'],
-    isPrimary: true,
-    sortOrder: [1, 2, 3, 4, 5],
-    type: 'metbrewer',
-  },
-  {
-    name: 'newkingdom',
-    colors: ['#e1846c', '#9eb4e0', '#e6bb9e', '#9c6849', '#735852'],
-    isPrimary: true,
-    sortOrder: [2, 1, 3, 4, 5],
-    type: 'metbrewer',
-  },
-  {
-    name: 'nizami',
-    colors: ['#dd7867', '#b83326', '#c8570d', '#edb144', '#8cc8bc', '#7da7ea', '#5773c0', '#1d4497'],
-    isPrimary: true,
-    sortOrder: [5, 2, 6, 8, 3, 7, 4, 1],
-    type: 'metbrewer',
-  },
-  {
-    name: 'okeeffe1',
-    colors: ['#6b200c', '#973d21', '#da6c42', '#ee956a', '#fbc2a9', '#f6f2ee', '#bad6f9', '#7db0ea', '#447fdd', '#225bb2', '#133e7e'],
-    isPrimary: true,
-    sortOrder: [8, 6, 1, 4, 10, 3, 11, 5, 2, 7, 9],
-    type: 'metbrewer',
-  },
-  {
-    name: 'okeeffe2',
-    colors: ['#fbe3c2', '#f2c88f', '#ecb27d', '#e69c6b', '#d37750', '#b9563f', '#92351e'],
-    isPrimary: true,
-    sortOrder: [7, 1, 6, 4, 2, 5, 3],
-    type: 'metbrewer',
-  },
-  {
-    name: 'peru1',
-    colors: ['#b5361c', '#e35e28', '#1c9d7c', '#31c7ba', '#369cc9', '#3a507f'],
-    isPrimary: true,
-    sortOrder: [3, 1, 5, 2, 4, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'peru2',
-    colors: ['#65150b', '#961f1f', '#c0431f', '#b36c06', '#f19425', '#c59349', '#533d14'],
-    isPrimary: true,
-    sortOrder: [4, 1, 3, 5, 2, 7, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'pillement',
-    colors: ['#a9845b', '#697852', '#738e8e', '#44636f', '#2b4655', '#0f252f'],
-    isPrimary: true,
-    sortOrder: [4, 3, 2, 5, 1, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'pissaro',
-    colors: ['#134130', '#4c825d', '#8cae9e', '#8dc7dc', '#508ca7', '#1a5270', '#0e2a4d'],
-    isPrimary: true,
-    sortOrder: [6, 2, 4, 1, 7, 5, 3],
-    type: 'metbrewer',
-  },
-  {
-    name: 'redon',
-    colors: ['#5b859e', '#1e395f', '#75884b', '#1e5a46', '#df8d71', '#af4f2f', '#d48f90', '#732f30', '#ab84a5', '#59385c', '#d8b847', '#b38711'],
-    isPrimary: true,
-    sortOrder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    type: 'metbrewer',
-  },
-  {
-    name: 'renoir',
-    colors: ['#17154f', '#2f357c', '#6c5d9e', '#9d9cd5', '#b0799a', '#f6b3b0', '#e48171', '#bf3729', '#e69b00', '#f5bb50', '#ada43b', '#355828'],
-    isPrimary: true,
-    sortOrder: [2, 5, 9, 12, 3, 8, 7, 10, 4, 1, 6, 11],
-    type: 'metbrewer',
-  },
-  {
-    name: 'robert',
-    colors: ['#11341a', '#375624', '#6ca4a0', '#487a7c', '#18505f', '#062e3d'],
-    isPrimary: true,
-    sortOrder: [2, 5, 3, 1, 6, 4],
-    type: 'metbrewer',
-  },
-  {
-    name: 'signac',
-    colors: ['#fbe183', '#f4c40f', '#fe9b00', '#d8443c', '#9b3441', '#de597c', '#e87b89', '#e6a2a6', '#aa7aa1', '#9f5691', '#633372', '#1f6e9c', '#2b9b81', '#92c051'],
-    isPrimary: true,
-    sortOrder: [13, 3, 2, 1, 11, 5, 8, 14, 12, 10, 7, 4, 6, 9],
-    type: 'metbrewer',
-  },
-  {
-    name: 'stevens',
-    colors: ['#042e4e', '#307d7f', '#598c4c', '#ba5c3f', '#a13213', '#470c00'],
-    isPrimary: true,
-    sortOrder: [4, 2, 3, 5, 1, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'tara',
-    colors: ['#eab1c6', '#d35e17', '#e18a1f', '#e9b109', '#829d44'],
-    isPrimary: true,
-    sortOrder: [1, 3, 2, 5, 4],
-    type: 'metbrewer',
-  },
-  {
-    name: 'thomas',
-    colors: ['#b24422', '#c44d76', '#4457a5', '#13315f', '#b1a1cc', '#59386c', '#447861', '#7caf5c'],
-    isPrimary: true,
-    sortOrder: [3, 2, 8, 6, 1, 4, 7, 5],
-    type: 'metbrewer',
-  },
-  {
-    name: 'tiepolo',
-    colors: ['#802417', '#c06636', '#ce9344', '#e8b960', '#646e3b', '#2b5851', '#508ea2', '#17486f'],
-    isPrimary: true,
-    sortOrder: [1, 2, 8, 4, 3, 5, 7, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'troy',
-    colors: ['#421401', '#6c1d0e', '#8b3a2b', '#c27668', '#7ba0b4', '#44728c', '#235070', '#0a2d46'],
-    isPrimary: true,
-    sortOrder: [2, 7, 4, 5, 1, 8, 3, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'tsimshian',
-    colors: ['#582310', '#aa361d', '#82c45f', '#318f49', '#0cb4bb', '#2673a3', '#473d7d'],
-    isPrimary: true,
-    sortOrder: [6, 1, 7, 4, 1, 5, 3],
-    type: 'metbrewer',
-  },
-  {
-    name: 'vangogh1',
-    colors: ['#2c2d54', '#434475', '#6b6ca3', '#969bc7', '#87bcbd', '#89ab7c', '#6f9954'],
-    isPrimary: true,
-    sortOrder: [3, 5, 7, 4, 6, 2, 1],
-    type: 'metbrewer',
-  },
-  {
-    name: 'vangogh2',
-    colors: ['#bd3106', '#d9700e', '#e9a00e', '#eebe04', '#5b7314', '#c3d6ce', '#89a6bb', '#454b87'],
-    isPrimary: true,
-    sortOrder: [1, 5, 8, 2, 7, 4, 6, 3],
-    type: 'metbrewer',
-  },
-  {
-    name: 'vangogh3',
-    colors: ['#e7e5cc', '#c2d6a4', '#9cc184', '#669d62', '#447243', '#1f5b25', '#1e3d14', '#192813'],
-    isPrimary: true,
-    sortOrder: [7, 5, 1, 4, 8, 2, 3, 6],
-    type: 'metbrewer',
-  },
-  {
-    name: 'veronese',
-    colors: ['#67322e', '#99610a', '#c38f16', '#6e948c', '#2c6b67', '#175449', '#122c43'],
-    isPrimary: true,
-    sortOrder: [5, 1, 7, 2, 3, 6, 4],
-    type: 'metbrewer',
-  },
-  {
-    name: 'wissing',
-    colors: ['#4b1d0d', '#7c291e', '#ba7233', '#3a4421', '#2d5380'],
-    isPrimary: true,
-    sortOrder: [2, 3, 5, 4, 1],
-    type: 'metbrewer',
-  }
+    {
+      name: 'austria',
+      colors: ['#a40000', '#16317d', '#007e2f', '#ffcd12', '#b86092', '#721b3e', '#00b7a7'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 6, 5, 7],
+      type: 'metbrewer',
+    },
+    {
+      name: 'cassatt1',
+      colors: ['#b1615c', '#d88782', '#e3aba7', '#edd7d9', '#c9c9dd', '#9d9dc7', '#8282aa', '#5a5a83'],
+      isPrimary: true,
+      sortOrder: [3, 6, 1, 8, 4, 5, 2, 7],
+      type: 'metbrewer',
+    },
+    {
+      name: 'cassatt2',
+      colors: [
+        '#2d223c',
+        '#574571',
+        '#90719f',
+        '#b695bc',
+        '#dec5da',
+        '#c1d1aa',
+        '#7fa074',
+        '#466c4b',
+        '#2c4b27',
+        '#0e2810',
+      ],
+      isPrimary: true,
+      sortOrder: [7, 3, 9, 1, 5, 6, 2, 10, 4, 8],
+      type: 'metbrewer',
+    },
+    {
+      name: 'cross',
+      colors: ['#c969a1', '#ce4441', '#ee8577', '#eb7926', '#ffbb44', '#859b6c', '#62929a', '#004f63', '#122451'],
+      isPrimary: true,
+      sortOrder: [4, 7, 1, 8, 2, 6, 3, 5, 9],
+      type: 'metbrewer',
+    },
+    {
+      name: 'degas',
+      colors: ['#591d06', '#96410e', '#e5a335', '#556219', '#418979', '#2b614e', '#053c29'],
+      isPrimary: true,
+      sortOrder: [5, 2, 1, 3, 4, 7, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'derain',
+      colors: ['#efc86e', '#97c684', '#6f9969', '#aab5d5', '#808fe1', '#5c66a8', '#454a74'],
+      isPrimary: true,
+      sortOrder: [4, 2, 5, 7, 1, 3, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'egypt',
+      colors: ['#dd5129', '#0f7ba2', '#43b284', '#fab255'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4],
+      type: 'metbrewer',
+    },
+    {
+      name: 'gauguin',
+      colors: ['#b04948', '#811e18', '#9e4013', '#c88a2c', '#4c6216', '#1a472a'],
+      isPrimary: true,
+      sortOrder: [2, 5, 4, 3, 1, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'greek',
+      colors: ['#3c0d03', '#8d1c06', '#e67424', '#ed9b49', '#f5c34d'],
+      isPrimary: true,
+      sortOrder: [2, 3, 5, 1, 4],
+      type: 'metbrewer',
+    },
+    {
+      name: 'hiroshige',
+      colors: [
+        '#e76254',
+        '#ef8a47',
+        '#f7aa58',
+        '#ffd06f',
+        '#ffe6b7',
+        '#aadce0',
+        '#72bcd5',
+        '#528fad',
+        '#376795',
+        '#1e466e',
+      ],
+      isPrimary: true,
+      sortOrder: [6, 2, 9, 3, 7, 5, 1, 10, 4, 8],
+      type: 'metbrewer',
+    },
+    {
+      name: 'hokusai1',
+      colors: ['#6d2f20', '#b75347', '#df7e66', '#e09351', '#edc775', '#94b594', '#224b5e'],
+      isPrimary: true,
+      sortOrder: [2, 7, 4, 6, 5, 1, 3],
+      type: 'metbrewer',
+    },
+    {
+      name: 'hokusai2',
+      colors: ['#abc9c8', '#72aeb6', '#4692b0', '#2f70a1', '#134b73', '#0a3351'],
+      isPrimary: true,
+      sortOrder: [5, 2, 4, 1, 6, 3],
+      type: 'metbrewer',
+    },
+    {
+      name: 'hokusai3',
+      colors: ['#d8d97a', '#95c36e', '#74c8c3', '#5a97c1', '#295384', '#0a2e57'],
+      isPrimary: true,
+      sortOrder: [4, 2, 5, 3, 1, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'homer1',
+      colors: ['#551f00', '#a62f00', '#df7700', '#f5b642', '#fff179', '#c3f4f6', '#6ad5e8', '#32b2da'],
+      isPrimary: true,
+      sortOrder: [6, 3, 2, 7, 4, 8, 5, 1],
+      type: 'metbrewer',
+    },
+    {
+      name: 'homer2',
+      colors: ['#bf3626', '#e9724c', '#e9851d', '#f9c53b', '#aeac4c', '#788f33', '#165d43'],
+      isPrimary: true,
+      sortOrder: [3, 7, 1, 4, 6, 2, 5],
+      type: 'metbrewer',
+    },
+    {
+      name: 'ingres',
+      colors: ['#041d2c', '#06314e', '#18527e', '#2e77ab', '#d1b252', '#a97f2f', '#7e5522', '#472c0b'],
+      isPrimary: true,
+      sortOrder: [4, 5, 3, 6, 2, 7, 1, 8],
+      type: 'metbrewer',
+    },
+    {
+      name: 'isfahan1',
+      colors: ['#4e3910', '#845d29', '#d8c29d', '#4fb6ca', '#178f92', '#175f5d', '#1d1f54'],
+      isPrimary: true,
+      sortOrder: [5, 2, 4, 6, 1, 7, 3],
+      type: 'metbrewer',
+    },
+    {
+      name: 'isfahan2',
+      colors: ['#d7aca1', '#ddc000', '#79ad41', '#34b6c6', '#4063a3'],
+      isPrimary: true,
+      sortOrder: [4, 2, 3, 5, 1],
+      type: 'metbrewer',
+    },
+    {
+      name: 'juarez',
+      colors: ['#a82203', '#208cc0', '#f1af3a', '#cf5e4e', '#637b31', '#003967'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'klimt',
+      colors: ['#df9ed4', '#c93f55', '#eacc62', '#469d76', '#3c4b99', '#924099'],
+      isPrimary: true,
+      sortOrder: [5, 2, 3, 4, 6, 1],
+      type: 'metbrewer',
+    },
+    {
+      name: 'lakota',
+      colors: ['#04a3bd', '#f0be3d', '#931e18', '#da7901', '#247d3f', '#20235b'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'manet',
+      colors: [
+        '#3b2319',
+        '#80521c',
+        '#d29c44',
+        '#ebc174',
+        '#ede2cc',
+        '#7ec5f4',
+        '#4585b7',
+        '#225e92',
+        '#183571',
+        '#43429b',
+        '#5e65be',
+      ],
+      isPrimary: true,
+      sortOrder: [8, 3, 10, 4, 7, 9, 11, 2, 6, 1, 5],
+      type: 'metbrewer',
+    },
+    {
+      name: 'monet',
+      colors: ['#4e6d58', '#749e89', '#abccbe', '#e3cacf', '#c399a2', '#9f6e71', '#41507b', '#7d87b2', '#c2cae3'],
+      isPrimary: true,
+      sortOrder: [2, 5, 8, 3, 4, 9, 1, 6, 7],
+      type: 'metbrewer',
+    },
+    {
+      name: 'moreau',
+      colors: ['#421600', '#792504', '#bc7524', '#8dadca', '#527baa', '#104839', '#082844'],
+      isPrimary: true,
+      sortOrder: [2, 5, 3, 4, 7, 1, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'morgenstern',
+      colors: ['#7c668c', '#b08ba5', '#dfbbc8', '#ffc680', '#ffb178', '#db8872', '#a56457'],
+      isPrimary: true,
+      sortOrder: [7, 5, 4, 6, 3, 2, 1],
+      type: 'metbrewer',
+    },
+    {
+      name: 'nattier',
+      colors: ['#52271c', '#944839', '#c08e39', '#7f793c', '#565c33', '#184948', '#022a2a'],
+      isPrimary: true,
+      sortOrder: [1, 6, 3, 4, 7, 2, 5],
+      type: 'metbrewer',
+    },
+    {
+      name: 'navajo',
+      colors: ['#660d20', '#e59a52', '#edce79', '#094568', '#e1c59a'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5],
+      type: 'metbrewer',
+    },
+    {
+      name: 'newkingdom',
+      colors: ['#e1846c', '#9eb4e0', '#e6bb9e', '#9c6849', '#735852'],
+      isPrimary: true,
+      sortOrder: [2, 1, 3, 4, 5],
+      type: 'metbrewer',
+    },
+    {
+      name: 'nizami',
+      colors: ['#dd7867', '#b83326', '#c8570d', '#edb144', '#8cc8bc', '#7da7ea', '#5773c0', '#1d4497'],
+      isPrimary: true,
+      sortOrder: [5, 2, 6, 8, 3, 7, 4, 1],
+      type: 'metbrewer',
+    },
+    {
+      name: 'okeeffe1',
+      colors: [
+        '#6b200c',
+        '#973d21',
+        '#da6c42',
+        '#ee956a',
+        '#fbc2a9',
+        '#f6f2ee',
+        '#bad6f9',
+        '#7db0ea',
+        '#447fdd',
+        '#225bb2',
+        '#133e7e',
+      ],
+      isPrimary: true,
+      sortOrder: [8, 6, 1, 4, 10, 3, 11, 5, 2, 7, 9],
+      type: 'metbrewer',
+    },
+    {
+      name: 'okeeffe2',
+      colors: ['#fbe3c2', '#f2c88f', '#ecb27d', '#e69c6b', '#d37750', '#b9563f', '#92351e'],
+      isPrimary: true,
+      sortOrder: [7, 1, 6, 4, 2, 5, 3],
+      type: 'metbrewer',
+    },
+    {
+      name: 'peru1',
+      colors: ['#b5361c', '#e35e28', '#1c9d7c', '#31c7ba', '#369cc9', '#3a507f'],
+      isPrimary: true,
+      sortOrder: [3, 1, 5, 2, 4, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'peru2',
+      colors: ['#65150b', '#961f1f', '#c0431f', '#b36c06', '#f19425', '#c59349', '#533d14'],
+      isPrimary: true,
+      sortOrder: [4, 1, 3, 5, 2, 7, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'pillement',
+      colors: ['#a9845b', '#697852', '#738e8e', '#44636f', '#2b4655', '#0f252f'],
+      isPrimary: true,
+      sortOrder: [4, 3, 2, 5, 1, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'pissaro',
+      colors: ['#134130', '#4c825d', '#8cae9e', '#8dc7dc', '#508ca7', '#1a5270', '#0e2a4d'],
+      isPrimary: true,
+      sortOrder: [6, 2, 4, 1, 7, 5, 3],
+      type: 'metbrewer',
+    },
+    {
+      name: 'redon',
+      colors: [
+        '#5b859e',
+        '#1e395f',
+        '#75884b',
+        '#1e5a46',
+        '#df8d71',
+        '#af4f2f',
+        '#d48f90',
+        '#732f30',
+        '#ab84a5',
+        '#59385c',
+        '#d8b847',
+        '#b38711',
+      ],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      type: 'metbrewer',
+    },
+    {
+      name: 'renoir',
+      colors: [
+        '#17154f',
+        '#2f357c',
+        '#6c5d9e',
+        '#9d9cd5',
+        '#b0799a',
+        '#f6b3b0',
+        '#e48171',
+        '#bf3729',
+        '#e69b00',
+        '#f5bb50',
+        '#ada43b',
+        '#355828',
+      ],
+      isPrimary: true,
+      sortOrder: [2, 5, 9, 12, 3, 8, 7, 10, 4, 1, 6, 11],
+      type: 'metbrewer',
+    },
+    {
+      name: 'robert',
+      colors: ['#11341a', '#375624', '#6ca4a0', '#487a7c', '#18505f', '#062e3d'],
+      isPrimary: true,
+      sortOrder: [2, 5, 3, 1, 6, 4],
+      type: 'metbrewer',
+    },
+    {
+      name: 'signac',
+      colors: [
+        '#fbe183',
+        '#f4c40f',
+        '#fe9b00',
+        '#d8443c',
+        '#9b3441',
+        '#de597c',
+        '#e87b89',
+        '#e6a2a6',
+        '#aa7aa1',
+        '#9f5691',
+        '#633372',
+        '#1f6e9c',
+        '#2b9b81',
+        '#92c051',
+      ],
+      isPrimary: true,
+      sortOrder: [13, 3, 2, 1, 11, 5, 8, 14, 12, 10, 7, 4, 6, 9],
+      type: 'metbrewer',
+    },
+    {
+      name: 'stevens',
+      colors: ['#042e4e', '#307d7f', '#598c4c', '#ba5c3f', '#a13213', '#470c00'],
+      isPrimary: true,
+      sortOrder: [4, 2, 3, 5, 1, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'tara',
+      colors: ['#eab1c6', '#d35e17', '#e18a1f', '#e9b109', '#829d44'],
+      isPrimary: true,
+      sortOrder: [1, 3, 2, 5, 4],
+      type: 'metbrewer',
+    },
+    {
+      name: 'thomas',
+      colors: ['#b24422', '#c44d76', '#4457a5', '#13315f', '#b1a1cc', '#59386c', '#447861', '#7caf5c'],
+      isPrimary: true,
+      sortOrder: [3, 2, 8, 6, 1, 4, 7, 5],
+      type: 'metbrewer',
+    },
+    {
+      name: 'tiepolo',
+      colors: ['#802417', '#c06636', '#ce9344', '#e8b960', '#646e3b', '#2b5851', '#508ea2', '#17486f'],
+      isPrimary: true,
+      sortOrder: [1, 2, 8, 4, 3, 5, 7, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'troy',
+      colors: ['#421401', '#6c1d0e', '#8b3a2b', '#c27668', '#7ba0b4', '#44728c', '#235070', '#0a2d46'],
+      isPrimary: true,
+      sortOrder: [2, 7, 4, 5, 1, 8, 3, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'tsimshian',
+      colors: ['#582310', '#aa361d', '#82c45f', '#318f49', '#0cb4bb', '#2673a3', '#473d7d'],
+      isPrimary: true,
+      sortOrder: [6, 1, 7, 4, 1, 5, 3],
+      type: 'metbrewer',
+    },
+    {
+      name: 'vangogh1',
+      colors: ['#2c2d54', '#434475', '#6b6ca3', '#969bc7', '#87bcbd', '#89ab7c', '#6f9954'],
+      isPrimary: true,
+      sortOrder: [3, 5, 7, 4, 6, 2, 1],
+      type: 'metbrewer',
+    },
+    {
+      name: 'vangogh2',
+      colors: ['#bd3106', '#d9700e', '#e9a00e', '#eebe04', '#5b7314', '#c3d6ce', '#89a6bb', '#454b87'],
+      isPrimary: true,
+      sortOrder: [1, 5, 8, 2, 7, 4, 6, 3],
+      type: 'metbrewer',
+    },
+    {
+      name: 'vangogh3',
+      colors: ['#e7e5cc', '#c2d6a4', '#9cc184', '#669d62', '#447243', '#1f5b25', '#1e3d14', '#192813'],
+      isPrimary: true,
+      sortOrder: [7, 5, 1, 4, 8, 2, 3, 6],
+      type: 'metbrewer',
+    },
+    {
+      name: 'veronese',
+      colors: ['#67322e', '#99610a', '#c38f16', '#6e948c', '#2c6b67', '#175449', '#122c43'],
+      isPrimary: true,
+      sortOrder: [5, 1, 7, 2, 3, 6, 4],
+      type: 'metbrewer',
+    },
+    {
+      name: 'wissing',
+      colors: ['#4b1d0d', '#7c291e', '#ba7233', '#3a4421', '#2d5380'],
+      isPrimary: true,
+      sortOrder: [2, 3, 5, 4, 1],
+      type: 'metbrewer',
+    },
   ];
 
   //
@@ -2386,7 +2928,7 @@ var Toko = (function () {
       colors: ['#f5736a', '#925951', '#feba4c', '#9d9b9d'],
       background: '#eedfa2',
       type: 'ranganath',
-    }
+    },
   ];
 
   //
@@ -2436,7 +2978,7 @@ var Toko = (function () {
       stroke: '#211029',
       background: '#fbbeca',
       type: 'rohlfs',
-    }
+    },
   ];
 
   //
@@ -2447,54 +2989,22 @@ var Toko = (function () {
   var roygbivsPalettes = [
     {
       name: 'retro',
-      colors: [
-        '#69766f',
-        '#9ed6cb',
-        '#f7e5cc',
-        '#9d8f7f',
-        '#936454',
-        '#bf5c32',
-        '#efad57'
-      ],
+      colors: ['#69766f', '#9ed6cb', '#f7e5cc', '#9d8f7f', '#936454', '#bf5c32', '#efad57'],
       type: 'roygbivs',
     },
     {
       name: 'retro-washedout',
-      colors: [
-        '#878a87',
-        '#cbdbc8',
-        '#e8e0d4',
-        '#b29e91',
-        '#9f736c',
-        '#b76254',
-        '#dfa372'
-      ],
+      colors: ['#878a87', '#cbdbc8', '#e8e0d4', '#b29e91', '#9f736c', '#b76254', '#dfa372'],
       type: 'roygbivs',
     },
     {
       name: 'roygbiv-warm',
-      colors: [
-        '#705f84',
-        '#687d99',
-        '#6c843e',
-        '#fc9a1a',
-        '#dc383a',
-        '#aa3a33',
-        '#9c4257'
-      ],
+      colors: ['#705f84', '#687d99', '#6c843e', '#fc9a1a', '#dc383a', '#aa3a33', '#9c4257'],
       type: 'roygbivs',
     },
     {
       name: 'roygbiv-toned',
-      colors: [
-        '#817c77',
-        '#396c68',
-        '#89e3b7',
-        '#f59647',
-        '#d63644',
-        '#893f49',
-        '#4d3240'
-      ],
+      colors: ['#817c77', '#396c68', '#89e3b7', '#f59647', '#d63644', '#893f49', '#4d3240'],
       type: 'roygbivs',
     },
     {
@@ -2519,10 +3029,10 @@ var Toko = (function () {
         '#721e7f',
         '#9b2b77',
         '#ab2562',
-        '#ca2847'
+        '#ca2847',
       ],
       type: 'roygbivs',
-    }
+    },
   ];
 
   //
@@ -2566,7 +3076,7 @@ var Toko = (function () {
       stroke: '#f6f6f4',
       background: '#4169ff',
       type: 'spatial',
-    }
+    },
   ];
 
   //
@@ -2630,7 +3140,7 @@ var Toko = (function () {
       stroke: '#000',
       background: '#fff',
       type: 'system',
-    }
+    },
   ];
 
   //
@@ -2659,7 +3169,7 @@ var Toko = (function () {
       stroke: '#251c12',
       background: '#cfc7b9',
       type: 'tsuchimochi',
-    }
+    },
   ];
 
   //
@@ -2680,30 +3190,14 @@ var Toko = (function () {
     },
     {
       name: 'tundra3',
-      colors: [
-        '#87c3ca',
-        '#7b7377',
-        '#b2475d',
-        '#7d3e3e',
-        '#eb7f64',
-        '#d9c67a',
-        '#f3f2f2'
-      ],
+      colors: ['#87c3ca', '#7b7377', '#b2475d', '#7d3e3e', '#eb7f64', '#d9c67a', '#f3f2f2'],
       type: 'tundra',
     },
     {
       name: 'tundra4',
-      colors: [
-        '#d53939',
-        '#b6754d',
-        '#a88d5f',
-        '#524643',
-        '#3c5a53',
-        '#7d8c7c',
-        '#dad6cd'
-      ],
+      colors: ['#d53939', '#b6754d', '#a88d5f', '#524643', '#3c5a53', '#7d8c7c', '#dad6cd'],
       type: 'tundra',
-    }
+    },
   ];
 
   //
@@ -2713,133 +3207,97 @@ var Toko = (function () {
   //
   var orbifoldPalettes = [
     {
-      name: "candy-wrap",
+      name: 'candy-wrap',
+      colors: ['#f19797', '#f9b73e', '#ee5151', '#fb671f', '#6bbe3a', '#0c75b7', '#0b9e4e', '#763f68'],
+      stroke: '#302319',
+      background: '#e7ded5',
+      type: 'orbifold',
+    },
+    {
+      name: 'slicks',
+      colors: ['#e1decd', '#d95336', '#e6ac1d'],
+      stroke: '#302319',
+      background: '#e1decd',
+      type: 'orbifold',
+    },
+    {
+      name: 'circus',
+      colors: ['#3eb79e', '#f4a910', '#f37377', '#207986', '#f26003', '#afce95'],
+      stroke: '#302319',
+      background: '#eadcb6',
+      type: 'orbifold',
+    },
+    {
+      name: 'spotlight',
+      colors: ['#f34312', '#00a49e', '#ef888f', '#f5b408', '#412432'],
+      stroke: '#412432',
+      background: '#dfdcd5',
+      type: 'orbifold',
+    },
+    {
+      name: 'five-stars',
+      colors: ['#f5e8c7', '#d9dcad', '#cf3933', '#f3f4f4', '#74330d', '#8bb896', '#eba824', '#f05c03'],
+      stroke: '#380c05',
+      background: '#ecd598',
+      type: 'orbifold',
+    },
+    {
+      name: 'full-moon',
+      colors: ['#f7e8be', '#aa879f', '#f6634e'],
+      stroke: '#2a1f39',
+      background: '#f7e8be',
+      type: 'orbifold',
+    },
+    {
+      name: 'sunday-stroll',
       colors: [
-        "#f19797",
-        "#f9b73e",
-        "#ee5151",
-        "#fb671f",
-        "#6bbe3a",
-        "#0c75b7",
-        "#0b9e4e",
-        "#763f68",
+        '#d44c4c',
+        '#e47781',
+        '#f5d274',
+        '#f7e8be',
+        '#acbe55',
+        '#6fb97a',
+        '#5ba150',
+        '#037750',
+        '#003e5e',
+        '#595373',
+        '#73659e',
+        '#ac879f',
       ],
-      stroke: "#302319",
-      background: "#e7ded5",
-      type: "orbifold"
-    },
-    {
-      name: "slicks",
-      colors: ["#e1decd", "#d95336", "#e6ac1d"],
-      stroke: "#302319",
-      background: "#e1decd",
-      type: "orbifold"
-    },
-    {
-      name: "circus",
-      colors: ["#3eb79e", "#f4a910", "#f37377", "#207986", "#f26003", "#afce95"],
-      stroke: "#302319",
-      background: "#eadcb6",
-      type: "orbifold"
-    },
-    {
-      name: "spotlight",
-      colors: ["#f34312", "#00a49e", "#ef888f", "#f5b408", "#412432"],
-      stroke: "#412432",
-      background: "#dfdcd5",
-      type: "orbifold"
-    },
-    {
-      name: "five-stars",
-      colors: [
-        "#f5e8c7",
-        "#d9dcad",
-        "#cf3933",
-        "#f3f4f4",
-        "#74330d",
-        "#8bb896",
-        "#eba824",
-        "#f05c03",
-      ],
-      stroke: "#380c05",
-      background: "#ecd598",
-      type: "orbifold"
-    },
-    {
-      name: "full-moon",
-      colors: ["#f7e8be", "#aa879f", "#f6634e"],
-      stroke: "#2a1f39",
-      background: "#f7e8be",
-      type: "orbifold"
-    },
-    {
-      name: "sunday-stroll",
-      colors: [
-        "#d44c4c",
-        "#e47781",
-        "#f5d274",
-        "#f7e8be",
-        "#acbe55",
-        "#6fb97a",
-        "#5ba150",
-        "#037750",
-        "#003e5e",
-        "#595373",
-        "#73659e",
-        "#ac879f",
-      ],
-      background: "#e5cbb5",
+      background: '#e5cbb5',
       w: 2,
-      type: "orbifold"
+      type: 'orbifold',
     },
     {
-      name: "vegetable-soup",
-      colors: [
-        "#ec6a22",
-        "#f7e9c5",
-        "#399a3f",
-        "#9ac764",
-        "#fff7e0",
-        "#ffcd6b",
-        "#634754",
-        "#98c195",
-        "#708658",
-      ],
-      background: "#fff7e0",
+      name: 'vegetable-soup',
+      colors: ['#ec6a22', '#f7e9c5', '#399a3f', '#9ac764', '#fff7e0', '#ffcd6b', '#634754', '#98c195', '#708658'],
+      background: '#fff7e0',
       w: 2,
-      type: "orbifold"
+      type: 'orbifold',
     },
     {
-      name: "risograph",
-      colors: ["#f56f64", "#f9cb1f", "#f0eace"],
-      stroke: "#295042",
-      background: "#f0eace",
+      name: 'risograph',
+      colors: ['#f56f64', '#f9cb1f', '#f0eace'],
+      stroke: '#295042',
+      background: '#f0eace',
       w: 1,
-      type: "orbifold"
+      type: 'orbifold',
     },
     {
-      name: "tote-bag",
-      colors: ["#f5f5f5", "#ffc6cf", "#fd5105", "#4124b0"],
-      stroke: "#231e22",
-      background: "#ffc6cf",
+      name: 'tote-bag',
+      colors: ['#f5f5f5', '#ffc6cf', '#fd5105', '#4124b0'],
+      stroke: '#231e22',
+      background: '#ffc6cf',
       w: 1,
-      type: "orbifold"
+      type: 'orbifold',
     },
     {
-      name: "slicks",
-      colors: [
-        "#ffbdd0",
-        "#ff4328",
-        "#e88526",
-        "#21b929",
-        "#2193c9",
-        "#fffcea",
-        "#ffcc21",
-      ],
-      stroke: "#fffcea",
-      background: "#212121",
+      name: 'slicks',
+      colors: ['#ffbdd0', '#ff4328', '#e88526', '#21b929', '#2193c9', '#fffcea', '#ffcc21'],
+      stroke: '#fffcea',
+      background: '#212121',
       w: 1,
-      type: "orbifold"
+      type: 'orbifold',
     },
   ];
 
@@ -2850,13 +3308,7 @@ var Toko = (function () {
 
   Toko.prototype.COLOR_COLLECTIONS = [];
 
-  Toko.prototype.MODELIST = [
-    'rgb',
-    'lrgb',
-    'lab',
-    'hsl',
-    'lch',
-  ];
+  Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
 
   Toko.prototype.DEFAULT_COLOR_OPTIONS = {
     reverse: false,
@@ -2883,7 +3335,6 @@ var Toko = (function () {
   //  validate incoming color options
   //
   Toko.prototype._validateColorOptions = function (colorOptions) {
-
     //
     // merge with default options
     //
@@ -2893,7 +3344,9 @@ var Toko = (function () {
     // don't use bezier for more than a preset number of colors
     //
     if (colorOptions.bezier && colorOptions.length > this.MAX_COLORS_BEZIER) {
-      console.log(`INFO: Bezier does not work for more than $MAX_COLORS_BEZIER} colors`);
+      console.log(
+        `INFO: Bezier does not work for more than $MAX_COLORS_BEZIER} colors`,
+      );
       colorOptions.bezier = false;
     }
 
@@ -2905,11 +3358,15 @@ var Toko = (function () {
     return colorOptions;
   };
 
-  Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors) {
+  Toko.prototype._createColorScale = function (
+    colorSet,
+    colorOptions,
+    extraColors,
+  ) {
     if (!this.initColorDone) {
       this._initColor();
     }
-    let sc,oSC;
+    let sc, oSC;
     let o = {};
 
     if (colorOptions._validated != true) {
@@ -2931,13 +3388,19 @@ var Toko = (function () {
     if (colorOptions.bezier) {
       sc = chroma.bezier(colorSet).scale();
     } else {
-      sc = chroma.scale(colorSet).domain(colorOptions.domain).mode(colorOptions.mode);
+      sc = chroma
+        .scale(colorSet)
+        .domain(colorOptions.domain)
+        .mode(colorOptions.mode);
     }
 
     //
     // scale mapped to the original array of colors
     //
-    oSC = chroma.scale(colorSet).domain(colorOptions.domain).classes(colorSet.length);
+    oSC = chroma
+      .scale(colorSet)
+      .domain(colorOptions.domain)
+      .classes(colorSet.length);
 
     //
     // only adjust gamma if needed
@@ -2956,28 +3419,28 @@ var Toko = (function () {
     if (colorOptions.stepped && colorOptions.steps > 0) {
       sc = sc.classes(colorOptions.steps);
     }
-    
+
     o.scaleChroma = sc;
     o.contrastColors = contrastColors;
     o.options = colorOptions;
     o.list = sc.colors(colorOptions.nrColors);
-    
+
     o.originalColors = colorSet;
 
-    o.scale = (i) => {
+    o.scale = i => {
       return sc(i).hex();
     };
-    o.originalScale = (i) => {
+    o.originalScale = i => {
       return oSC(i).hex();
     };
     o.randomColor = (useTokoRandom = false) => {
-      let r = (useTokoRandom)?Toko.random():Math.random();
+      let r = useTokoRandom ? Toko.random() : Math.random();
       let d = colorOptions.domain;
 
       return sc(d[0] + r * (d[1] - d[0])).hex();
     };
     o.randomOriginalColor = (useTokoRandom = false) => {
-      let r = (useTokoRandom)?Toko.random():Math.random();
+      let r = useTokoRandom ? Toko.random() : Math.random();
       let d = colorOptions.domain;
 
       return oSC(d[0] + r * (d[1] - d[0])).hex();
@@ -2985,7 +3448,6 @@ var Toko = (function () {
 
     return o;
   };
-
 
   Toko.prototype._getColorScale = function (inPalette, colorOptions) {
     if (!this.initColorDone) {
@@ -3002,10 +3464,10 @@ var Toko = (function () {
     let extraColors = [];
 
     if (typeof inPalette === 'object') {
-      colorSet = [... inPalette];
+      colorSet = [...inPalette];
     } else if (typeof inPalette === 'string') {
       p = this.findPaletteByName(inPalette);
-      colorSet = [... p.colors]; // clone the array to not mess up the original
+      colorSet = [...p.colors]; // clone the array to not mess up the original
 
       if ('stroke' in p) {
         extraColors.push(p.stroke);
@@ -3014,8 +3476,8 @@ var Toko = (function () {
         extraColors.push(p.background);
       }
     } else {
-      console.log("ERROR: palette should be a string or an array");
-    } 
+      console.log('ERROR: palette should be a string or an array');
+    }
     o = this._createColorScale(colorSet, colorOptions, extraColors);
 
     return o;
@@ -3024,7 +3486,12 @@ var Toko = (function () {
   //
   //  get the next or previous palette
   //
-  Toko.prototype._getAnotherPalette = function (inPalette, paletteType = 'all', justPrimary = true, direction = 1) {
+  Toko.prototype._getAnotherPalette = function (
+    inPalette,
+    paletteType = 'all',
+    justPrimary = true,
+    direction = 1,
+  ) {
     let tempPaletteList = this._getPaletteListRaw(paletteType, justPrimary);
     var i = tempPaletteList.findIndex(p => p.name === inPalette);
     if (i === undefined) {
@@ -3040,37 +3507,46 @@ var Toko = (function () {
       i = tempPaletteList.length - 1;
     }
 
-    return tempPaletteList[i].name
+    return tempPaletteList[i].name;
   };
 
   //
   //  get a random palette
   //
-  Toko.prototype._getRandomPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
+  Toko.prototype._getRandomPalette = function (
+    inPalette,
+    paletteType = 'all',
+    justPrimary = true,
+  ) {
     if (!this.initColorDone) {
       this._initColor();
     }
     let tempPaletteList = this._getPaletteListRaw(paletteType, justPrimary);
 
-    var randomPalette = tempPaletteList[Math.floor(Math.random() * tempPaletteList.length)];
+    var randomPalette =
+      tempPaletteList[Math.floor(Math.random() * tempPaletteList.length)];
 
-    return randomPalette.name
+    return randomPalette.name;
   };
 
   //
   //  get set of palettes with a specific type or primary state
   //
-  Toko.prototype._getPaletteListRaw = function (paletteType = 'all', justPrimary = true, sorted) {
+  Toko.prototype._getPaletteListRaw = function (
+    paletteType = 'all',
+    justPrimary = true,
+    sorted,
+  ) {
     if (!this.initColorDone) {
       this._initColor();
     }
     let filtered = this.palettes;
     if (paletteType !== 'all') {
-      filtered = this.palettes.filter(p => (p.type === paletteType));
+      filtered = this.palettes.filter(p => p.type === paletteType);
     }
 
     if (justPrimary) {
-      filtered = filtered.filter(p => (p.isPrimary));
+      filtered = filtered.filter(p => p.isPrimary);
     }
 
     //
@@ -3086,7 +3562,11 @@ var Toko = (function () {
   //
   //  get a selection of palettes based on name or type
   //
-  Toko.prototype._getPaletteSelectionRaw = function(selectionList, justPrimary, sorted) {
+  Toko.prototype._getPaletteSelectionRaw = function (
+    selectionList,
+    justPrimary,
+    sorted,
+  ) {
     if (!this.initColorDone) {
       this._initColor();
     }
@@ -3096,11 +3576,13 @@ var Toko = (function () {
     let filtered = [];
     for (let i = 0; i < labels.length; i++) {
       filtered = filtered.concat(
-        this.palettes.filter(p => (p.name.toLowerCase() === labels[i] || p.type === labels[i]))
+        this.palettes.filter(
+          p => p.name.toLowerCase() === labels[i] || p.type === labels[i],
+        ),
       );
     }
     if (justPrimary) {
-      filtered = filtered.filter(p => (p.isPrimary));
+      filtered = filtered.filter(p => p.isPrimary);
     }
     //
     //  sort if requested
@@ -3115,19 +3597,19 @@ var Toko = (function () {
   //
   //  sort palette list alphabetically
   //
-  Toko.prototype._sortPaletteList = function(paletteList) {
+  Toko.prototype._sortPaletteList = function (paletteList) {
     paletteList.sort((a, b) => {
-        let fa = a.name.toLowerCase(),
-            fb = b.name.toLowerCase();
-    
-        if (fa < fb) {
-            return -1;
-        }
-        if (fa > fb) {
-            return 1;
-        }
-        return 0;
-      });
+      let fa = a.name.toLowerCase(),
+        fb = b.name.toLowerCase();
+
+      if (fa < fb) {
+        return -1;
+      }
+      if (fa > fb) {
+        return 1;
+      }
+      return 0;
+    });
     return paletteList;
   };
 
@@ -3242,7 +3724,9 @@ var Toko = (function () {
     //
     //  sort colors from light to dark
     //
-    let sortedColorSet = colorSet.sort((a, b) => (chroma(b).hsl()[2]) - (chroma(a).hsl()[2]));
+    let sortedColorSet = colorSet.sort(
+      (a, b) => chroma(b).hsl()[2] - chroma(a).hsl()[2],
+    );
     // console.log(sortedColorSet[0])
 
     //
@@ -3260,12 +3744,12 @@ var Toko = (function () {
         }
       });
     }
-    
+
     //
     //  generate contrast colors by adjusting the saturation and lightness of the lightest and darkest color
     //
     if (!lightContrastSet) {
-      //  
+      //
       //  light - saturation
       let ls = {
         shift: 0,
@@ -3285,7 +3769,7 @@ var Toko = (function () {
       let lightH = hsl[0];
       let lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
       let lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
-      contrastColors[0] = chroma.hsl(lightH,lightS,lightL).hex();
+      contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
     }
     if (!darkContrastSet) {
       //  dark - saturation
@@ -3303,11 +3787,11 @@ var Toko = (function () {
         min: 0.05,
       };
 
-      hsl = chroma(sortedColorSet[n-1]).hsl();
+      hsl = chroma(sortedColorSet[n - 1]).hsl();
       let darkH = hsl[0];
       let darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
       let darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
-      contrastColors[1] = chroma.hsl(darkH,darkS,darkL).hex();
+      contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
     }
 
     // check and flip order if needed
@@ -3316,11 +3800,9 @@ var Toko = (function () {
     }
 
     return contrastColors;
-
   };
 
   Toko.prototype.setup = function (inputOptions) {
-
     console.log('Toko - setup');
 
     // todo: fix the fps graph. Currently it increases when using the tweakpane controls
@@ -3343,11 +3825,7 @@ var Toko = (function () {
     if (this.options.useParameterPanel) {
       this.basePane = new Tweakpane.Pane();
 
-      var tabs = [
-        {
-          title: this.TABS_PARAMETERS
-        }
-      ];
+      var tabs = [{title: this.TABS_PARAMETERS}];
       if (this.options.showAdvancedOptions) {
         tabs.push({title: this.TABS_ADVANCED});
         this.TAB_ID_ADVANCED = tabs.length - 1;
@@ -3383,24 +3861,20 @@ var Toko = (function () {
         switch (event.key.toLocaleLowerCase()) {
           case 'p':
             var e = document.getElementsByClassName('tp-dfwv')[0];
-            if (e.style.display == 'block') 
-              e.style.display = 'none';
-             else 
-              e.style.display = 'block';
-            
+            if (e.style.display == 'block') e.style.display = 'none';
+            else e.style.display = 'block';
+
             break;
         }
       };
-      
+
       //
-      //  add any additional canvas sizes that were passed along
+      // add any additional canvas sizes that were passed along
       //
       let n = this.options.additionalCanvasSizes.length;
       if (n > 0) {
         for (let i = 0; i < n; i++) {
-          this.addCanvasSize(
-            this.options.additionalCanvasSizes[i]
-          );
+          this.addCanvasSize(this.options.additionalCanvasSizes[i]);
         }
       }
 
@@ -3409,10 +3883,14 @@ var Toko = (function () {
       //
       if (this.options.showAdvancedOptions) {
         this.options.canvasSizeName = this.options.canvasSize.name; // use this to take the name out of the object
-        this.basePaneTab.pages[this.TAB_ID_ADVANCED].addBinding(this.options, 'canvasSizeName', {options: this.SIZES_LIST}).on('change', (ev) => {
-          let s = this.SIZES.filter(p => p.name === ev.value)[0];
-          this.setCanvasSize(s);
-        });
+        this.basePaneTab.pages[this.TAB_ID_ADVANCED]
+          .addBinding(this.options, 'canvasSizeName', {
+            options: this.SIZES_LIST,
+          })
+          .on('change', ev => {
+            let s = this.SIZES.filter(p => p.name === ev.value)[0];
+            this.setCanvasSize(s);
+          });
       }
     }
     //
@@ -3422,7 +3900,6 @@ var Toko = (function () {
     document.title = this.options.title;
 
     this.setCanvasSize(this.SIZES.filter(p => p.name === this.options.canvasSize.name)[0]);
-
   };
 
   Toko.prototype.endSetup = function () {
@@ -3435,11 +3912,7 @@ var Toko = (function () {
     this.SIZE_DEFAULT.height = height;
 
     if (this.options.logFPS) {
-
-      this.pt = {
-        fps: 0,
-        graph: 0,
-      };
+      this.pt = {fps: 0, graph: 0};
 
       var f = this.basePaneTab.pages[this.TAB_ID_FPS];
 
@@ -3450,19 +3923,23 @@ var Toko = (function () {
         interval: 100,
         min: 0,
         max: 120,
-        readonly: true
+        readonly: true,
       });
     }
 
     if (this.options.useParameterPanel) {
       if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch'}).on('click', (value) => {
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
+          view: 'separator',
+        });
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch'}).on('click', value => {
           this.saveSketch();
         });
       } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch & settings'}).on('click', (value) => {
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
+          view: 'separator',
+        });
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch & settings'}).on('click', value => {
           this.saveSketchAndSettings();
         });
       }
@@ -3478,13 +3955,13 @@ var Toko = (function () {
     }
   };
 
-  Toko.prototype.startDraw = function() {
+  Toko.prototype.startDraw = function () {
     //
     //	will be called at the start of the draw loop
     //
   };
 
-  Toko.prototype.endDraw = function() {
+  Toko.prototype.endDraw = function () {
     //
     //	will be called at the end of the draw loop
     //
@@ -3493,8 +3970,8 @@ var Toko = (function () {
     //	track fps with a simple filter to dampen any short spikes
     //
     if (this.options.logFPS) {
-        this._frameTime += (deltaTime - this.FRAME_TIME) / this.FPS_FILTER_STRENGTH;
-        this.pt.fps = this.pt.graph = Math.round(1000/this.FRAME_TIME);
+      this._frameTime += (deltaTime - this.FRAME_TIME) / this.FPS_FILTER_STRENGTH;
+      this.pt.fps = this.pt.graph = Math.round(1000 / this.FRAME_TIME);
     }
     //
     //  capture a frame if we're actively capturing
@@ -3507,18 +3984,18 @@ var Toko = (function () {
   //
   //  resize canvas to a new size while fitting within the window
   //
-  Toko.prototype.setCanvasSize = function(inSize) {
+  Toko.prototype.setCanvasSize = function (inSize) {
     let margin = 80;
     let zoomFactor = 1;
-    let displayFactor = inSize.pixelDensity/2;
+    let displayFactor = inSize.pixelDensity / 2;
     let newWidthString, newHeightString;
 
     if (!inSize.fullWindow) {
-      zoomFactor = Math.min(1,(windowWidth - margin)/inSize.width*displayFactor);
-      zoomFactor = Math.min(zoomFactor,(windowHeight -margin)/inSize.height*displayFactor);
+      zoomFactor = Math.min(1, ((windowWidth - margin) / inSize.width) * displayFactor);
+      zoomFactor = Math.min(zoomFactor, ((windowHeight - margin) / inSize.height) * displayFactor);
 
-      newWidthString = Math.floor(inSize.width * zoomFactor / displayFactor) + 'px';
-      newHeightString = Math.floor(inSize.height * zoomFactor / displayFactor) + 'px';
+      newWidthString = Math.floor((inSize.width * zoomFactor) / displayFactor) + 'px';
+      newHeightString = Math.floor((inSize.height * zoomFactor) / displayFactor) + 'px';
     } else {
       inSize.width = windowWidth;
       inSize.height = windowHeight;
@@ -3527,7 +4004,7 @@ var Toko = (function () {
       newHeightString = '100vh';
     }
 
-    resizeCanvas(inSize.width*displayFactor, inSize.height*displayFactor, true);
+    resizeCanvas(inSize.width * displayFactor, inSize.height * displayFactor, true);
 
     p5Canvas.canvas.style.width = newWidthString;
     p5Canvas.canvas.style.height = newHeightString;
@@ -3536,7 +4013,7 @@ var Toko = (function () {
   //
   //  add an additional size to the list of sizes - can only be done as Toko is set up
   //
-  Toko.prototype.addCanvasSize = function(inSize) {
+  Toko.prototype.addCanvasSize = function (inSize) {
     this.SIZES.push(inSize);
     this.SIZES_LIST[inSize.name] = inSize.name;
   };
@@ -3545,7 +4022,7 @@ var Toko = (function () {
   //  pick a random adjective from the list
   //  note this does not use the seeded random function to avoid file name conflicts
   //
-  Toko.prototype.randomAdjective = function() {
+  Toko.prototype.randomAdjective = function () {
     return this.ADJECTIVES[Math.floor(this.ADJECTIVES.length * Math.random())];
   };
 
@@ -3553,7 +4030,7 @@ var Toko = (function () {
   //  pick a random noun from the list
   //  note this does not use the seeded random function to avoid file name conflicts
   //
-  Toko.prototype.randomNoun = function() {
+  Toko.prototype.randomNoun = function () {
     return this.NOUNS[Math.floor(this.NOUNS.length * Math.random())];
   };
 
@@ -3583,15 +4060,20 @@ var Toko = (function () {
   //
   //  add next, previous and random buttons to the pane to navigate a specific list
   //
-  Toko.prototype.addPaneNavButtons = function (paneRef, pObject, paletteKey, collectionKey, justPrimary = false, sorted = false, index = -1) {
-
+  Toko.prototype.addPaneNavButtons = function (
+    paneRef,
+    pObject,
+    paletteKey,
+    collectionKey,
+    justPrimary = false,
+    sorted = false,
+    index = -1,
+  ) {
     let o = {
       view: 'buttongrid',
       size: [3, 1],
       cells: (x, y) => ({
-        title: [
-          ['← prev', 'rnd', 'next →'],
-        ][y][x],
+        title: [['← prev', 'rnd', 'next →']][y][x],
       }),
       label: ' ',
     };
@@ -3600,21 +4082,20 @@ var Toko = (function () {
       o.index = index;
     }
 
-    paneRef.addBlade( o
-    ).on('click', (ev) => {
+    paneRef.addBlade(o).on('click', ev => {
       let paletteList = toko.getPaletteSelection(pObject[collectionKey], justPrimary, sorted);
       switch (ev.index[0]) {
         case 0:
-          pObject[paletteKey] = this.findPreviousInList(pObject[paletteKey],paletteList);
+          pObject[paletteKey] = this.findPreviousInList(pObject[paletteKey], paletteList);
           break;
         case 1:
-          pObject[paletteKey] = this.findRandomInList(pObject[paletteKey],paletteList);
+          pObject[paletteKey] = this.findRandomInList(pObject[paletteKey], paletteList);
           break;
         case 2:
-          pObject[paletteKey] = this.findNextInList(pObject[paletteKey],paletteList);
+          pObject[paletteKey] = this.findNextInList(pObject[paletteKey], paletteList);
           break;
         default:
-          console.log('a non-existing button was pressed:',ev.index[0]);
+          console.log('a non-existing button was pressed:', ev.index[0]);
           break;
       }
       this.basePane.refresh();
@@ -3628,7 +4109,7 @@ var Toko = (function () {
     let keys = Object.keys(list);
     let i = keys.indexOf(item);
     let n;
-    if (i < keys.length-1) {
+    if (i < keys.length - 1) {
       n = i + 1;
     } else {
       n = 0;
@@ -3660,7 +4141,7 @@ var Toko = (function () {
     let keys = Object.keys(list);
     let newItem;
     do {
-      newItem = keys[Math.floor(Math.random()*keys.length)];
+      newItem = keys[Math.floor(Math.random() * keys.length)];
     } while (newItem == item);
     return list[newItem];
   };
@@ -3668,10 +4149,10 @@ var Toko = (function () {
   //
   //  turn the long Tweakpane state into a more compact set of values
   //
-  Toko.prototype._stateToPreset = function(stateObject) {
+  Toko.prototype._stateToPreset = function (stateObject) {
     let presetObject = {};
 
-    function traverse(obj) {
+    function traverse (obj) {
       for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
           // check if the current property is 'binding' and an object
@@ -3697,10 +4178,10 @@ var Toko = (function () {
   //
   //  use the compact preset to create a new Tweakpane state
   //
-  Toko.prototype._presetToState = function(presetObject) {
+  Toko.prototype._presetToState = function (presetObject) {
     let stateObject = this.basePane.exportState();
 
-    function traverse(obj) {
+    function traverse (obj) {
       for (const key in obj) {
         if (obj.hasOwnProperty(key)) {
           // check if the current property is 'binding' and an object
@@ -3726,7 +4207,7 @@ var Toko = (function () {
   //
   //  add a double drop down to select a color palette
   //
-  Toko.prototype.addPaletteSelector = function(paneRef, pObject, incomingOptions) {
+  Toko.prototype.addPaletteSelector = function (paneRef, pObject, incomingOptions) {
     //
     //  set default options
     //
@@ -3747,22 +4228,24 @@ var Toko = (function () {
     o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
     o.collectionsList = Toko.prototype.formatForTweakpane(o.pObject[o.collectionsList]);
 
-    o.collectionInput = o.paneRef.addBinding(o.pObject, o.collectionKey, {
-      index: o.index,
-      options: o.collectionsList
-    }).on('change', (ev) => {
-      o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[o.collectionKey], o.justPrimary, o.sorted);
-      o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
-      o.scaleInput.dispose();
-      o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
-        index:o.index,
-        options:o.colorPalettes
+    o.collectionInput = o.paneRef
+      .addBinding(o.pObject, o.collectionKey, {
+        index: o.index,
+        options: o.collectionsList,
+      })
+      .on('change', ev => {
+        o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[o.collectionKey], o.justPrimary, o.sorted);
+        o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
+        o.scaleInput.dispose();
+        o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
+          index: o.index,
+          options: o.colorPalettes,
+        });
       });
-    });
 
     o.scaleInput = paneRef.addBinding(o.pObject, o.paletteKey, {
-      options:o.colorPalettes,
-      index: o.index
+      options: o.colorPalettes,
+      index: o.index,
     });
 
     this.paletteSelectorData = o;
@@ -3771,22 +4254,22 @@ var Toko = (function () {
     //  add nav buttons below the dropdowns
     //
     if (o.navButtons) {
-      this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted, o.index+1);
+      this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted, o.index + 1);
     }
   };
 
   //
   //  update the color palette selector
   //
-  Toko.prototype.updatePaletteSelector = function(receivedCollection, receivedPalette) {
+  Toko.prototype.updatePaletteSelector = function (receivedCollection, receivedPalette) {
     let o;
     o = this.paletteSelectorData;
     o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);
     o.scaleInput.dispose();
     o.pObject[o.paletteKey] = receivedPalette;
     o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
-      index:o.index+1,
-      options:o.colorPalettes
+      index: o.index + 1,
+      options: o.colorPalettes,
     });
     //
     //  call main refresh function to update everything
@@ -3797,7 +4280,7 @@ var Toko = (function () {
   //
   //  add blendmode palette selector
   //
-  Toko.prototype.addBlendModeSelector = function(paneRef, pObject, incomingOptions) {
+  Toko.prototype.addBlendModeSelector = function (paneRef, pObject, incomingOptions) {
     //
     //  set default options
     //
@@ -3826,7 +4309,7 @@ var Toko = (function () {
         // Soft-light: SOFT_LIGHT,
         // Dodge: DODGE,
         // Burn: BURN,
-      }
+      },
     });
   };
 
@@ -3846,105 +4329,104 @@ var Toko = (function () {
       vw = min + (value - max);
     }
 
-    return vw
+    return vw;
   };
 
   //
   //  return number of integer digits
   //  see https://stackoverflow.com/questions/14879691/get-number-of-digits-with-javascript
   //
-  Toko.numDigits = function(x) {
+  Toko.numDigits = function (x) {
     return (Math.log10((x ^ (x >> 31)) - (x >> 31)) | 0) + 1;
   };
 
   //
-  //  random number generators and support
+  // random number generators and support
   //
 
   //
-  //  init the random number generator for this instance of Toko
+  // init the random number generator for this instance of Toko
   //
-  Toko.reseed = function(seed) {
+  Toko.reseed = function (seed) {
     this._rng = new Toko.rng(seed);
   };
 
   //
-  //  random number, element from array
+  // random number, element from array
   //
-  Toko.random = function(min, max) {
+  Toko.random = function (min, max) {
     return this._rng.random(min, max);
   };
 
   //
-  //  random integer
+  // random integer
   //
-  Toko.intRange = function(min = 0, max = 100) {
+  Toko.intRange = function (min = 0, max = 100) {
     return this._rng.intRange(min, max);
   };
   //
-  //  random boolean
+  // random boolean
   //
-  Toko.randomBool = function() {
+  Toko.randomBool = function () {
     return this._rng.randomBool();
   };
   //
-  //  random charactor from string or lowercase
+  // random charactor from string or lowercase
   //
-  Toko.randomChar = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
+  Toko.randomChar = function (inString = 'abcdefghijklmnopqrstuvwxyz') {
     return this._rng.randomChar(inString);
   };
   //
-  //  stepped random number in range
+  // stepped random number in range
   //
-  Toko.steppedRandom = function(min = 0, max = 1, step = 0.1) {
+  Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
     return this._rng.steppedRandom(min, max, step);
   };
   //
-  //  shuffle array in place
+  // shuffle array in place
   //
-  Toko.shuffle = function(inArray) {
+  Toko.shuffle = function (inArray) {
     return this._rng.shuffle(inArray);
   };
   //
-  //  all integers between min and max in random order
+  // all integers between min and max in random order
   //
   Toko.intSequence = function (min = 0, max = 100) {
     return this._rng.intSequence(min, max);
   };
 
   //
-  //  main random number generator class
+  // main random number generator class
   //
   Toko.rng = class {
-
-    constructor(seed) {
-      if (seed == undefined) { 
-        this.seed = Date.now(); 
+    constructor (seed) {
+      if (seed == undefined) {
+        this.seed = Date.now();
       } else {
         this.seed = seed;
       }
     }
 
     //
-    //  reseed the random number generator
+    // reseed the random number generator
     //
-    reseed = function(newSeed) {
+    reseed = function (newSeed) {
       this.seed = newSeed;
-    }
+    };
 
     //
-    //  Return a random floating-point number
+    // Return a random floating-point number
     //
-    //  0 arguments - random number between 0 and 1
-    //  1 argument & number - random number between 0 and the number (but not including)
-    //  1 argument & array  - random element from the array
-    //  2 arguments & number - random number from 1st number to 2nd number (but not including)
+    // 0 arguments - random number between 0 and 1
+    // 1 argument & number - random number between 0 and the number (but not including)
+    // 1 argument & array  - random element from the array
+    // 2 arguments & number - random number from 1st number to 2nd number (but not including)
     //
-    //  adapted from p5.js code
+    // adapted from p5.js code
     //
-    random = function(min, max) {
+    random = function (min, max) {
       let rand = this._rng();
-    
+
       if (typeof min === 'undefined') {
         return rand;
       } else if (typeof max === 'undefined') {
@@ -3959,65 +4441,66 @@ var Toko = (function () {
           min = max;
           max = tmp;
         }
-    
+
         return rand * (max - min) + min;
       }
-    }
+    };
 
     //
-    //  random integer from a range
+    // random integer from a range
     //
-    intRange = function(min = 0, max = 100) {
+    intRange = function (min = 0, max = 100) {
       let rand = this._rng();
 
       min = Math.floor(min);
       max = Math.floor(max);
-    
+
       return Math.floor(rand * (max - min) + min);
-    }
+    };
 
     //
-    //  random boolean
+    // random boolean
     //
-    randomBool = function() {
+    randomBool = function () {
       if (this._rng() < 0.5) {
         return true;
       } else {
         return false;
       }
-    }
+    };
 
     //
-    //  random character from a string
-    //  without input it returns a random lowercase letter
+    // random character from a string
+    // without input it returns a random lowercase letter
     //
-    randomChar = function(inString = 'abcdefghijklmnopqrstuvwxyz') {
-      let l = inString.length;
-      let r = Math.floor(this.random(0,l));
+    randomChar = function (inString = 'abcdefghijklmnopqrstuvwxyz') {
+      let l = inString.length,
+        r = Math.floor(this.random(0, l));
       return inString.charAt(r);
-    }
+    };
 
     //
-    //  generate a random number snapped to steps
+    // generate a random number snapped to steps
     //
     steppedRandom = function (min = 0, max = 1, step = 0.1) {
-      let n = Math.floor((max - min) / step);
-      let r = Math.round(this._rng() * n);
+      let n = Math.floor((max - min) / step),
+        r = Math.round(this._rng() * n);
       return min + r * step;
-    }
+    };
 
     //
-    //  shuffle an array in place
+    // shuffle an array in place
     //
     shuffle = function (array) {
       for (let i = array.length - 1; i > 0; i--) {
         let j = Math.floor(this._rng() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
       }
-    }
+    };
 
     //
-    //  generate random integer sequence from min to max
+    // generate random integer sequence from min to max
+    // including min, excluding max
     //
     intSequence = function (min = 0, max = 100) {
       min = Math.floor(min);
@@ -4027,49 +4510,50 @@ var Toko = (function () {
         max = min;
         min = temp;
       }
-      let seq = Array.from(Array(max - min)).map((e,i)=>i+min);
+      let seq = Array.from(Array(max - min)).map((e, i) => i + min);
       this.shuffle(seq);
       return seq;
-    }
+    };
 
     //
-    //  the psuedo random number generator
-    //  adapted from https://github.com/cprosche/mulberry32
+    // the psuedo random number generator
+    // adapted from https://github.com/cprosche/mulberry32
     //
-    _rng = function() {
-      let t = this.seed += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    }
-
+    _rng = function () {
+      let t = (this.seed += 0x6d2b79f5);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
   };
 
-  Toko.randomSeedString = function(stringLength = 6) {
-    const BASE62_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    let result = "";
-    
+  Toko.randomSeedString = function (stringLength = 6) {
+    const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let result = '';
+
     for (let i = 0; i < stringLength; i++) {
-      let n = Math.floor(Math.random()*62);
+      let n = Math.floor(Math.random() * 62);
       result = BASE62_ALPHABET[n] + result;
     }
     return result;
   };
 
+  // String hash function - fast but no guarantees on accuracy
+  // from: https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
   //
-  //  from: https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
-  //
-  Toko.cyrb53a = function(str, seed = 0) {
-    let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
-    for(let i = 0, ch; i < str.length; i++) {
+  Toko.cyrb53a = function (str, seed = 0) {
+    let h1 = 0xdeadbeef ^ seed;
+    let h2 = 0x41c6ce57 ^ seed;
+    for (let i = 0, ch; i < str.length; i++) {
       ch = str.charCodeAt(i);
       h1 = Math.imul(h1 ^ ch, 0x85ebca77);
       h2 = Math.imul(h2 ^ ch, 0xc2b2ae3d);
     }
     h1 ^= Math.imul(h1 ^ (h2 >>> 15), 0x735a2d97);
     h2 ^= Math.imul(h2 ^ (h1 >>> 15), 0xcaf649a9);
-    h1 ^= h2 >>> 16; h2 ^= h1 >>> 16;
-      return 2097152 * (h2 >>> 0) + (h1 >>> 11);
+    h1 ^= h2 >>> 16;
+    h2 ^= h1 >>> 16;
+    return 2097152 * (h2 >>> 0) + (h1 >>> 11);
   };
 
   //
@@ -4098,22 +4582,19 @@ var Toko = (function () {
   //
 
   Toko.Grid = class {
+    SPLIT_HORIZONTAL = 'split_horizonal';
+    SPLIT_VERTICAL = 'split_vertical';
+    SPLIT_LONGEST = 'split_longest';
+    SPLIT_MIX = 'split_mix';
+    SPLIT_SQUARE = 'split_square';
 
-    SPLIT_HORIZONTAL = "split_horizonal";
-    SPLIT_VERTICAL = "split_vertical";
-    SPLIT_LONGEST = "split_longest";
-    SPLIT_MIX = "split_mix";
-    SPLIT_SQUARE = "split_square";
-
-  	constructor(x,y,width,height) {
-      this._position = createVector(x,y);
+    constructor (x, y, width, height) {
+      this._position = createVector(x, y);
       this._x = x;
       this._y = y;
       this._width = width;
       this._height = height;
-      this._cells = [
-        new Toko.GridCell(this._x,this._y,this._width,this._height, 0, 0, this._width, this._height)
-      ];
+      this._cells = [new Toko.GridCell(this._x, this._y, this._width, this._height, 0, 0, this._width, this._height)];
       this._points = [];
       this._pointsAreUpdated = false;
       this._openSpaces = [];
@@ -4122,9 +4603,9 @@ var Toko = (function () {
     //
     //  set the base rows and columns for the grid
     //
-    setBaseGrid(columns = 1, rows = 1) {
-      let cellWidth = this._width/columns;
-      let cellHeight = this._height/rows;
+    setBaseGrid (columns = 1, rows = 1) {
+      let cellWidth = this._width / columns;
+      let cellHeight = this._height / rows;
 
       this._cells = [];
 
@@ -4132,7 +4613,7 @@ var Toko = (function () {
         for (let c = 0; c < columns; c++) {
           let newCell = new Toko.GridCell(
             this._x + c * cellWidth,
-            this._y + r* cellHeight,
+            this._y + r * cellHeight,
             cellWidth,
             cellHeight,
             c,
@@ -4148,7 +4629,7 @@ var Toko = (function () {
     //
     //  collect the coordinates of all unique points on the grid
     //
-    gatherPoints() {
+    gatherPoints () {
       this._pointsAreUpdated = true;
       this._points = [];
       let tempPoints = [];
@@ -4162,11 +4643,11 @@ var Toko = (function () {
         // top left corner
         tempPoints.push(`${c.x}-${c.y}`);
         // top right corner
-        tempPoints.push(`${c.x+c.width}-${c.y}`);
+        tempPoints.push(`${c.x + c.width}-${c.y}`);
         // bottom left corner
-        tempPoints.push(`${c.x}-${c.y+c.height}`);
+        tempPoints.push(`${c.x}-${c.y + c.height}`);
         // bottom right corner
-        tempPoints.push(`${c.x+c.width}-${c.y+c.height}`);
+        tempPoints.push(`${c.x + c.width}-${c.y + c.height}`);
       }
       //
       //  deduplicate using a set
@@ -4177,7 +4658,7 @@ var Toko = (function () {
       //
       uniquePoints.forEach(element => {
         let a = element.split('-');
-        this._points.push(createVector(parseFloat(a[0]),parseFloat(a[1])));
+        this._points.push(createVector(parseFloat(a[0]), parseFloat(a[1])));
       });
 
       return this._points;
@@ -4195,27 +4676,27 @@ var Toko = (function () {
     //  snapToPixel     - if set to true all sizes and positions are rounded to a pixel
     //                    This can result in the cells not filling the complete grid space
     //
-    packGrid(columns,rows,cellShapes, fillEmptySpaces = true, snapToPixel = true) {
+    packGrid (columns, rows, cellShapes, fillEmptySpaces = true, snapToPixel = true) {
       this._pointsAreValid = false;
       this._cells = [];
       let cw, rh;
       if (snapToPixel) {
-        cw = Math.round(this._width/columns);
-        rh = Math.round(this._height/rows);
+        cw = Math.round(this._width / columns);
+        rh = Math.round(this._height / rows);
       } else {
-        cw = this._width/columns;
-        rh = this._height/rows;
+        cw = this._width / columns;
+        rh = this._height / rows;
       }
-      
-      this.resetOpenSpaces(columns,rows);
-      
+
+      this.resetOpenSpaces(columns, rows);
+
       let spaceCheckInterval = 10;
       let keepGoing = true;
       let shape, w, h, c, r, newCell, keepTryingThisShape;
       let k = 0;
       let fails = 0;
       let maxFails = 1000;
-      let triesPerShape = 2500; 
+      let triesPerShape = 2500;
       let tryCounter = 0;
 
       while (keepGoing) {
@@ -4231,13 +4712,13 @@ var Toko = (function () {
           r = Toko.intRange(0, rows - h + 1);
 
           // check if space is available
-          if (this.spaceAvailable(c,r,w,h)) {
+          if (this.spaceAvailable(c, r, w, h)) {
             // if it is available, add a cell with the picked size
-            newCell = new Toko.GridCell(this._x+c*cw, this._y+r*rh, w*cw, h*rh, c, r, w, h);
+            newCell = new Toko.GridCell(this._x + c * cw, this._y + r * rh, w * cw, h * rh, c, r, w, h);
             newCell.counter = tryCounter;
             this._cells.push(newCell);
             // claim the space
-            this.fillSpace(c,r,w,h);
+            this.fillSpace(c, r, w, h);
             // reset
             keepTryingThisShape = false;
             tryCounter = 0;
@@ -4253,7 +4734,7 @@ var Toko = (function () {
         // every once in a while check if there is any space left
         //
         k++;
-        if (k%spaceCheckInterval == 0) {
+        if (k % spaceCheckInterval == 0) {
           keepGoing = this.anySpaceLeft();
         }
         //
@@ -4267,23 +4748,22 @@ var Toko = (function () {
       //  fill left over spaces
       //
       if (fillEmptySpaces) {
-        this.fillEmptySpaces(columns,rows,cellShapes, snapToPixel);
+        this.fillEmptySpaces(columns, rows, cellShapes, snapToPixel);
       }
-      
     }
 
     //
     //  fill the remaining empty spaces systematically
     //
-    fillEmptySpaces(columns,rows,cellShapes, snapToPixel) {
-      cellShapes.push([1,1]); // add a 1x1 so we can always fill
+    fillEmptySpaces (columns, rows, cellShapes, snapToPixel) {
+      cellShapes.push([1, 1]); // add a 1x1 so we can always fill
       let cw, rh;
       if (snapToPixel) {
-        cw = Math.round(this._width/columns);
-        rh = Math.round(this._height/rows);
+        cw = Math.round(this._width / columns);
+        rh = Math.round(this._height / rows);
       } else {
-        cw = this._width/columns;
-        rh = this._height/rows;
+        cw = this._width / columns;
+        rh = this._height / rows;
       }
       let s, tryingShapes, w, h, newCell;
       //
@@ -4296,11 +4776,11 @@ var Toko = (function () {
           while (tryingShapes) {
             w = cellShapes[s][0];
             h = cellShapes[s][1];
-            if (this.spaceAvailable(i,j,w,h)) {
-              newCell = new Toko.GridCell(this._x+i*cw, this._y+j*rh, w*cw, h*rh, i, j, cw, rh);
+            if (this.spaceAvailable(i, j, w, h)) {
+              newCell = new Toko.GridCell(this._x + i * cw, this._y + j * rh, w * cw, h * rh, i, j, cw, rh);
               newCell.counter = s;
               this._cells.push(newCell);
-              this.fillSpace(i,j,w,h);
+              this.fillSpace(i, j, w, h);
               tryingShapes = false;
             }
             s++;
@@ -4315,16 +4795,16 @@ var Toko = (function () {
     //
     //  check if space is available for this shape
     //
-    spaceAvailable(column,row,width,height) {
-      if ((column+width) > this._openSpaces.length) {
+    spaceAvailable (column, row, width, height) {
+      if (column + width > this._openSpaces.length) {
         return false;
       }
-      if ((row+height) > this._openSpaces[0].length) {
+      if (row + height > this._openSpaces[0].length) {
         return false;
       }
       for (let i = 0; i < width; i++) {
         for (let j = 0; j < height; j++) {
-          if (!this._openSpaces[column+i][row+j]) {
+          if (!this._openSpaces[column + i][row + j]) {
             return false;
           }
         }
@@ -4335,10 +4815,10 @@ var Toko = (function () {
     //
     //  mark a specific area in the grid as no longer open
     //
-    fillSpace(column,row,width,height) {
+    fillSpace (column, row, width, height) {
       for (let i = 0; i < width; i++) {
         for (let j = 0; j < height; j++) {
-          this._openSpaces[column+i][row+j] = false;
+          this._openSpaces[column + i][row + j] = false;
         }
       }
     }
@@ -4346,7 +4826,7 @@ var Toko = (function () {
     //
     //  reset all the space back to open
     //
-    resetOpenSpaces(columns, rows) {
+    resetOpenSpaces (columns, rows) {
       this._openSpaces = [];
       for (let i = 0; i < columns; i++) {
         this._openSpaces[i] = new Array();
@@ -4359,7 +4839,7 @@ var Toko = (function () {
     //
     //  check if there is any space left at all
     //
-    anySpaceLeft() {
+    anySpaceLeft () {
       let columns = this._openSpaces.length;
       let rows = this._openSpaces[0].length;
       for (let i = 0; i < columns; i++) {
@@ -4371,7 +4851,7 @@ var Toko = (function () {
       }
       return false;
     }
-    
+
     //
     //  split the cells recursively
     //
@@ -4384,8 +4864,8 @@ var Toko = (function () {
     //                    SPLIT_LONGEST     = split the longest dimension
     //                    SPLIT_MIX         = split along both axis randomly
     //                    SPLIT_SQUARE      = split cells into 4 new cells
-    //                    
-    splitRecursive(nrLoops = 1, chance = 0.5, minSize = 10, splitStyle = this.SPLIT_MIX) {
+    //
+    splitRecursive (nrLoops = 1, chance = 0.5, minSize = 10, splitStyle = this.SPLIT_MIX) {
       if (splitStyle == this.SPLIT_SQUARE) {
         // reduce the chance because the square split creates 4 cells instead of 2
         chance *= 0.5;
@@ -4395,7 +4875,7 @@ var Toko = (function () {
         let newCells = [];
         for (let n = 0; n < this._cells.length; n++) {
           if (Toko.random() < chance) {
-            let c = this.splitCell(this._cells[n],minSize, splitStyle);
+            let c = this.splitCell(this._cells[n], minSize, splitStyle);
             newCells = newCells.concat(c);
           } else {
             newCells.push(this._cells[n]);
@@ -4408,7 +4888,7 @@ var Toko = (function () {
     //
     //  direct to right split style
     //
-    splitCell(cell, minSize = 10, splitStyle = this.SPLIT_MIX) {
+    splitCell (cell, minSize = 10, splitStyle = this.SPLIT_MIX) {
       let newCells = [];
       switch (splitStyle) {
         case this.SPLIT_SQUARE:
@@ -4436,7 +4916,7 @@ var Toko = (function () {
     //
     //  split cell along the longest side
     //
-    splitCellLongest(cell, minSize = 10) {
+    splitCellLongest (cell, minSize = 10) {
       if (cell.width > cell.height) {
         return this.splitCellHorizontal(cell, minSize);
       } else {
@@ -4447,7 +4927,7 @@ var Toko = (function () {
     //
     //  split cells randomly along horizontal or vertical axis
     //
-    splitCellMix(cell, minSize = 10) {
+    splitCellMix (cell, minSize = 10) {
       if (Toko.random() < 0.5) {
         return this.splitCellHorizontal(cell, minSize);
       } else {
@@ -4458,20 +4938,20 @@ var Toko = (function () {
     //
     //  split a cell evenly into 4 cells
     //
-    splitCellSquare(cell, minSize = 10) {
-      let w2 = cell.width/2;
-      let h2 = cell.height/2;
+    splitCellSquare (cell, minSize = 10) {
+      let w2 = cell.width / 2;
+      let h2 = cell.height / 2;
       let x = cell.x;
       let y = cell.y;
       let c = cell.counter + 1;
       let newCells = [];
 
       if (w2 > minSize && h2 > minSize) {
-          newCells.push(new Toko.GridCell(x,y,w2,h2));
-          newCells.push(new Toko.GridCell(x+w2,y,w2,h2));
-          newCells.push(new Toko.GridCell(x+w2,y+h2,w2,h2));
-          newCells.push(new Toko.GridCell(x,y+h2,w2,h2));
-          newCells[0].counter = newCells[1].counter = newCells[2].counter = newCells[3].counter = c;
+        newCells.push(new Toko.GridCell(x, y, w2, h2));
+        newCells.push(new Toko.GridCell(x + w2, y, w2, h2));
+        newCells.push(new Toko.GridCell(x + w2, y + h2, w2, h2));
+        newCells.push(new Toko.GridCell(x, y + h2, w2, h2));
+        newCells[0].counter = newCells[1].counter = newCells[2].counter = newCells[3].counter = c;
       } else {
         newCells.push(cell);
       }
@@ -4481,8 +4961,8 @@ var Toko = (function () {
     //
     //  split a cell horizontally
     //
-    splitCellHorizontal(cell, minSize = 10) {
-      let w2 = cell.width/2;
+    splitCellHorizontal (cell, minSize = 10) {
+      let w2 = cell.width / 2;
       let h = cell.height;
       let x = cell.x;
       let y = cell.y;
@@ -4490,9 +4970,9 @@ var Toko = (function () {
       let newCells = [];
 
       if (w2 > minSize) {
-          newCells.push(new Toko.GridCell(x,y,w2,h));
-          newCells.push(new Toko.GridCell(x+w2,y,w2,h));
-          newCells[0].counter = newCells[1].counter = c;
+        newCells.push(new Toko.GridCell(x, y, w2, h));
+        newCells.push(new Toko.GridCell(x + w2, y, w2, h));
+        newCells[0].counter = newCells[1].counter = c;
       } else {
         newCells.push(cell);
       }
@@ -4502,18 +4982,18 @@ var Toko = (function () {
     //
     //  split a cell vertically
     //
-    splitCellVertical(cell, minSize = 10) {
+    splitCellVertical (cell, minSize = 10) {
       let w = cell.width;
-      let h2 = cell.height/2;
+      let h2 = cell.height / 2;
       let x = cell.x;
       let y = cell.y;
       let c = cell.counter + 1;
       let newCells = [];
 
       if (h2 > minSize) {
-          newCells.push(new Toko.GridCell(x,y,w,h2));
-          newCells.push(new Toko.GridCell(x,y+h2,w,h2));
-          newCells[0].counter = newCells[1].counter = c;
+        newCells.push(new Toko.GridCell(x, y, w, h2));
+        newCells.push(new Toko.GridCell(x, y + h2, w, h2));
+        newCells[0].counter = newCells[1].counter = c;
       } else {
         newCells.push(cell);
       }
@@ -4526,41 +5006,41 @@ var Toko = (function () {
     //
     //----------------------------------------
 
-    get maxCounter() {
+    get maxCounter () {
       //
       //  find the max value of counter in all the cells
       //  see https://stackoverflow.com/questions/4020796/finding-the-max-value-of-an-attribute-in-an-array-of-objects
       //
-      let maxC = this._cells.reduce((a,b)=>a.counter > b.counter ?a:b).counter;
+      let maxC = this._cells.reduce((a, b) => (a.counter > b.counter ? a : b)).counter;
       return maxC;
     }
 
-    get minCounter() {
-      let minC = this._cells.reduce((a,b)=>a.counter < b.counter ?a:b).counter;
+    get minCounter () {
+      let minC = this._cells.reduce((a, b) => (a.counter < b.counter ? a : b)).counter;
       return minC;
     }
 
-    get width() {
+    get width () {
       return this._width;
     }
 
-    get height() {
+    get height () {
       return this._height;
     }
 
-    get x() {
+    get x () {
       return this._x;
     }
 
-    get y() {
+    get y () {
       return this._y;
     }
 
-    get cells() {
+    get cells () {
       return this._cells;
     }
 
-    get points() {
+    get points () {
       if (!this._pointsAreUpdated) {
         return this.gatherPoints();
       } else {
@@ -4588,7 +5068,7 @@ var Toko = (function () {
   //
 
   Toko.GridCell = class {
-    constructor(x,y,width,height,column=0,row=0,gridWidth=0,gridHeight=0) {
+    constructor (x, y, width, height, column = 0, row = 0, gridWidth = 0, gridHeight = 0) {
       this._x = x;
       this._y = y;
       this._width = width;
@@ -4601,76 +5081,75 @@ var Toko = (function () {
       this._counter = 0;
     }
 
-    get x() {
+    get x () {
       return this._x;
     }
-    set x(in_x) {
+    set x (in_x) {
       this._x = in_x;
     }
-    
-    get y() {
+
+    get y () {
       return this._y;
     }
-    set y(in_y) {
+    set y (in_y) {
       this._y = in_y;
     }
-    
-    get width() {
+
+    get width () {
       return this._width;
     }
-    set width(in_width) {
+    set width (in_width) {
       this._width = in_width;
     }
-    
-    get height() {
+
+    get height () {
       return this._height;
     }
-    set height(in_height) {
+    set height (in_height) {
       this._height = in_height;
     }
-    
-    get row() {
+
+    get row () {
       return this._row;
     }
-    set row(in_row) {
+    set row (in_row) {
       this._row = in_row;
     }
-    
-    get column() {
+
+    get column () {
       return this._column;
     }
-    set column(in_column) {
+    set column (in_column) {
       this._column = in_column;
     }
-    
-    get gridWidth() {
+
+    get gridWidth () {
       return this._gridWidth;
     }
-    set gridWidth(in_gridWidth) {
+    set gridWidth (in_gridWidth) {
       this._gridWidth = in_gridWidth;
     }
-    
-    get gridHeight() {
+
+    get gridHeight () {
       return this._gridHeight;
     }
-    set gridHeight(in_gridHeight) {
+    set gridHeight (in_gridHeight) {
       this._gridHeight = in_gridHeight;
     }
-    
-    get value() {
+
+    get value () {
       return this._value;
     }
-    set value(in_value) {
+    set value (in_value) {
       this._value = in_value;
     }
-    
-    get counter() {
+
+    get counter () {
       return this._counter;
     }
-    set counter(in_counter) {
+    set counter (in_counter) {
       this._counter = in_counter;
     }
-
   };
 
   Toko.prototype.generateFilename = function (extension = 'svg', verb = 'sketched') {
@@ -4693,10 +5172,8 @@ var Toko = (function () {
     // create a yyyymmdd string
     //
     var d = new Date();
-    var day = ("0" + d.getDate()).slice(-2);
-    var month = ("0" + (
-      d.getMonth() + 1
-    )).slice(-2);
+    var day = ('0' + d.getDate()).slice(-2);
+    var month = ('0' + (d.getMonth() + 1)).slice(-2);
     var year = d.getFullYear();
 
     return year + month + day;
@@ -4707,7 +5184,7 @@ var Toko = (function () {
     this.capturer = new CCapture(o);
   };
 
-  Toko.prototype.createCapturePanel = function(tabID) {
+  Toko.prototype.createCapturePanel = function (tabID) {
     var t = this.basePaneTab.pages[tabID];
 
     t.addBinding(this.captureOptions, 'format', {
@@ -4716,28 +5193,32 @@ var Toko = (function () {
 
     t.addBlade({view: 'separator'});
 
-    this.startCaptureButton = t.addButton({
-      title: '🔴 Record',
-    }).on('click', (value) => {
-      this.clickStartCapture();
-    });
+    this.startCaptureButton = t
+      .addButton({
+        title: '🔴 Record',
+      })
+      .on('click', value => {
+        this.clickStartCapture();
+      });
 
-    this.stopCaptureButton = t.addButton({
-      title: '⬛️ Stop recording',
-    }).on('click', (value) => {
-      this.clickStopCapture();
-    });
+    this.stopCaptureButton = t
+      .addButton({
+        title: '⬛️ Stop recording',
+      })
+      .on('click', value => {
+        this.clickStopCapture();
+      });
     this.stopCaptureButton.hidden = true;
   };
 
-  Toko.prototype.clickStartCapture = function() {
+  Toko.prototype.clickStartCapture = function () {
     this.stopCaptureButton.hidden = false;
     this.startCaptureButton.hidden = true;
     this.startCapture();
     redraw(); // BUG: this should not be needed but for some reason it halts without it
   };
 
-  Toko.prototype.clickStopCapture = function() {
+  Toko.prototype.clickStopCapture = function () {
     this.stopCaptureButton.hidden = true;
     this.startCaptureButton.hidden = false;
     this.stopCapture();
@@ -4761,7 +5242,7 @@ var Toko = (function () {
     }
   };
 
-  Toko.prototype.captureFrame = function() {
+  Toko.prototype.captureFrame = function () {
     if (this.options.captureFrames) {
       // capture a frame
       this.capturer.capture(document.getElementById('defaultCanvas0'));
@@ -4770,14 +5251,14 @@ var Toko = (function () {
     }
   };
 
-  Toko.prototype.getCaptureOptions = function(format = 'png') {
+  Toko.prototype.getCaptureOptions = function (format = 'png') {
     //
     //  default options
     //
     let o = {
-      format: 'png', 
-      framerate: this.options.captureFrameRate, 
-      name: this.generateFilename('none', 'captured'), 
+      format: 'png',
+      framerate: this.options.captureFrameRate,
+      name: this.generateFilename('none', 'captured'),
       display: false,
       motionBlurFrames: 0,
       verbose: false,
@@ -4806,7 +5287,7 @@ var Toko = (function () {
     var sketchElement = document.getElementById(this.options.sketchElementId).firstChild;
     var isCanvas = sketchElement instanceof HTMLCanvasElement;
     if (sketchElement.firstChild != null) {
-      var isSVG = (sketchElement.firstChild.nodeName == "svg");
+      var isSVG = sketchElement.firstChild.nodeName == 'svg';
     }
 
     if (isCanvas) {
@@ -4827,7 +5308,7 @@ var Toko = (function () {
       var filename = this.generateFilename('svg');
       var svgString = document.getElementById(this.options.sketchElementId).firstChild.innerHTML;
 
-      var blob = new Blob([svgString], {'type': 'image/svg+xml'});
+      var blob = new Blob([svgString], {type: 'image/svg+xml'});
       var url = window.URL.createObjectURL(blob);
 
       //
@@ -4840,14 +5321,12 @@ var Toko = (function () {
       a.download = filename;
       a.click();
       window.URL.revokeObjectURL(url);
-      
-      return filename;
 
+      return filename;
     } else {
-      console.log("Toko - saveSketch: unkown type");
+      console.log('Toko - saveSketch: unkown type');
       return;
     }
-    
   };
 
   //
@@ -4868,7 +5347,6 @@ var Toko = (function () {
   //  WARNING: basically no error checking is done here
   //
   Toko.prototype.saveSettings = function (filename = 'default') {
-    
     if (typeof filename === 'undefined' || filename == 'default') {
       filename = this.generateFilename('json');
     }
@@ -4888,7 +5366,6 @@ var Toko = (function () {
   //  WARNING: basically no error checking is done here
   //
   Toko.prototype.receiveSettings = function (file) {
-
     let receivedCollection, receivedPalette;
 
     this.receivingFileNow = true;
@@ -4900,9 +5377,8 @@ var Toko = (function () {
 
       receivedCollection = file.data.collection;
       receivedPalette = file.data.palette;
-
     }
-    
+
     this.receivingFileNow = false;
     this.updatePaletteSelector(receivedCollection, receivedPalette);
 

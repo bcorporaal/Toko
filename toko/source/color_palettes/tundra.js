@@ -16,28 +16,12 @@ export default [
   },
   {
     name: 'tundra3',
-    colors: [
-      '#87c3ca',
-      '#7b7377',
-      '#b2475d',
-      '#7d3e3e',
-      '#eb7f64',
-      '#d9c67a',
-      '#f3f2f2'
-    ],
+    colors: ['#87c3ca', '#7b7377', '#b2475d', '#7d3e3e', '#eb7f64', '#d9c67a', '#f3f2f2'],
     type: 'tundra',
   },
   {
     name: 'tundra4',
-    colors: [
-      '#d53939',
-      '#b6754d',
-      '#a88d5f',
-      '#524643',
-      '#3c5a53',
-      '#7d8c7c',
-      '#dad6cd'
-    ],
+    colors: ['#d53939', '#b6754d', '#a88d5f', '#524643', '#3c5a53', '#7d8c7c', '#dad6cd'],
     type: 'tundra',
-  }
+  },
 ];

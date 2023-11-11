@@ -45,5 +45,5 @@ export default [
     stroke: '#0e0603',
     background: '#f6ecd4',
     type: 'hilda',
-  }
+  },
 ];

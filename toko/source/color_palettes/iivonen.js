@@ -31,5 +31,5 @@ export default [
     stroke: '#000100',
     background: '#e2ded2',
     type: 'iivonen',
-  }
+  },
 ];

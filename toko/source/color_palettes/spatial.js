@@ -39,5 +39,5 @@ export default [
     stroke: '#f6f6f4',
     background: '#4169ff',
     type: 'spatial',
-  }
+  },
 ];

@@ -1,9 +1,8 @@
-import * as constants from './constants'; 
-import * as words from './words'; 
+import * as constants from './constants';
+import * as words from './words';
 
 class Toko {
-  constructor() {
-
+  constructor () {
     for (const k in constants) {
       this[k] = constants[k];
     }
@@ -18,7 +17,6 @@ class Toko {
     Toko.reseed(Date.now());
 
     console.log(this.VERSION);
-
   }
 }
 

@@ -6,7 +6,6 @@ import Toko from '../core/main';
 //  WARNING: basically no error checking is done here
 //
 Toko.prototype.receiveSettings = function (file) {
-
   let receivedCollection, receivedPalette;
 
   this.receivingFileNow = true;
@@ -18,11 +17,10 @@ Toko.prototype.receiveSettings = function (file) {
 
     receivedCollection = file.data.collection;
     receivedPalette = file.data.palette;
-
   }
-  
+
   this.receivingFileNow = false;
   this.updatePaletteSelector(receivedCollection, receivedPalette);
 
   window.receivedFile?.(file);
-}
+};

@@ -33,13 +33,7 @@ Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezi
 
 Toko.prototype.COLOR_COLLECTIONS = [];
 
-Toko.prototype.MODELIST = [
-  'rgb',
-  'lrgb',
-  'lab',
-  'hsl',
-  'lch',
-];
+Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
 
 Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   reverse: false,
@@ -60,13 +54,12 @@ Toko.prototype.initColorDone = false;
 //
 Toko.prototype._initColor = function () {
   this._preprocessPalettes();
-}
+};
 
 //
 //  validate incoming color options
 //
 Toko.prototype._validateColorOptions = function (colorOptions) {
-
   //
   // merge with default options
   //
@@ -76,7 +69,9 @@ Toko.prototype._validateColorOptions = function (colorOptions) {
   // don't use bezier for more than a preset number of colors
   //
   if (colorOptions.bezier && colorOptions.length > this.MAX_COLORS_BEZIER) {
-    console.log(`INFO: Bezier does not work for more than $MAX_COLORS_BEZIER} colors`);
+    console.log(
+      `INFO: Bezier does not work for more than $MAX_COLORS_BEZIER} colors`,
+    );
     colorOptions.bezier = false;
   }
 
@@ -86,13 +81,17 @@ Toko.prototype._validateColorOptions = function (colorOptions) {
   colorOptions._validated = true;
 
   return colorOptions;
-}
+};
 
-Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors) {
+Toko.prototype._createColorScale = function (
+  colorSet,
+  colorOptions,
+  extraColors,
+) {
   if (!this.initColorDone) {
     this._initColor();
   }
-  let sc,oSC;
+  let sc, oSC;
   let o = {};
 
   if (colorOptions._validated != true) {
@@ -114,13 +113,19 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   if (colorOptions.bezier) {
     sc = chroma.bezier(colorSet).scale();
   } else {
-    sc = chroma.scale(colorSet).domain(colorOptions.domain).mode(colorOptions.mode);
+    sc = chroma
+      .scale(colorSet)
+      .domain(colorOptions.domain)
+      .mode(colorOptions.mode);
   }
 
   //
   // scale mapped to the original array of colors
   //
-  oSC = chroma.scale(colorSet).domain(colorOptions.domain).classes(colorSet.length);
+  oSC = chroma
+    .scale(colorSet)
+    .domain(colorOptions.domain)
+    .classes(colorSet.length);
 
   //
   // only adjust gamma if needed
@@ -139,36 +144,35 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   if (colorOptions.stepped && colorOptions.steps > 0) {
     sc = sc.classes(colorOptions.steps);
   }
-  
+
   o.scaleChroma = sc;
   o.contrastColors = contrastColors;
   o.options = colorOptions;
   o.list = sc.colors(colorOptions.nrColors);
-  
+
   o.originalColors = colorSet;
 
-  o.scale = (i) => {
+  o.scale = i => {
     return sc(i).hex();
   };
-  o.originalScale = (i) => {
+  o.originalScale = i => {
     return oSC(i).hex();
   };
   o.randomColor = (useTokoRandom = false) => {
-    let r = (useTokoRandom)?Toko.random():Math.random();
+    let r = useTokoRandom ? Toko.random() : Math.random();
     let d = colorOptions.domain;
 
     return sc(d[0] + r * (d[1] - d[0])).hex();
   };
   o.randomOriginalColor = (useTokoRandom = false) => {
-    let r = (useTokoRandom)?Toko.random():Math.random();
+    let r = useTokoRandom ? Toko.random() : Math.random();
     let d = colorOptions.domain;
 
     return oSC(d[0] + r * (d[1] - d[0])).hex();
-  }
+  };
 
   return o;
-}
-
+};
 
 Toko.prototype._getColorScale = function (inPalette, colorOptions) {
   if (!this.initColorDone) {
@@ -185,10 +189,10 @@ Toko.prototype._getColorScale = function (inPalette, colorOptions) {
   let extraColors = [];
 
   if (typeof inPalette === 'object') {
-    colorSet = [... inPalette];
+    colorSet = [...inPalette];
   } else if (typeof inPalette === 'string') {
     p = this.findPaletteByName(inPalette);
-    colorSet = [... p.colors]; // clone the array to not mess up the original
+    colorSet = [...p.colors]; // clone the array to not mess up the original
 
     if ('stroke' in p) {
       extraColors.push(p.stroke);
@@ -197,21 +201,26 @@ Toko.prototype._getColorScale = function (inPalette, colorOptions) {
       extraColors.push(p.background);
     }
   } else {
-    console.log("ERROR: palette should be a string or an array");
-  } 
+    console.log('ERROR: palette should be a string or an array');
+  }
   o = this._createColorScale(colorSet, colorOptions, extraColors);
 
   return o;
-}
+};
 
 //
 //  get the next or previous palette
 //
-Toko.prototype._getAnotherPalette = function (inPalette, paletteType = 'all', justPrimary = true, direction = 1) {
+Toko.prototype._getAnotherPalette = function (
+  inPalette,
+  paletteType = 'all',
+  justPrimary = true,
+  direction = 1,
+) {
   let tempPaletteList = this._getPaletteListRaw(paletteType, justPrimary);
   var i = tempPaletteList.findIndex(p => p.name === inPalette);
   if (i === undefined) {
-    console.log('palette not found: ' + inPalette)
+    console.log('palette not found: ' + inPalette);
     return inPalette;
   } else {
     i += direction;
@@ -223,37 +232,46 @@ Toko.prototype._getAnotherPalette = function (inPalette, paletteType = 'all', ju
     i = tempPaletteList.length - 1;
   }
 
-  return tempPaletteList[i].name
-}
+  return tempPaletteList[i].name;
+};
 
 //
 //  get a random palette
 //
-Toko.prototype._getRandomPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
+Toko.prototype._getRandomPalette = function (
+  inPalette,
+  paletteType = 'all',
+  justPrimary = true,
+) {
   if (!this.initColorDone) {
     this._initColor();
   }
   let tempPaletteList = this._getPaletteListRaw(paletteType, justPrimary);
 
-  var randomPalette = tempPaletteList[Math.floor(Math.random() * tempPaletteList.length)];
+  var randomPalette =
+    tempPaletteList[Math.floor(Math.random() * tempPaletteList.length)];
 
-  return randomPalette.name
-}
+  return randomPalette.name;
+};
 
 //
 //  get set of palettes with a specific type or primary state
 //
-Toko.prototype._getPaletteListRaw = function (paletteType = 'all', justPrimary = true, sorted) {
+Toko.prototype._getPaletteListRaw = function (
+  paletteType = 'all',
+  justPrimary = true,
+  sorted,
+) {
   if (!this.initColorDone) {
     this._initColor();
   }
   let filtered = this.palettes;
   if (paletteType !== 'all') {
-    filtered = this.palettes.filter(p => (p.type === paletteType));
+    filtered = this.palettes.filter(p => p.type === paletteType);
   }
 
   if (justPrimary) {
-    filtered = filtered.filter(p => (p.isPrimary))
+    filtered = filtered.filter(p => p.isPrimary);
   }
 
   //
@@ -264,12 +282,16 @@ Toko.prototype._getPaletteListRaw = function (paletteType = 'all', justPrimary =
   }
 
   return filtered;
-}
+};
 
 //
 //  get a selection of palettes based on name or type
 //
-Toko.prototype._getPaletteSelectionRaw = function(selectionList, justPrimary, sorted) {
+Toko.prototype._getPaletteSelectionRaw = function (
+  selectionList,
+  justPrimary,
+  sorted,
+) {
   if (!this.initColorDone) {
     this._initColor();
   }
@@ -279,11 +301,13 @@ Toko.prototype._getPaletteSelectionRaw = function(selectionList, justPrimary, so
   let filtered = [];
   for (let i = 0; i < labels.length; i++) {
     filtered = filtered.concat(
-      this.palettes.filter(p => (p.name.toLowerCase() === labels[i] || p.type === labels[i]))
-    )
+      this.palettes.filter(
+        p => p.name.toLowerCase() === labels[i] || p.type === labels[i],
+      ),
+    );
   }
   if (justPrimary) {
-    filtered = filtered.filter(p => (p.isPrimary))
+    filtered = filtered.filter(p => p.isPrimary);
   }
   //
   //  sort if requested
@@ -293,26 +317,26 @@ Toko.prototype._getPaletteSelectionRaw = function(selectionList, justPrimary, so
   }
 
   return filtered;
-}
+};
 
 //
 //  sort palette list alphabetically
 //
-Toko.prototype._sortPaletteList = function(paletteList) {
+Toko.prototype._sortPaletteList = function (paletteList) {
   paletteList.sort((a, b) => {
-      let fa = a.name.toLowerCase(),
-          fb = b.name.toLowerCase();
-  
-      if (fa < fb) {
-          return -1;
-      }
-      if (fa > fb) {
-          return 1;
-      }
-      return 0;
-    });
+    let fa = a.name.toLowerCase(),
+      fb = b.name.toLowerCase();
+
+    if (fa < fb) {
+      return -1;
+    }
+    if (fa > fb) {
+      return 1;
+    }
+    return 0;
+  });
   return paletteList;
-}
+};
 
 Toko.prototype._preprocessPalettes = function () {
   //
@@ -387,7 +411,7 @@ Toko.prototype._preprocessPalettes = function () {
     this.COLOR_COLLECTIONS.push(o.type);
   });
   this.COLOR_COLLECTIONS = [...new Set(this.COLOR_COLLECTIONS)];
-}
+};
 
 //
 // from
@@ -425,7 +449,9 @@ Toko.prototype._defineContrastColors = function (colorSet, extraColors) {
   //
   //  sort colors from light to dark
   //
-  let sortedColorSet = colorSet.sort((a, b) => (chroma(b).hsl()[2]) - (chroma(a).hsl()[2]));
+  let sortedColorSet = colorSet.sort(
+    (a, b) => chroma(b).hsl()[2] - chroma(a).hsl()[2],
+  );
   // console.log(sortedColorSet[0])
 
   //
@@ -443,32 +469,32 @@ Toko.prototype._defineContrastColors = function (colorSet, extraColors) {
       }
     });
   }
-  
+
   //
   //  generate contrast colors by adjusting the saturation and lightness of the lightest and darkest color
   //
   if (!lightContrastSet) {
-    //  
+    //
     //  light - saturation
     let ls = {
       shift: 0,
       factor: 0.8,
       max: 0.25,
       min: 0.1,
-    }
+    };
     //  light - lightness
     let ll = {
       shift: 0,
       factor: 1.2,
       max: 0.95,
       min: 0.9,
-    }
+    };
 
     hsl = chroma(sortedColorSet[0]).hsl();
     let lightH = hsl[0];
     let lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
     let lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
-    contrastColors[0] = chroma.hsl(lightH,lightS,lightL).hex();
+    contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
   }
   if (!darkContrastSet) {
     //  dark - saturation
@@ -477,20 +503,20 @@ Toko.prototype._defineContrastColors = function (colorSet, extraColors) {
       factor: 1.25,
       max: 0.8,
       min: 0.15,
-    }
+    };
     //  dark - lightness
     let dl = {
       shift: -0.1,
       factor: 0.7,
       max: 0.09,
       min: 0.05,
-    }
+    };
 
-    hsl = chroma(sortedColorSet[n-1]).hsl();
+    hsl = chroma(sortedColorSet[n - 1]).hsl();
     let darkH = hsl[0];
     let darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
     let darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
-    contrastColors[1] = chroma.hsl(darkH,darkS,darkL).hex();
+    contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
   }
 
   // check and flip order if needed
@@ -499,5 +525,4 @@ Toko.prototype._defineContrastColors = function (colorSet, extraColors) {
   }
 
   return contrastColors;
-
-}
+};

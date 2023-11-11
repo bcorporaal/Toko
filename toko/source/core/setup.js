@@ -2,7 +2,6 @@ import '../core/constants';
 import Toko from './main';
 
 Toko.prototype.setup = function (inputOptions) {
-
   console.log('Toko - setup');
 
   // todo: fix the fps graph. Currently it increases when using the tweakpane controls
@@ -25,11 +24,7 @@ Toko.prototype.setup = function (inputOptions) {
   if (this.options.useParameterPanel) {
     this.basePane = new Tweakpane.Pane();
 
-    var tabs = [
-      {
-        title: this.TABS_PARAMETERS
-      }
-    ]
+    var tabs = [{title: this.TABS_PARAMETERS}];
     if (this.options.showAdvancedOptions) {
       tabs.push({title: this.TABS_ADVANCED});
       this.TAB_ID_ADVANCED = tabs.length - 1;
@@ -65,24 +60,20 @@ Toko.prototype.setup = function (inputOptions) {
       switch (event.key.toLocaleLowerCase()) {
         case 'p':
           var e = document.getElementsByClassName('tp-dfwv')[0];
-          if (e.style.display == 'block') 
-            e.style.display = 'none';
-           else 
-            e.style.display = 'block';
-          
+          if (e.style.display == 'block') e.style.display = 'none';
+          else e.style.display = 'block';
+
           break;
       }
-    }
-    
+    };
+
     //
-    //  add any additional canvas sizes that were passed along
+    // add any additional canvas sizes that were passed along
     //
     let n = this.options.additionalCanvasSizes.length;
     if (n > 0) {
       for (let i = 0; i < n; i++) {
-        this.addCanvasSize(
-          this.options.additionalCanvasSizes[i]
-        )
+        this.addCanvasSize(this.options.additionalCanvasSizes[i]);
       }
     }
 
@@ -91,10 +82,14 @@ Toko.prototype.setup = function (inputOptions) {
     //
     if (this.options.showAdvancedOptions) {
       this.options.canvasSizeName = this.options.canvasSize.name; // use this to take the name out of the object
-      this.basePaneTab.pages[this.TAB_ID_ADVANCED].addBinding(this.options, 'canvasSizeName', {options: this.SIZES_LIST}).on('change', (ev) => {
-        let s = this.SIZES.filter(p => p.name === ev.value)[0];
-        this.setCanvasSize(s);
-      });
+      this.basePaneTab.pages[this.TAB_ID_ADVANCED]
+        .addBinding(this.options, 'canvasSizeName', {
+          options: this.SIZES_LIST,
+        })
+        .on('change', ev => {
+          let s = this.SIZES.filter(p => p.name === ev.value)[0];
+          this.setCanvasSize(s);
+        });
     }
   }
   //
@@ -104,8 +99,7 @@ Toko.prototype.setup = function (inputOptions) {
   document.title = this.options.title;
 
   this.setCanvasSize(this.SIZES.filter(p => p.name === this.options.canvasSize.name)[0]);
-
-}
+};
 
 Toko.prototype.endSetup = function () {
   console.log('Toko - endSetup');
@@ -117,11 +111,7 @@ Toko.prototype.endSetup = function () {
   this.SIZE_DEFAULT.height = height;
 
   if (this.options.logFPS) {
-
-    this.pt = {
-      fps: 0,
-      graph: 0,
-    }
+    this.pt = {fps: 0, graph: 0};
 
     var f = this.basePaneTab.pages[this.TAB_ID_FPS];
 
@@ -132,19 +122,23 @@ Toko.prototype.endSetup = function () {
       interval: 100,
       min: 0,
       max: 120,
-      readonly: true
+      readonly: true,
     });
   }
 
   if (this.options.useParameterPanel) {
     if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {
-      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
-      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch'}).on('click', (value) => {
+      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
+        view: 'separator',
+      });
+      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch'}).on('click', value => {
         this.saveSketch();
       });
     } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
-      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({view: 'separator'});
-      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch & settings'}).on('click', (value) => {
+      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
+        view: 'separator',
+      });
+      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({title: 'Save sketch & settings'}).on('click', value => {
         this.saveSketchAndSettings();
       });
     }
@@ -158,4 +152,4 @@ Toko.prototype.endSetup = function () {
     this.captureOptions.format = this.options.captureFormat;
     this.createCapturePanel(this.TAB_ID_CAPTURE);
   }
-}
+};

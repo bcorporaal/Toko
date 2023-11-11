@@ -27,4 +27,3 @@ import './output/save_settings';
 import './input/receive_settings';
 
 export default Toko;
- 
