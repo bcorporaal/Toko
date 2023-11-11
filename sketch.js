@@ -92,21 +92,47 @@ function setup () {
   //
   //  set all the tweakpane controls
   //
-  let fParticles = toko.pane.tab.addFolder({title: 'Particles', expanded: true});
-  fParticles.addBinding(p, 'nrParticles', {min: 1, max: 100, step: 1, label: 'particles'});
-  fParticles.addBinding(p, 'size', {min: 1, max: 80, step: 2, label: 'size'});
-  fParticles.addBinding(p, 'trailLength', {min: 2, max: 500, step: 5, label: 'trail'});
+  let fParticles = toko.pane.tab.addFolder({
+    title: 'Particles',
+    expanded: true,
+  });
+  fParticles.addBinding(p, 'nrParticles', {
+    min: 1,
+    max: 100,
+    step: 1,
+    label: 'particles',
+  });
+  fParticles.addBinding(p, 'size', { min: 1, max: 80, step: 2, label: 'size' });
+  fParticles.addBinding(p, 'trailLength', {
+    min: 2,
+    max: 500,
+    step: 5,
+    label: 'trail',
+  });
   fParticles.addBinding(p, 'fadeTrail');
-  fParticles.addBinding(p, 'plotMirrorParticle', {label: 'mirror'});
+  fParticles.addBinding(p, 'plotMirrorParticle', { label: 'mirror' });
 
-  let fAttractors = toko.pane.tab.addFolder({title: 'Attractors', expanded: true});
-  fAttractors.addBinding(p, 'nrAttractors', {min: 1, max: 7, step: 1, label: 'attractors'});
-  fAttractors.addBinding(p, 'gravity', {min: 0, max: 400, step: 10, label: 'gravity'});
-  fAttractors.addBinding(p, 'showAttractors', {label: 'show'});
-  fAttractors.addBinding(p, 'attractorHorizontal', {label: 'horizontal'});
-  fAttractors.addBinding(p, 'attractorVertical', {label: 'vertical'});
+  let fAttractors = toko.pane.tab.addFolder({
+    title: 'Attractors',
+    expanded: true,
+  });
+  fAttractors.addBinding(p, 'nrAttractors', {
+    min: 1,
+    max: 7,
+    step: 1,
+    label: 'attractors',
+  });
+  fAttractors.addBinding(p, 'gravity', {
+    min: 0,
+    max: 400,
+    step: 10,
+    label: 'gravity',
+  });
+  fAttractors.addBinding(p, 'showAttractors', { label: 'show' });
+  fAttractors.addBinding(p, 'attractorHorizontal', { label: 'horizontal' });
+  fAttractors.addBinding(p, 'attractorVertical', { label: 'vertical' });
 
-  let fColors = toko.pane.tab.addFolder({title: 'Colors', expanded: true});
+  let fColors = toko.pane.tab.addFolder({ title: 'Colors', expanded: true });
   // add collection and palette selector, with next, previous and random buttons
   toko.addPaletteSelector(fColors, p, {
     index: 1,
@@ -122,11 +148,11 @@ function setup () {
     blendModeKey: 'blendMode',
   });
 
-  fColors.addBinding(p, 'colorReverse', {label: 'reverse'});
-  fColors.addBinding(p, 'originalColors', {label: 'original'});
-  fColors.addBinding(p, 'darkBgnd', {label: 'dark bgnd'});
+  fColors.addBinding(p, 'colorReverse', { label: 'reverse' });
+  fColors.addBinding(p, 'originalColors', { label: 'original' });
+  fColors.addBinding(p, 'darkBgnd', { label: 'dark bgnd' });
 
-  toko.pane.tab.addBlade({view: 'separator'});
+  toko.pane.tab.addBlade({ view: 'separator' });
 
   const btnClear = toko.pane.tab
     .addButton({
@@ -168,7 +194,9 @@ function refresh () {
     let c = p.nrParticles - particles.length;
     for (let i = 0; i < c; i++) {
       let p1 = createVector(random(width), random(height));
-      let v1 = p5.Vector.random2D().setMag(random(p.velocityMin, p.velocityMax));
+      let v1 = p5.Vector.random2D().setMag(
+        random(p.velocityMin, p.velocityMax),
+      );
       particles.push({
         pos: [p1],
         vel: v1,
@@ -299,7 +327,12 @@ function draw () {
           col.setAlpha(a);
         }
         stroke(col);
-        line(width - pos[j].x, height - pos[j].y, width - pos[j + 1].x, height - pos[j + 1].y);
+        line(
+          width - pos[j].x,
+          height - pos[j].y,
+          width - pos[j + 1].x,
+          height - pos[j + 1].y,
+        );
       }
     }
   }
