@@ -72,7 +72,7 @@ function setup () {
     paletteKey: 'palette',
   });
 
-  toko.pane.tab.addBinding(p, 'steps', {min: 2, max: 40, step: 1});
+  toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1 });
   toko.pane.tab.addBinding(p, 'interpolated');
   toko.pane.tab.addBinding(p, 'inverse');
 
@@ -93,7 +93,6 @@ function setup () {
 
 function refresh () {
   console.log('refresh');
-  // console.log(p);
 
   //
   //  set domain range to number of steps

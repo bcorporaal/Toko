@@ -80,14 +80,14 @@ function setup () {
   //
   //  add controls for the grid selector
   //
-  toko.pane.tab.addBlade({view: 'separator'});
+  toko.pane.tab.addBlade({ view: 'separator' });
   toko.pane.tab.addBinding(p, 'gridType', {
     options: {
       recursive: 'recursive',
       packed: 'packed',
     },
   });
-  toko.pane.tab.addBlade({view: 'separator'});
+  toko.pane.tab.addBlade({ view: 'separator' });
   toko.pane.tab.addBinding(p, 'seed', {
     min: 1,
     max: 2000,
@@ -235,7 +235,12 @@ function draw () {
   //  grid
   //
   //  make grid object with basic positioning and sizing
-  gridSet = new Toko.Grid(p.margin, p.margin, width - 2 * p.margin, height - 2 * p.margin);
+  gridSet = new Toko.Grid(
+    p.margin,
+    p.margin,
+    width - 2 * p.margin,
+    height - 2 * p.margin,
+  );
 
   //
   //  create the grid
@@ -247,7 +252,13 @@ function draw () {
   } else {
     // create a packed grid
     let cellShapes = JSON.parse('[' + p.cellShapes + ']');
-    gridSet.packGrid(p.columns, p.rows, cellShapes, p.noEmptySpaces, p.snapToPixel);
+    gridSet.packGrid(
+      p.columns,
+      p.rows,
+      cellShapes,
+      p.noEmptySpaces,
+      p.snapToPixel,
+    );
   }
 
   //
