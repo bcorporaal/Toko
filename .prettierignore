@@ -1,4 +1,5 @@
 .vscode
 *.codekit3
+*.html
 to-do.txt
 **/assets
