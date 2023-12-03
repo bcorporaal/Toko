@@ -193,9 +193,9 @@ function refresh () {
   if (particles.length < p.nrParticles) {
     let c = p.nrParticles - particles.length;
     for (let i = 0; i < c; i++) {
-      let p1 = createVector(random(width), random(height));
+      let p1 = createVector(toko.random(width), toko.random(height));
       let v1 = p5.Vector.random2D().setMag(
-        random(p.velocityMin, p.velocityMax),
+        toko.random(p.velocityMin, p.velocityMax),
       );
       particles.push({
         pos: [p1],
