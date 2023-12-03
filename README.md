@@ -16,6 +16,7 @@ Some useful duct tape to expand p5.js for creative coding with Tweakpane, chroma
 - Large collection of color palettes
 - Easy selection and usage of (custom) color palettes
 - Saving and loading (through drag and drop on the canvas) of sketch parameters
+- Seeded random number generator class to create random but repeatable results
 
 ## Usage
 
