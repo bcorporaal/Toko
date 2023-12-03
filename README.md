@@ -4,6 +4,9 @@
 
 Some useful duct tape to expand p5.js for creative coding with Tweakpane, chroma.js, color palettes, p5 SVG, and more. Very much a work in progress.
 
+> [!NOTE]
+> Everything is still very much in flux with breaking API changes in each release.
+
 ## Features
 
 - Easy capturing options for images and video
