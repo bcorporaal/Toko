@@ -15,6 +15,7 @@ import './core/tweakpane';
 
 import './math/math';
 import './math/random';
+import './math/rng';
 
 import './geometry/grid';
 import './geometry/gridCell';
@@ -27,4 +28,3 @@ import './output/save_settings';
 import './input/receive_settings';
 
 export default Toko;
- 

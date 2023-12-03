@@ -39,5 +39,5 @@ export default [
     colors: ['#f5736a', '#925951', '#feba4c', '#9d9b9d'],
     background: '#eedfa2',
     type: 'ranganath',
-  }
+  },
 ];

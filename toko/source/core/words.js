@@ -1,7 +1,7 @@
 //
 //  Word lists from various sources.
 //  Used to create random file names for the exports
-//  
+//
 //  Sources (among others and random additions)
 //  https://en.wikipedia.org/wiki/List_of_Crayola_crayon_colors
 //  https://github.com/Atrox/haikunatorjs
@@ -138,7 +138,7 @@ export const ADJECTIVES = [
   'withered',
   'yellow',
   'young',
-]
+];
 
 export const NOUNS = [
   'alchemy',
@@ -273,5 +273,4 @@ export const NOUNS = [
   'winter',
   'wood',
   'woodpecker',
-]
-
+];

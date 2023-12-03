@@ -6,16 +6,7 @@
 export default [
   {
     name: 'exposito',
-    colors: [
-      '#8bc9c3',
-      '#ffae43',
-      '#ea432c',
-      '#228345',
-      '#d1d7d3',
-      '#524e9c',
-      '#9dc35e',
-      '#f0a1a1',
-    ],
+    colors: ['#8bc9c3', '#ffae43', '#ea432c', '#228345', '#d1d7d3', '#524e9c', '#9dc35e', '#f0a1a1'],
     stroke: '#fff',
     background: '#000000',
     type: 'exposito',

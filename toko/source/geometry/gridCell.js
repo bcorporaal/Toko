@@ -19,7 +19,7 @@ import Toko from '../core/main';
 //
 
 Toko.GridCell = class {
-  constructor(x,y,width,height,column=0,row=0,gridWidth=0,gridHeight=0) {
+  constructor (x, y, width, height, column = 0, row = 0, gridWidth = 0, gridHeight = 0) {
     this._x = x;
     this._y = y;
     this._width = width;
@@ -32,74 +32,73 @@ Toko.GridCell = class {
     this._counter = 0;
   }
 
-  get x() {
+  get x () {
     return this._x;
   }
-  set x(in_x) {
+  set x (in_x) {
     this._x = in_x;
   }
-  
-  get y() {
+
+  get y () {
     return this._y;
   }
-  set y(in_y) {
+  set y (in_y) {
     this._y = in_y;
   }
-  
-  get width() {
+
+  get width () {
     return this._width;
   }
-  set width(in_width) {
+  set width (in_width) {
     this._width = in_width;
   }
-  
-  get height() {
+
+  get height () {
     return this._height;
   }
-  set height(in_height) {
+  set height (in_height) {
     this._height = in_height;
   }
-  
-  get row() {
+
+  get row () {
     return this._row;
   }
-  set row(in_row) {
+  set row (in_row) {
     this._row = in_row;
   }
-  
-  get column() {
+
+  get column () {
     return this._column;
   }
-  set column(in_column) {
+  set column (in_column) {
     this._column = in_column;
   }
-  
-  get gridWidth() {
+
+  get gridWidth () {
     return this._gridWidth;
   }
-  set gridWidth(in_gridWidth) {
+  set gridWidth (in_gridWidth) {
     this._gridWidth = in_gridWidth;
   }
-  
-  get gridHeight() {
+
+  get gridHeight () {
     return this._gridHeight;
   }
-  set gridHeight(in_gridHeight) {
+  set gridHeight (in_gridHeight) {
     this._gridHeight = in_gridHeight;
   }
-  
-  get value() {
+
+  get value () {
     return this._value;
   }
-  set value(in_value) {
+  set value (in_value) {
     this._value = in_value;
   }
-  
-  get counter() {
+
+  get counter () {
     return this._counter;
   }
-  set counter(in_counter) {
+  set counter (in_counter) {
     this._counter = in_counter;
   }
-
-}
+};

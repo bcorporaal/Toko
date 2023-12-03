@@ -7,7 +7,7 @@ Toko.prototype.saveSketch = function () {
   var sketchElement = document.getElementById(this.options.sketchElementId).firstChild;
   var isCanvas = sketchElement instanceof HTMLCanvasElement;
   if (sketchElement.firstChild != null) {
-    var isSVG = (sketchElement.firstChild.nodeName == "svg");
+    var isSVG = sketchElement.firstChild.nodeName == 'svg';
   }
 
   if (isCanvas) {
@@ -28,7 +28,7 @@ Toko.prototype.saveSketch = function () {
     var filename = this.generateFilename('svg');
     var svgString = document.getElementById(this.options.sketchElementId).firstChild.innerHTML;
 
-    var blob = new Blob([svgString], {'type': 'image/svg+xml'})
+    var blob = new Blob([svgString], {type: 'image/svg+xml'});
     var url = window.URL.createObjectURL(blob);
 
     //
@@ -41,15 +41,13 @@ Toko.prototype.saveSketch = function () {
     a.download = filename;
     a.click();
     window.URL.revokeObjectURL(url);
-    
-    return filename;
 
+    return filename;
   } else {
-    console.log("Toko - saveSketch: unkown type");
+    console.log('Toko - saveSketch: unkown type');
     return;
   }
-  
-}
+};
 
 //
 //  save both the sketch image and the settings
@@ -61,4 +59,4 @@ Toko.prototype.saveSketchAndSettings = function () {
   //
   filename = filename.split('.').slice(0, -1).join('.');
   this.saveSettings(filename);
-}
+};

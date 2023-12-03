@@ -108,5 +108,5 @@ export default [
     stroke: '#1a1e4f',
     background: '#fbb900',
     type: 'ducci',
-  }
+  },
 ];

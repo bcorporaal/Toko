@@ -1,9 +1,8 @@
-import * as constants from './constants'; 
-import * as words from './words'; 
+import * as constants from './constants';
+import * as words from './words';
 
 class Toko {
-  constructor() {
-
+  constructor () {
     for (const k in constants) {
       this[k] = constants[k];
     }
@@ -13,12 +12,11 @@ class Toko {
     }
 
     //
-    //  seed the random function
+    //  preseed the random function
     //
-    Toko.reseed(Date.now());
+    this._rng = new Toko.RNG();
 
     console.log(this.VERSION);
-
   }
 }
 

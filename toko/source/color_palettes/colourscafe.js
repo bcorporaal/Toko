@@ -45,5 +45,5 @@ export default [
     colors: ['#363d4a', '#7b8a56', '#ff9369', '#f4c172'],
     background: '#f0efe2',
     type: 'colourscafe',
-  }
+  },
 ];

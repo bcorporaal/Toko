@@ -24,5 +24,5 @@ export default [
     stroke: '#251c12',
     background: '#cfc7b9',
     type: 'tsuchimochi',
-  }
+  },
 ];

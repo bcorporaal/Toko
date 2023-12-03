@@ -41,30 +41,14 @@ export default [
   },
   {
     name: 'kov_06',
-    colors: [
-      '#a87c2a',
-      '#bdc9b1',
-      '#f14616',
-      '#ecbfaf',
-      '#017724',
-      '#0e2733',
-      '#2b9ae9'
-    ],
+    colors: ['#a87c2a', '#bdc9b1', '#f14616', '#ecbfaf', '#017724', '#0e2733', '#2b9ae9'],
     stroke: '#292319',
     background: '#dfd4c1',
     type: 'kovesecs',
   },
   {
     name: 'kov_06b',
-    colors: [
-      '#d57846',
-      '#dfe0cc',
-      '#de442f',
-      '#e7d3c5',
-      '#5ec227',
-      '#302f35',
-      '#63bdb3'
-    ],
+    colors: ['#d57846', '#dfe0cc', '#de442f', '#e7d3c5', '#5ec227', '#302f35', '#63bdb3'],
     stroke: '#292319',
     background: '#dfd4c1',
     type: 'kovesecs',
@@ -75,5 +59,5 @@ export default [
     stroke: '#111',
     background: '#89c2cd',
     type: 'kovesecs',
-  }
+  },
 ];

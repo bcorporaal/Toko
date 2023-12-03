@@ -5,7 +5,7 @@
 //   reverse: false,          - whether the scale should be reversed
 //   domain: [0, 1],          - the value range to which the palette is mapped
 //   mode: 'rgb',             - color interpolation mode
-//   gamma: 1,                - gamma adjustment 
+//   gamma: 1,                - gamma adjustment
 //   correctLightness: false, - adjust the range to ensure even lightness
 //   bezier: false,           - whether to use bezier interpolation (does not work that well)
 //   stepped: false           - whether the scale should be smooth or stepped
@@ -37,43 +37,59 @@ import Toko from '../core/main';
 Toko.prototype.getColorScale = function (inPalette, colorOptions) {
   let o = this._getColorScale(inPalette, colorOptions);
   return o;
-}
+};
 
 //
 //  create color scales based on a set of colors in an array
 //
-Toko.prototype.createColorScale = function (colorSet, colorOptions) {
-  let o = this._createColorScale(colorSet, colorOptions);
+Toko.prototype.createColorScale = function (
+  colorSet,
+  colorOptions,
+  extraColors,
+) {
+  let o = this._createColorScale(colorSet, colorOptions, extraColors);
   return o;
-}
+};
 
 //
 // create a list of modes that is easy for TweakPane to use
 //
 Toko.prototype.getColorModeList = function () {
   return this.formatForTweakpane(this.MODELIST);
-}
+};
 
 //
 //  get the previous palette based on the type and isPrimary status. Loops at the beginning
 //
-Toko.prototype.getNextPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
+Toko.prototype.getNextPalette = function (
+  inPalette,
+  paletteType = 'all',
+  justPrimary = true,
+) {
   return this._getAnotherPalette(inPalette, paletteType, justPrimary, 1);
-}
+};
 
 //
 //  get the next palette based on the type and isPrimary status. Loops at the end
 //
-Toko.prototype.getPreviousPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
+Toko.prototype.getPreviousPalette = function (
+  inPalette,
+  paletteType = 'all',
+  justPrimary = true,
+) {
   return this._getAnotherPalette(inPalette, paletteType, justPrimary, -1);
-}
+};
 
 //
 //  get a random palette
 //
-Toko.prototype.getRandomPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
+Toko.prototype.getRandomPalette = function (
+  inPalette,
+  paletteType = 'all',
+  justPrimary = true,
+) {
   return this._getRandomPalette(inPalette, paletteType, justPrimary);
-}
+};
 
 //
 //  find a specific palette by name
@@ -84,25 +100,35 @@ Toko.prototype.findPaletteByName = function (paletteName) {
   }
   var p = this.palettes.filter(p => p.name === paletteName)[0];
   if (p === undefined) {
-    console.log('palette not found: ' + paletteName)
+    console.log('palette not found: ' + paletteName);
   }
-  return p
-}
+  return p;
+};
 
 //
 //  get a list of palettes based on type and isPrimary status
 //
-Toko.prototype.getPaletteList = function (paletteType = 'all', justPrimary = true, sorted = false) {
+Toko.prototype.getPaletteList = function (
+  paletteType = 'all',
+  justPrimary = true,
+  sorted = false,
+) {
   let filtered = this._getPaletteListRaw(paletteType, justPrimary, sorted);
   return this.formatForTweakpane(filtered, 'name');
-}
+};
 
 //
 //  get a selection of palettes based on a comma seperated list
 //
-Toko.prototype.getPaletteSelection = function (selectionList, justPrimary = false, sorted = false) {
-  let filtered = this._getPaletteSelectionRaw(selectionList, justPrimary, sorted);
+Toko.prototype.getPaletteSelection = function (
+  selectionList,
+  justPrimary = false,
+  sorted = false,
+) {
+  let filtered = this._getPaletteSelectionRaw(
+    selectionList,
+    justPrimary,
+    sorted,
+  );
   return this.formatForTweakpane(filtered, 'name');
-}
-
-
+};

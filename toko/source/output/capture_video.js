@@ -1,12 +1,12 @@
-import { CAPTURE_FORMATS } from '../core/constants';
+import {CAPTURE_FORMATS} from '../core/constants';
 import Toko from '../core/main';
 
 Toko.prototype.initCapture = function () {
   let o = this.getCaptureOptions(this.captureOptions.format);
   this.capturer = new CCapture(o);
-}
+};
 
-Toko.prototype.createCapturePanel = function(tabID) {
+Toko.prototype.createCapturePanel = function (tabID) {
   var t = this.basePaneTab.pages[tabID];
 
   t.addBinding(this.captureOptions, 'format', {
@@ -15,32 +15,36 @@ Toko.prototype.createCapturePanel = function(tabID) {
 
   t.addBlade({view: 'separator'});
 
-  this.startCaptureButton = t.addButton({
-    title: '🔴 Record',
-  }).on('click', (value) => {
-    this.clickStartCapture();
-  });
+  this.startCaptureButton = t
+    .addButton({
+      title: '🔴 Record',
+    })
+    .on('click', value => {
+      this.clickStartCapture();
+    });
 
-  this.stopCaptureButton = t.addButton({
-    title: '⬛️ Stop recording',
-  }).on('click', (value) => {
-    this.clickStopCapture();
-  });
+  this.stopCaptureButton = t
+    .addButton({
+      title: '⬛️ Stop recording',
+    })
+    .on('click', value => {
+      this.clickStopCapture();
+    });
   this.stopCaptureButton.hidden = true;
-}
+};
 
-Toko.prototype.clickStartCapture = function() {
+Toko.prototype.clickStartCapture = function () {
   this.stopCaptureButton.hidden = false;
   this.startCaptureButton.hidden = true;
   this.startCapture();
   redraw(); // BUG: this should not be needed but for some reason it halts without it
-}
+};
 
-Toko.prototype.clickStopCapture = function() {
+Toko.prototype.clickStopCapture = function () {
   this.stopCaptureButton.hidden = true;
   this.startCaptureButton.hidden = false;
   this.stopCapture();
-}
+};
 
 Toko.prototype.startCapture = function () {
   if (!this._captureStarted && this.options.captureFrames) {
@@ -49,7 +53,7 @@ Toko.prototype.startCapture = function () {
     this._captureStarted = true;
     this.capturer.start();
   }
-}
+};
 
 Toko.prototype.stopCapture = function () {
   if (this.options.captureFrames && this._captureStarted) {
@@ -58,29 +62,29 @@ Toko.prototype.stopCapture = function () {
     this.capturer.save();
     this._captureStarted = false;
   }
-}
+};
 
-Toko.prototype.captureFrame = function() {
+Toko.prototype.captureFrame = function () {
   if (this.options.captureFrames) {
     // capture a frame
     this.capturer.capture(document.getElementById('defaultCanvas0'));
   } else {
-    this.stopCapture()
+    this.stopCapture();
   }
-}
+};
 
-Toko.prototype.getCaptureOptions = function(format = 'png') {
+Toko.prototype.getCaptureOptions = function (format = 'png') {
   //
   //  default options
   //
   let o = {
-    format: 'png', 
-    framerate: this.options.captureFrameRate, 
-    name: this.generateFilename('none', 'captured'), 
+    format: 'png',
+    framerate: this.options.captureFrameRate,
+    name: this.generateFilename('none', 'captured'),
     display: false,
     motionBlurFrames: 0,
     verbose: false,
-  }
+  };
   //
   //  alternative options
   //
@@ -96,9 +100,4 @@ Toko.prototype.getCaptureOptions = function(format = 'png') {
   }
 
   return o;
-}
-
-
-
-
-
+};

@@ -59,5 +59,5 @@ export default [
     stroke: '#000',
     background: '#fff',
     type: 'system',
-  }
+  },
 ];

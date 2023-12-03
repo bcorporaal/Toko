@@ -6,54 +6,22 @@
 export default [
   {
     name: 'retro',
-    colors: [
-      '#69766f',
-      '#9ed6cb',
-      '#f7e5cc',
-      '#9d8f7f',
-      '#936454',
-      '#bf5c32',
-      '#efad57'
-    ],
+    colors: ['#69766f', '#9ed6cb', '#f7e5cc', '#9d8f7f', '#936454', '#bf5c32', '#efad57'],
     type: 'roygbivs',
   },
   {
     name: 'retro-washedout',
-    colors: [
-      '#878a87',
-      '#cbdbc8',
-      '#e8e0d4',
-      '#b29e91',
-      '#9f736c',
-      '#b76254',
-      '#dfa372'
-    ],
+    colors: ['#878a87', '#cbdbc8', '#e8e0d4', '#b29e91', '#9f736c', '#b76254', '#dfa372'],
     type: 'roygbivs',
   },
   {
     name: 'roygbiv-warm',
-    colors: [
-      '#705f84',
-      '#687d99',
-      '#6c843e',
-      '#fc9a1a',
-      '#dc383a',
-      '#aa3a33',
-      '#9c4257'
-    ],
+    colors: ['#705f84', '#687d99', '#6c843e', '#fc9a1a', '#dc383a', '#aa3a33', '#9c4257'],
     type: 'roygbivs',
   },
   {
     name: 'roygbiv-toned',
-    colors: [
-      '#817c77',
-      '#396c68',
-      '#89e3b7',
-      '#f59647',
-      '#d63644',
-      '#893f49',
-      '#4d3240'
-    ],
+    colors: ['#817c77', '#396c68', '#89e3b7', '#f59647', '#d63644', '#893f49', '#4d3240'],
     type: 'roygbivs',
   },
   {
@@ -78,8 +46,8 @@ export default [
       '#721e7f',
       '#9b2b77',
       '#ab2562',
-      '#ca2847'
+      '#ca2847',
     ],
     type: 'roygbivs',
-  }
+  },
 ];

@@ -6,16 +6,7 @@
 export default [
   {
     name: 'dale_paddle',
-    colors: [
-      '#ff7a5a',
-      '#765aa6',
-      '#fee7bc',
-      '#515e8c',
-      '#ffc64a',
-      '#b460a6',
-      '#ffffff',
-      '#4781c1',
-    ],
+    colors: ['#ff7a5a', '#765aa6', '#fee7bc', '#515e8c', '#ffc64a', '#b460a6', '#ffffff', '#4781c1'],
     stroke: '#000000',
     background: '#abe9e8',
     type: 'dale',

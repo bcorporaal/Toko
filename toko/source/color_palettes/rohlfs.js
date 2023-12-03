@@ -45,5 +45,5 @@ export default [
     stroke: '#211029',
     background: '#fbbeca',
     type: 'rohlfs',
-  }
+  },
 ];

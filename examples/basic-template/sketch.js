@@ -2,19 +2,18 @@ p5.disableFriendlyErrors = false; // disables FES to speed things up a little bi
 
 let toko = new Toko();
 
-function preload() {
+function preload () {
   //
   // All loading calls here
   //
 }
 
-function setup() {
-
+function setup () {
   //------------------------------------------------------
   //
   //  set base canvas
   //
-  let sketchElementId = "sketch-canvas";
+  let sketchElementId = 'sketch-canvas';
   let canvasWidth = 0;
   let canvasHeight = 0;
 
@@ -32,18 +31,18 @@ function setup() {
     //
     //  basic options
     //
-    title: "Toko basic template",       //  title displayed
-    sketchElementId: sketchElementId,   //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT,      //  canvas size to use
+    title: 'Toko basic template', //  title displayed
+    sketchElementId: sketchElementId, //  id used to create the p5 canvas
+    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
     //  additional options
     //
-    showSaveSketchButton: true,         //  show save image button in tweakpane
-    saveSettingsWithSketch: true,       //  save json of settings together with the image
-    acceptDroppedSettings: true,        //  accept dropped json files with settings
-    useParameterPanel: true,            //  use the tweakpane panel for settings
-    showAdvancedOptions: true,          //  show advanced settings in tweakpane, like size
-    captureFrames: false,               //  no record option
+    showSaveSketchButton: true, //  show save image button in tweakpane
+    saveSettingsWithSketch: true, //  save json of settings together with the image
+    acceptDroppedSettings: true, //  accept dropped json files with settings
+    useParameterPanel: true, //  use the tweakpane panel for settings
+    showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
+    captureFrames: false, //  no record option
   });
 
   //
@@ -54,10 +53,11 @@ function setup() {
   p = {
     steps: 10,
     interpolated: false,
-    collections: ['basic','golid','metbrewer', 'flourish', 'orbifold'],
+    collections: toko.COLOR_COLLECTIONS,
     collection: 'basic',
     palette: 'westCoast',
-  }
+    inverse: false,
+  };
 
   //
   //  add controls to change the colors
@@ -69,19 +69,20 @@ function setup() {
     navButtons: true,
     collectionsList: 'collections',
     collectionKey: 'collection',
-    paletteKey: 'palette'
+    paletteKey: 'palette',
   });
 
-  toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1});
+  toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1 });
   toko.pane.tab.addBinding(p, 'interpolated');
+  toko.pane.tab.addBinding(p, 'inverse');
 
   //
   //  listen to tweakpane changes
   //
-  toko.pane.events.on("change", (value) => {
+  toko.pane.events.on('change', value => {
     refresh();
   });
-  
+
   refresh();
   noLoop();
 
@@ -90,37 +91,45 @@ function setup() {
   //---------------------------------------------
 }
 
-function refresh() {
+function refresh () {
   console.log('refresh');
-  // console.log(p);
 
   //
   //  set domain range to number of steps
   //
   const o = {
-    domain: [0, p.steps*p.steps],
-  }
+    domain: [0, p.steps * p.steps],
+  };
   //
   //  get colors
   //
-  colors = toko.getColorScale(this.p.palette,o);
+  colors = toko.getColorScale(this.p.palette, o);
   //
   //  redraw with updated parameters
   //
   redraw();
 }
 
-function draw() {
+function draw () {
   //---------------------------------------------
   toko.startDraw(); // do not remove
   //---------------------------------------------
-  
-  clear();
-  stroke('#fff');
-  strokeWeight(2);
 
-  let w = width/p.steps;
-  let h = height/p.steps;
+  clear();
+  noStroke();
+
+  let cc = p.inverse ? 1 : 0;
+
+  fill(colors.contrastColors[cc]);
+  rect(0, 0, width, height);
+
+  stroke(colors.contrastColors[1 - cc]);
+  strokeWeight(1);
+
+  let m = 75; // margin
+  let s = 10; // spacing
+  let w = (width - m * 2 - (p.steps - 1) * s) / p.steps;
+  let h = (height - m * 2 - (p.steps - 1) * s) / p.steps;
 
   //
   //  draw a grid with the colors from the palette
@@ -128,12 +137,12 @@ function draw() {
   for (let i = 0; i < p.steps; i++) {
     for (let j = 0; j < p.steps; j++) {
       if (p.interpolated) {
-        fill(colors.scale(i+j*p.steps));
+        fill(colors.scale(i + j * p.steps));
       } else {
-        fill(colors.originalScale(i+j*p.steps));
+        fill(colors.originalScale(i + j * p.steps));
       }
-      
-      rect(i*w,j*h,w,h);
+
+      rect(i * (w + s) + m, j * (h + s) + m, w, h);
     }
   }
 
@@ -148,45 +157,45 @@ function draw() {
 //
 //---------------------------------------------
 
-function captureStarted() {
+function captureStarted () {
   //
   //  called when capture has started, use to reset visuals
   //
-  console.log("Toko - captureStarted");
+  console.log('Toko - captureStarted');
 }
 
-function captureStopped() {
+function captureStopped () {
   //
   //  called when capture is stopped, use to reset visuals
   //
-  console.log("Toko - captureStopped");
+  console.log('Toko - captureStopped');
 }
 
-function canvasResized() {
+function canvasResized () {
   //
   //  called when the canvas was resized
   //
-  console.log("Toko - canvasResized");
+  console.log('Toko - canvasResized');
 }
 
-function windowResized() {
+function windowResized () {
   //
   //  resize the canvas when the framing div was resized
   //
-  console.log("Toko - windowResized");
+  console.log('Toko - windowResized');
 
-  var newWidth = document.getElementById("sketch-canvas").offsetWidth;
-  var newHeight = document.getElementById("sketch-canvas").offsetHeight;
+  var newWidth = document.getElementById('sketch-canvas').offsetWidth;
+  var newHeight = document.getElementById('sketch-canvas').offsetHeight;
 
   if (newWidth != width || newHeight != height) {
     canvasResized();
   }
 }
 
-function receivedFile(file) {
+function receivedFile (file) {
   //
   //  called when a JSON file is dropped on the sketch
   //  tweakpane settings are automatically updated
   //
-  console.log("Toko - receivedFile")
+  console.log('Toko - receivedFile');
 }
