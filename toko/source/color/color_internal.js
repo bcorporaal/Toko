@@ -66,6 +66,13 @@ Toko.prototype._validateColorOptions = function (colorOptions) {
   colorOptions = Object.assign({}, this.DEFAULT_COLOR_OPTIONS, colorOptions);
 
   //
+  //  add defoult RNG if none was defined
+  //
+  if (colorOptions.rng == undefined) {
+    colorOptions.rng = this._rng;
+  }
+
+  //
   // don't use bezier for more than a preset number of colors
   //
   if (colorOptions.bezier && colorOptions.length > this.MAX_COLORS_BEZIER) {
@@ -158,14 +165,14 @@ Toko.prototype._createColorScale = function (
   o.originalScale = i => {
     return oSC(i).hex();
   };
-  o.randomColor = (useTokoRandom = false) => {
-    let r = useTokoRandom ? Toko.random() : Math.random();
+  o.randomColor = () => {
+    let r = colorOptions.rng.random();
     let d = colorOptions.domain;
 
     return sc(d[0] + r * (d[1] - d[0])).hex();
   };
-  o.randomOriginalColor = (useTokoRandom = false) => {
-    let r = useTokoRandom ? Toko.random() : Math.random();
+  o.randomOriginalColor = () => {
+    let r = colorOptions.rng.random();
     let d = colorOptions.domain;
 
     return oSC(d[0] + r * (d[1] - d[0])).hex();
@@ -249,7 +256,9 @@ Toko.prototype._getRandomPalette = function (
   let tempPaletteList = this._getPaletteListRaw(paletteType, justPrimary);
 
   var randomPalette =
-    tempPaletteList[Math.floor(Math.random() * tempPaletteList.length)];
+    tempPaletteList[
+      Math.floor(colorOptions.rng.random() * tempPaletteList.length)
+    ];
 
   return randomPalette.name;
 };

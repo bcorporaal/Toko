@@ -123,6 +123,7 @@ export const DEFAULT_OPTIONS = {
   captureFrameRate: 15,
   captureFormat: 'png',
   canvasSize: SIZE_DEFAULT,
+  seedString: '',
 };
 
 //

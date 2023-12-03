@@ -126,6 +126,7 @@ var Toko = (function () {
     captureFrameRate: 15,
     captureFormat: 'png',
     canvasSize: SIZE_DEFAULT,
+    seedString: '',
   };
 
   //
@@ -463,9 +464,9 @@ var Toko = (function () {
       }
 
       //
-      //  seed the random function
+      //  preseed the random function
       //
-      Toko.reseed(Date.now());
+      this._rng = new Toko.RNG();
 
       console.log(this.VERSION);
     }
@@ -3341,6 +3342,13 @@ var Toko = (function () {
     colorOptions = Object.assign({}, this.DEFAULT_COLOR_OPTIONS, colorOptions);
 
     //
+    //  add defoult RNG if none was defined
+    //
+    if (colorOptions.rng == undefined) {
+      colorOptions.rng = this._rng;
+    }
+
+    //
     // don't use bezier for more than a preset number of colors
     //
     if (colorOptions.bezier && colorOptions.length > this.MAX_COLORS_BEZIER) {
@@ -3433,14 +3441,14 @@ var Toko = (function () {
     o.originalScale = i => {
       return oSC(i).hex();
     };
-    o.randomColor = (useTokoRandom = false) => {
-      let r = useTokoRandom ? Toko.random() : Math.random();
+    o.randomColor = () => {
+      let r = colorOptions.rng.random();
       let d = colorOptions.domain;
 
       return sc(d[0] + r * (d[1] - d[0])).hex();
     };
-    o.randomOriginalColor = (useTokoRandom = false) => {
-      let r = useTokoRandom ? Toko.random() : Math.random();
+    o.randomOriginalColor = () => {
+      let r = colorOptions.rng.random();
       let d = colorOptions.domain;
 
       return oSC(d[0] + r * (d[1] - d[0])).hex();
@@ -3524,7 +3532,9 @@ var Toko = (function () {
     let tempPaletteList = this._getPaletteListRaw(paletteType, justPrimary);
 
     var randomPalette =
-      tempPaletteList[Math.floor(Math.random() * tempPaletteList.length)];
+      tempPaletteList[
+        Math.floor(colorOptions.rng.random() * tempPaletteList.length)
+      ];
 
     return randomPalette.name;
   };
@@ -3820,6 +3830,10 @@ var Toko = (function () {
 
     if (this.options.acceptDroppedSettings) {
       p5Canvas.drop(this.receiveSettings.bind(this));
+    }
+
+    if (this.options.seedString != '') {
+      Toko.reset(this.options.seedString);
     }
 
     if (this.options.useParameterPanel) {
@@ -4372,6 +4386,61 @@ var Toko = (function () {
     });
   };
 
+  Toko.prototype.addRandomSeedControl = function (
+    paneRef,
+    pObject,
+    incomingOptions,
+  ) {
+    //
+    //  set default options
+    //
+    let o = {
+      rng: toko._rng,
+      seedStringKey: 'seedString',
+      label: 'untitled',
+    };
+
+    o = Object.assign({}, o, incomingOptions);
+    o.paneRef = paneRef;
+    o.pObject = pObject;
+
+    //
+    //  string input
+    //
+    pObject[o.seedStringKey] = o.rng.seed;
+    let seedStringForm = paneRef.addBinding(p, o.seedStringKey, {
+      label: o.label,
+    });
+    seedStringForm.on('change', e => {
+      o.rng.pushSeed(e.value);
+    });
+
+    const op = {
+      view: 'buttongrid',
+      size: [3, 1],
+      cells: (x, y) => ({ title: [['← prev', 'next →', 'rnd']][y][x] }),
+      label: ' ',
+    };
+
+    paneRef.addBlade(op).on('click', ev => {
+      switch (ev.index[0]) {
+        case 0:
+          pObject[o.seedStringKey] = o.rng.previousSeed();
+          break;
+        case 1:
+          pObject[o.seedStringKey] = o.rng.nextSeed();
+          break;
+        case 2:
+          pObject[o.seedStringKey] = o.rng.randomSeed();
+          break;
+        default:
+          console.log('a non-existing button was pressed:', ev.index[0]);
+          break;
+      }
+      toko.pane.tab.refresh();
+    });
+  };
+
   //
   //  general math functions
   //
@@ -4400,78 +4469,256 @@ var Toko = (function () {
   };
 
   //
-  // random number generators and support
+  // pass through functions for the internal RNG object
   //
+  Toko.prototype.resetRNG = function (seed) {
+    this._rng.reset(seed);
+  };
 
-  //
-  // init the random number generator for this instance of Toko
-  //
-  Toko.reseed = function (seed) {
-    this._rng = new Toko.rng(seed);
+  Toko.prototype.setSeed = function (seed) {
+    this._rng.seed = seed;
+  };
+
+  Toko.prototype.getSeed = function () {
+    return this._rng.seed;
+  };
+
+  Toko.prototype.nextSeed = function () {
+    return this._rng.nextSeed();
+  };
+
+  Toko.prototype.previousSeed = function () {
+    return this._rng.previousSeed();
+  };
+
+  Toko.prototype.randomSeed = function () {
+    return this._rng.randomSeed();
+  };
+
+  Toko.prototype.resetSeed = function () {
+    return this._rng.resetSeed();
   };
 
   //
   // random number, element from array
   //
-  Toko.random = function (min, max) {
+  Toko.prototype.random = function (min, max) {
     return this._rng.random(min, max);
   };
 
   //
   // random integer
   //
-  Toko.intRange = function (min = 0, max = 100) {
+  Toko.prototype.intRange = function (min = 0, max = 100) {
     return this._rng.intRange(min, max);
   };
   //
   // random boolean
   //
-  Toko.randomBool = function () {
+  Toko.prototype.randomBool = function () {
     return this._rng.randomBool();
   };
   //
   // random charactor from string or lowercase
   //
-  Toko.randomChar = function (inString = 'abcdefghijklmnopqrstuvwxyz') {
+  Toko.prototype.randomChar = function (inString = 'abcdefghijklmnopqrstuvwxyz') {
     return this._rng.randomChar(inString);
   };
   //
   // stepped random number in range
   //
-  Toko.steppedRandom = function (min = 0, max = 1, step = 0.1) {
+  Toko.prototype.steppedRandom = function (min = 0, max = 1, step = 0.1) {
     return this._rng.steppedRandom(min, max, step);
   };
   //
   // shuffle array in place
   //
-  Toko.shuffle = function (inArray) {
+  Toko.prototype.shuffle = function (inArray) {
     return this._rng.shuffle(inArray);
   };
   //
   // all integers between min and max in random order
   //
-  Toko.intSequence = function (min = 0, max = 100) {
+  Toko.prototype.intSequence = function (min = 0, max = 100) {
     return this._rng.intSequence(min, max);
   };
 
   //
   // main random number generator class
   //
-  Toko.rng = class {
-    constructor (seed) {
-      if (seed == undefined) {
-        this.seed = Date.now();
-      } else {
-        this.seed = seed;
-      }
+  Toko.RNG = class {
+    constructor (seedString) {
+      this._currentSeed = 0;
+      this._seedString = '';
+      this.reset(seedString);
     }
 
     //
-    // reseed the random number generator
+    //  for debugging
     //
-    reseed = function (newSeed) {
-      this.seed = newSeed;
+    dump = function () {
+      console.log(this._seedString, this._currentSeed);
+      console.log(this._seedHistory, this._seedHistoryIndex);
     };
+
+    //
+    //  push a new seed to the history
+    //
+    pushSeed = function (newSeed) {
+      if (newSeed != this._seedString) {
+        // ignore if it is the same string
+        if (this._seedHistory.length > 0 && this._seedHistoryIndex >= 0) {
+          this._seedHistory = this._seedHistory.slice(
+            0,
+            this._seedHistoryIndex + 1,
+          );
+        }
+        this._seedHistory.push(newSeed);
+        this._seedHistoryIndex++;
+        this._seedString = newSeed;
+        this._currentSeed = this.base62ToBase10(this._seedString);
+      }
+    };
+
+    //
+    //  validate the incoming string to only include numbers and letters
+    //  if the string is empty a random string is generated
+    //
+    validateSeedString = function (inSeedString) {
+      let cleanSeedString;
+      if (inSeedString == undefined || inSeedString == '') {
+        cleanSeedString = this.randomSeedString();
+      } else {
+        cleanSeedString = inSeedString;
+      }
+      cleanSeedString = cleanSeedString.replace(/[^a-zA-Z0-9]/g, '');
+      return cleanSeedString;
+    };
+
+    reset = function (newSeed) {
+      this._seedHistory = [];
+      this._seedHistoryIndex = -1;
+      newSeed = this.validateSeedString(newSeed);
+      this.pushSeed(newSeed);
+      return this._seedString;
+    };
+
+    //
+    //  reset the current seed back to the current seedString
+    //  effectively resets the sequence of random numbers
+    //
+    resetSeed = function () {
+      this._currentSeed = this.base62ToBase10(this._seedString);
+      return this._seedString;
+    };
+
+    //
+    //  previousSeed - seed with the previous from the history
+    //
+    previousSeed = function () {
+      if (this._seedHistoryIndex >= 1) {
+        this._seedHistoryIndex--;
+        this._seedString = this._seedHistory[this._seedHistoryIndex];
+        this._currentSeed = this.base62ToBase10(this._seedString);
+      }
+      return this._seedString;
+    };
+
+    //
+    //  nextSeed - seed with the next from the history
+    //
+    nextSeed = function () {
+      if (this._seedHistoryIndex < this._seedHistory.length - 1) {
+        this._seedHistoryIndex++;
+        this._seedString = this._seedHistory[this._seedHistoryIndex];
+        this._currentSeed = this.base62ToBase10(this._seedString);
+      }
+      return this._seedString;
+    };
+
+    //
+    //  set seed to random and push to the history
+    //
+    randomSeed = function () {
+      this.pushSeed(this.randomSeedString());
+      return this._seedString;
+    };
+
+    //------------------------------------------------------------------------
+    //
+    //  GET & SET
+    //
+    //------------------------------------------------------------------------
+
+    get seed () {
+      return this._seedString;
+    }
+
+    set seed (newSeed) {
+      newSeed = this.validateSeedString(newSeed);
+      this.pushSeed(newSeed);
+    }
+
+    //------------------------------------------------------------------------
+    //
+    //  SUPPORT FUNCTIONS
+    //
+    //------------------------------------------------------------------------
+
+    randomSeedString = function (stringLength = 6) {
+      const BASE62_ALPHABET =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+      let result = '';
+
+      for (let i = 0; i < stringLength; i++) {
+        const n = Math.floor(Math.random() * 62);
+        result = BASE62_ALPHABET[n] + result;
+      }
+      return result;
+    };
+
+    base62ToBase10 = function (input) {
+      const BASE62_ALPHABET =
+          '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+        base = 62;
+      let result = 0;
+
+      for (let i = 0; i < input.length; i++) {
+        const char = input.charAt(i),
+          charValue = BASE62_ALPHABET.indexOf(char);
+
+        if (charValue === -1) {
+          throw new Error('Invalid character in the input string.');
+        }
+
+        result = result * base + charValue;
+      }
+
+      return result;
+    };
+
+    //------------------------------------------------------------------------
+    //
+    //  CORE RNG
+    //
+    //------------------------------------------------------------------------
+
+    //
+    // the psuedo random number generator
+    // adapted from https://github.com/cprosche/mulberry32
+    //
+    _rng = function () {
+      let t = (this._currentSeed += 0x6d2b79f5);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    //------------------------------------------------------------------------
+    //
+    //  RNG FUNCTIONS
+    //
+    //------------------------------------------------------------------------
 
     //
     // Return a random floating-point number
@@ -4518,7 +4765,7 @@ var Toko = (function () {
     };
 
     //
-    // random boolean
+    // return a random boolean
     //
     randomBool = function () {
       if (this._rng() < 0.5) {
@@ -4573,46 +4820,6 @@ var Toko = (function () {
       this.shuffle(seq);
       return seq;
     };
-
-    //
-    // the psuedo random number generator
-    // adapted from https://github.com/cprosche/mulberry32
-    //
-    _rng = function () {
-      let t = (this.seed += 0x6d2b79f5);
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
-  };
-
-  Toko.randomSeedString = function (stringLength = 6) {
-    const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    let result = '';
-
-    for (let i = 0; i < stringLength; i++) {
-      let n = Math.floor(Math.random() * 62);
-      result = BASE62_ALPHABET[n] + result;
-    }
-    return result;
-  };
-
-  // String hash function - fast but no guarantees on accuracy
-  // from: https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js
-  //
-  Toko.cyrb53a = function (str, seed = 0) {
-    let h1 = 0xdeadbeef ^ seed;
-    let h2 = 0x41c6ce57 ^ seed;
-    for (let i = 0, ch; i < str.length; i++) {
-      ch = str.charCodeAt(i);
-      h1 = Math.imul(h1 ^ ch, 0x85ebca77);
-      h2 = Math.imul(h2 ^ ch, 0xc2b2ae3d);
-    }
-    h1 ^= Math.imul(h1 ^ (h2 >>> 15), 0x735a2d97);
-    h2 ^= Math.imul(h2 ^ (h1 >>> 15), 0xcaf649a9);
-    h1 ^= h2 >>> 16;
-    h2 ^= h1 >>> 16;
-    return 2097152 * (h2 >>> 0) + (h1 >>> 11);
   };
 
   //
@@ -4647,16 +4854,28 @@ var Toko = (function () {
     SPLIT_MIX = 'split_mix';
     SPLIT_SQUARE = 'split_square';
 
-    constructor (x, y, width, height) {
+    constructor (x, y, width, height, rng = toko._rng) {
       this._position = createVector(x, y);
       this._x = x;
       this._y = y;
       this._width = width;
       this._height = height;
-      this._cells = [new Toko.GridCell(this._x, this._y, this._width, this._height, 0, 0, this._width, this._height)];
+      this._cells = [
+        new Toko.GridCell(
+          this._x,
+          this._y,
+          this._width,
+          this._height,
+          0,
+          0,
+          this._width,
+          this._height,
+        ),
+      ];
       this._points = [];
       this._pointsAreUpdated = false;
       this._openSpaces = [];
+      this._rng = rng;
     }
 
     //
@@ -4735,7 +4954,13 @@ var Toko = (function () {
     //  snapToPixel     - if set to true all sizes and positions are rounded to a pixel
     //                    This can result in the cells not filling the complete grid space
     //
-    packGrid (columns, rows, cellShapes, fillEmptySpaces = true, snapToPixel = true) {
+    packGrid (
+      columns,
+      rows,
+      cellShapes,
+      fillEmptySpaces = true,
+      snapToPixel = true,
+    ) {
       this._pointsAreValid = false;
       this._cells = [];
       let cw, rh;
@@ -4760,20 +4985,29 @@ var Toko = (function () {
 
       while (keepGoing) {
         // pick random shape
-        shape = Toko.random(cellShapes);
+        shape = this._rng.random(cellShapes);
         w = shape[0];
         h = shape[1];
 
         keepTryingThisShape = true;
         while (keepTryingThisShape) {
           // pick random location
-          c = Toko.intRange(0, columns - w + 1);
-          r = Toko.intRange(0, rows - h + 1);
+          c = this._rng.intRange(0, columns - w + 1);
+          r = this._rng.intRange(0, rows - h + 1);
 
           // check if space is available
           if (this.spaceAvailable(c, r, w, h)) {
             // if it is available, add a cell with the picked size
-            newCell = new Toko.GridCell(this._x + c * cw, this._y + r * rh, w * cw, h * rh, c, r, w, h);
+            newCell = new Toko.GridCell(
+              this._x + c * cw,
+              this._y + r * rh,
+              w * cw,
+              h * rh,
+              c,
+              r,
+              w,
+              h,
+            );
             newCell.counter = tryCounter;
             this._cells.push(newCell);
             // claim the space
@@ -4836,7 +5070,16 @@ var Toko = (function () {
             w = cellShapes[s][0];
             h = cellShapes[s][1];
             if (this.spaceAvailable(i, j, w, h)) {
-              newCell = new Toko.GridCell(this._x + i * cw, this._y + j * rh, w * cw, h * rh, i, j, cw, rh);
+              newCell = new Toko.GridCell(
+                this._x + i * cw,
+                this._y + j * rh,
+                w * cw,
+                h * rh,
+                i,
+                j,
+                cw,
+                rh,
+              );
               newCell.counter = s;
               this._cells.push(newCell);
               this.fillSpace(i, j, w, h);
@@ -4924,7 +5167,12 @@ var Toko = (function () {
     //                    SPLIT_MIX         = split along both axis randomly
     //                    SPLIT_SQUARE      = split cells into 4 new cells
     //
-    splitRecursive (nrLoops = 1, chance = 0.5, minSize = 10, splitStyle = this.SPLIT_MIX) {
+    splitRecursive (
+      nrLoops = 1,
+      chance = 0.5,
+      minSize = 10,
+      splitStyle = this.SPLIT_MIX,
+    ) {
       if (splitStyle == this.SPLIT_SQUARE) {
         // reduce the chance because the square split creates 4 cells instead of 2
         chance *= 0.5;
@@ -4933,7 +5181,7 @@ var Toko = (function () {
       for (let i = 0; i < nrLoops; i++) {
         let newCells = [];
         for (let n = 0; n < this._cells.length; n++) {
-          if (Toko.random() < chance) {
+          if (this._rng.random() < chance) {
             let c = this.splitCell(this._cells[n], minSize, splitStyle);
             newCells = newCells.concat(c);
           } else {
@@ -4987,7 +5235,7 @@ var Toko = (function () {
     //  split cells randomly along horizontal or vertical axis
     //
     splitCellMix (cell, minSize = 10) {
-      if (Toko.random() < 0.5) {
+      if (this._rng.random() < 0.5) {
         return this.splitCellHorizontal(cell, minSize);
       } else {
         return this.splitCellVertical(cell, minSize);
@@ -5010,7 +5258,11 @@ var Toko = (function () {
         newCells.push(new Toko.GridCell(x + w2, y, w2, h2));
         newCells.push(new Toko.GridCell(x + w2, y + h2, w2, h2));
         newCells.push(new Toko.GridCell(x, y + h2, w2, h2));
-        newCells[0].counter = newCells[1].counter = newCells[2].counter = newCells[3].counter = c;
+        newCells[0].counter =
+          newCells[1].counter =
+          newCells[2].counter =
+          newCells[3].counter =
+            c;
       } else {
         newCells.push(cell);
       }
@@ -5070,12 +5322,16 @@ var Toko = (function () {
       //  find the max value of counter in all the cells
       //  see https://stackoverflow.com/questions/4020796/finding-the-max-value-of-an-attribute-in-an-array-of-objects
       //
-      let maxC = this._cells.reduce((a, b) => (a.counter > b.counter ? a : b)).counter;
+      let maxC = this._cells.reduce((a, b) =>
+        a.counter > b.counter ? a : b,
+      ).counter;
       return maxC;
     }
 
     get minCounter () {
-      let minC = this._cells.reduce((a, b) => (a.counter < b.counter ? a : b)).counter;
+      let minC = this._cells.reduce((a, b) =>
+        a.counter < b.counter ? a : b,
+      ).counter;
       return minC;
     }
 

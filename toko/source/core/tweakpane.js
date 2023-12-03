@@ -325,3 +325,58 @@ Toko.prototype.addBlendModeSelector = function (
     },
   });
 };
+
+Toko.prototype.addRandomSeedControl = function (
+  paneRef,
+  pObject,
+  incomingOptions,
+) {
+  //
+  //  set default options
+  //
+  let o = {
+    rng: toko._rng,
+    seedStringKey: 'seedString',
+    label: 'untitled',
+  };
+
+  o = Object.assign({}, o, incomingOptions);
+  o.paneRef = paneRef;
+  o.pObject = pObject;
+
+  //
+  //  string input
+  //
+  pObject[o.seedStringKey] = o.rng.seed;
+  let seedStringForm = paneRef.addBinding(p, o.seedStringKey, {
+    label: o.label,
+  });
+  seedStringForm.on('change', e => {
+    o.rng.pushSeed(e.value);
+  });
+
+  const op = {
+    view: 'buttongrid',
+    size: [3, 1],
+    cells: (x, y) => ({ title: [['← prev', 'next →', 'rnd']][y][x] }),
+    label: ' ',
+  };
+
+  paneRef.addBlade(op).on('click', ev => {
+    switch (ev.index[0]) {
+      case 0:
+        pObject[o.seedStringKey] = o.rng.previousSeed();
+        break;
+      case 1:
+        pObject[o.seedStringKey] = o.rng.nextSeed();
+        break;
+      case 2:
+        pObject[o.seedStringKey] = o.rng.randomSeed();
+        break;
+      default:
+        console.log('a non-existing button was pressed:', ev.index[0]);
+        break;
+    }
+    toko.pane.tab.refresh();
+  });
+};

@@ -21,6 +21,10 @@ Toko.prototype.setup = function (inputOptions) {
     p5Canvas.drop(this.receiveSettings.bind(this));
   }
 
+  if (this.options.seedString != '') {
+    Toko.reset(this.options.seedString);
+  }
+
   if (this.options.useParameterPanel) {
     this.basePane = new Tweakpane.Pane();
 

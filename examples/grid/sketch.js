@@ -2,6 +2,11 @@ p5.disableFriendlyErrors = false; // disables FES to speed things up a little bi
 
 let toko = new Toko();
 
+let seedHistory = [],
+  seedHistoryIndex = 0,
+  colorRNG,
+  gridRNG;
+
 function preload () {
   //
   // All loading calls here
@@ -53,7 +58,9 @@ function setup () {
   let g = new Toko.Grid();
 
   p = {
-    seed: 29,
+    // seed: 29,
+    gridSeed: 'ABCDEF',
+    colorSeed: 'ghijkl',
     // grid
     margin: 30,
     rows: 12,
@@ -69,13 +76,24 @@ function setup () {
     // color
     collections: ['basic', 'd3', 'duotone', 'golid', 'system', 'orbifold'],
     collection: 'basic',
-    palette: 'district2',
+    palette: 'donut',
     invertBgnd: true,
     useScale: true,
     stroke: true,
     strokeWeight: 1.5,
     strokeAlpha: 100,
   };
+
+  colorRNG = new Toko.RNG();
+  gridRNG = new Toko.RNG();
+
+  toko.addRandomSeedControl(toko.pane.tab, p, {
+    seedStringKey: 'gridSeed',
+    label: 'grid seed',
+    rng: gridRNG,
+  });
+
+  toko.pane.tab.addBlade({ view: 'separator' });
 
   //
   //  add controls for the grid selector
@@ -88,11 +106,11 @@ function setup () {
     },
   });
   toko.pane.tab.addBlade({ view: 'separator' });
-  toko.pane.tab.addBinding(p, 'seed', {
-    min: 1,
-    max: 2000,
-    step: 1,
-  });
+  // toko.pane.tab.addBinding(p, 'seed', {
+  //   min: 1,
+  //   max: 2000,
+  //   step: 1,
+  // });
   //
   //  add controls for the base grid rows and columns
   //
@@ -164,6 +182,15 @@ function setup () {
     collectionKey: 'collection',
     paletteKey: 'palette',
   });
+
+  f6.addBlade({ view: 'separator' });
+
+  toko.addRandomSeedControl(f6, p, {
+    seedStringKey: 'colorSeed',
+    label: 'color seed',
+    rng: colorRNG,
+  });
+
   //
   //  add controls to change the colors
   //
@@ -215,10 +242,11 @@ function refresh () {
     f2.expanded = true;
   }
   //
-  //  reseed the random generator
+  //  reset both RNG's to seed to ensure result is identical
   //
-  Toko.reseed(p.seed);
-  //
+  gridRNG.resetSeed();
+  colorRNG.resetSeed();
+
   //  redraw with updated parameters
   //
   redraw();
@@ -240,6 +268,7 @@ function draw () {
     p.margin,
     width - 2 * p.margin,
     height - 2 * p.margin,
+    gridRNG,
   );
 
   //
@@ -268,6 +297,7 @@ function draw () {
   const o = {
     reverse: p.invertScale,
     domain: [0, n],
+    rng: colorRNG,
   };
 
   //
@@ -292,7 +322,7 @@ function draw () {
   //  draw the cells
   //
   for (var i = 0; i < n; i++) {
-    fill(colors.randomOriginalColor());
+    fill(colors.randomOriginalColor(true));
 
     c = gridSet.cells[i];
     rect(c.x, c.y, c.width, c.height);
