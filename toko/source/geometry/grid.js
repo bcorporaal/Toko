@@ -32,16 +32,28 @@ Toko.Grid = class {
   SPLIT_MIX = 'split_mix';
   SPLIT_SQUARE = 'split_square';
 
-  constructor (x, y, width, height) {
+  constructor (x, y, width, height, rng = toko._rng) {
     this._position = createVector(x, y);
     this._x = x;
     this._y = y;
     this._width = width;
     this._height = height;
-    this._cells = [new Toko.GridCell(this._x, this._y, this._width, this._height, 0, 0, this._width, this._height)];
+    this._cells = [
+      new Toko.GridCell(
+        this._x,
+        this._y,
+        this._width,
+        this._height,
+        0,
+        0,
+        this._width,
+        this._height,
+      ),
+    ];
     this._points = [];
     this._pointsAreUpdated = false;
     this._openSpaces = [];
+    this._rng = rng;
   }
 
   //
@@ -120,7 +132,13 @@ Toko.Grid = class {
   //  snapToPixel     - if set to true all sizes and positions are rounded to a pixel
   //                    This can result in the cells not filling the complete grid space
   //
-  packGrid (columns, rows, cellShapes, fillEmptySpaces = true, snapToPixel = true) {
+  packGrid (
+    columns,
+    rows,
+    cellShapes,
+    fillEmptySpaces = true,
+    snapToPixel = true,
+  ) {
     this._pointsAreValid = false;
     this._cells = [];
     let cw, rh;
@@ -147,20 +165,29 @@ Toko.Grid = class {
 
     while (keepGoing) {
       // pick random shape
-      shape = Toko.random(cellShapes);
+      shape = this._rng.random(cellShapes);
       w = shape[0];
       h = shape[1];
 
       keepTryingThisShape = true;
       while (keepTryingThisShape) {
         // pick random location
-        c = Toko.intRange(0, columns - w + 1);
-        r = Toko.intRange(0, rows - h + 1);
+        c = this._rng.intRange(0, columns - w + 1);
+        r = this._rng.intRange(0, rows - h + 1);
 
         // check if space is available
         if (this.spaceAvailable(c, r, w, h)) {
           // if it is available, add a cell with the picked size
-          newCell = new Toko.GridCell(this._x + c * cw, this._y + r * rh, w * cw, h * rh, c, r, w, h);
+          newCell = new Toko.GridCell(
+            this._x + c * cw,
+            this._y + r * rh,
+            w * cw,
+            h * rh,
+            c,
+            r,
+            w,
+            h,
+          );
           newCell.counter = tryCounter;
           this._cells.push(newCell);
           // claim the space
@@ -223,7 +250,16 @@ Toko.Grid = class {
           w = cellShapes[s][0];
           h = cellShapes[s][1];
           if (this.spaceAvailable(i, j, w, h)) {
-            newCell = new Toko.GridCell(this._x + i * cw, this._y + j * rh, w * cw, h * rh, i, j, cw, rh);
+            newCell = new Toko.GridCell(
+              this._x + i * cw,
+              this._y + j * rh,
+              w * cw,
+              h * rh,
+              i,
+              j,
+              cw,
+              rh,
+            );
             newCell.counter = s;
             this._cells.push(newCell);
             this.fillSpace(i, j, w, h);
@@ -311,7 +347,12 @@ Toko.Grid = class {
   //                    SPLIT_MIX         = split along both axis randomly
   //                    SPLIT_SQUARE      = split cells into 4 new cells
   //
-  splitRecursive (nrLoops = 1, chance = 0.5, minSize = 10, splitStyle = this.SPLIT_MIX) {
+  splitRecursive (
+    nrLoops = 1,
+    chance = 0.5,
+    minSize = 10,
+    splitStyle = this.SPLIT_MIX,
+  ) {
     if (splitStyle == this.SPLIT_SQUARE) {
       // reduce the chance because the square split creates 4 cells instead of 2
       chance *= 0.5;
@@ -320,7 +361,7 @@ Toko.Grid = class {
     for (let i = 0; i < nrLoops; i++) {
       let newCells = [];
       for (let n = 0; n < this._cells.length; n++) {
-        if (Toko.random() < chance) {
+        if (this._rng.random() < chance) {
           let c = this.splitCell(this._cells[n], minSize, splitStyle);
           newCells = newCells.concat(c);
         } else {
@@ -374,7 +415,7 @@ Toko.Grid = class {
   //  split cells randomly along horizontal or vertical axis
   //
   splitCellMix (cell, minSize = 10) {
-    if (Toko.random() < 0.5) {
+    if (this._rng.random() < 0.5) {
       return this.splitCellHorizontal(cell, minSize);
     } else {
       return this.splitCellVertical(cell, minSize);
@@ -397,7 +438,11 @@ Toko.Grid = class {
       newCells.push(new Toko.GridCell(x + w2, y, w2, h2));
       newCells.push(new Toko.GridCell(x + w2, y + h2, w2, h2));
       newCells.push(new Toko.GridCell(x, y + h2, w2, h2));
-      newCells[0].counter = newCells[1].counter = newCells[2].counter = newCells[3].counter = c;
+      newCells[0].counter =
+        newCells[1].counter =
+        newCells[2].counter =
+        newCells[3].counter =
+          c;
     } else {
       newCells.push(cell);
     }
@@ -457,12 +502,16 @@ Toko.Grid = class {
     //  find the max value of counter in all the cells
     //  see https://stackoverflow.com/questions/4020796/finding-the-max-value-of-an-attribute-in-an-array-of-objects
     //
-    let maxC = this._cells.reduce((a, b) => (a.counter > b.counter ? a : b)).counter;
+    let maxC = this._cells.reduce((a, b) =>
+      a.counter > b.counter ? a : b,
+    ).counter;
     return maxC;
   }
 
   get minCounter () {
-    let minC = this._cells.reduce((a, b) => (a.counter < b.counter ? a : b)).counter;
+    let minC = this._cells.reduce((a, b) =>
+      a.counter < b.counter ? a : b,
+    ).counter;
     return minC;
   }
 
