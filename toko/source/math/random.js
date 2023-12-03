@@ -74,3 +74,9 @@ Toko.prototype.shuffle = function (inArray) {
 Toko.prototype.intSequence = function (min = 0, max = 100) {
   return this._rng.intSequence(min, max);
 };
+//
+//  2D unit p5 vector in a random direction
+//
+Toko.prototype.random2DVector = function () {
+  return this._rnd.random2DVector();
+};

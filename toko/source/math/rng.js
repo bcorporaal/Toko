@@ -277,4 +277,13 @@ Toko.RNG = class {
     this.shuffle(seq);
     return seq;
   };
+  //
+  //  create a 2D unit p5 vector in a random direction
+  //
+  random2DVector = function () {
+    let v = createVector(1, 0);
+    let h = this.random() * TWO_PI;
+    v.setHeading(h);
+    return v;
+  };
 };

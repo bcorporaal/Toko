@@ -4542,6 +4542,12 @@ var Toko = (function () {
   Toko.prototype.intSequence = function (min = 0, max = 100) {
     return this._rng.intSequence(min, max);
   };
+  //
+  //  2D unit p5 vector in a random direction
+  //
+  Toko.prototype.random2DVector = function () {
+    return this._rnd.random2DVector();
+  };
 
   //
   // main random number generator class
@@ -4819,6 +4825,15 @@ var Toko = (function () {
       let seq = Array.from(Array(max - min)).map((e, i) => i + min);
       this.shuffle(seq);
       return seq;
+    };
+    //
+    //  create a 2D unit p5 vector in a random direction
+    //
+    random2DVector = function () {
+      let v = createVector(1, 0);
+      let h = this.random() * TWO_PI;
+      v.setHeading(h);
+      return v;
     };
   };
 
