@@ -12,9 +12,9 @@ class Toko {
     }
 
     //
-    //  seed the random function
+    //  preseed the random function
     //
-    Toko.reseed(Date.now());
+    this._rng = new Toko.RNG();
 
     console.log(this.VERSION);
   }
