@@ -64,10 +64,24 @@ var Toko = (function () {
     pixelDensity: 1,
   };
 
-  const SIZE_MACBOOK_PRO_WALLPAPER = {
-    name: 'macbook_pro',
-    width: 2880,
-    height: 1800,
+  const SIZE_WIDE_SCREEN = {
+    name: 'wide_screen',
+    width: 2560,
+    height: 1440,
+    pixelDensity: 1,
+  };
+
+  const SIZE_MACBOOK_14_WALLPAPER = {
+    name: 'macbook_14',
+    width: 3024,
+    height: 1964,
+    pixelDensity: 1,
+  };
+
+  const SIZE_MACBOOK_16_WALLPAPER = {
+    name: 'macbook_16',
+    width: 3072,
+    height: 1920,
     pixelDensity: 1,
   };
 
@@ -80,7 +94,9 @@ var Toko = (function () {
     iphone_11: 'iphone_11',
     SD_720p: '720p',
     HD_1080p: '1080p',
-    macbook_pro: 'macbook_pro',
+    wide_screen: 'wide_screen',
+    macbook_14: 'macbook_14',
+    macbook_16: 'macbook_16',
     full_window: 'full_window',
   };
 
@@ -91,7 +107,9 @@ var Toko = (function () {
     SIZE_720P,
     SIZE_1080P,
     SIZE_IPHONE_11_WALLPAPER,
-    SIZE_MACBOOK_PRO_WALLPAPER,
+    SIZE_WIDE_SCREEN,
+    SIZE_MACBOOK_14_WALLPAPER,
+    SIZE_MACBOOK_16_WALLPAPER,
   ];
 
   //
@@ -157,8 +175,10 @@ var Toko = (function () {
     SIZE_DEFAULT: SIZE_DEFAULT,
     SIZE_FULL: SIZE_FULL,
     SIZE_IPHONE_11_WALLPAPER: SIZE_IPHONE_11_WALLPAPER,
-    SIZE_MACBOOK_PRO_WALLPAPER: SIZE_MACBOOK_PRO_WALLPAPER,
+    SIZE_MACBOOK_14_WALLPAPER: SIZE_MACBOOK_14_WALLPAPER,
+    SIZE_MACBOOK_16_WALLPAPER: SIZE_MACBOOK_16_WALLPAPER,
     SIZE_SQUARE_XL: SIZE_SQUARE_XL,
+    SIZE_WIDE_SCREEN: SIZE_WIDE_SCREEN,
     TABS_ADVANCED: TABS_ADVANCED,
     TABS_CAPTURE: TABS_CAPTURE,
     TABS_FPS: TABS_FPS,
