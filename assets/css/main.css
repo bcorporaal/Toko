@@ -31,31 +31,26 @@
   width: 280px !important; /* Make tweakpane a little wider */
 }
 
-/* @font-face {
-  font-family: 'Fira Code';
-  src: url("../fonts/eot/FiraCode-Regular.eot");
-  src: url("../fonts/eot/FiraCode-Regular.eot") format("embedded-opentype"), url("../fonts/woff2/FiraCode-Regular.woff2") format("woff2"), url("../fonts/woff/FiraCode-Regular.woff") format("woff"), url("../fonts/ttf/FiraCode-Regular.ttf") format("truetype");
+@font-face {
+  font-family: 'Udon mono Web';
+  font-display: swap;
   font-weight: 400;
-  font-style: normal; } */
-
-  @font-face {
-	font-family: 'Udon mono Web';
-	font-display: swap;
-	font-weight: 400;
-	font-stretch: normal;
-	font-style: normal;
-	src: url('../fonts/woff2/UdonMono-Regular.WOFF2') format('woff2'), url('../fonts/ttf/UdonMono-Regular.TTF') format('truetype');
+  font-stretch: normal;
+  font-style: normal;
+  src: url('../fonts/woff2/UdonMono-Regular.WOFF2') format('woff2'), url('../fonts/ttf/UdonMono-Regular.TTF') format('truetype');
 }
 
 body {
   background-color: #f8f9fa;
   font-family: "Udon mono Web";
   color: #343a40;
-  font-weight: 400; }
+  font-weight: 400;
+}
 
 html, body {
   margin: 0;
-  padding: 0; }
+  padding: 0;
+}
 
 .sketch-wrapper {
   display: flex;
@@ -67,89 +62,110 @@ html, body {
 }
 
 .p5Canvas {
-  margin-bottom: -4px; }
+  margin-bottom: -4px;
+}
 
 .sketch--full {
   width: 100vw;
   height: 100vh;
-  background: #f1f3f5; }
+  background: #f1f3f5;
+}
 
 .sketch--fixed {
   max-width: calc(100vw - 2*1.2em);
   max-height: calc(100vh - 2*1.2em);
   background: #f1f3f5;
   width: 1200px;
-  height: 800px; }
+  height: 800px;
+}
 
 .sketch--square {
   max-width: 800px;
   max-height: 800px;
   background: #f1f3f5;
   width: 80vw;
-  height: 80vw; }
+  height: 80vw;
+}
 
 .labels a {
   color: #343a40;
-  text-decoration: none; }
+  text-decoration: none;
+}
 
 .labels a:hover {
-  color: #0c8599; }
+  color: #0c8599;
+}
 
 .labels a:hover span.label--text {
-  border-bottom: solid 1px #0c8599; }
+  border-bottom: solid 1px #0c8599;
+}
 
 .label--back {
   position: absolute;
   float: left;
   top: 1.2em;
-  left: 1.2em; }
+  left: 1.2em;
+}
 
 .label--title {
   position: absolute;
   float: left;
   bottom: 1.2em;
-  left: 1.2em; }
+  left: 1.2em;
+}
 
 .label--github {
   position: absolute;
   float: left;
   bottom: 1.2em;
-  right: 1.2em; }
+  right: 1.2em;
+}
 
 #icon--back {
-  margin-right: 5px; }
+  margin-right: 5px;
+}
 
 .home {
-  overflow: visible; }
+  overflow: visible;
+}
 
 .container {
   padding: 5em 0 1em 0;
-  text-align: center; }
+  text-align: center;
+}
 
 .sketchlist {
   padding: 10px;
   display: inline-block;
   margin: 0px auto;
-  text-align: left; }
-  .sketchlist a {
-    text-decoration: none;
-    color: #343a40; }
-  .sketchlist a:hover {
-    border-bottom: 1px solid #343a40; }
-  .sketchlist h1 {
-    font-size: calc(0.5vw + 0.55rem);
-    font-weight: 400; }
-  .sketchlist hr {
-    border: 0;
-    border-bottom: 1px solid #343a40; }
-  .sketchlist ul {
-    column-count: 3;
-    column-gap: 4em;
-    list-style-type: none;
-    margin: 0;
-    padding: 0.5em 0 0.5em 0; }
-  .sketchlist li {
-    font-size: calc(0.5vw + 0.55rem);
-    line-height: 1.7em; }
-  .sketchlist p {
-    font-size: calc(0.5vw + 0.55rem); }
+  text-align: left;
+}
+.sketchlist a {
+  text-decoration: none;
+  color: #343a40;
+}
+.sketchlist a:hover {
+  border-bottom: 1px solid #343a40;
+}
+.sketchlist h1 {
+  font-size: calc(0.5vw + 0.55rem);
+  font-weight: 400;
+}
+.sketchlist hr {
+  border: 0;
+  border-bottom: 1px solid #343a40;
+}
+.sketchlist ul {
+  column-count: 3;
+  column-gap: 4em;
+  list-style-type: none;
+  margin: 0;
+  padding: 0.5em 0 0.5em 0;
+}
+.sketchlist li {
+  font-size: calc(0.5vw + 0.55rem);
+  line-height: 1.7em;
+}
+.sketchlist p {
+  font-size: calc(0.5vw + 0.55rem);
+}
