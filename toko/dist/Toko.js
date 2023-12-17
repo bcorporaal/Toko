@@ -3922,6 +3922,7 @@ var Toko = (function () {
         this.basePaneTab.pages[this.TAB_ID_ADVANCED]
           .addBinding(this.options, 'canvasSizeName', {
             options: this.SIZES_LIST,
+            label: 'canvas size',
           })
           .on('change', ev => {
             let s = this.SIZES.filter(p => p.name === ev.value)[0];
