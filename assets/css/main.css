@@ -33,12 +33,12 @@
 }
 
 @font-face {
-  font-family: 'Udon mono Web';
-  font-display: swap;
-  font-weight: 400;
-  font-stretch: normal;
-  font-style: normal;
-  src: url('../fonts/woff2/UdonMono-Regular.WOFF2') format('woff2'), url('../fonts/ttf/UdonMono-Regular.TTF') format('truetype');
+	font-family: 'Udon mono Web';
+	font-display: swap;
+	font-weight: 400;
+	font-stretch: semi-expanded;
+	font-style: normal;
+	src: url('../fonts/woff2/UdonMono-SemiExtended.WOFF2') format('woff2'), url('../fonts/ttf/UdonMono-SemiExtended.TTF') format('truetype');
 }
 
 body {
