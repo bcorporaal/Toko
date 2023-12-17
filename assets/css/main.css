@@ -20,6 +20,7 @@
   --tp-label-foreground-color: hsla(230, 7%, 75%, 0.7);
   --tp-monitor-background-color: hsla(230, 7%, 0%, 0.2);
   --tp-monitor-foreground-color: hsla(230, 7%, 75%, 0.7);
+  --tp-base-font-family: 'Udon mono Web';
 }
 
 .tp-lblv_l {
