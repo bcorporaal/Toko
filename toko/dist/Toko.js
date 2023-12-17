@@ -3857,7 +3857,9 @@ var Toko = (function () {
     }
 
     if (this.options.useParameterPanel) {
-      this.basePane = new Tweakpane.Pane();
+      this.basePane = new Tweakpane.Pane({
+        title: 'Sketch options',
+      });
 
       var tabs = [{ title: this.TABS_PARAMETERS }];
       if (this.options.showAdvancedOptions) {
