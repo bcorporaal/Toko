@@ -51,21 +51,28 @@ function setup () {
   //  sketch parameters
   //
   p = {
+    // rng seed
     seed: '',
-    radius: 0.3,
-    nrSlices: 24,
-    snapStep: 0.04,
-    switches: 100,
-    interpolated: false,
-    reverseGrad: false,
-    reverseBgnd: false,
-    glow: true,
+
+    // color & effects
     collections: toko.COLOR_COLLECTIONS,
     collection: 'jung',
     palette: 'jung_croc',
+    glow: true,
+    interpolated: false,
+    reverseGrad: false,
+    reverseBgnd: false,
+
+    // geometry
+    nrSlices: 24,
+    snapStep: 0.04,
     leftRange: { min: 0, max: 0.3 },
     rightRange: { min: 0.7, max: 1 },
     jiggle: 3,
+
+    // shuffle
+    switches: 100,
+    radius: 0.3,
   };
 
   //
