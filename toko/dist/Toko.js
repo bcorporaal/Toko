@@ -5517,9 +5517,9 @@ var Toko = (function () {
   //
   //  rotate current transformation matrix around a specific point
   //
-  Toko.prototype.scaleAround = function (x, y, newScale) {
+  Toko.prototype.scaleAround = function (x, y, scale) {
     translate(x, y);
-    scale(newScale);
+    scale(scale);
     translate(-x, -y);
   };
 
