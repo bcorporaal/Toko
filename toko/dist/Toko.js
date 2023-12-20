@@ -5505,6 +5505,24 @@ var Toko = (function () {
     }
   };
 
+  //
+  //  rotate current transformation matrix around a specific point
+  //
+  Toko.prototype.rotateAround = function (x, y, angle) {
+    translate(x, y);
+    rotate(angle);
+    translate(-x, -y);
+  };
+
+  //
+  //  rotate current transformation matrix around a specific point
+  //
+  Toko.prototype.scaleAround = function (x, y, newScale) {
+    translate(x, y);
+    scale(newScale);
+    translate(-x, -y);
+  };
+
   Toko.prototype.generateFilename = function (extension = 'svg', verb = 'sketched') {
     var adj1 = this.randomAdjective();
     var adj2 = this.randomAdjective();
