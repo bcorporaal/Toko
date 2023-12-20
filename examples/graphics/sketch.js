@@ -53,32 +53,41 @@ function setup () {
   p = {
     seed: '',
     radius: 0.1,
-    steps: 80,
+    nrSlices: 80,
     snapStep: 0.1,
     switches: 150,
     interpolated: true,
     reverseGrad: false,
     reverseBgnd: false,
-    shifted: true,
+    glow: true,
     collections: toko.COLOR_COLLECTIONS,
     collection: 'basic',
     palette: 'westCoast',
-    original: false,
     leftRange: { min: 0, max: 0.3 },
     rightRange: { min: 0.7, max: 1 },
     jiggle: 0,
   };
 
   //
-  //  add controls to change the colors
+  //  controls for the RNG seed
   //
+  const fr = toko.pane.tab.addFolder({
+    title: 'RNG',
+  });
 
-  toko.addRandomSeedControl(toko.pane.tab, p, {
+  toko.addRandomSeedControl(fr, p, {
     seedStringKey: 'seed',
     label: 'seed',
   });
 
-  toko.addPaletteSelector(toko.pane.tab, p, {
+  //
+  //  controls for the color settings
+  //
+  const fc = toko.pane.tab.addFolder({
+    title: 'Color & effects',
+  });
+
+  toko.addPaletteSelector(fc, p, {
     index: 3,
     justPrimary: true,
     sorted: true,
@@ -88,26 +97,43 @@ function setup () {
     paletteKey: 'palette',
   });
 
-  toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 200, step: 1 });
-  toko.pane.tab.addBinding(p, 'leftRange', {
+  fc.addBinding(p, 'reverseGrad');
+  fc.addBinding(p, 'reverseBgnd');
+  fc.addBinding(p, 'interpolated');
+
+  fc.addBlade({ view: 'separator' });
+  fc.addBinding(p, 'glow');
+
+  //
+  //  controls for the slices and position
+  //
+  const fg = toko.pane.tab.addFolder({
+    title: 'Geometry',
+  });
+
+  fg.addBinding(p, 'nrSlices', { min: 2, max: 200, step: 1 });
+  fg.addBinding(p, 'leftRange', {
     min: -0.5,
     max: 0.5,
     step: 0.1,
   });
-  toko.pane.tab.addBinding(p, 'rightRange', {
+  fg.addBinding(p, 'rightRange', {
     min: 0.5,
     max: 1.5,
     step: 0.1,
   });
+  fg.addBinding(p, 'snapStep', { min: 0, max: 0.2, step: 0.01 });
+  fg.addBinding(p, 'jiggle', { min: 0, max: 10, step: 0.5 });
 
-  toko.pane.tab.addBinding(p, 'reverseGrad');
-  toko.pane.tab.addBinding(p, 'reverseBgnd');
+  //
+  //  controls for how slices get shuffled
+  //
+  const fs = toko.pane.tab.addFolder({
+    title: 'Shuffle',
+  });
 
-  toko.pane.tab.addBinding(p, 'interpolated');
-  toko.pane.tab.addBinding(p, 'switches', { min: 0, max: 200, step: 1 });
-  toko.pane.tab.addBinding(p, 'radius', { min: 0, max: 1, step: 0.1 });
-  toko.pane.tab.addBinding(p, 'snapStep', { min: 0, max: 0.2, step: 0.01 });
-  toko.pane.tab.addBinding(p, 'jiggle', { min: 0, max: 10, step: 0.5 });
+  fs.addBinding(p, 'switches', { min: 0, max: 200, step: 1 });
+  fs.addBinding(p, 'radius', { min: 0, max: 1, step: 0.1 });
 
   //
   //  listen to tweakpane changes
@@ -136,7 +162,7 @@ function refresh () {
   //  set domain range to number of steps
   //
   const o = {
-    domain: [0, p.steps],
+    domain: [0, p.nrSlices],
     reverse: p.reverseGrad,
   };
   //
@@ -155,20 +181,19 @@ function draw () {
   //---------------------------------------------
 
   clear();
-  noStroke();
 
   let cc = p.reverseBgnd ? 1 : 0;
   let bgndColor = colors.contrastColors[cc];
   noStroke();
-
   background(bgndColor);
 
-  let nrSlices = p.steps;
-  let h = height / nrSlices;
+  let h = height / p.nrSlices;
 
+  //
+  //  assign a color to each slice
+  //
   let slices = [];
-
-  for (let i = 0; i < nrSlices; i++) {
+  for (let i = 0; i < p.nrSlices; i++) {
     if (p.interpolated) {
       slices[i] = {
         colorLeft: colors.scale(i),
@@ -182,15 +207,17 @@ function draw () {
     }
   }
 
-  let maxDistance = p.steps * p.radius;
-
+  //
+  //  shuffle colors on each side of the slice
+  //
+  let maxDistance = p.nrSlices * p.radius;
   for (let i = 0; i < p.switches; i++) {
-    let origin = floor(toko.random() * p.steps);
+    let origin = floor(toko.random() * p.nrSlices);
     let destination = origin + toko.intRange(-1 * maxDistance, maxDistance);
     if (destination < 0) {
       destination = 0;
-    } else if (destination > p.steps - 1) {
-      destination = p.steps - 1;
+    } else if (destination > p.nrSlices - 1) {
+      destination = p.nrSlices - 1;
     }
 
     if (origin != destination) {
@@ -206,7 +233,10 @@ function draw () {
     }
   }
 
-  for (let i = 0; i < nrSlices; i++) {
+  //
+  //  position and draw each slice
+  //
+  for (let i = 0; i < p.nrSlices; i++) {
     let y = h * i;
     let x1 = toko.steppedRandom(p.leftRange.min, p.leftRange.max, p.snapStep);
     let x2 = toko.steppedRandom(p.rightRange.min, p.rightRange.max, p.snapStep);
@@ -222,21 +252,18 @@ function draw () {
     let yc = y + h / 2;
 
     let spin = jiggleRNG.random(-p.jiggle / 500, p.jiggle / 500);
+
     push();
-    // translate(xc, yc);
-    // rotate(spin * TWO_PI);
-    // translate(-xc, -yc);
-
     toko.rotateAround(xc, yc, spin * TWO_PI);
-
     toko.linearGradient(x1, y, x2, y, [
       { offset: 0, color: c1 },
       { offset: 1, color: c2 },
     ]);
 
-    c1.setAlpha(120);
-
-    toko.shadow(0, 0, 40, c1);
+    if (p.glow) {
+      c1.setAlpha(120);
+      toko.shadow(0, 0, 40, c1);
+    }
 
     rect(x1, y, w, h);
     pop();
