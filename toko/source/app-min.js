@@ -21,6 +21,7 @@ import './geometry/grid';
 import './geometry/gridCell';
 
 import './graphics/transform';
+import './graphics/effects';
 
 import './output/output_util';
 import './output/capture_video';
