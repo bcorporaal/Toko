@@ -52,20 +52,20 @@ function setup () {
   //
   p = {
     seed: '',
-    radius: 0.1,
-    nrSlices: 80,
-    snapStep: 0.1,
-    switches: 150,
-    interpolated: true,
+    radius: 0.3,
+    nrSlices: 24,
+    snapStep: 0.04,
+    switches: 100,
+    interpolated: false,
     reverseGrad: false,
     reverseBgnd: false,
     glow: true,
     collections: toko.COLOR_COLLECTIONS,
-    collection: 'basic',
-    palette: 'westCoast',
+    collection: 'jung',
+    palette: 'jung_croc',
     leftRange: { min: 0, max: 0.3 },
     rightRange: { min: 0.7, max: 1 },
-    jiggle: 0,
+    jiggle: 3,
   };
 
   //
@@ -88,7 +88,7 @@ function setup () {
   });
 
   toko.addPaletteSelector(fc, p, {
-    index: 3,
+    index: 1,
     justPrimary: true,
     sorted: true,
     navButtons: true,
