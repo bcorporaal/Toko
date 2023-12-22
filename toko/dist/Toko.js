@@ -4084,6 +4084,15 @@ var Toko = (function () {
   };
 
   //
+  //  simple shortcut to set a p5 color object with a hexCode and alpha value
+  //
+  Toko.prototype.colorAlpha = function (hexColor, alpha = 255) {
+    let c = color(hexColor);
+    c.setAlpha(alpha);
+    return c;
+  };
+
+  //
   //  additions to TweakPane
   //
 
@@ -5636,6 +5645,8 @@ var Toko = (function () {
   //  simple grain function
   //  shifts all pixels randomly between -strength & +strength
   //
+  //  strength is a value between 0 and 255
+  //
   Toko.prototype.addSimpleGrain = function (strength) {
     loadPixels();
     const d = pixelDensity();
@@ -5655,6 +5666,8 @@ var Toko = (function () {
   //
   //  strength = { red: 10, green: 20, blue: 10}
   //  shift = { red: -10, green: 0, blue: 0 }
+  //
+  //  each value is between 0 and 255
   //
   Toko.prototype.addChannelGrain = function (strength, shift) {
     loadPixels();
