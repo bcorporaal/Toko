@@ -276,6 +276,19 @@ function draw () {
     pop();
   }
 
+  toko.addChannelGrain(
+    {
+      red: 20,
+      green: 20,
+      blue: 20,
+    },
+    {
+      red: 0,
+      green: 0,
+      blue: 0,
+    },
+  );
+
   //---------------------------------------------
   toko.endDraw(); // do not remove
   //---------------------------------------------
