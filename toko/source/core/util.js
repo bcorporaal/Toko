@@ -15,3 +15,12 @@ Toko.prototype.randomAdjective = function () {
 Toko.prototype.randomNoun = function () {
   return this.NOUNS[Math.floor(this.NOUNS.length * Math.random())];
 };
+
+//
+//  simple shortcut to set a p5 color object with a hexCode and alpha value
+//
+Toko.prototype.colorAlpha = function (hexColor, alpha = 255) {
+  let c = color(hexColor);
+  c.setAlpha(alpha);
+  return c;
+};

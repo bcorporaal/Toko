@@ -322,7 +322,7 @@ function draw () {
   //  draw the cells
   //
   for (var i = 0; i < n; i++) {
-    fill(colors.randomOriginalColor(true));
+    fill(colors.randomOriginalColor());
 
     c = gridSet.cells[i];
     rect(c.x, c.y, c.width, c.height);

@@ -92,7 +92,7 @@ function setup () {
 }
 
 function refresh () {
-  console.log('refresh');
+  console.log('Toko - refresh');
 
   //
   //  set domain range to number of steps

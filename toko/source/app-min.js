@@ -20,6 +20,10 @@ import './math/rng';
 import './geometry/grid';
 import './geometry/gridCell';
 
+import './graphics/transform';
+import './graphics/effects';
+import './graphics/grain';
+
 import './output/output_util';
 import './output/capture_video';
 import './output/save_sketch';

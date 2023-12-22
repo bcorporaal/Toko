@@ -25,6 +25,7 @@ import systemPalettes from '../color_palettes/system';
 import tsuchimochiPalettes from '../color_palettes/tsuchimochi';
 import tundraPalettes from '../color_palettes/tundra';
 import orbifoldPalettes from '../color_palettes/orbifold';
+import lospecPalettes from '../color_palettes/lospec';
 
 Toko.prototype.CONTRAST_MIX_COLORS = ['#111', '#eee'];
 Toko.prototype.CONTRAST_MIX_FACTOR = 0.8;
@@ -395,6 +396,7 @@ Toko.prototype._preprocessPalettes = function () {
     judsonPalettes,
     jungPalettes,
     kovecsesPalettes,
+    lospecPalettes,
     mayoPalettes,
     metBrewerPalettes,
     orbifoldPalettes,

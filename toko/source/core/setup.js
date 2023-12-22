@@ -26,7 +26,9 @@ Toko.prototype.setup = function (inputOptions) {
   }
 
   if (this.options.useParameterPanel) {
-    this.basePane = new Tweakpane.Pane();
+    this.basePane = new Tweakpane.Pane({
+      title: 'Sketch options',
+    });
 
     var tabs = [{ title: this.TABS_PARAMETERS }];
     if (this.options.showAdvancedOptions) {
@@ -89,6 +91,7 @@ Toko.prototype.setup = function (inputOptions) {
       this.basePaneTab.pages[this.TAB_ID_ADVANCED]
         .addBinding(this.options, 'canvasSizeName', {
           options: this.SIZES_LIST,
+          label: 'canvas size',
         })
         .on('change', ev => {
           let s = this.SIZES.filter(p => p.name === ev.value)[0];

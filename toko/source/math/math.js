@@ -1,7 +1,7 @@
 import Toko from '../core/main';
 
 //
-//  general math functions
+//  GENERAL MATH FUNCTIONS
 //
 
 //

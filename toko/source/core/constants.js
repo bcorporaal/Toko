@@ -13,7 +13,7 @@
 //
 //  current version
 //
-export const VERSION = 'Toko v0.8.0';
+export const VERSION = 'Toko v0.9.0';
 
 //
 //  Set of standard sizes for the canvas and exports
@@ -61,10 +61,24 @@ export const SIZE_IPHONE_11_WALLPAPER = {
   pixelDensity: 1,
 };
 
-export const SIZE_MACBOOK_PRO_WALLPAPER = {
-  name: 'macbook_pro',
-  width: 2880,
-  height: 1800,
+export const SIZE_WIDE_SCREEN = {
+  name: 'wide_screen',
+  width: 2560,
+  height: 1440,
+  pixelDensity: 1,
+};
+
+export const SIZE_MACBOOK_14_WALLPAPER = {
+  name: 'macbook_14',
+  width: 3024,
+  height: 1964,
+  pixelDensity: 1,
+};
+
+export const SIZE_MACBOOK_16_WALLPAPER = {
+  name: 'macbook_16',
+  width: 3072,
+  height: 1920,
   pixelDensity: 1,
 };
 
@@ -77,7 +91,9 @@ export var SIZES_LIST = {
   iphone_11: 'iphone_11',
   SD_720p: '720p',
   HD_1080p: '1080p',
-  macbook_pro: 'macbook_pro',
+  wide_screen: 'wide_screen',
+  macbook_14: 'macbook_14',
+  macbook_16: 'macbook_16',
   full_window: 'full_window',
 };
 
@@ -88,7 +104,9 @@ export var SIZES = [
   SIZE_720P,
   SIZE_1080P,
   SIZE_IPHONE_11_WALLPAPER,
-  SIZE_MACBOOK_PRO_WALLPAPER,
+  SIZE_WIDE_SCREEN,
+  SIZE_MACBOOK_14_WALLPAPER,
+  SIZE_MACBOOK_16_WALLPAPER,
 ];
 
 //

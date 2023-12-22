@@ -16,7 +16,7 @@ var Toko = (function () {
   //
   //  current version
   //
-  const VERSION = 'Toko v0.8.0';
+  const VERSION = 'Toko v0.9.0';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -64,10 +64,24 @@ var Toko = (function () {
     pixelDensity: 1,
   };
 
-  const SIZE_MACBOOK_PRO_WALLPAPER = {
-    name: 'macbook_pro',
-    width: 2880,
-    height: 1800,
+  const SIZE_WIDE_SCREEN = {
+    name: 'wide_screen',
+    width: 2560,
+    height: 1440,
+    pixelDensity: 1,
+  };
+
+  const SIZE_MACBOOK_14_WALLPAPER = {
+    name: 'macbook_14',
+    width: 3024,
+    height: 1964,
+    pixelDensity: 1,
+  };
+
+  const SIZE_MACBOOK_16_WALLPAPER = {
+    name: 'macbook_16',
+    width: 3072,
+    height: 1920,
     pixelDensity: 1,
   };
 
@@ -80,7 +94,9 @@ var Toko = (function () {
     iphone_11: 'iphone_11',
     SD_720p: '720p',
     HD_1080p: '1080p',
-    macbook_pro: 'macbook_pro',
+    wide_screen: 'wide_screen',
+    macbook_14: 'macbook_14',
+    macbook_16: 'macbook_16',
     full_window: 'full_window',
   };
 
@@ -91,7 +107,9 @@ var Toko = (function () {
     SIZE_720P,
     SIZE_1080P,
     SIZE_IPHONE_11_WALLPAPER,
-    SIZE_MACBOOK_PRO_WALLPAPER,
+    SIZE_WIDE_SCREEN,
+    SIZE_MACBOOK_14_WALLPAPER,
+    SIZE_MACBOOK_16_WALLPAPER,
   ];
 
   //
@@ -157,8 +175,10 @@ var Toko = (function () {
     SIZE_DEFAULT: SIZE_DEFAULT,
     SIZE_FULL: SIZE_FULL,
     SIZE_IPHONE_11_WALLPAPER: SIZE_IPHONE_11_WALLPAPER,
-    SIZE_MACBOOK_PRO_WALLPAPER: SIZE_MACBOOK_PRO_WALLPAPER,
+    SIZE_MACBOOK_14_WALLPAPER: SIZE_MACBOOK_14_WALLPAPER,
+    SIZE_MACBOOK_16_WALLPAPER: SIZE_MACBOOK_16_WALLPAPER,
     SIZE_SQUARE_XL: SIZE_SQUARE_XL,
+    SIZE_WIDE_SCREEN: SIZE_WIDE_SCREEN,
     TABS_ADVANCED: TABS_ADVANCED,
     TABS_CAPTURE: TABS_CAPTURE,
     TABS_FPS: TABS_FPS,
@@ -176,15 +196,20 @@ var Toko = (function () {
   //
   //  Sources (among others and random additions)
   //  https://en.wikipedia.org/wiki/List_of_Crayola_crayon_colors
-  //  https://github.com/Atrox/haikunatorjs
+  //  https://github.com/Atrox/haikunatorjs - BSD-3-Clause license
   //
   const ADJECTIVES = [
     'adorable',
     'aged',
+    'alert',
     'alien',
     'ancient',
+    'animated',
     'atomic',
     'autumn',
+    'bashful',
+    'batty',
+    'bemused',
     'billowing',
     'bittersweet',
     'black',
@@ -195,12 +220,16 @@ var Toko = (function () {
     'bronze',
     'calm',
     'carbon',
+    'carefree',
     'caribbean',
     'chestnut',
     'cool',
     'cosmic',
     'crimson',
+    'crunchy',
     'curly',
+    'daffy',
+    'daft',
     'damp',
     'dark',
     'dawn',
@@ -208,11 +237,16 @@ var Toko = (function () {
     'delicate',
     'descending',
     'divine',
+    'droll',
     'dry',
+    'easy',
+    'elastic',
     'electric',
     'elegant',
     'empty',
+    'enigmatic',
     'epic',
+    'excited',
     'fabulous',
     'falling',
     'fancy',
@@ -220,9 +254,13 @@ var Toko = (function () {
     'flat',
     'floral',
     'fragrant',
+    'frenzied',
     'fresh',
+    'frolicsome',
     'frosty',
+    'fuzzy',
     'gentle',
+    'glassy',
     'glitter',
     'glorious',
     'green',
@@ -230,21 +268,27 @@ var Toko = (function () {
     'hidden',
     'holy',
     'icy',
+    'idiosyncratic',
     'imaginary',
     'impressive',
     'indigo',
+    'ingenious',
+    'inquisitive',
     'jolly',
+    'joyful',
     'late',
     'lazy',
     'lingering',
     'little',
     'lively',
     'long',
+    'lopsided',
     'lucky',
     'magic',
     'maroon',
     'marvelous',
     'maximum',
+    'melodramatic',
     'middle',
     'misty',
     'mixed',
@@ -254,20 +298,26 @@ var Toko = (function () {
     'nameless',
     'neon',
     'new',
+    'nifty',
     'noisy',
+    'nonchalant',
     'odd',
     'old',
     'orange',
+    'outlandish',
     'outrageous',
     'pacific',
     'patient',
     'permanent',
+    'petite',
     'plain',
+    'plucky',
     'polished',
     'proud',
     'purple',
     'quiet',
     'radical',
+    'rambunctious',
     'rapid',
     'raspy',
     'red',
@@ -275,51 +325,70 @@ var Toko = (function () {
     'rough',
     'round',
     'royal',
+    'rustic',
+    'rusty',
     'scarlet',
+    'scatterbrained',
     'shining',
     'shiny',
     'shocking',
     'shy',
     'silent',
+    'silly',
     'small',
     'smokey',
     'snowy',
+    'snug',
     'soft',
     'solitary',
     'sparkling',
     'spiked',
+    'spiky',
     'spring',
     'square',
     'steel',
     'steep',
     'still',
+    'sturdy',
     'summer',
     'super',
     'sweet',
     'throbbing',
     'tight',
     'tiny',
+    'tricky',
     'tropical',
     'twilight',
+    'unassuming',
+    'vibrant',
     'wandering',
+    'warm',
     'weathered',
     'white',
     'wild',
     'winter',
     'wispy',
     'withered',
+    'wondrous',
     'yellow',
+    'yodeling',
     'young',
+    'zealous',
   ];
 
   const NOUNS = [
+    'adventure',
     'alchemy',
     'art',
     'avocado',
+    'band',
     'bar',
     'base',
+    'basket',
     'beauty',
+    'being',
     'bird',
+    'bison',
     'block',
     'boat',
     'bonus',
@@ -335,14 +404,17 @@ var Toko = (function () {
     'canary',
     'cell',
     'cherry',
+    'clock',
     'cloud',
     'credit',
     'crocodile',
+    'dance',
     'dandelion',
     'darkness',
     'dawn',
     'desert',
     'dew',
+    'diamond',
     'dinosaur',
     'disk',
     'dragon',
@@ -350,6 +422,7 @@ var Toko = (function () {
     'duck',
     'dust',
     'experience',
+    'explosion',
     'feather',
     'field',
     'fire',
@@ -360,30 +433,45 @@ var Toko = (function () {
     'forest',
     'frog',
     'frost',
+    'fruitbat',
     'future',
+    'gallery',
     'glade',
     'glitter',
+    'goose',
     'grass',
+    'hall',
+    'hamster',
     'hat',
     'haze',
     'heart',
     'hill',
+    'igloo',
     'jungle',
     'king',
     'lab',
     'lake',
     'leaf',
+    'light',
     'limit',
+    'lobster',
+    'machine',
     'math',
     'meadow',
     'mode',
     'moon',
+    'moose',
     'morning',
     'mountain',
     'mouse',
     'mud',
     'night',
+    'operation',
     'orchid',
+    'owl',
+    'paint',
+    'panda',
+    'pandemonium',
     'paper',
     'pearl',
     'penguin',
@@ -399,6 +487,7 @@ var Toko = (function () {
     'princess',
     'queen',
     'rain',
+    'rainbow',
     'recipe',
     'resonance',
     'rice',
@@ -420,29 +509,36 @@ var Toko = (function () {
     'spoon',
     'star',
     'statue',
+    'stroke',
     'sun',
     'sunset',
     'surf',
     'tango',
     'term',
     'thunder',
+    'ticket',
     'tiger',
     'tooth',
     'toy',
     'tree',
     'trumpet',
     'truth',
+    'umbrella',
     'union',
     'unit',
+    'view',
     'violet',
     'voice',
+    'volcano',
     'water',
     'waterfall',
     'wave',
     'weasel',
     'wildflower',
     'wind',
+    'window',
     'winter',
+    'wizard',
     'wood',
     'woodpecker',
   ];
@@ -3302,6 +3398,140 @@ var Toko = (function () {
     },
   ];
 
+  //
+  // Selected palettes from lospec
+  // https://lospec.com/palette-list
+  //
+  var lospecPalettes = [
+    {
+      name: 'sweetie16', // https://lospec.com/palette-list/sweetie-16
+      colors: [
+        '#5d275d',
+        '#b13e53',
+        '#ef7d57',
+        '#ffcd75',
+        '#a7f070',
+        '#38b764',
+        '#257179',
+        '#29366f',
+        '#3b5dc9',
+        '#41a6f6',
+        '#73eff7',
+        '#94b0c2',
+        '#566c86',
+        '#333c57',
+      ],
+
+      stroke: '#f4f4f4',
+      background: '#1a1c2c',
+      type: 'lospec',
+    },
+    {
+      name: 'na16', // https://lospec.com/palette-list/na16
+      colors: [
+        '#8c8fae',
+        '#584563',
+        '#3e2137',
+        '#9a6348',
+        '#d79b7d',
+        '#f5edba',
+        '#c0c741',
+        '#647d34',
+        '#e4943a',
+        '#9d303b',
+        '#d26471',
+        '#70377f',
+        '#7ec4c1',
+        '#34859d',
+        '#17434b',
+        '#1f0e1c',
+      ],
+      stroke: '#f5edba',
+      background: '#1f0e1c',
+      type: 'lospec',
+    },
+    {
+      name: 'lost-century', // https://lospec.com/palette-list/lost-century
+      colors: [
+        '#d1b187',
+        '#c77b58',
+        '#ae5d40',
+        '#79444a',
+        '#4b3d44',
+        '#ba9158',
+        '#927441',
+        '#4d4539',
+        '#77743b',
+        '#b3a555',
+        '#d2c9a5',
+        '#8caba1',
+        '#4b726e',
+        '#574852',
+        '#847875',
+        '#ab9b8e',
+      ],
+      type: 'lospec',
+    },
+    {
+      name: 'nostalgic-dreams', // https://lospec.com/palette-list/nostalgic-dreams
+      colors: [
+        '#d9af80',
+        '#b07972',
+        '#524352',
+        '#686887',
+        '#7f9bb0',
+        '#bfd4b0',
+        '#90b870',
+        '#628c70',
+      ],
+      type: 'lospec',
+    },
+    {
+      name: 'sls08', // https://lospec.com/palette-list/slso8
+      colors: [
+        '#0d2b45',
+        '#203c56',
+        '#544e68',
+        '#8d697a',
+        '#d08159',
+        '#ffaa5e',
+        '#ffd4a3',
+        '#ffecd6',
+      ],
+      type: 'lospec',
+    },
+    {
+      name: 'rust-gold-8', // https://lospec.com/palette-list/rust-gold-8
+      colors: [
+        '#f6cd26',
+        '#ac6b26',
+        '#563226',
+        '#331c17',
+        '#bb7f57',
+        '#725956',
+        '#393939',
+        '#202020',
+      ],
+      type: 'lospec',
+    },
+    {
+      name: 'ink-crimson', // https://lospec.com/palette-list/ink-crimson
+      colors: [
+        '#ff0546',
+        '#9c173b',
+        '#660f31',
+        '#450327',
+        '#270022',
+        '#17001d',
+        '#09010d',
+        '#0ce6f2',
+        '#0098db',
+        '#1e579c',
+      ],
+      type: 'lospec',
+    },
+  ];
+
   Toko.prototype.CONTRAST_MIX_COLORS = ['#111', '#eee'];
   Toko.prototype.CONTRAST_MIX_FACTOR = 0.8;
   Toko.prototype.CONTRAST_MIX_MODE = 'lab';
@@ -3671,6 +3901,7 @@ var Toko = (function () {
       judsonPalettes,
       jungPalettes,
       kovecsesPalettes,
+      lospecPalettes,
       mayoPalettes,
       metBrewerPalettes,
       orbifoldPalettes,
@@ -3837,7 +4068,9 @@ var Toko = (function () {
     }
 
     if (this.options.useParameterPanel) {
-      this.basePane = new Tweakpane.Pane();
+      this.basePane = new Tweakpane.Pane({
+        title: 'Sketch options',
+      });
 
       var tabs = [{ title: this.TABS_PARAMETERS }];
       if (this.options.showAdvancedOptions) {
@@ -3900,6 +4133,7 @@ var Toko = (function () {
         this.basePaneTab.pages[this.TAB_ID_ADVANCED]
           .addBinding(this.options, 'canvasSizeName', {
             options: this.SIZES_LIST,
+            label: 'canvas size',
           })
           .on('change', ev => {
             let s = this.SIZES.filter(p => p.name === ev.value)[0];
@@ -4058,6 +4292,15 @@ var Toko = (function () {
   //
   Toko.prototype.randomNoun = function () {
     return this.NOUNS[Math.floor(this.NOUNS.length * Math.random())];
+  };
+
+  //
+  //  simple shortcut to set a p5 color object with a hexCode and alpha value
+  //
+  Toko.prototype.colorAlpha = function (hexColor, alpha = 255) {
+    let c = color(hexColor);
+    c.setAlpha(alpha);
+    return c;
   };
 
   //
@@ -4442,7 +4685,7 @@ var Toko = (function () {
   };
 
   //
-  //  general math functions
+  //  GENERAL MATH FUNCTIONS
   //
 
   //
@@ -5480,6 +5723,179 @@ var Toko = (function () {
     set counter (in_counter) {
       this._counter = in_counter;
     }
+  };
+
+  //
+  //  TRANSFORMATION SHORTCUTS
+  //
+
+  //
+  //  rotate current transformation matrix around a specific point
+  //
+  Toko.prototype.rotateAround = function (x, y, angle) {
+    translate(x, y);
+    rotate(angle);
+    translate(-x, -y);
+  };
+
+  //
+  //  rotate current transformation matrix around a specific point
+  //
+  Toko.prototype.scaleAround = function (x, y, scale) {
+    translate(x, y);
+    scale(scale);
+    translate(-x, -y);
+  };
+
+  //
+  //  STANDARD GRADIENTS
+  //
+
+  //  linearGradiant
+  //
+  //  xStart  x coordinate of start position
+  //  yStart  y coordinate of start position
+  //  xEnd    x coordinate of end position
+  //  yEnd    y coordinate of end position
+  //  stops   array of all the color stops each an object with:
+  //            stop    value between 0 (start) and 1 (end)
+  //            color   standard css color value
+  //
+  Toko.prototype.linearGradient = function (xStart, yStart, xEnd, yEnd, stops) {
+    let gradient = drawingContext.createLinearGradient(
+      xStart,
+      yStart,
+      xEnd,
+      yEnd,
+    );
+    stops.forEach(stop => {
+      gradient.addColorStop(stop.offset, stop.color);
+    });
+    drawingContext.fillStyle = gradient;
+    drawingContext.strokeStyle = gradient;
+  };
+
+  //
+  //  radialGradiant
+  //
+  //  xStart  x coordinate of start position
+  //  yStart  y coordinate of start position
+  //  rStart  start radius
+  //  xEnd    x coordinate of end position
+  //  yEnd    y coordinate of end position
+  //  rEnd    end radius
+  //  stops   array of all the color stops each an object with:
+  //            stop    value between 0 (start) and 1 (end)
+  //            color   standard css color value
+  //
+  Toko.prototype.radialGradient = function (
+    xStart,
+    yStart,
+    rStart,
+    xEnd,
+    yEnd,
+    rEnd,
+    stops,
+  ) {
+    let gradient = drawingContext.createRadialGradient(
+      xStart,
+      yStart,
+      rStart,
+      xEnd,
+      yEnd,
+      rEnd,
+      rEnd,
+    );
+    stops.forEach(stop => {
+      gradient.addColorStop(stop.offset, stop.color);
+    });
+    drawingContext.fillStyle = gradient;
+    drawingContext.strokeStyle = gradient;
+  };
+
+  //
+  //  conicGradiant
+  //
+  //  angle   start angle in radians, clockwise from horizontal right
+  //  x       x coordinate of the gradient center
+  //  y       y coordinate of the gradient center
+  //  stops   array of all the color stops each an object with:
+  //            stop    value between 0 (start) and 1 (end)
+  //            color   standard css color value
+  //
+  Toko.prototype.conicGradient = function (angle, x, y, stops) {
+    let gradient = drawingContext.createConicGradient(angle, x, y);
+    stops.forEach(stop => {
+      gradient.addColorStop(stop.offset, stop.color);
+    });
+    drawingContext.fillStyle = gradient;
+    drawingContext.strokeStyle = gradient;
+  };
+
+  //
+  //  SHADOW & GLOW EFFECTS
+  //
+
+  //
+  //  shadow
+  //
+  //  xOffset   the distance that shadows will be offset horizontally - positive is right
+  //  yOffset   the distance that shadows will be offset vertically - positive is down
+  //  blur      level of blur of the shadow, 0 is no shadow
+  //  shadow    color of the shadow as standard css value, including opacity
+  //
+  Toko.prototype.shadow = function (xOffset, yOffset, blur, color) {
+    drawingContext.shadowOffsetX = xOffset;
+    drawingContext.shadowOffsetY = yOffset;
+    drawingContext.shadowBlur = blur;
+    drawingContext.shadowColor = color;
+  };
+
+  //
+  //  BASIC GRAIN FOR IMAGES
+  //
+  //  Based on https://www.fxhash.xyz/article/all-about-that-grain
+
+  //
+  //  simple grain function
+  //  shifts all pixels randomly between -strength & +strength
+  //
+  //  strength is a value between 0 and 255
+  //
+  Toko.prototype.addSimpleGrain = function (strength) {
+    loadPixels();
+    const d = pixelDensity();
+    const pixelsCount = 4 * (width * d) * (height * d);
+    for (let i = 0; i < pixelsCount; i += 4) {
+      pixels[i] = pixels[i] + random(-strength, strength);
+      pixels[i + 1] = pixels[i + 1] + random(-strength, strength);
+      pixels[i + 2] = pixels[i + 2] + random(-strength, strength);
+    }
+    updatePixels();
+  };
+
+  //
+  //  adds grain differently across channels
+  //
+  //  strength and shift are objects with a value for red, green and blue each
+  //
+  //  strength = { red: 10, green: 20, blue: 10}
+  //  shift = { red: -10, green: 0, blue: 0 }
+  //
+  //  each value is between 0 and 255
+  //
+  Toko.prototype.addChannelGrain = function (strength, shift) {
+    loadPixels();
+    const d = pixelDensity();
+    const pixelsCount = 4 * (width * d) * (height * d);
+    for (let i = 0; i < pixelsCount; i += 4) {
+      pixels[i] = pixels[i] + random(-strength.red, strength.red) + shift.red;
+      pixels[i + 1] =
+        pixels[i + 1] + random(-strength.green, strength.green) + shift.green;
+      pixels[i + 2] =
+        pixels[i + 2] + random(-strength.blue, strength.blue) + shift.blue;
+    }
+    updatePixels();
   };
 
   Toko.prototype.generateFilename = function (extension = 'svg', verb = 'sketched') {
