@@ -269,7 +269,7 @@ function draw () {
 
     if (p.glow) {
       c1.setAlpha(120);
-      toko.shadow(0, 0, 40, c1);
+      toko.shadow(0, 0, 60, c1);
     }
 
     rect(x1, y, w, h);
@@ -278,9 +278,9 @@ function draw () {
 
   toko.addChannelGrain(
     {
-      red: 20,
-      green: 20,
-      blue: 20,
+      red: 10,
+      green: 10,
+      blue: 10,
     },
     {
       red: 0,
