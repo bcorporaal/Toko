@@ -9,6 +9,8 @@ import Toko from '../core/main';
 //  simple grain function
 //  shifts all pixels randomly between -strength & +strength
 //
+//  strength is a value between 0 and 255
+//
 Toko.prototype.addSimpleGrain = function (strength) {
   loadPixels();
   const d = pixelDensity();
@@ -28,6 +30,8 @@ Toko.prototype.addSimpleGrain = function (strength) {
 //
 //  strength = { red: 10, green: 20, blue: 10}
 //  shift = { red: -10, green: 0, blue: 0 }
+//
+//  each value is between 0 and 255
 //
 Toko.prototype.addChannelGrain = function (strength, shift) {
   loadPixels();
