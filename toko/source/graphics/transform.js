@@ -1,6 +1,10 @@
 import Toko from '../core/main';
 
 //
+//  TRANSFORMATION SHORTCUTS
+//
+
+//
 //  rotate current transformation matrix around a specific point
 //
 Toko.prototype.rotateAround = function (x, y, angle) {

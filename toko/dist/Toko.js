@@ -4550,7 +4550,7 @@ var Toko = (function () {
   };
 
   //
-  //  general math functions
+  //  GENERAL MATH FUNCTIONS
   //
 
   //
@@ -5589,6 +5589,10 @@ var Toko = (function () {
       this._counter = in_counter;
     }
   };
+
+  //
+  //  TRANSFORMATION SHORTCUTS
+  //
 
   //
   //  rotate current transformation matrix around a specific point
