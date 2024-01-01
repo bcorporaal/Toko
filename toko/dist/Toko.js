@@ -5384,8 +5384,8 @@ var Toko = (function () {
         y *= this._Frequency;
 
         switch (this._NoiseType) {
-          case FastNoiseLite.NoiseType.OpenSimplex2:
-          case FastNoiseLite.NoiseType.OpenSimplex2S:
+          case Toko.FastNoiseLite.NoiseType.OpenSimplex2:
+          case Toko.FastNoiseLite.NoiseType.OpenSimplex2S:
             const SQRT3 = 1.7320508075688772935274463415059;
             const F2 = 0.5 * (SQRT3 - 1);
             let t = (x + y) * F2;
@@ -5397,11 +5397,11 @@ var Toko = (function () {
         switch (this._FractalType) {
           default:
             return this._GenNoiseSingleR2(this._Seed, x, y);
-          case FastNoiseLite.FractalType.FBm:
+          case Toko.FastNoiseLite.FractalType.FBm:
             return this._GenFractalFBmR2(x, y);
-          case FastNoiseLite.FractalType.Ridged:
+          case Toko.FastNoiseLite.FractalType.Ridged:
             return this._GenFractalRidgedR2(x, y);
-          case FastNoiseLite.FractalType.PingPong:
+          case Toko.FastNoiseLite.FractalType.PingPong:
             return this._GenFractalPingPongR2(x, y);
         }
       };
@@ -5419,7 +5419,7 @@ var Toko = (function () {
         z *= this._Frequency;
 
         switch (this._TransformType3D) {
-          case FastNoiseLite.TransformType3D.ImproveXYPlanes: {
+          case Toko.FastNoiseLite.TransformType3D.ImproveXYPlanes: {
             let xy = x + y;
             let s2 = xy * -0.211324865405187;
             z *= 0.577350269189626;
@@ -5428,7 +5428,7 @@ var Toko = (function () {
             z += xy * 0.577350269189626;
             break;
           }
-          case FastNoiseLite.TransformType3D.ImproveXZPlanes: {
+          case Toko.FastNoiseLite.TransformType3D.ImproveXZPlanes: {
             let xz = x + z;
             let s2 = xz * -0.211324865405187;
             y *= 0.577350269189626;
@@ -5437,7 +5437,7 @@ var Toko = (function () {
             y += xz * 0.577350269189626;
             break;
           }
-          case FastNoiseLite.TransformType3D.DefaultOpenSimplex2:
+          case Toko.FastNoiseLite.TransformType3D.DefaultOpenSimplex2:
             const R3 = 2.0 / 3.0;
             let r = (x + y + z) * R3;
             x = r - x;
@@ -5449,11 +5449,11 @@ var Toko = (function () {
         switch (this._FractalType) {
           default:
             return this._GenNoiseSingleR3(this._Seed, x, y, z);
-          case FastNoiseLite.FractalType.FBm:
+          case Toko.FastNoiseLite.FractalType.FBm:
             return this._GenFractalFBmR3(x, y, z);
-          case FastNoiseLite.FractalType.Ridged:
+          case Toko.FastNoiseLite.FractalType.Ridged:
             return this._GenFractalRidgedR3(x, y, z);
-          case FastNoiseLite.FractalType.PingPong:
+          case Toko.FastNoiseLite.FractalType.PingPong:
             return this._GenFractalPingPongR3(x, y, z);
         }
       };
@@ -5476,10 +5476,10 @@ var Toko = (function () {
         default:
           this._DomainWarpSingle(coord);
           break;
-        case FastNoiseLite.FractalType.DomainWarpProgressive:
+        case Toko.FastNoiseLite.FractalType.DomainWarpProgressive:
           this._DomainWarpFractalProgressive(coord);
           break;
-        case FastNoiseLite.FractalType.DomainWarpIndependent:
+        case Toko.FastNoiseLite.FractalType.DomainWarpIndependent:
           this._DomainWarpFractalIndependent(coord);
           break;
       }
@@ -5794,17 +5794,17 @@ var Toko = (function () {
      */
     _GenNoiseSingleR2 (seed, x, y) {
       switch (this._NoiseType) {
-        case FastNoiseLite.NoiseType.OpenSimplex2:
+        case Toko.FastNoiseLite.NoiseType.OpenSimplex2:
           return this._SingleOpenSimplex2R2(seed, x, y);
-        case FastNoiseLite.NoiseType.OpenSimplex2S:
+        case Toko.FastNoiseLite.NoiseType.OpenSimplex2S:
           return this._SingleOpenSimplex2SR2(seed, x, y);
-        case FastNoiseLite.NoiseType.Cellular:
+        case Toko.FastNoiseLite.NoiseType.Cellular:
           return this._SingleCellularR2(seed, x, y);
-        case FastNoiseLite.NoiseType.Perlin:
+        case Toko.FastNoiseLite.NoiseType.Perlin:
           return this._SinglePerlinR2(seed, x, y);
-        case FastNoiseLite.NoiseType.ValueCubic:
+        case Toko.FastNoiseLite.NoiseType.ValueCubic:
           return this._SingleValueCubicR2(seed, x, y);
-        case FastNoiseLite.NoiseType.Value:
+        case Toko.FastNoiseLite.NoiseType.Value:
           return this._SingleValueR2(seed, x, y);
         default:
           return 0;
@@ -5821,17 +5821,17 @@ var Toko = (function () {
      */
     _GenNoiseSingleR3 (seed, x, y, z) {
       switch (this._NoiseType) {
-        case FastNoiseLite.NoiseType.OpenSimplex2:
+        case Toko.FastNoiseLite.NoiseType.OpenSimplex2:
           return this._SingleOpenSimplex2R3(seed, x, y, z);
-        case FastNoiseLite.NoiseType.OpenSimplex2S:
+        case Toko.FastNoiseLite.NoiseType.OpenSimplex2S:
           return this._SingleOpenSimplex2SR3(seed, x, y, z);
-        case FastNoiseLite.NoiseType.Cellular:
+        case Toko.FastNoiseLite.NoiseType.Cellular:
           return this._SingleCellularR3(seed, x, y, z);
-        case FastNoiseLite.NoiseType.Perlin:
+        case Toko.FastNoiseLite.NoiseType.Perlin:
           return this._SinglePerlinR3(seed, x, y, z);
-        case FastNoiseLite.NoiseType.ValueCubic:
+        case Toko.FastNoiseLite.NoiseType.ValueCubic:
           return this._SingleValueCubicR3(seed, x, y, z);
-        case FastNoiseLite.NoiseType.Value:
+        case Toko.FastNoiseLite.NoiseType.Value:
           return this._SingleValueR3(seed, x, y, z);
         default:
           return 0;
@@ -5843,16 +5843,16 @@ var Toko = (function () {
      */
     _UpdateTransformType3D () {
       switch (this._RotationType3D) {
-        case FastNoiseLite.RotationType3D.ImproveXYPlanes:
+        case Toko.FastNoiseLite.RotationType3D.ImproveXYPlanes:
           this._TransformType3D = Toko.FastNoiseLite.TransformType3D.ImproveXYPlanes;
           break;
-        case FastNoiseLite.RotationType3D.ImproveXZPlanes:
+        case Toko.FastNoiseLite.RotationType3D.ImproveXZPlanes:
           this._TransformType3D = Toko.FastNoiseLite.TransformType3D.ImproveXZPlanes;
           break;
         default:
           switch (this._NoiseType) {
-            case FastNoiseLite.NoiseType.OpenSimplex2:
-            case FastNoiseLite.NoiseType.OpenSimplex2S:
+            case Toko.FastNoiseLite.NoiseType.OpenSimplex2:
+            case Toko.FastNoiseLite.NoiseType.OpenSimplex2S:
               this._TransformType3D = Toko.FastNoiseLite.TransformType3D.DefaultOpenSimplex2;
               break;
             default:
@@ -5868,16 +5868,16 @@ var Toko = (function () {
      */
     _UpdateWarpTransformType3D () {
       switch (this._RotationType3D) {
-        case FastNoiseLite.RotationType3D.ImproveXYPlanes:
+        case Toko.FastNoiseLite.RotationType3D.ImproveXYPlanes:
           this._WarpTransformType3D = Toko.FastNoiseLite.TransformType3D.ImproveXYPlanes;
           break;
-        case FastNoiseLite.RotationType3D.ImproveXZPlanes:
+        case Toko.FastNoiseLite.RotationType3D.ImproveXZPlanes:
           this._WarpTransformType3D = Toko.FastNoiseLite.TransformType3D.ImproveXZPlanes;
           break;
         default:
           switch (this._DomainWarpType) {
-            case FastNoiseLite.DomainWarpType.OpenSimplex2:
-            case FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
+            case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2:
+            case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
               this._WarpTransformType3D = Toko.FastNoiseLite.TransformType3D.DefaultOpenSimplex2;
               break;
             default:
@@ -6611,8 +6611,8 @@ var Toko = (function () {
 
       switch (this._CellularDistanceFunction) {
         default:
-        case FastNoiseLite.CellularDistanceFunction.Euclidean:
-        case FastNoiseLite.CellularDistanceFunction.EuclideanSq:
+        case Toko.FastNoiseLite.CellularDistanceFunction.Euclidean:
+        case Toko.FastNoiseLite.CellularDistanceFunction.EuclideanSq:
           for (let xi = xr - 1; xi <= xr + 1; xi++) {
             let yPrimed = yPrimedBase;
 
@@ -6635,7 +6635,7 @@ var Toko = (function () {
             xPrimed += this._PrimeX;
           }
           break;
-        case FastNoiseLite.CellularDistanceFunction.Manhattan:
+        case Toko.FastNoiseLite.CellularDistanceFunction.Manhattan:
           for (let xi = xr - 1; xi <= xr + 1; xi++) {
             let yPrimed = yPrimedBase;
 
@@ -6658,7 +6658,7 @@ var Toko = (function () {
             xPrimed += this._PrimeX;
           }
           break;
-        case FastNoiseLite.CellularDistanceFunction.Hybrid:
+        case Toko.FastNoiseLite.CellularDistanceFunction.Hybrid:
           for (let xi = xr - 1; xi <= xr + 1; xi++) {
             let yPrimed = yPrimedBase;
 
@@ -6695,19 +6695,19 @@ var Toko = (function () {
       }
 
       switch (this._CellularReturnType) {
-        case FastNoiseLite.CellularReturnType.CellValue:
+        case Toko.FastNoiseLite.CellularReturnType.CellValue:
           return closestHash * (1 / 2147483648.0);
-        case FastNoiseLite.CellularReturnType.Distance:
+        case Toko.FastNoiseLite.CellularReturnType.Distance:
           return distance0 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2:
           return distance1 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2Add:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2Add:
           return (distance1 + distance0) * 0.5 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2Sub:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2Sub:
           return distance1 - distance0 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2Mul:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2Mul:
           return distance1 * distance0 * 0.5 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2Div:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2Div:
           return distance0 / distance1 - 1;
         default:
           return 0;
@@ -6738,8 +6738,8 @@ var Toko = (function () {
       let zPrimedBase = (zr - 1) * this._PrimeZ;
 
       switch (this._CellularDistanceFunction) {
-        case FastNoiseLite.CellularDistanceFunction.Euclidean:
-        case FastNoiseLite.CellularDistanceFunction.EuclideanSq:
+        case Toko.FastNoiseLite.CellularDistanceFunction.Euclidean:
+        case Toko.FastNoiseLite.CellularDistanceFunction.EuclideanSq:
           for (let xi = xr - 1; xi <= xr + 1; xi++) {
             let yPrimed = yPrimedBase;
 
@@ -6768,7 +6768,7 @@ var Toko = (function () {
             xPrimed += this._PrimeX;
           }
           break;
-        case FastNoiseLite.CellularDistanceFunction.Manhattan:
+        case Toko.FastNoiseLite.CellularDistanceFunction.Manhattan:
           for (let xi = xr - 1; xi <= xr + 1; xi++) {
             let yPrimed = yPrimedBase;
 
@@ -6797,7 +6797,7 @@ var Toko = (function () {
             xPrimed += this._PrimeX;
           }
           break;
-        case FastNoiseLite.CellularDistanceFunction.Hybrid:
+        case Toko.FastNoiseLite.CellularDistanceFunction.Hybrid:
           for (let xi = xr - 1; xi <= xr + 1; xi++) {
             let yPrimed = yPrimedBase;
 
@@ -6841,19 +6841,19 @@ var Toko = (function () {
       }
 
       switch (this._CellularReturnType) {
-        case FastNoiseLite.CellularReturnType.CellValue:
+        case Toko.FastNoiseLite.CellularReturnType.CellValue:
           return closestHash * (1 / 2147483648.0);
-        case FastNoiseLite.CellularReturnType.Distance:
+        case Toko.FastNoiseLite.CellularReturnType.Distance:
           return distance0 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2:
           return distance1 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2Add:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2Add:
           return (distance1 + distance0) * 0.5 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2Sub:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2Sub:
           return distance1 - distance0 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2Mul:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2Mul:
           return distance1 * distance0 * 0.5 - 1;
-        case FastNoiseLite.CellularReturnType.Distance2Div:
+        case Toko.FastNoiseLite.CellularReturnType.Distance2Div:
           return distance0 / distance1 - 1;
         default:
           return 0;
@@ -6953,7 +6953,7 @@ var Toko = (function () {
       let yf0 = Toko.FastNoiseLite._Lerp(xf00, xf10, ys);
       let yf1 = Toko.FastNoiseLite._Lerp(xf01, xf11, ys);
 
-      return FastNoiseLite._Lerp(yf0, yf1, zs) * 0.964921414852142333984375;
+      return Toko.FastNoiseLite._Lerp(yf0, yf1, zs) * 0.964921414852142333984375;
     }
 
     /**
@@ -6980,29 +6980,29 @@ var Toko = (function () {
       let y3 = y1 + (this._PrimeY << 1);
 
       return (
-        FastNoiseLite._CubicLerp(
-          FastNoiseLite._CubicLerp(
+        Toko.FastNoiseLite._CubicLerp(
+          Toko.FastNoiseLite._CubicLerp(
             this._ValCoordR2(seed, x0, y0),
             this._ValCoordR2(seed, x1, y0),
             this._ValCoordR2(seed, x2, y0),
             this._ValCoordR2(seed, x3, y0),
             xs,
           ),
-          FastNoiseLite._CubicLerp(
+          Toko.FastNoiseLite._CubicLerp(
             this._ValCoordR2(seed, x0, y1),
             this._ValCoordR2(seed, x1, y1),
             this._ValCoordR2(seed, x2, y1),
             this._ValCoordR2(seed, x3, y1),
             xs,
           ),
-          FastNoiseLite._CubicLerp(
+          Toko.FastNoiseLite._CubicLerp(
             this._ValCoordR2(seed, x0, y2),
             this._ValCoordR2(seed, x1, y2),
             this._ValCoordR2(seed, x2, y2),
             this._ValCoordR2(seed, x3, y2),
             xs,
           ),
-          FastNoiseLite._CubicLerp(
+          Toko.FastNoiseLite._CubicLerp(
             this._ValCoordR2(seed, x0, y3),
             this._ValCoordR2(seed, x1, y3),
             this._ValCoordR2(seed, x2, y3),
@@ -7047,30 +7047,30 @@ var Toko = (function () {
       let z3 = z1 + (this._PrimeZ << 1);
 
       return (
-        FastNoiseLite._CubicLerp(
-          FastNoiseLite._CubicLerp(
-            FastNoiseLite._CubicLerp(
+        Toko.FastNoiseLite._CubicLerp(
+          Toko.FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y0, z0),
               this._ValCoordR3(seed, x1, y0, z0),
               this._ValCoordR3(seed, x2, y0, z0),
               this._ValCoordR3(seed, x3, y0, z0),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y1, z0),
               this._ValCoordR3(seed, x1, y1, z0),
               this._ValCoordR3(seed, x2, y1, z0),
               this._ValCoordR3(seed, x3, y1, z0),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y2, z0),
               this._ValCoordR3(seed, x1, y2, z0),
               this._ValCoordR3(seed, x2, y2, z0),
               this._ValCoordR3(seed, x3, y2, z0),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y3, z0),
               this._ValCoordR3(seed, x1, y3, z0),
               this._ValCoordR3(seed, x2, y3, z0),
@@ -7079,29 +7079,29 @@ var Toko = (function () {
             ),
             ys,
           ),
-          FastNoiseLite._CubicLerp(
-            FastNoiseLite._CubicLerp(
+          Toko.FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y0, z1),
               this._ValCoordR3(seed, x1, y0, z1),
               this._ValCoordR3(seed, x2, y0, z1),
               this._ValCoordR3(seed, x3, y0, z1),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y1, z1),
               this._ValCoordR3(seed, x1, y1, z1),
               this._ValCoordR3(seed, x2, y1, z1),
               this._ValCoordR3(seed, x3, y1, z1),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y2, z1),
               this._ValCoordR3(seed, x1, y2, z1),
               this._ValCoordR3(seed, x2, y2, z1),
               this._ValCoordR3(seed, x3, y2, z1),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y3, z1),
               this._ValCoordR3(seed, x1, y3, z1),
               this._ValCoordR3(seed, x2, y3, z1),
@@ -7110,29 +7110,29 @@ var Toko = (function () {
             ),
             ys,
           ),
-          FastNoiseLite._CubicLerp(
-            FastNoiseLite._CubicLerp(
+          Toko.FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y0, z2),
               this._ValCoordR3(seed, x1, y0, z2),
               this._ValCoordR3(seed, x2, y0, z2),
               this._ValCoordR3(seed, x3, y0, z2),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y1, z2),
               this._ValCoordR3(seed, x1, y1, z2),
               this._ValCoordR3(seed, x2, y1, z2),
               this._ValCoordR3(seed, x3, y1, z2),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y2, z2),
               this._ValCoordR3(seed, x1, y2, z2),
               this._ValCoordR3(seed, x2, y2, z2),
               this._ValCoordR3(seed, x3, y2, z2),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y3, z2),
               this._ValCoordR3(seed, x1, y3, z2),
               this._ValCoordR3(seed, x2, y3, z2),
@@ -7141,29 +7141,29 @@ var Toko = (function () {
             ),
             ys,
           ),
-          FastNoiseLite._CubicLerp(
-            FastNoiseLite._CubicLerp(
+          Toko.FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y0, z3),
               this._ValCoordR3(seed, x1, y0, z3),
               this._ValCoordR3(seed, x2, y0, z3),
               this._ValCoordR3(seed, x3, y0, z3),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y1, z3),
               this._ValCoordR3(seed, x1, y1, z3),
               this._ValCoordR3(seed, x2, y1, z3),
               this._ValCoordR3(seed, x3, y1, z3),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y2, z3),
               this._ValCoordR3(seed, x1, y2, z3),
               this._ValCoordR3(seed, x2, y2, z3),
               this._ValCoordR3(seed, x3, y2, z3),
               xs,
             ),
-            FastNoiseLite._CubicLerp(
+            Toko.FastNoiseLite._CubicLerp(
               this._ValCoordR3(seed, x0, y3, z3),
               this._ValCoordR3(seed, x1, y3, z3),
               this._ValCoordR3(seed, x2, y3, z3),
@@ -7200,7 +7200,7 @@ var Toko = (function () {
       let xf0 = Toko.FastNoiseLite._Lerp(this._ValCoordR2(seed, x0, y0), this._ValCoordR2(seed, x1, y0), xs);
       let xf1 = Toko.FastNoiseLite._Lerp(this._ValCoordR2(seed, x0, y1), this._ValCoordR2(seed, x1, y1), xs);
 
-      return FastNoiseLite._Lerp(xf0, xf1, ys);
+      return Toko.FastNoiseLite._Lerp(xf0, xf1, ys);
     }
 
     /**
@@ -7235,7 +7235,7 @@ var Toko = (function () {
       let yf0 = Toko.FastNoiseLite._Lerp(xf00, xf10, ys);
       let yf1 = Toko.FastNoiseLite._Lerp(xf01, xf11, ys);
 
-      return FastNoiseLite._Lerp(yf0, yf1, zs);
+      return Toko.FastNoiseLite._Lerp(yf0, yf1, zs);
     }
 
     /**
@@ -7253,13 +7253,13 @@ var Toko = (function () {
        */
       let R2 = (seed, amp, freq, coord, x, y) => {
         switch (this._DomainWarpType) {
-          case FastNoiseLite.DomainWarpType.OpenSimplex2:
+          case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2:
             this._SingleDomainWarpOpenSimplex2Gradient(seed, amp * 38.283687591552734375, freq, coord, false, x, y);
             break;
-          case FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
+          case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
             this._SingleDomainWarpOpenSimplex2Gradient(seed, amp * 16.0, freq, coord, true, x, y);
             break;
-          case FastNoiseLite.DomainWarpType.BasicGrid:
+          case Toko.FastNoiseLite.DomainWarpType.BasicGrid:
             this._SingleDomainWarpBasicGrid(seed, amp, freq, coord, x, y);
             break;
         }
@@ -7277,13 +7277,13 @@ var Toko = (function () {
        */
       let R3 = (seed, amp, freq, coord, x, y, z) => {
         switch (this._DomainWarpType) {
-          case FastNoiseLite.DomainWarpType.OpenSimplex2:
+          case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2:
             this._SingleDomainWarpOpenSimplex2Gradient(seed, amp * 32.69428253173828125, freq, coord, false, x, y, z);
             break;
-          case FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
+          case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
             this._SingleDomainWarpOpenSimplex2Gradient(seed, amp * 7.71604938271605, freq, coord, true, x, y, z);
             break;
-          case FastNoiseLite.DomainWarpType.BasicGrid:
+          case Toko.FastNoiseLite.DomainWarpType.BasicGrid:
             this._SingleDomainWarpBasicGrid(seed, amp, freq, coord, x, y, z);
             break;
         }
@@ -7314,8 +7314,8 @@ var Toko = (function () {
         let xs = coord.x;
         let ys = coord.y;
         switch (this._DomainWarpType) {
-          case FastNoiseLite.DomainWarpType.OpenSimplex2:
-          case FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
+          case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2:
+          case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
             const SQRT3 = 1.7320508075688772935274463415059;
             const F2 = 0.5 * (SQRT3 - 1);
             let t = (xs + ys) * F2;
@@ -7340,7 +7340,7 @@ var Toko = (function () {
         let ys = coord.y;
         let zs = coord.z;
         switch (this._WarpTransformType3D) {
-          case FastNoiseLite.TransformType3D.ImproveXYPlanes:
+          case Toko.FastNoiseLite.TransformType3D.ImproveXYPlanes:
             {
               let xy = xs + ys;
               let s2 = xy * -0.211324865405187;
@@ -7351,7 +7351,7 @@ var Toko = (function () {
             }
             break;
 
-          case FastNoiseLite.TransformType3D.ImproveXZPlanes:
+          case Toko.FastNoiseLite.TransformType3D.ImproveXZPlanes:
             {
               let xz = xs + zs;
               let s2 = xz * -0.211324865405187;
@@ -7361,7 +7361,7 @@ var Toko = (function () {
               ys += xz * 0.577350269189626;
             }
             break;
-          case FastNoiseLite.TransformType3D.DefaultOpenSimplex2:
+          case Toko.FastNoiseLite.TransformType3D.DefaultOpenSimplex2:
             const R3 = 2.0 / 3.0;
             let r = (xs + ys + zs) * R3; // Rotation, not skew
             xs = r - xs;
@@ -7396,8 +7396,8 @@ var Toko = (function () {
           let xs = coord.x;
           let ys = coord.y;
           switch (this._DomainWarpType) {
-            case FastNoiseLite.DomainWarpType.OpenSimplex2:
-            case FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
+            case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2:
+            case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
               const SQRT3 = 1.7320508075688772935274463415059;
               const F2 = 0.5 * (SQRT3 - 1);
               let t = (xs + ys) * F2;
@@ -7428,7 +7428,7 @@ var Toko = (function () {
           let ys = coord.y;
           let zs = coord.z;
           switch (this._WarpTransformType3D) {
-            case FastNoiseLite.TransformType3D.ImproveXYPlanes:
+            case Toko.FastNoiseLite.TransformType3D.ImproveXYPlanes:
               {
                 let xy = xs + ys;
                 let s2 = xy * -0.211324865405187;
@@ -7438,7 +7438,7 @@ var Toko = (function () {
                 zs += xy * 0.577350269189626;
               }
               break;
-            case FastNoiseLite.TransformType3D.ImproveXZPlanes:
+            case Toko.FastNoiseLite.TransformType3D.ImproveXZPlanes:
               {
                 let xz = xs + zs;
                 let s2 = xz * -0.211324865405187;
@@ -7448,7 +7448,7 @@ var Toko = (function () {
                 ys += xz * 0.577350269189626;
               }
               break;
-            case FastNoiseLite.TransformType3D.DefaultOpenSimplex2:
+            case Toko.FastNoiseLite.TransformType3D.DefaultOpenSimplex2:
               {
                 const R3 = 2.0 / 3.0;
                 let r = (xs + ys + zs) * R3; // Rotation, not skew
@@ -7488,8 +7488,8 @@ var Toko = (function () {
         let xs = coord.x;
         let ys = coord.y;
         switch (this._DomainWarpType) {
-          case FastNoiseLite.DomainWarpType.OpenSimplex2:
-          case FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
+          case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2:
+          case Toko.FastNoiseLite.DomainWarpType.OpenSimplex2Reduced:
             const SQRT3 = 1.7320508075688772935274463415059;
             const F2 = 0.5 * (SQRT3 - 1);
             let t = (xs + ys) * F2;
@@ -7519,7 +7519,7 @@ var Toko = (function () {
         let ys = coord.y;
         let zs = coord.z;
         switch (this._WarpTransformType3D) {
-          case FastNoiseLite.TransformType3D.ImproveXYPlanes:
+          case Toko.FastNoiseLite.TransformType3D.ImproveXYPlanes:
             {
               let xy = xs + ys;
               let s2 = xy * -0.211324865405187;
@@ -7529,7 +7529,7 @@ var Toko = (function () {
               zs += xy * 0.577350269189626;
             }
             break;
-          case FastNoiseLite.TransformType3D.ImproveXZPlanes:
+          case Toko.FastNoiseLite.TransformType3D.ImproveXZPlanes:
             {
               let xz = xs + zs;
               let s2 = xz * -0.211324865405187;
@@ -7539,7 +7539,7 @@ var Toko = (function () {
               ys += xz * 0.577350269189626;
             }
             break;
-          case FastNoiseLite.TransformType3D.DefaultOpenSimplex2:
+          case Toko.FastNoiseLite.TransformType3D.DefaultOpenSimplex2:
             {
               const R3 = 2.0 / 3.0;
               let r = (xs + ys + zs) * R3; // Rotation, not skew
@@ -7678,9 +7678,9 @@ var Toko = (function () {
         ly1x = Toko.FastNoiseLite._Lerp(this._RandVecs3D[hash0 | 1], this._RandVecs3D[hash1 | 1], xs);
         lz1x = Toko.FastNoiseLite._Lerp(this._RandVecs3D[hash0 | 2], this._RandVecs3D[hash1 | 2], xs);
 
-        coord.x += Toko.FastNoiseLite._Lerp(lx0y, FastNoiseLite._Lerp(lx0x, lx1x, ys), zs) * warpAmp;
-        coord.y += Toko.FastNoiseLite._Lerp(ly0y, FastNoiseLite._Lerp(ly0x, ly1x, ys), zs) * warpAmp;
-        coord.z += Toko.FastNoiseLite._Lerp(lz0y, FastNoiseLite._Lerp(lz0x, lz1x, ys), zs) * warpAmp;
+        coord.x += Toko.FastNoiseLite._Lerp(lx0y, Toko.FastNoiseLite._Lerp(lx0x, lx1x, ys), zs) * warpAmp;
+        coord.y += Toko.FastNoiseLite._Lerp(ly0y, Toko.FastNoiseLite._Lerp(ly0x, ly1x, ys), zs) * warpAmp;
+        coord.z += Toko.FastNoiseLite._Lerp(lz0y, Toko.FastNoiseLite._Lerp(lz0x, lz1x, ys), zs) * warpAmp;
       };
 
       if (arguments.length === 6 && arguments[3] instanceof Vector2) {
