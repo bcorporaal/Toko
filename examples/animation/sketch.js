@@ -288,11 +288,7 @@ function draw () {
       //
       //  use the interpolated scale or the original colors
       //
-      if (!p.originalColors) {
-        col = color(colors.scale(j));
-      } else {
-        col = color(colors.originalScale(j));
-      }
+      col = color(colors.scale(j, p.originalColors));
       //
       //  fade trail if option is set
       //
