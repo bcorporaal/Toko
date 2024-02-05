@@ -46,6 +46,7 @@ Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   stepped: false,
   steps: 10,
   nrColors: 10,
+  sort: false,
 };
 
 Toko.prototype.initColorDone = false;
@@ -201,14 +202,25 @@ Toko.prototype._getColorScale = function (inPalette, colorOptions) {
 
   let p, colorSet;
   let o = {};
-
   let extraColors = [];
 
   if (typeof inPalette === 'object') {
     colorSet = [...inPalette];
   } else if (typeof inPalette === 'string') {
     p = this.findPaletteByName(inPalette);
-    colorSet = [...p.colors]; // clone the array to not mess up the original
+
+    //
+    //  TO DO - currently this does not work
+    //
+    if ('sortOrder' in p && colorOptions.sort) {
+      console.log('sorting because sortOrder is available and sort is true');
+      colorSet = [p.colors.length];
+      for (let i = 0; i < p.colors.length; i++) {
+        colorSet[i] = p.colors[p.sortOrder[i] - 1];
+      }
+    } else {
+      colorSet = [...p.colors]; // clone the array to not mess up the original
+    }
 
     if ('stroke' in p) {
       extraColors.push(p.stroke);

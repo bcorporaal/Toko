@@ -58,6 +58,7 @@ function setup () {
     palette: 'westCoast',
     inverse: false,
     reverse: false,
+    sort: false,
   };
 
   //
@@ -77,6 +78,7 @@ function setup () {
   toko.pane.tab.addBinding(p, 'interpolated');
   toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
   toko.pane.tab.addBinding(p, 'reverse', { label: 'reverse palette' });
+  toko.pane.tab.addBinding(p, 'sort', { label: 'sort metBrewer' });
 
   //
   //  listen to tweakpane changes
@@ -102,6 +104,7 @@ function refresh () {
   const o = {
     domain: [0, p.steps * p.steps],
     reverse: p.reverse,
+    sort: p.sort,
   };
   //
   //  get colors
