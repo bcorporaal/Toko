@@ -3999,7 +3999,7 @@ var Toko = (function () {
     let sortedColorSet = colorSet.sort((a, b) => chroma(b).hsl()[2] - chroma(a).hsl()[2]);
 
     //
-    //  parse provided extra colors – if there are more then last dark and light are used
+    //  parse provided extra colors – if there are more then two the last dark and light are used
     //
     if (Array.isArray(extraColors) && extraColors.length) {
       extraColors.forEach(c => {
