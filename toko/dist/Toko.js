@@ -3616,7 +3616,7 @@ var Toko = (function () {
     stepped: false,
     steps: 10,
     nrColors: 10,
-    sort: false,
+    useSortOrder: false,
     constrainContrast: false,
   };
 
@@ -3783,7 +3783,7 @@ var Toko = (function () {
       //
       //  TO DO - currently this does not work
       //
-      if ('sortOrder' in p && colorOptions.sort) {
+      if ('sortOrder' in p && colorOptions.useSortOrder) {
         console.log('sorting because sortOrder is available and sort is true');
         colorSet = [p.colors.length];
         for (let i = 0; i < p.colors.length; i++) {
@@ -4033,7 +4033,8 @@ var Toko = (function () {
     //
     //  sort colors from light to dark
     //
-    let sortedColorSet = colorSet.sort((a, b) => chroma(b).hsl()[2] - chroma(a).hsl()[2]);
+    let tempColors = [...colorSet];
+    let sortedColorSet = tempColors.sort((a, b) => chroma(b).hsl()[2] - chroma(a).hsl()[2]);
 
     //
     //  parse provided extra colors – if there are more then two the last dark and light are used

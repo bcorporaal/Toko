@@ -46,7 +46,7 @@ Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   stepped: false,
   steps: 10,
   nrColors: 10,
-  sort: false,
+  useSortOrder: false,
   constrainContrast: false,
 };
 
@@ -213,7 +213,7 @@ Toko.prototype._getColorScale = function (inPalette, colorOptions) {
     //
     //  TO DO - currently this does not work
     //
-    if ('sortOrder' in p && colorOptions.sort) {
+    if ('sortOrder' in p && colorOptions.useSortOrder) {
       console.log('sorting because sortOrder is available and sort is true');
       colorSet = [p.colors.length];
       for (let i = 0; i < p.colors.length; i++) {
@@ -463,7 +463,8 @@ Toko.prototype._defineContrastColors = function (colorSet, extraColors, constrai
   //
   //  sort colors from light to dark
   //
-  let sortedColorSet = colorSet.sort((a, b) => chroma(b).hsl()[2] - chroma(a).hsl()[2]);
+  let tempColors = [...colorSet];
+  let sortedColorSet = tempColors.sort((a, b) => chroma(b).hsl()[2] - chroma(a).hsl()[2]);
 
   //
   //  parse provided extra colors – if there are more then two the last dark and light are used
