@@ -6166,7 +6166,6 @@ var Toko = (function () {
     if (file.subtype == 'json') {
       let newState = this._presetToState(file.data);
       this.basePane.importState(newState);
-      // console.log(file.data);
 
       receivedCollection = file.data.collection;
       receivedPalette = file.data.palette;
