@@ -3617,6 +3617,7 @@ var Toko = (function () {
     steps: 10,
     nrColors: 10,
     sort: false,
+    constrainContrast: false,
   };
 
   Toko.prototype.initColorDone = false;
@@ -3671,7 +3672,7 @@ var Toko = (function () {
       colorOptions = this._validateColorOptions(colorOptions);
     }
 
-    let contrastColors = this._defineContrastColors(colorSet, extraColors);
+    let contrastColors = this._defineContrastColors(colorSet, extraColors, colorOptions.constrainContrast);
 
     //
     // reverse input colors
@@ -3982,7 +3983,7 @@ var Toko = (function () {
   // interpolateCosineV7 = this._interpolateCosine([1.000, 0.500, 0.500], [0.500, 0.500, 0.500], [0.750, 1.000, 0.667], [0.800, 1.000, 0.333]);
   // interpolateCosineV8 = this._interpolateCosine([0.093, 0.629, 0.825], [0.800, 0.269, 0.087], [0.906, 1.470, 1.544], [5.345, 4.080, 0.694]);
 
-  Toko.prototype._defineContrastColors = function (colorSet, extraColors) {
+  Toko.prototype._defineContrastColors = function (colorSet, extraColors, constrainContrast = false) {
     //
     // make contrast colors from colors from both ends of the scale
     //
@@ -3993,6 +3994,42 @@ var Toko = (function () {
     let lightContrastSet = false;
     let darkContrastSet = false;
     let n = colorSet.length;
+    let lightH, lightS, lightL;
+    let darkH, darkS, darkL;
+
+    //
+    //  adjustment factors
+    //
+    //  dark - saturation
+    let ds = {
+      shift: 0,
+      factor: 1.25,
+      max: 0.8,
+      min: 0.15,
+    };
+    //  dark - lightness
+    let dl = {
+      shift: -0.1,
+      factor: 0.7,
+      max: 0.09,
+      min: 0.05,
+    };
+    //
+    //  light - saturation
+    let ls = {
+      shift: 0,
+      factor: 0.8,
+      max: 0.25,
+      min: 0.1,
+    };
+    //  light - lightness
+    let ll = {
+      shift: 0,
+      factor: 1.2,
+      max: 0.95,
+      min: 0.9,
+    };
+
     //
     //  sort colors from light to dark
     //
@@ -4012,54 +4049,40 @@ var Toko = (function () {
           darkContrastSet = true;
         }
       });
+
+      //
+      //  if requested constrain the constrast colors
+      //
+      if (constrainContrast) {
+        hsl = chroma(contrastColors[0]).hsl();
+        lightH = hsl[0];
+        lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
+        lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
+        contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
+
+        hsl = chroma(contrastColors[1]).hsl();
+        darkH = hsl[0];
+        darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
+        darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
+        contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
+      }
     }
 
     //
     //  generate contrast colors by adjusting the saturation and lightness of the lightest and darkest color
     //
     if (!lightContrastSet) {
-      //
-      //  light - saturation
-      let ls = {
-        shift: 0,
-        factor: 0.8,
-        max: 0.25,
-        min: 0.1,
-      };
-      //  light - lightness
-      let ll = {
-        shift: 0,
-        factor: 1.2,
-        max: 0.95,
-        min: 0.9,
-      };
-
       hsl = chroma(sortedColorSet[0]).hsl();
-      let lightH = hsl[0];
-      let lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
-      let lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
+      lightH = hsl[0];
+      lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
+      lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
       contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
     }
     if (!darkContrastSet) {
-      //  dark - saturation
-      let ds = {
-        shift: 0,
-        factor: 1.25,
-        max: 0.8,
-        min: 0.15,
-      };
-      //  dark - lightness
-      let dl = {
-        shift: -0.1,
-        factor: 0.7,
-        max: 0.09,
-        min: 0.05,
-      };
-
       hsl = chroma(sortedColorSet[n - 1]).hsl();
-      let darkH = hsl[0];
-      let darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
-      let darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
+      darkH = hsl[0];
+      darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
+      darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
       contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
     }
 

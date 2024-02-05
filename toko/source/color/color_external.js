@@ -11,6 +11,8 @@
 //   stepped: false           - whether the scale should be smooth or stepped
 //   steps: 10                - number of steps in the scale. Only used if stepped is true
 //   nrColors: 10             - number of colors used to create the color list array
+//   useSortOrder: false              - Use any predefined sort order
+//   constrainContrast: fals  - limit the range of predefined contrast colors
 // }
 
 //

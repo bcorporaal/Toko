@@ -59,6 +59,7 @@ function setup () {
     inverse: false,
     reverse: false,
     sort: false,
+    constrainContrast: false,
   };
 
   //
@@ -76,9 +77,10 @@ function setup () {
 
   toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1 });
   toko.pane.tab.addBinding(p, 'interpolated');
-  toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
   toko.pane.tab.addBinding(p, 'reverse', { label: 'reverse palette' });
   toko.pane.tab.addBinding(p, 'sort', { label: 'sort metBrewer' });
+  toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
+  toko.pane.tab.addBinding(p, 'constrainContrast', { label: 'limit contrast' });
 
   //
   //  listen to tweakpane changes
@@ -105,6 +107,7 @@ function refresh () {
     domain: [0, p.steps * p.steps],
     reverse: p.reverse,
     sort: p.sort,
+    constrainContrast: p.constrainContrast,
   };
   //
   //  get colors
