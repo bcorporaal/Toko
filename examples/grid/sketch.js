@@ -263,13 +263,7 @@ function draw () {
   //  grid
   //
   //  make grid object with basic positioning and sizing
-  gridSet = new Toko.Grid(
-    p.margin,
-    p.margin,
-    width - 2 * p.margin,
-    height - 2 * p.margin,
-    gridRNG,
-  );
+  gridSet = new Toko.Grid(p.margin, p.margin, width - 2 * p.margin, height - 2 * p.margin, gridRNG);
 
   //
   //  create the grid
@@ -281,13 +275,7 @@ function draw () {
   } else {
     // create a packed grid
     let cellShapes = JSON.parse('[' + p.cellShapes + ']');
-    gridSet.packGrid(
-      p.columns,
-      p.rows,
-      cellShapes,
-      p.noEmptySpaces,
-      p.snapToPixel,
-    );
+    gridSet.packGrid(p.columns, p.rows, cellShapes, p.noEmptySpaces, p.snapToPixel);
   }
 
   //
@@ -308,11 +296,13 @@ function draw () {
   //
   //  set the background and stroke colors
   //
-  background(colors.contrastColors[p.invertBgnd ? 1 : 0]);
+  let bgndColor = colors.backgroundColor(p.invertBgnd);
+  let drawColor = colors.drawColor(p.invertBgnd);
+
+  background(bgndColor);
   if (p.stroke) {
     strokeWeight(p.strokeWeight);
-    let sc = color(colors.contrastColors[p.invertBgnd ? 1 : 0]);
-    sc.setAlpha((p.strokeAlpha / 100) * 255);
+    let sc = toko.colorAlpha(drawColor, (p.strokeAlpha / 100) * 255);
     stroke(sc);
   } else {
     noStroke();
