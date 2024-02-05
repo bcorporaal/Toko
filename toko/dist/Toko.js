@@ -3916,37 +3916,8 @@ var Toko = (function () {
 
   Toko.prototype._preprocessPalettes = function () {
     //
-    // combine the chromotome palettes
+    //  combine palettes
     //
-    // var chromotome_complete = golidPalettes.misc.concat(golidPalettes.ranganath, golidPalettes.roygbivs, golidPalettes.tundra, golidPalettes.colourscafe, golidPalettes.rohlfs, golidPalettes.ducci, golidPalettes.judson, golidPalettes.iivonen, golidPalettes.kovecses, golidPalettes.tsuchimochi, golidPalettes.duotone, golidPalettes.hilda, golidPalettes.spatial, golidPalettes.jung, golidPalettes.system, golidPalettes.flourish, golidPalettes.exposito, golidPalettes.cako,);
-
-    //
-    // id the palettes
-    //
-    // basicPalettes = basicPalettes.colorSchemes.map(p => ({
-    //   ...p,
-    //   type: this.REGULAR_SCALE
-    // }));
-    // var d3Scales = d3Palettes.d3Scales.map(p => ({
-    //   ...p,
-    //   type: this.D3_SCALE
-    // }));
-    // var metBrewer = metBrewerPalettes.metBrewer.map(p => ({
-    //   ...p,
-    //   type: this.REGULAR_SCALE
-    // }));
-    // // this.cosineScales = this.cosineScales.map(p => ({ ...p, type: this.COSINE_SCALE }));
-    // //
-    // //	combine
-    // //
-    // this.palettes = [
-    //   ... colorSchemes,
-    //   ... d3Scales,
-    //   // ...this.cosineScales,
-    //   ... chromotome_complete,
-    //   ... metBrewer,
-    // ];
-
     this.palettes = basicPalettes.concat(
       cakoPalettes,
       colourscafePalettes,
@@ -3977,7 +3948,6 @@ var Toko = (function () {
     //
     //  add missing fields and make list of all palettes
     //
-
     this.palettes.forEach(o => {
       //
       //  make them primary by default if field is empty
@@ -4027,7 +3997,6 @@ var Toko = (function () {
     //  sort colors from light to dark
     //
     let sortedColorSet = colorSet.sort((a, b) => chroma(b).hsl()[2] - chroma(a).hsl()[2]);
-    // console.log(sortedColorSet[0])
 
     //
     //  parse provided extra colors – if there are more then last dark and light are used
