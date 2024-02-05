@@ -75,8 +75,8 @@ function setup () {
 
   toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1 });
   toko.pane.tab.addBinding(p, 'interpolated');
-  toko.pane.tab.addBinding(p, 'inverse');
-  toko.pane.tab.addBinding(p, 'reverse');
+  toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
+  toko.pane.tab.addBinding(p, 'reverse', { label: 'reverse palette' });
 
   //
   //  listen to tweakpane changes
@@ -138,12 +138,7 @@ function draw () {
   //
   for (let i = 0; i < p.steps; i++) {
     for (let j = 0; j < p.steps; j++) {
-      if (p.interpolated) {
-        fill(colors.scale(i + j * p.steps));
-      } else {
-        fill(colors.originalScale(i + j * p.steps));
-      }
-
+      fill(colors.scale(i + j * p.steps, !p.interpolated));
       rect(i * (w + s) + m, j * (h + s) + m, w, h);
     }
   }

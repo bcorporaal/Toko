@@ -148,19 +148,26 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
 
   o.originalColors = colorSet;
 
-  o.scale = i => {
-    return sc(i).hex();
+  o.scale = (i, useOriginal = false) => {
+    if (!useOriginal) {
+      return sc(i).hex();
+    } else {
+      return oSC(i).hex();
+    }
   };
 
   o.originalScale = i => {
     return oSC(i).hex();
   };
 
-  o.randomColor = () => {
+  o.randomColor = (useOriginal = false) => {
     let r = colorOptions.rng.random();
     let d = colorOptions.domain;
-
-    return sc(d[0] + r * (d[1] - d[0])).hex();
+    if (!useOriginal) {
+      return sc(d[0] + r * (d[1] - d[0])).hex();
+    } else {
+      return oSC(d[0] + r * (d[1] - d[0])).hex();
+    }
   };
 
   o.randomOriginalColor = () => {
