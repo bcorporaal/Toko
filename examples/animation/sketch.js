@@ -194,9 +194,7 @@ function refresh () {
     let c = p.nrParticles - particles.length;
     for (let i = 0; i < c; i++) {
       let p1 = createVector(toko.random(width), toko.random(height));
-      let v1 = p5.Vector.random2D().setMag(
-        toko.random(p.velocityMin, p.velocityMax),
-      );
+      let v1 = p5.Vector.random2D().setMag(toko.random(p.velocityMin, p.velocityMax));
       particles.push({
         pos: [p1],
         vel: v1,
@@ -243,17 +241,16 @@ function draw () {
   clear();
   noStroke();
 
-  if (p.darkBgnd) {
-    background(colors.contrastColors[1]);
-  } else {
-    background(colors.contrastColors[0]);
-  }
+  let bgndColor = colors.backgroundColor(p.darkBgnd);
+  let drawColor = colors.drawColor(p.darkBgnd);
+
+  background(bgndColor);
 
   //
   //  plot the attractors
   //
   if (p.showAttractors) {
-    fill(colors.contrastColors[1]);
+    fill(drawColor);
     let n = attractors.length;
     for (let i = 0; i < n; i++) {
       circle(attractors[i].x, attractors[i].y, 10);
@@ -327,12 +324,7 @@ function draw () {
           col.setAlpha(a);
         }
         stroke(col);
-        line(
-          width - pos[j].x,
-          height - pos[j].y,
-          width - pos[j + 1].x,
-          height - pos[j + 1].y,
-        );
+        line(width - pos[j].x, height - pos[j].y, width - pos[j + 1].x, height - pos[j + 1].y);
       }
     }
   }
