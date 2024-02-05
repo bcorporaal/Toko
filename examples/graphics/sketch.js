@@ -189,8 +189,7 @@ function draw () {
 
   clear();
 
-  let cc = p.reverseBgnd ? 1 : 0;
-  let bgndColor = colors.contrastColors[cc];
+  let bgndColor = colors.backgroundColor(p.reverseBgnd);
   noStroke();
   background(bgndColor);
 
