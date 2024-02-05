@@ -3597,13 +3597,8 @@ var Toko = (function () {
     },
   ];
 
-  Toko.prototype.CONTRAST_MIX_COLORS = ['#111', '#eee'];
-  Toko.prototype.CONTRAST_MIX_FACTOR = 0.8;
-  Toko.prototype.CONTRAST_MIX_MODE = 'lab';
   Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
-
   Toko.prototype.COLOR_COLLECTIONS = [];
-
   Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
 
   Toko.prototype.DEFAULT_COLOR_OPTIONS = {
