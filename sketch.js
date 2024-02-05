@@ -57,6 +57,7 @@ function setup () {
     collection: 'basic',
     palette: 'westCoast',
     inverse: false,
+    reverse: false,
   };
 
   //
@@ -75,6 +76,7 @@ function setup () {
   toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1 });
   toko.pane.tab.addBinding(p, 'interpolated');
   toko.pane.tab.addBinding(p, 'inverse');
+  toko.pane.tab.addBinding(p, 'reverse');
 
   //
   //  listen to tweakpane changes
@@ -99,6 +101,7 @@ function refresh () {
   //
   const o = {
     domain: [0, p.steps * p.steps],
+    reverse: p.reverse,
   };
   //
   //  get colors
@@ -118,12 +121,11 @@ function draw () {
   clear();
   noStroke();
 
-  let cc = p.inverse ? 1 : 0;
+  let bgndColor = colors.backgroundColor(p.inverse);
+  let drawColor = colors.drawColor(p.inverse);
 
-  fill(colors.contrastColors[cc]);
-  rect(0, 0, width, height);
-
-  stroke(colors.contrastColors[1 - cc]);
+  background(bgndColor);
+  stroke(drawColor);
   strokeWeight(1);
 
   let m = 75; // margin
