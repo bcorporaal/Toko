@@ -16,7 +16,6 @@ import './core/tweakpane';
 import './math/math';
 import './math/random';
 import './math/rng';
-import './math/FastNoiseLite';
 
 import './geometry/grid';
 import './geometry/gridCell';
