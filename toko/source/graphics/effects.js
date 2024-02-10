@@ -4,6 +4,7 @@ import Toko from '../core/main';
 //  STANDARD GRADIENTS
 //
 
+//
 //  linearGradiant
 //
 //  xStart  x coordinate of start position
@@ -15,12 +16,7 @@ import Toko from '../core/main';
 //            color   standard css color value
 //
 Toko.prototype.linearGradient = function (xStart, yStart, xEnd, yEnd, stops) {
-  let gradient = drawingContext.createLinearGradient(
-    xStart,
-    yStart,
-    xEnd,
-    yEnd,
-  );
+  let gradient = drawingContext.createLinearGradient(xStart, yStart, xEnd, yEnd);
   stops.forEach(stop => {
     gradient.addColorStop(stop.offset, stop.color);
   });
@@ -41,24 +37,8 @@ Toko.prototype.linearGradient = function (xStart, yStart, xEnd, yEnd, stops) {
 //            stop    value between 0 (start) and 1 (end)
 //            color   standard css color value
 //
-Toko.prototype.radialGradient = function (
-  xStart,
-  yStart,
-  rStart,
-  xEnd,
-  yEnd,
-  rEnd,
-  stops,
-) {
-  let gradient = drawingContext.createRadialGradient(
-    xStart,
-    yStart,
-    rStart,
-    xEnd,
-    yEnd,
-    rEnd,
-    rEnd,
-  );
+Toko.prototype.radialGradient = function (xStart, yStart, rStart, xEnd, yEnd, rEnd, stops) {
+  let gradient = drawingContext.createRadialGradient(xStart, yStart, rStart, xEnd, yEnd, rEnd, rEnd);
   stops.forEach(stop => {
     gradient.addColorStop(stop.offset, stop.color);
   });
