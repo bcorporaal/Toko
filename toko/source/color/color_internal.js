@@ -157,21 +157,41 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
     return oSC(i).hex();
   };
 
-  o.randomColor = (useOriginal = false) => {
+  o.randomColor = (useOriginal = false, shift = { h: 0, s: 0, l: 0 }) => {
     let r = colorOptions.rng.random();
     let d = colorOptions.domain;
+    let c;
     if (!useOriginal) {
-      return sc(d[0] + r * (d[1] - d[0])).hex();
+      c = sc(d[0] + r * (d[1] - d[0])).hex();
     } else {
-      return oSC(d[0] + r * (d[1] - d[0])).hex();
+      c = oSC(d[0] + r * (d[1] - d[0])).hex();
     }
+
+    if (shift.h != 0 || shift.s != 0 || shift.l != 0) {
+      let cShifted = chroma(c).hsl();
+      cShifted[0] = cShifted[0] + colorOptions.rng.random(-shift.h * 360, shift.h * 360);
+      cShifted[1] = cShifted[1] + colorOptions.rng.random(-shift.s, shift.s);
+      cShifted[2] = cShifted[2] + colorOptions.rng.random(-shift.l, shift.l);
+      c = chroma.hsl(cShifted[0], cShifted[1], cShifted[2]).hex();
+    }
+
+    return c;
   };
 
-  o.randomOriginalColor = () => {
+  o.randomOriginalColor = (shift = { h: 0, s: 0, l: 0 }) => {
     let r = colorOptions.rng.random();
     let d = colorOptions.domain;
+    let c = oSC(d[0] + r * (d[1] - d[0])).hex();
 
-    return oSC(d[0] + r * (d[1] - d[0])).hex();
+    if (shift.h != 0 || shift.s != 0 || shift.l != 0) {
+      let cShifted = chroma(c).hsl();
+      cShifted[0] = cShifted[0] + colorOptions.rng.random(-shift.h * 360, shift.h * 360);
+      cShifted[1] = cShifted[1] + colorOptions.rng.random(-shift.s, shift.s);
+      cShifted[2] = cShifted[2] + colorOptions.rng.random(-shift.l, shift.l);
+      c = chroma.hsl(cShifted[0], cShifted[1], cShifted[2]).hex();
+    }
+
+    return c;
   };
 
   o.backgroundColor = (flip = false) => {

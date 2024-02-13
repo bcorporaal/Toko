@@ -82,6 +82,7 @@ function setup () {
     stroke: true,
     strokeWeight: 1.5,
     strokeAlpha: 100,
+    colorShift: true,
   };
 
   colorRNG = new Toko.RNG();
@@ -190,6 +191,8 @@ function setup () {
     label: 'color seed',
     rng: colorRNG,
   });
+
+  f6.addBinding(p, 'colorShift');
 
   //
   //  add controls to change the colors
@@ -311,8 +314,12 @@ function draw () {
   //
   //  draw the cells
   //
+  let colorShift = { h: 0, s: 0, l: 0 };
+  if (p.colorShift) {
+    colorShift = { h: 0, s: 0.1, l: 0.1 };
+  }
   for (var i = 0; i < n; i++) {
-    fill(colors.randomOriginalColor());
+    fill(colors.randomOriginalColor(colorShift));
 
     c = gridSet.cells[i];
     rect(c.x, c.y, c.width, c.height);
