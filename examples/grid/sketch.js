@@ -305,7 +305,7 @@ function draw () {
   background(bgndColor);
   if (p.stroke) {
     strokeWeight(p.strokeWeight);
-    let sc = toko.colorAlpha(drawColor, (p.strokeAlpha / 100) * 255);
+    let sc = toko.colorAlpha(bgndColor, (p.strokeAlpha / 100) * 255);
     stroke(sc);
   } else {
     noStroke();
