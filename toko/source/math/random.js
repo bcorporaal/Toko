@@ -80,3 +80,9 @@ Toko.prototype.intSequence = function (min = 0, max = 100) {
 Toko.prototype.random2DVector = function () {
   return this._rng.random2DVector();
 };
+//
+//  Poisson Disk sampling
+//
+Toko.prototype.poissonDisk = function (inWidth, inHeight, inRadius) {
+  return this._rng.poissonDisk(inWidth, inHeight, inRadius);
+};

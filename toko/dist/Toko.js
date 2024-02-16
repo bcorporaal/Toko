@@ -4877,6 +4877,12 @@ var Toko = (function () {
   Toko.prototype.random2DVector = function () {
     return this._rng.random2DVector();
   };
+  //
+  //  Poisson Disk sampling
+  //
+  Toko.prototype.poissonDisk = function (inWidth, inHeight, inRadius) {
+    return this._rng.poissonDisk(inWidth, inHeight, inRadius);
+  };
 
   //
   // main random number generator class
@@ -5158,6 +5164,89 @@ var Toko = (function () {
       let h = this.random() * TWO_PI;
       v.setHeading(h);
       return v;
+    };
+    //
+    //  Fast Poisson Disk Sampling
+    //
+    //  based on the example from Coding Train
+    //  https://thecodingtrain.com/challenges/33-poisson-disc-sampling
+    //
+    poissonDisk = function (inWidth, inHeight, inRadius) {
+      let r = inRadius;
+      let nrSamples = 30;
+      let grid = [];
+      let w = r / Math.sqrt(2);
+      let active = [];
+      let cols, rows;
+      let ordered = [];
+      let nrTries = 20;
+
+      //  create reference grid
+      cols = Math.floor(width / w);
+      rows = Math.floor(height / w);
+      grid = new Array(cols * rows);
+
+      // set initial point
+      let x = this.random(inWidth);
+      let y = this.random(inHeight);
+      let i = Math.floor(x / w);
+      let j = Math.floor(y / w);
+      let pos = createVector(x, y);
+      grid[i + j * cols] = pos;
+      active.push(pos);
+
+      for (let total = 0; total < nrTries; total++) {
+        while (active.length > 0) {
+          let randIndex = Math.floor(toko.random(active.length));
+          let pos = active[randIndex];
+          let found = false;
+          for (let n = 0; n < nrSamples; n++) {
+            let sample = this.random2DVector();
+            let m = this.random(r, 2 * r);
+            sample.setMag(m);
+            sample.add(pos);
+
+            let col = Math.floor(sample.x / w);
+            let row = Math.floor(sample.y / w);
+
+            if (col > -1 && row > -1 && col < cols && row < rows && !grid[col + row * cols]) {
+              let ok = true;
+              for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                  let index = col + i + (row + j) * cols;
+                  let neighbor = grid[index];
+                  if (neighbor) {
+                    let d = p5.Vector.dist(sample, neighbor);
+                    if (d < r) {
+                      ok = false;
+                    }
+                  }
+                }
+              }
+              if (ok) {
+                found = true;
+                grid[col + row * cols] = sample;
+                active.push(sample);
+                ordered.push(sample);
+                break;
+              }
+            }
+          }
+          //
+          //  remove active point if no option was found
+          //
+          if (!found) {
+            active.splice(randIndex, 1);
+          }
+        }
+      }
+
+      //
+      //  take out undefined points
+      //
+      ordered = ordered.filter(n => n !== undefined);
+
+      return ordered;
     };
   };
 
