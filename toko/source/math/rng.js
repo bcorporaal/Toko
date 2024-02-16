@@ -25,10 +25,7 @@ Toko.RNG = class {
     if (newSeed != this._seedString) {
       // ignore if it is the same string
       if (this._seedHistory.length > 0 && this._seedHistoryIndex >= 0) {
-        this._seedHistory = this._seedHistory.slice(
-          0,
-          this._seedHistoryIndex + 1,
-        );
+        this._seedHistory = this._seedHistory.slice(0, this._seedHistoryIndex + 1);
       }
       this._seedHistory.push(newSeed);
       this._seedHistoryIndex++;
@@ -123,8 +120,7 @@ Toko.RNG = class {
   //------------------------------------------------------------------------
 
   randomSeedString = function (stringLength = 6) {
-    const BASE62_ALPHABET =
-      '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     let result = '';
 
     for (let i = 0; i < stringLength; i++) {
@@ -135,8 +131,7 @@ Toko.RNG = class {
   };
 
   base62ToBase10 = function (input) {
-    const BASE62_ALPHABET =
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+    const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
       base = 62;
     let result = 0;
 

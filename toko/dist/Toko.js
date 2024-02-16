@@ -4488,29 +4488,16 @@ var Toko = (function () {
     }
 
     paneRef.addBlade(o).on('click', ev => {
-      let paletteList = toko.getPaletteSelection(
-        pObject[collectionKey],
-        justPrimary,
-        sorted,
-      );
+      let paletteList = toko.getPaletteSelection(pObject[collectionKey], justPrimary, sorted);
       switch (ev.index[0]) {
         case 0:
-          pObject[paletteKey] = this.findPreviousInList(
-            pObject[paletteKey],
-            paletteList,
-          );
+          pObject[paletteKey] = this.findPreviousInList(pObject[paletteKey], paletteList);
           break;
         case 1:
-          pObject[paletteKey] = this.findNextInList(
-            pObject[paletteKey],
-            paletteList,
-          );
+          pObject[paletteKey] = this.findNextInList(pObject[paletteKey], paletteList);
           break;
         case 2:
-          pObject[paletteKey] = this.findRandomInList(
-            pObject[paletteKey],
-            paletteList,
-          );
+          pObject[paletteKey] = this.findRandomInList(pObject[paletteKey], paletteList);
           break;
 
         default:
@@ -4626,11 +4613,7 @@ var Toko = (function () {
   //
   //  add a double drop down to select a color palette
   //
-  Toko.prototype.addPaletteSelector = function (
-    paneRef,
-    pObject,
-    incomingOptions,
-  ) {
+  Toko.prototype.addPaletteSelector = function (paneRef, pObject, incomingOptions) {
     //
     //  set default options
     //
@@ -4648,14 +4631,8 @@ var Toko = (function () {
     o.paneRef = paneRef;
     o.pObject = pObject;
 
-    o.colorPalettes = Toko.prototype.getPaletteSelection(
-      o.pObject[o.collectionKey],
-      o.justPrimary,
-      o.sorted,
-    );
-    o.collectionsList = Toko.prototype.formatForTweakpane(
-      o.pObject[o.collectionsList],
-    );
+    o.colorPalettes = Toko.prototype.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
+    o.collectionsList = Toko.prototype.formatForTweakpane(o.pObject[o.collectionsList]);
 
     o.collectionInput = o.paneRef
       .addBinding(o.pObject, o.collectionKey, {
@@ -4663,11 +4640,7 @@ var Toko = (function () {
         options: o.collectionsList,
       })
       .on('change', ev => {
-        o.colorPalettes = Toko.prototype.getPaletteSelection(
-          pObject[o.collectionKey],
-          o.justPrimary,
-          o.sorted,
-        );
+        o.colorPalettes = Toko.prototype.getPaletteSelection(pObject[o.collectionKey], o.justPrimary, o.sorted);
         o.pObject[o.paletteKey] = Object.values(o.colorPalettes)[0];
         o.scaleInput.dispose();
         o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
@@ -4687,32 +4660,17 @@ var Toko = (function () {
     //  add nav buttons below the dropdowns
     //
     if (o.navButtons) {
-      this.addPaneNavButtons(
-        o.paneRef,
-        o.pObject,
-        o.paletteKey,
-        o.collectionKey,
-        o.justPrimary,
-        o.sorted,
-        o.index + 1,
-      );
+      this.addPaneNavButtons(o.paneRef, o.pObject, o.paletteKey, o.collectionKey, o.justPrimary, o.sorted, o.index + 1);
     }
   };
 
   //
   //  update the color palette selector
   //
-  Toko.prototype.updatePaletteSelector = function (
-    receivedCollection,
-    receivedPalette,
-  ) {
+  Toko.prototype.updatePaletteSelector = function (receivedCollection, receivedPalette) {
     let o;
     o = this.paletteSelectorData;
-    o.colorPalettes = Toko.prototype.getPaletteSelection(
-      receivedCollection,
-      o.justPrimary,
-      o.sorted,
-    );
+    o.colorPalettes = Toko.prototype.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);
     o.scaleInput.dispose();
     o.pObject[o.paletteKey] = receivedPalette;
     o.scaleInput = o.paneRef.addBinding(o.pObject, o.paletteKey, {
@@ -4728,11 +4686,7 @@ var Toko = (function () {
   //
   //  add blendmode palette selector
   //
-  Toko.prototype.addBlendModeSelector = function (
-    paneRef,
-    pObject,
-    incomingOptions,
-  ) {
+  Toko.prototype.addBlendModeSelector = function (paneRef, pObject, incomingOptions) {
     //
     //  set default options
     //
@@ -4765,11 +4719,7 @@ var Toko = (function () {
     });
   };
 
-  Toko.prototype.addRandomSeedControl = function (
-    paneRef,
-    pObject,
-    incomingOptions,
-  ) {
+  Toko.prototype.addRandomSeedControl = function (paneRef, pObject, incomingOptions) {
     //
     //  set default options
     //
@@ -4953,10 +4903,7 @@ var Toko = (function () {
       if (newSeed != this._seedString) {
         // ignore if it is the same string
         if (this._seedHistory.length > 0 && this._seedHistoryIndex >= 0) {
-          this._seedHistory = this._seedHistory.slice(
-            0,
-            this._seedHistoryIndex + 1,
-          );
+          this._seedHistory = this._seedHistory.slice(0, this._seedHistoryIndex + 1);
         }
         this._seedHistory.push(newSeed);
         this._seedHistoryIndex++;
@@ -5051,8 +4998,7 @@ var Toko = (function () {
     //------------------------------------------------------------------------
 
     randomSeedString = function (stringLength = 6) {
-      const BASE62_ALPHABET =
-        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+      const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
       let result = '';
 
       for (let i = 0; i < stringLength; i++) {
@@ -5063,8 +5009,7 @@ var Toko = (function () {
     };
 
     base62ToBase10 = function (input) {
-      const BASE62_ALPHABET =
-          '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+      const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
         base = 62;
       let result = 0;
 
