@@ -78,5 +78,5 @@ Toko.prototype.intSequence = function (min = 0, max = 100) {
 //  2D unit p5 vector in a random direction
 //
 Toko.prototype.random2DVector = function () {
-  return this._rnd.random2DVector();
+  return this._rng.random2DVector();
 };
