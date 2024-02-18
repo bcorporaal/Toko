@@ -84,14 +84,11 @@ function setup () {
     collectionKey: 'collection',
     paletteKey: 'palette',
   });
+
   toko.pane.tab.addBinding(p, 'reverse', { label: 'reverse colors' });
-
   toko.pane.tab.addBlade({ view: 'separator' });
-
   toko.pane.tab.addBinding(p, 'cutoff', { min: 0, max: 1, step: 0.1 });
-
   toko.pane.tab.addBlade({ view: 'separator' });
-
   toko.pane.tab.addBinding(p, 'frequency', { min: 0, max: 100, step: 5 });
   toko.pane.tab.addBinding(p, 'speed', { min: 0, max: 100, step: 1 });
 
@@ -103,7 +100,6 @@ function setup () {
   });
 
   refresh();
-  // noLoop();
 
   //---------------------------------------------
   toko.endSetup();
