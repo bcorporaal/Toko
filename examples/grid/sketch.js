@@ -82,6 +82,7 @@ function setup () {
     stroke: true,
     strokeWeight: 1.5,
     strokeAlpha: 100,
+    colorShift: true,
   };
 
   colorRNG = new Toko.RNG();
@@ -191,6 +192,8 @@ function setup () {
     rng: colorRNG,
   });
 
+  f6.addBinding(p, 'colorShift');
+
   //
   //  add controls to change the colors
   //
@@ -263,13 +266,7 @@ function draw () {
   //  grid
   //
   //  make grid object with basic positioning and sizing
-  gridSet = new Toko.Grid(
-    p.margin,
-    p.margin,
-    width - 2 * p.margin,
-    height - 2 * p.margin,
-    gridRNG,
-  );
+  gridSet = new Toko.Grid(p.margin, p.margin, width - 2 * p.margin, height - 2 * p.margin, gridRNG);
 
   //
   //  create the grid
@@ -281,13 +278,7 @@ function draw () {
   } else {
     // create a packed grid
     let cellShapes = JSON.parse('[' + p.cellShapes + ']');
-    gridSet.packGrid(
-      p.columns,
-      p.rows,
-      cellShapes,
-      p.noEmptySpaces,
-      p.snapToPixel,
-    );
+    gridSet.packGrid(p.columns, p.rows, cellShapes, p.noEmptySpaces, p.snapToPixel);
   }
 
   //
@@ -308,11 +299,13 @@ function draw () {
   //
   //  set the background and stroke colors
   //
-  background(colors.contrastColors[p.invertBgnd ? 1 : 0]);
+  let bgndColor = colors.backgroundColor(p.invertBgnd);
+  let drawColor = colors.drawColor(p.invertBgnd);
+
+  background(bgndColor);
   if (p.stroke) {
     strokeWeight(p.strokeWeight);
-    let sc = color(colors.contrastColors[p.invertBgnd ? 1 : 0]);
-    sc.setAlpha((p.strokeAlpha / 100) * 255);
+    let sc = toko.colorAlpha(bgndColor, (p.strokeAlpha / 100) * 255);
     stroke(sc);
   } else {
     noStroke();
@@ -321,8 +314,12 @@ function draw () {
   //
   //  draw the cells
   //
+  let colorShift = { h: 0, s: 0, l: 0 };
+  if (p.colorShift) {
+    colorShift = { h: 0, s: 0.1, l: 0.1 };
+  }
   for (var i = 0; i < n; i++) {
-    fill(colors.randomOriginalColor());
+    fill(colors.randomOriginalColor(colorShift));
 
     c = gridSet.cells[i];
     rect(c.x, c.y, c.width, c.height);

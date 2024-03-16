@@ -189,8 +189,7 @@ function draw () {
 
   clear();
 
-  let cc = p.reverseBgnd ? 1 : 0;
-  let bgndColor = colors.contrastColors[cc];
+  let bgndColor = colors.backgroundColor(p.reverseBgnd);
   noStroke();
   background(bgndColor);
 
@@ -201,17 +200,10 @@ function draw () {
   //
   let slices = [];
   for (let i = 0; i < p.nrSlices; i++) {
-    if (p.interpolated) {
-      slices[i] = {
-        colorLeft: colors.scale(i),
-        colorRight: colors.scale(i),
-      };
-    } else {
-      slices[i] = {
-        colorLeft: colors.originalScale(i),
-        colorRight: colors.originalScale(i),
-      };
-    }
+    slices[i] = {
+      colorLeft: colors.scale(i, !p.interpolated),
+      colorRight: colors.scale(i, !p.interpolated),
+    };
   }
 
   //

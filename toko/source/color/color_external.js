@@ -11,6 +11,8 @@
 //   stepped: false           - whether the scale should be smooth or stepped
 //   steps: 10                - number of steps in the scale. Only used if stepped is true
 //   nrColors: 10             - number of colors used to create the color list array
+//   useSortOrder: false      - Use any predefined sort order
+//   constrainContrast: fals  - limit the range of predefined contrast colors
 // }
 
 //
@@ -18,12 +20,18 @@
 //
 //  o = {
 //    scale,                  - function that returns an interpolated color in hex based on a value within the range.
+//                                useOriginal - boolean to use original color palette
 //    scaleChroma,            - function is the original Chroma color scale object. Normally not used.
 //    originalScale,          - function that returns a color from the original set based on a value within the range.
 //    contrastColors,         - array of 2 contrast colors based on the ends of the range.
 //    originalColors,         - array of original palette colors. Length of the array varies with palette.
 //    randomColor,            - function that provides a random color in the full palette.
+//                                useOriginal - boolean to use original color palette
+//                                shift - {h,s,l} object that determines the random shift in hue, saturation and lightness
+//                                        each value has a range between 0 and 1
 //    randomOriginalColor,    - function that provides a random color from the original palette.
+//                                shift - {h,s,l} object that determines the random shift in hue, saturation and lightness
+//                                        each value has a range between 0 and 1
 //    list,                   - list of interpolated colors. Number of colors is defined in the options object.
 //    options,                - the options provided/used for the creation of the object.
 //  }
@@ -42,11 +50,7 @@ Toko.prototype.getColorScale = function (inPalette, colorOptions) {
 //
 //  create color scales based on a set of colors in an array
 //
-Toko.prototype.createColorScale = function (
-  colorSet,
-  colorOptions,
-  extraColors,
-) {
+Toko.prototype.createColorScale = function (colorSet, colorOptions, extraColors) {
   let o = this._createColorScale(colorSet, colorOptions, extraColors);
   return o;
 };
@@ -61,33 +65,21 @@ Toko.prototype.getColorModeList = function () {
 //
 //  get the previous palette based on the type and isPrimary status. Loops at the beginning
 //
-Toko.prototype.getNextPalette = function (
-  inPalette,
-  paletteType = 'all',
-  justPrimary = true,
-) {
+Toko.prototype.getNextPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
   return this._getAnotherPalette(inPalette, paletteType, justPrimary, 1);
 };
 
 //
 //  get the next palette based on the type and isPrimary status. Loops at the end
 //
-Toko.prototype.getPreviousPalette = function (
-  inPalette,
-  paletteType = 'all',
-  justPrimary = true,
-) {
+Toko.prototype.getPreviousPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
   return this._getAnotherPalette(inPalette, paletteType, justPrimary, -1);
 };
 
 //
 //  get a random palette
 //
-Toko.prototype.getRandomPalette = function (
-  inPalette,
-  paletteType = 'all',
-  justPrimary = true,
-) {
+Toko.prototype.getRandomPalette = function (inPalette, paletteType = 'all', justPrimary = true) {
   return this._getRandomPalette(inPalette, paletteType, justPrimary);
 };
 
@@ -108,11 +100,7 @@ Toko.prototype.findPaletteByName = function (paletteName) {
 //
 //  get a list of palettes based on type and isPrimary status
 //
-Toko.prototype.getPaletteList = function (
-  paletteType = 'all',
-  justPrimary = true,
-  sorted = false,
-) {
+Toko.prototype.getPaletteList = function (paletteType = 'all', justPrimary = true, sorted = false) {
   let filtered = this._getPaletteListRaw(paletteType, justPrimary, sorted);
   return this.formatForTweakpane(filtered, 'name');
 };
@@ -120,15 +108,7 @@ Toko.prototype.getPaletteList = function (
 //
 //  get a selection of palettes based on a comma seperated list
 //
-Toko.prototype.getPaletteSelection = function (
-  selectionList,
-  justPrimary = false,
-  sorted = false,
-) {
-  let filtered = this._getPaletteSelectionRaw(
-    selectionList,
-    justPrimary,
-    sorted,
-  );
+Toko.prototype.getPaletteSelection = function (selectionList, justPrimary = false, sorted = false) {
+  let filtered = this._getPaletteSelectionRaw(selectionList, justPrimary, sorted);
   return this.formatForTweakpane(filtered, 'name');
 };

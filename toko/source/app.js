@@ -16,6 +16,7 @@ import './core/tweakpane';
 import './math/math';
 import './math/random';
 import './math/rng';
+import './math/openSimplex';
 
 import './geometry/grid';
 import './geometry/gridCell';
@@ -23,6 +24,7 @@ import './geometry/gridCell';
 import './graphics/transform';
 import './graphics/effects';
 import './graphics/grain';
+import './graphics/shapes';
 
 import './output/output_util';
 import './output/capture_video';
