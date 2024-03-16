@@ -36,7 +36,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'Toko grid', //  title displayed
+    title: 'Toko grid - SVG version', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
