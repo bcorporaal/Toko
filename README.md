@@ -2,7 +2,9 @@
 
 # Toko: expanding p5.js with handy features
 
-Toko is a framework to enhance p5.js for creative coding with Tweakpane, chroma.js, random number generation, color palettes, grids, and more. Very much a work in progress. For generative art created with Toko see [Late Night Noodles on Instagram](https://www.instagram.com/_late_night_noodles_/).
+Toko is a framework to enhance p5.js for creative coding with Tweakpane, chroma.js, random number generation, color palettes, grids, and more. Very much a work in progress.
+
+For examples of generative art created with Toko see [Late Night Noodles on Instagram](https://www.instagram.com/_late_night_noodles_/).
 
 > [!NOTE]
 > This framework continues to evolve. Be prepared for breaking changes in every update.
