@@ -23,13 +23,17 @@
   --tp-base-font-family: 'Udon mono Web';
 }
 
+.tp-rotv {
+  font-size: 11px !important; /* Set font size of tweakpane labels */
+}
+
 .tp-lblv_l {
   padding-left: 2px;
   padding-right: 0;
 }
 
 .tp-dfwv {
-  width: 280px !important; /* Make tweakpane a little wider */
+  width: 300px !important; /* Make tweakpane a little wider */
 }
 
 @font-face {
