@@ -38,7 +38,7 @@
 	font-weight: 400;
 	font-stretch: normal;
 	font-style: normal;
-	src: url('../fonts/woff2/UdonMono-Regular.WOFF2') format('woff2'), url('../fonts/ttf/UdonMono-Regular.TTF') format('truetype');
+	src: url('../fonts/woff2/UdonMonoWeb-Regular.WOFF2') format('woff2'), url('../fonts/ttf/UdonMonoWeb-Regular.TTF') format('truetype');
 }
 
 body {
