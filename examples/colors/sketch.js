@@ -43,7 +43,6 @@ function setup () {
     useParameterPanel: true, //  use the tweakpane panel for settings
     showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
     captureFrames: false, //  no record option
-    tweakPanePlugins: [], //  add any TweakPane Plugins here
   });
 
   //
