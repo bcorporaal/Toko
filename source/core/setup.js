@@ -18,7 +18,7 @@ Toko.prototype.setup = function (inputOptions) {
   this.options = Object.assign({}, this.DEFAULT_OPTIONS, inputOptions);
 
   if (this.options.acceptDroppedSettings) {
-    p5Canvas.drop(this.receiveSettings.bind(this));
+    p5Canvas.drop(this.dropFile.bind(this));
   }
 
   if (this.options.seedString != '') {

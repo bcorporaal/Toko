@@ -25,12 +25,13 @@ import './graphics/transform';
 import './graphics/effects';
 import './graphics/grain';
 import './graphics/shapes';
+import './graphics/pixels';
 
 import './output/output_util';
 import './output/capture_video';
 import './output/save_sketch';
 import './output/save_settings';
 
-import './input/receive_settings';
+import './input/receive_file';
 
 export default Toko;

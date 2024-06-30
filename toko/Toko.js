@@ -4196,7 +4196,7 @@ var Toko = (function () {
     this.options = Object.assign({}, this.DEFAULT_OPTIONS, inputOptions);
 
     if (this.options.acceptDroppedSettings) {
-      p5Canvas.drop(this.receiveSettings.bind(this));
+      p5Canvas.drop(this.dropFile.bind(this));
     }
 
     if (this.options.seedString != '') {
@@ -6453,6 +6453,50 @@ var Toko = (function () {
     endShape(shapeMode);
   };
 
+  //
+  //  getPixelColor
+  //
+  //  image   p5.js image. Use loadPixels first
+  //  x       pixel x position
+  //  y       pixel y position
+  //  width   width of the referenced image
+  //
+  Toko.prototype.getPixelColor = function (image, x, y, width) {
+    // calculate the index in the pixel array
+    let d = pixelDensity();
+    let index = 4 * (y * d * width * d + x * d);
+
+    // retrieve the color values
+    let r = image.pixels[index];
+    let g = image.pixels[index + 1];
+    let b = image.pixels[index + 2];
+    let a = image.pixels[index + 3];
+
+    return [r, g, b, a];
+  };
+
+  //
+  //  pixelThreshold
+  //  returns true if average pixel value is between min and max values
+  //
+  //  image     p5.js image. Use loadPixels first
+  //  x         pixel x position
+  //  y         pixel y position
+  //  width     width of the referenced image
+  //  min       lower boundary value
+  //  max       upper boundary value
+  //
+  Toko.prototype.pixelThreshold = function (image, x, y, width, min = 0, max = 255) {
+    // calculate the index in the pixel array
+    let d = pixelDensity();
+    let index = 4 * (y * d * width * d + x * d);
+
+    // retrieve the color values
+    let tot = image.pixels[index] + image.pixels[index + 1] + image.pixels[index + 2];
+
+    return tot > 3 * min && tot < 3 * max;
+  };
+
   Toko.prototype.generateFilename = function (extension = 'svg', verb = 'sketched') {
     var adj1 = this.randomAdjective();
     var adj2 = this.randomAdjective();
@@ -6666,22 +6710,29 @@ var Toko = (function () {
   //
   //  WARNING: basically no error checking is done here
   //
+  Toko.prototype.dropFile = function (file) {
+    if (file.subtype == 'json') {
+      this.receiveSettings(file);
+    } else {
+      this.receiveFile(file);
+    }
+  };
+
   Toko.prototype.receiveSettings = function (file) {
     let receivedCollection, receivedPalette;
 
-    this.receivingFileNow = true;
+    let newState = this._presetToState(file.data);
+    this.basePane.importState(newState);
 
-    if (file.subtype == 'json') {
-      let newState = this._presetToState(file.data);
-      this.basePane.importState(newState);
+    receivedCollection = file.data.collection;
+    receivedPalette = file.data.palette;
 
-      receivedCollection = file.data.collection;
-      receivedPalette = file.data.palette;
-    }
-
-    this.receivingFileNow = false;
     this.updatePaletteSelector(receivedCollection, receivedPalette);
 
+    window.receivedFile?.(file);
+  };
+
+  Toko.prototype.receiveFile = function (file) {
     window.receivedFile?.(file);
   };
 
