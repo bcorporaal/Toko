@@ -10,7 +10,7 @@ import Toko from '../core/main';
 //
 Toko.prototype.getPixelColor = function (image, x, y, width) {
   // calculate the index in the pixel array
-  let d = pixelDensity();
+  let d = image.pixelDensity();
   let index = 4 * (y * d * width * d + x * d);
 
   // retrieve the color values
@@ -30,16 +30,15 @@ Toko.prototype.getPixelColor = function (image, x, y, width) {
 //  x         pixel x position
 //  y         pixel y position
 //  width     width of the referenced image
-//  min       lower boundary value
-//  max       upper boundary value
+//  min       lower boundary value, included in selection
+//  max       upper boundary value, included in selection
 //
 Toko.prototype.pixelThreshold = function (image, x, y, width, min = 0, max = 255) {
   // calculate the index in the pixel array
-  let d = pixelDensity();
+  let d = image.pixelDensity();
   let index = 4 * (y * d * width * d + x * d);
 
   // retrieve the color values
-  let tot = image.pixels[index] + image.pixels[index + 1] + image.pixels[index + 2];
-
-  return tot > 3 * min && tot < 3 * max;
+  let ave = (image.pixels[index] + image.pixels[index + 1] + image.pixels[index + 2]) / 3;
+  return ave >= min && ave <= max;
 };
