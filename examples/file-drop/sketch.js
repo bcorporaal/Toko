@@ -34,7 +34,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'Toko grid', //  title displayed
+    title: 'File drop example', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
@@ -59,7 +59,7 @@ function setup () {
     pointSize: 10,
     pointSpacing: 10,
     maxPoints: 1000,
-    threshold: { min: 20, max: 128 },
+    threshold: { min: 0, max: 128 },
   };
 
   //
@@ -122,7 +122,7 @@ function draw () {
     textFont('Udon mono web');
     textAlign(CENTER, CENTER);
     textSize(30);
-    text('Drop an image on the canvas', width / 2, height / 2);
+    text('Drop an image file on the canvas', width / 2, height / 2);
   } else {
     plotImage();
   }
@@ -203,36 +203,14 @@ function windowResized () {
 }
 
 function receivedFile (file) {
-  //
-  //  called when a JSON file is dropped on the sketch
-  //  tweakpane settings are automatically updated
-  //
   console.log(`Toko - receivedFile - received a ${file.subtype} file`);
 
   if (file.subtype == 'png' || file.subtype == 'jpg') {
-    console.log('load file');
-
-    // Remove the current image, if any.
-    // if (img) {
-    //   img.remove();
-    // }
-    // console.log(file);
     loadImage(file.data, imageLoaded);
-
-    // Create an element with the dropped file.
-    // img = createImg(file.data, '');
-
-    // Draw the image.
-    // plotImage(img);
   }
 }
 
 function imageLoaded (loadedImage) {
-  // img.hide();
-  // console.log(img);
   img = loadedImage;
-
-  // image(img, 0, 0);
-
   plotImage();
 }
