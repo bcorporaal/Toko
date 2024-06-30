@@ -53,7 +53,7 @@ function setup () {
   //
   //  sketch parameters
   //
-  let g = new Toko.Grid();
+  // let g = new Toko.Grid();
 
   p = {
     pointSize: 10,
