@@ -112,7 +112,6 @@ function setup () {
   });
 
   refresh();
-  // noLoop();
 
   //---------------------------------------------
   toko.endSetup();
