@@ -66,6 +66,7 @@ Toko includes code from the following:<br>
 [D3 color palettes](https://github.com/d3/d3) by Mike Bostock and others. ISC License.<br>
 [Lospec color palettes](https://lospec.com/palette-list) by various contributers. Unknown license.<br>
 [SimplexNoiseJS](https://github.com/blindman67/SimplexNoiseJS) by Mark Spronck for OpenSimplex Noise. Unlicense.<br>
+[Quadtree](https://github.com/CodingTrain/QuadTree) by Daniel Shiffman / Coding Train for quadtree. MIT License.<br>
 
 Toko makes use of the following:<br>
 [Tweakpane](https://cocopon.github.io/tweakpane/) by Hiroki Kokubun for controls. MIT License.<br>
