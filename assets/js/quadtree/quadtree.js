@@ -115,11 +115,12 @@ class Rectangle {
 
 // circle class for a circle shaped query
 class Circle {
-  constructor (x, y, r) {
+  constructor (x, y, r, data) {
     this.x = x;
     this.y = y;
     this.r = r;
     this.rSquared = this.r * this.r;
+    this.data = data;
   }
 
   contains (point) {
