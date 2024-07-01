@@ -76,7 +76,7 @@ function setup () {
   toko.pane.tab.addBlade({ view: 'separator' });
 
   toko.addPaletteSelector(toko.pane.tab, p, {
-    index: 5,
+    index: 4,
     justPrimary: true,
     sorted: true,
     navButtons: true,
