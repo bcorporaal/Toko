@@ -65,6 +65,7 @@ function setup () {
     sequential: false,
     highlightRadius: 100,
     showEdge: false,
+    showHighlight: true,
   };
 
   toko.addRandomSeedControl(toko.pane.tab, p, {
@@ -99,6 +100,7 @@ function setup () {
 
   toko.pane.tab.addBlade({ view: 'separator' });
 
+  toko.pane.tab.addBinding(p, 'showHighlight');
   toko.pane.tab.addBinding(p, 'highlightRadius', { min: 0, max: 300, step: 5 });
   toko.pane.tab.addBinding(p, 'showEdge');
 
@@ -187,7 +189,7 @@ function draw () {
   //
   let c;
   for (let i = 0; i < points.length; i++) {
-    if (points[i].fc == fc) {
+    if (points[i].fc == fc && p.showHighlight) {
       c = toko.colorAlpha('white', 255 * p.alpha);
     } else {
       c = points[i].color;
