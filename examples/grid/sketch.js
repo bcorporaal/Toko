@@ -48,6 +48,14 @@ function setup () {
     useParameterPanel: true, //  use the tweakpane panel for settings
     showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
     captureFrames: false, //  no record option
+    additionalCanvasSizes: [
+      {
+        name: 'extra wide',
+        width: 3515,
+        height: 1080,
+        pixelDensity: 2,
+      },
+    ],
   });
 
   //
