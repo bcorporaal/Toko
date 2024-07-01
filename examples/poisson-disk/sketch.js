@@ -2,6 +2,8 @@ p5.disableFriendlyErrors = false; // disables FES to speed things up a little bi
 
 let toko = new Toko();
 
+let dotQuadtree, points;
+
 function preload () {
   //
   // All loading calls here
@@ -61,6 +63,8 @@ function setup () {
     inverse: true,
     blendMode: BLEND,
     sequential: false,
+    highlightRadius: 100,
+    showEdge: false,
   };
 
   toko.addRandomSeedControl(toko.pane.tab, p, {
@@ -93,6 +97,11 @@ function setup () {
   toko.pane.tab.addBinding(p, 'radius', { min: 0.1, max: 5, step: 0.1 });
   toko.pane.tab.addBinding(p, 'spacing', { min: 5, max: 50, step: 5 });
 
+  toko.pane.tab.addBlade({ view: 'separator' });
+
+  toko.pane.tab.addBinding(p, 'highlightRadius', { min: 0, max: 300, step: 5 });
+  toko.pane.tab.addBinding(p, 'showEdge');
+
   //
   //  listen to tweakpane changes
   //
@@ -101,7 +110,7 @@ function setup () {
   });
 
   refresh();
-  noLoop();
+  // noLoop();
 
   //---------------------------------------------
   toko.endSetup();
@@ -111,6 +120,14 @@ function setup () {
 function refresh () {
   console.log('Toko - refresh');
 
+  //
+  //  create a fresh quadtree
+  //
+  dotQuadtree = QuadTree.create();
+  //
+  //  create the distribution
+  //
+  points = toko.poissonDisk(width, height, p.spacing);
   //
   //  set domain range to number of steps
   //
@@ -122,6 +139,19 @@ function refresh () {
   //
   colors = toko.getColorScale(this.p.palette, o);
   blendMode(p.blendMode);
+  //
+  //  add all points to the quadtree and give each point a color
+  //
+  let n = points.length;
+  for (let i = 0; i < points.length; i++) {
+    let quadtreeCircle = new Circle(points[i].x, points[i].y, p.radius * p.spacing, { id: i });
+    dotQuadtree.insert(quadtreeCircle);
+    if (p.sequential) {
+      points[i].color = toko.colorAlpha(colors.scale(i / n), 255 * p.alpha);
+    } else {
+      points[i].color = toko.colorAlpha(colors.randomOriginalColor(), 255 * p.alpha);
+    }
+  }
   //
   //  redraw with updated parameters
   //
@@ -140,18 +170,44 @@ function draw () {
   let bgndColor = colors.backgroundColor(p.inverse);
   background(bgndColor);
 
-  let points = toko.poissonDisk(width, height, p.spacing);
+  let areaToCheck = new Circle(mouseX, mouseY, p.highlightRadius / 2);
+  let circlesToCheck = dotQuadtree.query(areaToCheck);
 
+  //
+  //  to avoid having to reset all the points back to an unhighlighted state
+  //  we're given all the highlighted ones the framecount as an unique id
+  //
+  let fc = frameCount;
+  circlesToCheck.forEach(circle => {
+    points[circle.data.id].fc = fc;
+  });
+
+  //
+  //  then we're coloring white all the points with the unique id
+  //
   let c;
-  let n = points.length;
   for (let i = 0; i < points.length; i++) {
-    if (p.sequential) {
-      c = toko.colorAlpha(colors.scale(i / n), 255 * p.alpha);
+    if (points[i].fc == fc) {
+      c = toko.colorAlpha('white', 255 * p.alpha);
     } else {
-      c = toko.colorAlpha(colors.randomOriginalColor(), 255 * p.alpha);
+      c = points[i].color;
     }
     fill(c);
     circle(points[i].x, points[i].y, p.radius * p.spacing);
+  }
+  //
+  //  note that we're skipping the actual radius check and
+  //  assuming that the quadtree is sufficiently accurate.
+  //
+
+  //
+  //  for reference show the edge of the circle of influence
+  //
+  if (p.showEdge) {
+    noFill();
+    stroke('yellow');
+    strokeWeight(1);
+    circle(mouseX, mouseY, p.highlightRadius);
   }
 
   //---------------------------------------------
