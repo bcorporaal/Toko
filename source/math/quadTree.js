@@ -1,5 +1,9 @@
 import Toko from '../core/main';
 
+//
+//  QuadTree
+//
+
 //  Original code by Daniel Shiffman
 //  http://codingtra.in
 //  http://patreon.com/codingtrain
@@ -27,10 +31,7 @@ import Toko from '../core/main';
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 //  SOFTWARE.
 
-// QuadTree
-
 Toko.QuadTree = class {
-  //class QuadTree {
   DEFAULT_CAPACITY = 8;
   MAX_DEPTH = 8;
 
@@ -370,10 +371,6 @@ Toko.QuadTree = class {
     return this.points.length;
   }
 };
-
-if (typeof module !== 'undefined') {
-  module.exports = { Point, Rectangle, QuadTree, Circle };
-}
 
 //
 //------------------------------------------------------------------------------------------------------------------
