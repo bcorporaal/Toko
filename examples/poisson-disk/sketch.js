@@ -63,7 +63,7 @@ function setup () {
     inverse: true,
     blendMode: BLEND,
     sequential: false,
-    highlightRadius: 100,
+    highlightRadius: 200,
     showEdge: false,
     showHighlight: true,
   };
@@ -124,7 +124,7 @@ function refresh () {
   //
   //  create a fresh quadtree
   //
-  dotQuadtree = QuadTree.create();
+  dotQuadtree = Toko.QuadTree.create();
   //
   //  create the distribution
   //
@@ -145,7 +145,7 @@ function refresh () {
   //
   let n = points.length;
   for (let i = 0; i < points.length; i++) {
-    let quadtreeCircle = new Circle(points[i].x, points[i].y, p.radius * p.spacing, { id: i });
+    let quadtreeCircle = new Toko.QuadTree.Circle(points[i].x, points[i].y, p.radius * p.spacing, { id: i });
     dotQuadtree.insert(quadtreeCircle);
     if (p.sequential) {
       points[i].color = toko.colorAlpha(colors.scale(i / n), 255 * p.alpha);
@@ -171,7 +171,7 @@ function draw () {
   let bgndColor = colors.backgroundColor(p.inverse);
   background(bgndColor);
 
-  let areaToCheck = new Circle(mouseX, mouseY, p.highlightRadius / 2);
+  let areaToCheck = new Toko.QuadTree.Circle(mouseX, mouseY, p.highlightRadius / 2);
   let circlesToCheck = dotQuadtree.query(areaToCheck);
 
   //
