@@ -132,6 +132,9 @@ function draw () {
   //---------------------------------------------
 }
 
+//
+//  plot the dropped image
+//
 function plotImage () {
   somethingDropped = true;
   clear();
@@ -203,10 +206,15 @@ function windowResized () {
 }
 
 function receivedFile (file) {
-  console.log(`Toko - receivedFile - received a ${file.subtype} file`);
+  //
+  //  check and load the received file
+  //
+  console.log(`Toko - receivedFile - received a ${file.subtype} file.`);
 
   if (file.subtype == 'png' || file.subtype == 'jpg') {
     loadImage(file.data, imageLoaded);
+  } else {
+    console.log(`${file.subtype} files are not accepted.`);
   }
 }
 
