@@ -133,6 +133,7 @@ var Toko = (function () {
     showSaveSketchButton: false,
     saveSettingsWithSketch: false,
     acceptDroppedSettings: true,
+    acceptDroppedFiles: false,
     sketchElementId: 'sketch-canvas',
     useParameterPanel: true,
     hideParameterPanel: false,
@@ -4195,7 +4196,7 @@ var Toko = (function () {
     //
     this.options = Object.assign({}, this.DEFAULT_OPTIONS, inputOptions);
 
-    if (this.options.acceptDroppedSettings) {
+    if (this.options.acceptDroppedSettings || this.options.acceptDroppedFiles) {
       p5Canvas.drop(this.dropFile.bind(this));
     }
 
@@ -7212,9 +7213,9 @@ var Toko = (function () {
   //  WARNING: basically no error checking is done here
   //
   Toko.prototype.dropFile = function (file) {
-    if (file.subtype == 'json') {
+    if (this.options.acceptDroppedSettings && file.subtype == 'json') {
       this.receiveSettings(file);
-    } else {
+    } else if (this.options.acceptDroppedFiles) {
       this.receiveFile(file);
     }
   };

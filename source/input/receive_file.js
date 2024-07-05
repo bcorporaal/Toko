@@ -6,9 +6,9 @@ import Toko from '../core/main';
 //  WARNING: basically no error checking is done here
 //
 Toko.prototype.dropFile = function (file) {
-  if (file.subtype == 'json') {
+  if (this.options.acceptDroppedSettings && file.subtype == 'json') {
     this.receiveSettings(file);
-  } else {
+  } else if (this.options.acceptDroppedFiles) {
     this.receiveFile(file);
   }
 };

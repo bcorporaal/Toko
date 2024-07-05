@@ -130,6 +130,7 @@ export const DEFAULT_OPTIONS = {
   showSaveSketchButton: false,
   saveSettingsWithSketch: false,
   acceptDroppedSettings: true,
+  acceptDroppedFiles: false,
   sketchElementId: 'sketch-canvas',
   useParameterPanel: true,
   hideParameterPanel: false,

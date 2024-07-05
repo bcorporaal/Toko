@@ -43,6 +43,7 @@ function setup () {
     showSaveSketchButton: true, //  show save image button in tweakpane
     saveSettingsWithSketch: true, //  save json of settings together with the image
     acceptDroppedSettings: true, //  accept dropped json files with settings
+    acceptDroppedFiles: true, //  accept dropped files
     useParameterPanel: true, //  use the tweakpane panel for settings
     showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
     captureFrames: false, //  no record option
@@ -53,8 +54,6 @@ function setup () {
   //
   //  sketch parameters
   //
-  // let g = new Toko.Grid();
-
   p = {
     pointSize: 10,
     pointSpacing: 10,
