@@ -4397,7 +4397,7 @@ var Toko = (function () {
   };
 
   //
-  //  add an additional size to the list of sizes - can only be done as Toko is set up
+  //  add an additional size to the list of sizes - can only be done once Toko is set up
   //
   Toko.prototype.addCanvasSize = function (inSize) {
     this.SIZES.push(inSize);

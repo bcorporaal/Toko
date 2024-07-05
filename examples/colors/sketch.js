@@ -205,7 +205,7 @@ function windowResized () {
 
 function receivedFile (file) {
   //
-  //  called when a JSON file is dropped on the sketch
+  //  called when a file is dropped on the sketch
   //  tweakpane settings are automatically updated
   //
   console.log('Toko - receivedFile');

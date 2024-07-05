@@ -176,7 +176,7 @@ function draw () {
 
   //
   //  to avoid having to reset all the points back to an unhighlighted state
-  //  we're given all the highlighted ones the framecount as an unique id
+  //  we're given all the highlighted ones the current framecount as an unique id
   //
   let fc = frameCount;
   circlesToCheck.forEach(circle => {
@@ -184,7 +184,7 @@ function draw () {
   });
 
   //
-  //  then we're coloring white all the points with the unique id
+  //  then we're coloring white all the points with the current framecount
   //
   let c;
   for (let i = 0; i < points.length; i++) {
@@ -259,7 +259,7 @@ function windowResized () {
 
 function receivedFile (file) {
   //
-  //  called when a JSON file is dropped on the sketch
+  //  called when a file is dropped on the sketch
   //  tweakpane settings are automatically updated
   //
   console.log('Toko - receivedFile');
