@@ -6822,6 +6822,23 @@ var Toko = (function () {
   };
 
   //
+  //  makeGradientStops
+  //
+  //  colors    Toko colors object
+  //  nrStops   number of stops in the gradient - default is 50
+  //
+  Toko.prototype.makeGradientStops = function (colors, nrStops = 50) {
+    let stops = [];
+    for (let i = 0; i < nrStops; i++) {
+      stops.push({
+        offset: map(i, 0, nrStops, 0, 1),
+        color: colors.scale(map(i, 0, nrStops, colors.options.domain[0], colors.options.domain[1])),
+      });
+    }
+    return stops;
+  };
+
+  //
   //  SHADOW & GLOW EFFECTS
   //
 
