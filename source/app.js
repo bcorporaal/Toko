@@ -18,6 +18,7 @@ import './math/random';
 import './math/rng';
 import './math/openSimplex';
 import './math/quadTree';
+import './math/easing';
 
 import './geometry/grid';
 import './geometry/gridCell';
