@@ -159,3 +159,20 @@ export const CAPTURE_FORMATS = {
 //
 export const FPS_FILTER_STRENGTH = 40;
 export const FRAME_TIME = 16;
+
+//
+//  easing parameters
+//
+export const EASE_LINEAR = 'Linear';
+export const EASE_SMOOTH = 'InOutSmoother';
+export const EASE_QUAD = 'Quad';
+export const EASE_CUBIC = 'Cubic';
+export const EASE_QUART = 'Quart';
+export const EASE_QUINT = 'Quint';
+export const EASE_ELASTIC = 'Elastic';
+export const EASE_BOUNCE = 'Bounce';
+export const EASE_BACK = 'Back';
+
+export const EASE_IN = 'In';
+export const EASE_OUT = 'Out';
+export const EASE_IN_OUT = 'InOut';
