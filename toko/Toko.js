@@ -163,10 +163,43 @@ var Toko = (function () {
   const FPS_FILTER_STRENGTH = 40;
   const FRAME_TIME = 16;
 
+  //
+  //  easing parameters
+  //
+  const EASE_LINEAR = 'Linear';
+  const EASE_SMOOTH = 'InOutSmoother';
+  const EASE_QUAD = 'Quad';
+  const EASE_CUBIC = 'Cubic';
+  const EASE_QUART = 'Quart';
+  const EASE_QUINT = 'Quint';
+  const EASE_EXPO = 'Expo';
+  const EASE_CIRC = 'Circ';
+  const EASE_ELASTIC = 'Elastic';
+  const EASE_BOUNCE = 'Bounce';
+  const EASE_BACK = 'Back';
+
+  const EASE_IN = 'In';
+  const EASE_OUT = 'Out';
+  const EASE_IN_OUT = 'InOut';
+
   var constants = /*#__PURE__*/Object.freeze({
     __proto__: null,
     CAPTURE_FORMATS: CAPTURE_FORMATS,
     DEFAULT_OPTIONS: DEFAULT_OPTIONS,
+    EASE_BACK: EASE_BACK,
+    EASE_BOUNCE: EASE_BOUNCE,
+    EASE_CIRC: EASE_CIRC,
+    EASE_CUBIC: EASE_CUBIC,
+    EASE_ELASTIC: EASE_ELASTIC,
+    EASE_EXPO: EASE_EXPO,
+    EASE_IN: EASE_IN,
+    EASE_IN_OUT: EASE_IN_OUT,
+    EASE_LINEAR: EASE_LINEAR,
+    EASE_OUT: EASE_OUT,
+    EASE_QUAD: EASE_QUAD,
+    EASE_QUART: EASE_QUART,
+    EASE_QUINT: EASE_QUINT,
+    EASE_SMOOTH: EASE_SMOOTH,
     FPS_FILTER_STRENGTH: FPS_FILTER_STRENGTH,
     FRAME_TIME: FRAME_TIME,
     SIZES: SIZES,
@@ -3683,6 +3716,7 @@ var Toko = (function () {
     nrColors: 10,
     useSortOrder: false,
     constrainContrast: false,
+    nrDuotones: 5,
   };
 
   Toko.prototype.initColorDone = false;
@@ -3844,7 +3878,62 @@ var Toko = (function () {
       return contrastColors[cc];
     };
 
+    o.duotones = this._findDuotones(o.originalColors, colorOptions.nrDuotones, colorOptions.reverse);
+
     return o;
+  };
+
+  Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
+    let nrColors = inPalette.length;
+    let duotones = [];
+
+    for (let i = 0; i < nrColors; i++) {
+      for (let j = i + 1; j < nrColors; j++) {
+        let c1 = inPalette[i];
+        let c2 = inPalette[j];
+
+        let contrast = chroma.contrast(c1, c2);
+
+        let cB, cA;
+        let lum1 = chroma(c1).hsl()[2];
+        let lum2 = chroma(c2).hsl()[2];
+
+        if (reverse) {
+          cA = lum1 < lum2 ? c1 : c2;
+          cB = lum1 < lum2 ? c2 : c1;
+        } else {
+          cA = lum1 > lum2 ? c1 : c2;
+          cB = lum1 > lum2 ? c2 : c1;
+        }
+
+        duotones.push({
+          colors: [cA, cB],
+          backgroundColor: cA,
+          drawColor: cB,
+          contrast: contrast,
+        });
+      }
+    }
+
+    //  sort from high to low
+    duotones.sort((a, b) => b.contrast - a.contrast);
+
+    //
+    //  copy items if there is fewer than minLength
+    //
+    if (duotones.length < minLength) {
+      let needed = minLength - duotones.length;
+      while (needed > 0) {
+        // Determine how many items to copy in this iteration
+        let itemsToCopy = Math.min(duotones.length, needed);
+        // Add the items to the array
+        duotones.push(...duotones.slice(0, itemsToCopy));
+        // Update the needed count
+        needed -= itemsToCopy;
+      }
+    }
+
+    return duotones.slice(0, minLength);
   };
 
   Toko.prototype._getColorScale = function (inPalette, colorOptions) {
@@ -4672,42 +4761,6 @@ var Toko = (function () {
     //  call main refresh function to update everything
     //
     refresh();
-  };
-
-  //
-  //  add blendmode palette selector
-  //
-  Toko.prototype.addBlendModeSelector = function (paneRef, pObject, incomingOptions) {
-    //
-    //  set default options
-    //
-    let o = {
-      // reserved for future defaults
-    };
-    //
-    // merge with default options
-    //
-    o = Object.assign({}, o, incomingOptions);
-    //
-    //  not all p5 blendmodes are included
-    //
-    paneRef.addBinding(pObject, o.blendModeKey, {
-      options: {
-        Default: BLEND,
-        Multiply: MULTIPLY,
-        Screen: SCREEN,
-        Overlay: OVERLAY,
-        Darkest: DARKEST,
-        Lightest: LIGHTEST,
-        Difference: DIFFERENCE,
-        Exclusion: EXCLUSION,
-        // Add: ADD,
-        // Hard-light: HARD_LIGHT,
-        // Soft-light: SOFT_LIGHT,
-        // Dodge: DODGE,
-        // Burn: BURN,
-      },
-    });
   };
 
   Toko.prototype.addRandomSeedControl = function (paneRef, pObject, incomingOptions) {
@@ -6328,23 +6381,99 @@ var Toko = (function () {
 
   // Bounce increasing in velocity until completion
   Toko.prototype.easeInBounce = t => {
-    return 1 - easeOutBounce(1 - t);
+    return 1 - Toko.prototype.easeOutBounce(1 - t);
   };
 
   // Bounce in and bounce out
   Toko.prototype.easeInOutBounce = t => {
     if (t < 0.5) {
-      return easeInBounce(t * 2) * 0.5;
+      return Toko.prototype.easeInBounce(t * 2) * 0.5;
     }
 
-    return easeOutBounce(t * 2 - 1) * 0.5 + 0.5;
+    return Toko.prototype.easeOutBounce(t * 2 - 1) * 0.5 + 0.5;
   };
 
-  // Extra smooth
+  // Extra smooth - Ken Perlin smoothstep function
   Toko.prototype.easeInOutSmoother = t => {
     var ts = t * t,
       tc = ts * t;
     return 6 * tc * ts - 15 * ts * ts + 10 * tc;
+  };
+
+  //
+  //  add easing selector
+  //
+  Toko.prototype.addEasingSelector = function (paneRef, pObject, incomingOptions) {
+    //
+    //  set default options
+    //
+    let o = {
+      // reserved for future defaults
+    };
+    //
+    // merge with default options
+    //
+    o = Object.assign({}, o, incomingOptions);
+
+    o.easeTypeControl = paneRef
+      .addBinding(pObject, o.typeKey, {
+        label: 'easing type',
+        options: {
+          Linear: this.EASE_LINEAR,
+          Smooth: this.EASE_SMOOTH,
+          Quad: this.EASE_QUAD,
+          Cubic: this.EASE_CUBIC,
+          Quart: this.EASE_QUART,
+          Quint: this.EASE_QUINT,
+          Expo: this.EASE_EXPO,
+          Circ: this.EASE_CIRC,
+          Elastic: this.EASE_ELASTIC,
+          Bounce: this.EASE_BOUNCE,
+          Back: this.EASE_BACK,
+        },
+      })
+      .on('change', ev => {
+        if (ev.value === this.EASE_LINEAR || ev.value === this.EASE_SMOOTH) {
+          o.easeDirectionControl.hidden = true;
+        } else {
+          o.easeDirectionControl.hidden = false;
+        }
+      });
+
+    o.easeDirectionControl = paneRef.addBinding(pObject, o.directionKey, {
+      label: 'direction',
+      options: {
+        In: this.EASE_IN,
+        Out: this.EASE_OUT,
+        InOut: this.EASE_IN_OUT,
+      },
+    });
+  };
+
+  //
+  //  get the easing equation based on the type and direction
+  //
+  Toko.prototype.getEasingFunction = function (easeType = this.EASE_QUAD, easeDirection = this.EASE_IN_OUT) {
+    let easeFunction = 'ease';
+    //
+    //  add the direction
+    //
+    if (easeType !== this.EASE_LINEAR && easeType !== this.EASE_SMOOTH) {
+      easeFunction += easeDirection;
+    }
+    //
+    //  add the type
+    //
+    easeFunction += easeType;
+
+    let f = toko[easeFunction];
+
+    if (typeof f === 'function') {
+      return f;
+    } else {
+      console.log(`ERROR: ${easeFunction} is not a function.`);
+      return null;
+    }
   };
 
   //
