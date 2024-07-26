@@ -239,21 +239,97 @@ Toko.prototype.easeOutBounce = t => {
 
 // Bounce increasing in velocity until completion
 Toko.prototype.easeInBounce = t => {
-  return 1 - easeOutBounce(1 - t);
+  return 1 - Toko.prototype.easeOutBounce(1 - t);
 };
 
 // Bounce in and bounce out
 Toko.prototype.easeInOutBounce = t => {
   if (t < 0.5) {
-    return easeInBounce(t * 2) * 0.5;
+    return Toko.prototype.easeInBounce(t * 2) * 0.5;
   }
 
-  return easeOutBounce(t * 2 - 1) * 0.5 + 0.5;
+  return Toko.prototype.easeOutBounce(t * 2 - 1) * 0.5 + 0.5;
 };
 
-// Extra smooth
+// Extra smooth - Ken Perlin smoothstep function
 Toko.prototype.easeInOutSmoother = t => {
   var ts = t * t,
     tc = ts * t;
   return 6 * tc * ts - 15 * ts * ts + 10 * tc;
+};
+
+//
+//  add easing selector
+//
+Toko.prototype.addEasingSelector = function (paneRef, pObject, incomingOptions) {
+  //
+  //  set default options
+  //
+  let o = {
+    // reserved for future defaults
+  };
+  //
+  // merge with default options
+  //
+  o = Object.assign({}, o, incomingOptions);
+
+  o.easeTypeControl = paneRef
+    .addBinding(pObject, o.typeKey, {
+      label: 'easing type',
+      options: {
+        Linear: this.EASE_LINEAR,
+        Smooth: this.EASE_SMOOTH,
+        Quad: this.EASE_QUAD,
+        Cubic: this.EASE_CUBIC,
+        Quart: this.EASE_QUART,
+        Quint: this.EASE_QUINT,
+        Expo: this.EASE_EXPO,
+        Circ: this.EASE_CIRC,
+        Elastic: this.EASE_ELASTIC,
+        Bounce: this.EASE_BOUNCE,
+        Back: this.EASE_BACK,
+      },
+    })
+    .on('change', ev => {
+      if (ev.value === this.EASE_LINEAR || ev.value === this.EASE_SMOOTH) {
+        o.easeDirectionControl.hidden = true;
+      } else {
+        o.easeDirectionControl.hidden = false;
+      }
+    });
+
+  o.easeDirectionControl = paneRef.addBinding(pObject, o.directionKey, {
+    label: 'direction',
+    options: {
+      In: this.EASE_IN,
+      Out: this.EASE_OUT,
+      InOut: this.EASE_IN_OUT,
+    },
+  });
+};
+
+//
+//  get the easing equation based on the type and direction
+//
+Toko.prototype.getEasingFunction = function (easeType = this.EASE_QUAD, easeDirection = this.EASE_IN_OUT) {
+  let easeFunction = 'ease';
+  //
+  //  add the direction
+  //
+  if (easeType !== this.EASE_LINEAR && easeType !== this.EASE_SMOOTH) {
+    easeFunction += easeDirection;
+  }
+  //
+  //  add the type
+  //
+  easeFunction += easeType;
+
+  let f = toko[easeFunction];
+
+  if (typeof f === 'function') {
+    return f;
+  } else {
+    console.log(`ERROR: ${easeFunction} is not a function.`);
+    return null;
+  }
 };
