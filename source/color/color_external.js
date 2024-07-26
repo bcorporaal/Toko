@@ -25,6 +25,12 @@
 //    scaleChroma,            - function is the original Chroma color scale object. Normally not used.
 //    originalScale,          - function that returns a color from the original set based on a value within the range.
 //    contrastColors,         - array of 2 contrast colors based on the ends of the range.
+//    backgroundColor         - color: first of the contrast colors
+//    drawColor               - color: second of the contrast colors
+//    duotones                - array of 5 color combinations ordered from high to low contrast. Each:
+//                                backgroundColor
+//                                drawColor
+//                                contrast - number defining the contrast between the colors
 //    originalColors,         - array of original palette colors. Length of the array varies with palette.
 //    randomColor,            - function that provides a random color in the full palette.
 //                                useOriginal - boolean to use original color palette
