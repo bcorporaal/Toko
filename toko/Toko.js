@@ -1818,13 +1818,6 @@ var Toko = (function () {
       type: 'duotone',
     },
     {
-      name: 'dt02b',
-      colors: ['#eee3d3'],
-      stroke: '#302956',
-      background: '#f3c507',
-      type: 'duotone',
-    },
-    {
       name: 'dt03',
       colors: ['#000000', '#a7a7a7'],
       stroke: '#000000',
@@ -4761,6 +4754,42 @@ var Toko = (function () {
     //  call main refresh function to update everything
     //
     refresh();
+  };
+
+  //
+  //  add blendmode palette selector
+  //
+  Toko.prototype.addBlendModeSelector = function (paneRef, pObject, incomingOptions) {
+    //
+    //  set default options
+    //
+    let o = {
+      // reserved for future defaults
+    };
+    //
+    // merge with default options
+    //
+    o = Object.assign({}, o, incomingOptions);
+    //
+    //  not all p5 blendmodes are included
+    //
+    paneRef.addBinding(pObject, o.blendModeKey, {
+      options: {
+        Default: BLEND,
+        Multiply: MULTIPLY,
+        Screen: SCREEN,
+        Overlay: OVERLAY,
+        Darkest: DARKEST,
+        Lightest: LIGHTEST,
+        Difference: DIFFERENCE,
+        Exclusion: EXCLUSION,
+        // Add: ADD,
+        // Hard-light: HARD_LIGHT,
+        // Soft-light: SOFT_LIGHT,
+        // Dodge: DODGE,
+        // Burn: BURN,
+      },
+    });
   };
 
   Toko.prototype.addRandomSeedControl = function (paneRef, pObject, incomingOptions) {
