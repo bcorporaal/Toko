@@ -31,7 +31,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'Toko basic template', //  title displayed
+    title: 'Color grid', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
