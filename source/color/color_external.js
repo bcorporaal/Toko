@@ -13,6 +13,7 @@
 //   nrColors: 10             - number of colors used to create the color list array
 //   useSortOrder: false      - Use any predefined sort order
 //   constrainContrast: fals  - limit the range of predefined contrast colors
+//   nrDuotones: 5            - number of duotones generated in the palette
 // }
 
 //

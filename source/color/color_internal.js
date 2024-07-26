@@ -43,6 +43,7 @@ Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   nrColors: 10,
   useSortOrder: false,
   constrainContrast: false,
+  nrDuotones: 5,
 };
 
 Toko.prototype.initColorDone = false;
@@ -204,7 +205,62 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
     return contrastColors[cc];
   };
 
+  o.duotones = this._findDuotones(o.originalColors, colorOptions.nrDuotones, colorOptions.reverse);
+
   return o;
+};
+
+Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
+  let nrColors = inPalette.length;
+  let duotones = [];
+
+  for (let i = 0; i < nrColors; i++) {
+    for (let j = i + 1; j < nrColors; j++) {
+      let c1 = inPalette[i];
+      let c2 = inPalette[j];
+
+      let contrast = chroma.contrast(c1, c2);
+
+      let cB, cA;
+      let lum1 = chroma(c1).hsl()[2];
+      let lum2 = chroma(c2).hsl()[2];
+
+      if (reverse) {
+        cA = lum1 < lum2 ? c1 : c2;
+        cB = lum1 < lum2 ? c2 : c1;
+      } else {
+        cA = lum1 > lum2 ? c1 : c2;
+        cB = lum1 > lum2 ? c2 : c1;
+      }
+
+      duotones.push({
+        colors: [cA, cB],
+        backgroundColor: cA,
+        drawColor: cB,
+        contrast: contrast,
+      });
+    }
+  }
+
+  //  sort from high to low
+  duotones.sort((a, b) => b.contrast - a.contrast);
+
+  //
+  //  copy items if there is fewer than minLength
+  //
+  if (duotones.length < minLength) {
+    let needed = minLength - duotones.length;
+    while (needed > 0) {
+      // Determine how many items to copy in this iteration
+      let itemsToCopy = Math.min(duotones.length, needed);
+      // Add the items to the array
+      duotones.push(...duotones.slice(0, itemsToCopy));
+      // Update the needed count
+      needed -= itemsToCopy;
+    }
+  }
+
+  return duotones.slice(0, minLength);
 };
 
 Toko.prototype._getColorScale = function (inPalette, colorOptions) {
