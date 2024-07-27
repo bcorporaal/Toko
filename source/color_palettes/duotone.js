@@ -75,20 +75,6 @@ export default [
     type: 'duotone',
   },
   {
-    name: 'dt11',
-    colors: ['#ece9e2'],
-    stroke: '#221e1f',
-    background: '#75c4bf',
-    type: 'duotone',
-  },
-  {
-    name: 'dt12',
-    colors: ['#f5f2d3'],
-    stroke: '#073c5c',
-    background: '#c0d0c3',
-    type: 'duotone',
-  },
-  {
     name: 'dt13',
     colors: ['#f5f2d3', '#f5f2d3', '#fbd6b8'],
     stroke: '#ec5525',
