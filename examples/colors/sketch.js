@@ -117,7 +117,7 @@ function refresh () {
     sort: p.sort,
     constrainContrast: false,
     useSpectral: false,
-    nrDuotones: 8,
+    nrDuotones: 12,
   };
   //
   //  get colors
@@ -130,7 +130,7 @@ function refresh () {
     sort: p.sort,
     constrainContrast: false,
     useSpectral: true,
-    nrDuotones: 8,
+    nrDuotones: 12,
   };
   colorsSpectral = toko.getColorScale(this.p.palette, oSpectral);
 

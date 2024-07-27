@@ -74,7 +74,7 @@ function setup () {
   //
   toko.addPaletteSelector(toko.pane.tab, p, {
     index: 1,
-    justPrimary: false,
+    justPrimary: true,
     sorted: true,
     navButtons: true,
     collectionsList: 'collections',
@@ -82,7 +82,7 @@ function setup () {
     paletteKey: 'palette',
   });
 
-  toko.pane.tab.addBinding(p, 'duotone', { min: 0, max: 4, step: 1 });
+  toko.pane.tab.addBinding(p, 'duotone', { min: 0, max: 11, step: 1 });
   toko.pane.tab.addBinding(p, 'reverse');
 
   toko.pane.tab.addBlade({ view: 'separator' });
@@ -144,6 +144,7 @@ function refresh () {
   const o = {
     domain: [0, 1],
     reverse: p.reverse,
+    nrDuotones: 12,
   };
   //
   //  get colors
