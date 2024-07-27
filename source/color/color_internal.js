@@ -287,6 +287,7 @@ Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
     interleaved.push(duotones[i]);
     interleaved.push(duotones[i + mid]);
   }
+  //  handle uneven lists
   if (n % 2 !== 0) {
     interleaved.push(duotones[n - 1]);
   }
@@ -300,9 +301,15 @@ Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
     duotones = duotones.concat(duotones);
   }
 
+  //
+  //  reduce to required length and return
+  //
   return duotones.slice(0, minLength);
 };
 
+//
+//  expand the color set by interpolating using Spectral
+//
 Toko.prototype._expandColorSet = function (inColorSet) {
   let newColorSet = [];
   let n = inColorSet.length;
