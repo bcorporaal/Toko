@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>to be replaced</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" width="device-width," initial-scale="1.0," maximum-scale="1.0," user-scalable="0" />
+    <link rel="stylesheet" href="../../assets/css/main.css" />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+  </head>
+
+  <body>
+    <div class="sketch-wrapper">
+      <div class="sketch--flexible" id="sketch-canvas"></div>
+    </div>
+    <div class="labels">
+      <div class="label--title" id="sketch-title">to be replaced</div>
+    </div>
+    <script language="javascript" type="text/javascript" src="../../assets/js/ccapture/1.1.0/CCapture.all.min.js"></script>
+    <script language="javascript" type="text/javascript" src="../../assets/js/gif/0.2.0/gif.js"></script>
+    <script type="module">
+      import * as Tweakpane from '/../../assets/js/tweakpane/4.0.4/tweakpane-4.0.4.min.js';
+      import * as TweakpaneEssentialsPlugin from '/../../assets/js/tweakpane/plugin-essentials-0.2.1/tweakpane-plugin-essentials-0.2.1.min.js';
+      import * as TweakpaneCamerakitPlugin from '/../../assets/js/tweakpane/plugin-camerakit-0.3.0/tweakpane-plugin-camerakit-0.3.0.min.js';
+      // Export them as a global variable - A bit hacky but this keeps the urls flexible
+      window.Tweakpane = Tweakpane;
+      window.TweakpaneEssentialsPlugin = TweakpaneEssentialsPlugin;
+      window.TweakpaneCamerakitPlugin = TweakpaneCamerakitPlugin;
+    </script>
+    <script language="javascript" type="text/javascript" src="../../assets/js/chroma/2.7.0/chroma.min.js"></script>
+    <script language="javascript" type="text/javascript" src="../../assets/js/spectral/spectral.min.js"></script>
+    <script language="javascript" type="text/javascript" src="../../assets/js/p5/1.9.4/p5.min.js"></script>
+    <script language="javascript" type="text/javascript" src="../../toko/Toko.js"></script>
+    <script language="javascript" type="text/javascript" src="sketch.js"></script>
+  </body>
+</html>
