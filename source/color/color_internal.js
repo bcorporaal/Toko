@@ -30,6 +30,7 @@ import lospecPalettes from '../color_palettes/lospec';
 Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
 Toko.prototype.COLOR_COLLECTIONS = [];
 Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
+Toko.prototype.EXTRA_SPECTRAL_COLORS = 25;
 
 Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   reverse: false,
@@ -37,13 +38,14 @@ Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   mode: 'rgb',
   gamma: 1,
   correctLightness: false,
+  useSpectral: true,
   bezier: false,
   stepped: false,
   steps: 10,
   nrColors: 10,
   useSortOrder: false,
   constrainContrast: false,
-  nrDuotones: 5,
+  nrDuotones: 12,
 };
 
 Toko.prototype.initColorDone = false;
@@ -91,7 +93,7 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   if (!this.initColorDone) {
     this._initColor();
   }
-  let sc, oSC;
+  let sc, oSC, eSC, expandedColorSet;
   let o = {};
 
   if (colorOptions._validated != true) {
@@ -122,10 +124,17 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   oSC = chroma.scale(colorSet).domain(colorOptions.domain).classes(colorSet.length);
 
   //
+  //  expand color set using Spectral
+  //
+  expandedColorSet = this._expandColorSet(colorSet);
+  eSC = chroma.scale(expandedColorSet).domain(colorOptions.domain).mode(colorOptions.mode);
+
+  //
   // only adjust gamma if needed
   //
   if (colorOptions.gamma != 1) {
     sc.gamma(colorOptions.gamma);
+    eSC.gamma(colorOptions.gamma);
   }
 
   //
@@ -133,26 +142,43 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   //
   if (colorOptions.correctLightness) {
     sc = sc.correctLightness();
+    eSC = eSC.correctLightness();
   }
 
   if (colorOptions.stepped && colorOptions.steps > 0) {
     sc = sc.classes(colorOptions.steps);
+    eSC = eSC.classes(colorOptions.steps);
   }
 
   o.scaleChroma = sc;
+  o.scaleSpectral = eSC;
   o.contrastColors = contrastColors;
   o.options = colorOptions;
-  o.list = sc.colors(colorOptions.nrColors);
-
   o.originalColors = colorSet;
 
-  o.scale = (i, useOriginal = false) => {
-    if (!useOriginal) {
-      return sc(i).hex();
-    } else {
-      return oSC(i).hex();
-    }
-  };
+  if (colorOptions.useSpectral) {
+    o.list = eSC.colors(colorOptions.nrColors);
+  } else {
+    o.list = sc.colors(colorOptions.nrColors);
+  }
+
+  if (colorOptions.useSpectral) {
+    o.scale = (i, useOriginal = false) => {
+      if (!useOriginal) {
+        return eSC(i).hex();
+      } else {
+        return oSC(i).hex();
+      }
+    };
+  } else {
+    o.scale = (i, useOriginal = false) => {
+      if (!useOriginal) {
+        return sc(i).hex();
+      } else {
+        return oSC(i).hex();
+      }
+    };
+  }
 
   o.originalScale = i => {
     return oSC(i).hex();
@@ -210,6 +236,9 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   return o;
 };
 
+//
+//  from a palette create a set of color combinations
+//
 Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
   let nrColors = inPalette.length;
   let duotones = [];
@@ -221,6 +250,9 @@ Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
 
       let contrast = chroma.contrast(c1, c2);
 
+      //
+      //  arrange colors by luminance
+      //
       let cB, cA;
       let lum1 = chroma(c1).hsl()[2];
       let lum2 = chroma(c2).hsl()[2];
@@ -245,22 +277,49 @@ Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
   //  sort from high to low
   duotones.sort((a, b) => b.contrast - a.contrast);
 
+  //  interleave from start and middle
+  //  [1,2,3,4,5,6] -> [1,4,2,5,3,6]
+  const n = duotones.length;
+  const mid = Math.floor(n / 2);
+  const interleaved = [];
+  for (let i = 0; i < mid; i++) {
+    interleaved.push(duotones[i]);
+    if (i + mid < n) {
+      interleaved.push(duotones[i + mid]);
+    }
+  }
+  duotones = [...interleaved];
+
   //
-  //  copy items if there is fewer than minLength
+  //  copy items if there are fewer than minLength
   //
   if (duotones.length < minLength) {
     let needed = minLength - duotones.length;
     while (needed > 0) {
-      // Determine how many items to copy in this iteration
       let itemsToCopy = Math.min(duotones.length, needed);
-      // Add the items to the array
       duotones.push(...duotones.slice(0, itemsToCopy));
-      // Update the needed count
       needed -= itemsToCopy;
     }
   }
 
   return duotones.slice(0, minLength);
+};
+
+Toko.prototype._expandColorSet = function (inColorSet) {
+  let newColorSet = [];
+  let n = inColorSet.length;
+
+  newColorSet.push(inColorSet[0]);
+  for (let i = 1; i < n; i++) {
+    let c0 = inColorSet[i - 1];
+    let c1 = inColorSet[i];
+    let extraColors = spectral.palette(c0, c1, this.EXTRA_SPECTRAL_COLORS);
+    extraColors = extraColors.slice(0, -1);
+    newColorSet = newColorSet.concat(extraColors);
+  }
+  newColorSet.push(inColorSet[n - 1]);
+
+  return newColorSet;
 };
 
 Toko.prototype._getColorScale = function (inPalette, colorOptions) {
