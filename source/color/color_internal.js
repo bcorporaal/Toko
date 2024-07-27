@@ -26,6 +26,7 @@ import tsuchimochiPalettes from '../color_palettes/tsuchimochi';
 import tundraPalettes from '../color_palettes/tundra';
 import orbifoldPalettes from '../color_palettes/orbifold';
 import lospecPalettes from '../color_palettes/lospec';
+import duotone from '../color_palettes/duotone';
 
 Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
 Toko.prototype.COLOR_COLLECTIONS = [];
@@ -284,22 +285,19 @@ Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
   const interleaved = [];
   for (let i = 0; i < mid; i++) {
     interleaved.push(duotones[i]);
-    if (i + mid < n) {
-      interleaved.push(duotones[i + mid]);
-    }
+    interleaved.push(duotones[i + mid]);
   }
+  if (n % 2 !== 0) {
+    interleaved.push(duotones[n - 1]);
+  }
+
   duotones = [...interleaved];
 
   //
-  //  copy items if there are fewer than minLength
+  //  add copies to lengthen the array
   //
-  if (duotones.length < minLength) {
-    let needed = minLength - duotones.length;
-    while (needed > 0) {
-      let itemsToCopy = Math.min(duotones.length, needed);
-      duotones.push(...duotones.slice(0, itemsToCopy));
-      needed -= itemsToCopy;
-    }
+  while (duotones.length < minLength) {
+    duotones = duotones.concat(duotones);
   }
 
   return duotones.slice(0, minLength);
