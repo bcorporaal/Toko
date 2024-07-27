@@ -72,6 +72,7 @@ Toko makes use of the following:<br>
 [Tweakpane](https://cocopon.github.io/tweakpane/) by Hiroki Kokubun for controls. MIT License.<br>
 [CCapture.js](https://github.com/spite/ccapture.js) by Jaume Sanchez for video capture. MIT License.<br>
 [Chroma.js](https://github.com/gka/chroma.js) by Gregor Aisch for color manipulations. Apache License.<br>
+[Spectral.js](https://github.com/rvanwijnen/spectral.js) by Roland van Wijnen for color mixing. MIT License.<br>
 [p5.js-svg](https://github.com/zenozeng/p5.js-svg) by Zeno Zeng for SVG support. MIT License.<br>
 
 ## License
