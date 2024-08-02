@@ -1,4 +1,4 @@
-import {CAPTURE_FORMATS} from '../core/constants';
+import { CAPTURE_FORMATS } from '../core/constants';
 import Toko from '../core/main';
 
 Toko.prototype.initCapture = function () {
@@ -13,7 +13,7 @@ Toko.prototype.createCapturePanel = function (tabID) {
     options: this.CAPTURE_FORMATS,
   });
 
-  t.addBlade({view: 'separator'});
+  t.addBlade({ view: 'separator' });
 
   this.startCaptureButton = t
     .addButton({
@@ -92,7 +92,7 @@ Toko.prototype.getCaptureOptions = function (format = 'png') {
     case 'gif':
       o.format = 'gif';
       o.quality = 10;
-      o.workersPath = 'assets/js/gif/0.2.0/';
+      o.workersPath = this.options.gifWorkerPath;
       break;
     case 'jpg':
       o.format = 'jpg';

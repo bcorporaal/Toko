@@ -143,6 +143,7 @@ export const DEFAULT_OPTIONS = {
   captureFormat: 'png',
   canvasSize: SIZE_DEFAULT,
   seedString: '',
+  gifWorkerPath: 'assets/js/gif/0.2.0/',
 };
 
 //

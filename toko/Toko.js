@@ -146,6 +146,7 @@ var Toko = (function () {
     captureFormat: 'png',
     canvasSize: SIZE_DEFAULT,
     seedString: '',
+    gifWorkerPath: 'assets/js/gif/0.2.0/',
   };
 
   //
@@ -7520,7 +7521,7 @@ var Toko = (function () {
       options: this.CAPTURE_FORMATS,
     });
 
-    t.addBlade({view: 'separator'});
+    t.addBlade({ view: 'separator' });
 
     this.startCaptureButton = t
       .addButton({
@@ -7599,7 +7600,7 @@ var Toko = (function () {
       case 'gif':
         o.format = 'gif';
         o.quality = 10;
-        o.workersPath = 'assets/js/gif/0.2.0/';
+        o.workersPath = this.options.gifWorkerPath;
         break;
       case 'jpg':
         o.format = 'jpg';
