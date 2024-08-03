@@ -57,8 +57,8 @@ function setup () {
     captureFrames: true, //  add record option in tweakpane
     captureFrameCount: 999, //  max number of frames captured (is this actually used?)
     captureFrameRate: 15, //  basic frame rate for capture
-    captureFormat: 'png', //  default image format for capture
-    gifWorkerPath: '../../assets/js/gif/0.2.0/', // set the path to the worked needed for GIF capture
+    // captureFormat: 'png', //  default image format for capture
+    // gifWorkerPath: '../../assets/js/gif/0.2.0/', // set the path to the worked needed for GIF capture
     logFPS: false, //  log the fps in tweakpane (not working properly)
   });
 

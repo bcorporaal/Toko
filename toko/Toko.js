@@ -141,21 +141,51 @@ var Toko = (function () {
     additionalCanvasSizes: [],
     logFPS: false,
     captureFrames: false,
-    captureFrameCount: 500,
-    captureFrameRate: 15,
-    captureFormat: 'png',
+    captureFormat: 'mp4',
     canvasSize: SIZE_DEFAULT,
     seedString: '',
-    gifWorkerPath: 'assets/js/gif/0.2.0/',
   };
 
   //
   //  Options for capture
   //
   const CAPTURE_FORMATS = {
+    WebM: 'webm',
+    MP4: 'mp4',
     PNG: 'png',
     JPG: 'jpg',
     GIF: 'gif',
+    WebP: 'webp',
+  };
+
+  const CAPTURE_FRAMERATES = {
+    15: 15,
+    24: 24,
+    30: 30,
+    60: 60,
+  };
+
+  const DEFAULT_CAPTURE_OPTIONS = {
+    format: 'mp4', //  export format
+    framerate: 30, //  recording framerate
+    bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
+    quality: 0.95, //  recording quality option (only available for WebM/GIF/JPG/WebP)
+    width: null, // 	output width. canvas width used as default
+    height: null, // 	output height. canvas height used as default
+    duration: null, // 	maximum recording duration in number of frames
+    autoSaveDuration: null, //  automatically downloads every n frames. convenient for long captures
+    disableUi: true, //  hide the ui
+    beforeDownload: (blob, context, next) => {
+      toko.resetCapture(); // used to ensure the reset always happens
+      next();
+    },
+    baseFilename: date => {
+      return toko.filenameCapture();
+    },
+    // used by Toko but not by p5.capture
+    captureFixedNrFrames: false,
+    nrFrames: 0,
+    estimate: '0',
   };
 
   //
@@ -186,6 +216,8 @@ var Toko = (function () {
   var constants = /*#__PURE__*/Object.freeze({
     __proto__: null,
     CAPTURE_FORMATS: CAPTURE_FORMATS,
+    CAPTURE_FRAMERATES: CAPTURE_FRAMERATES,
+    DEFAULT_CAPTURE_OPTIONS: DEFAULT_CAPTURE_OPTIONS,
     DEFAULT_OPTIONS: DEFAULT_OPTIONS,
     EASE_BACK: EASE_BACK,
     EASE_BOUNCE: EASE_BOUNCE,
@@ -600,6 +632,12 @@ var Toko = (function () {
       this._rng = new Toko.RNG();
 
       console.log(this.VERSION);
+
+      //
+      //  set the default options for P5Capture.
+      //  this needs to happen before the p5 setup.
+      //
+      P5Capture.setDefaultOptions(this.DEFAULT_CAPTURE_OPTIONS);
     }
   }
 
@@ -4317,7 +4355,7 @@ var Toko = (function () {
 
     // todo: fix the fps graph. Currently it increases when using the tweakpane controls
     this.capturer = {};
-    this.captureOptions = {};
+    this.captureOptions = this.DEFAULT_CAPTURE_OPTIONS;
 
     this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
 
@@ -4491,12 +4529,6 @@ var Toko = (function () {
     if (this.options.logFPS) {
       this._frameTime += (deltaTime - this.FRAME_TIME) / this.FPS_FILTER_STRENGTH;
       this.pt.fps = this.pt.graph = Math.round(1000 / this.FRAME_TIME);
-    }
-    //
-    //  capture a frame if we're actively capturing
-    //
-    if (this.options.captureFrames && this._captureStarted) {
-      this.captureFrame();
     }
   };
 
@@ -7510,8 +7542,12 @@ var Toko = (function () {
   };
 
   Toko.prototype.initCapture = function () {
-    let o = this.getCaptureOptions(this.captureOptions.format);
-    this.capturer = new CCapture(o);
+    this.capturer = P5Capture.getInstance();
+    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+      this.captureOptions.captureFixedNrFrames = false;
+    } else {
+      this.captureOptions.captureFixedNrFrames = true;
+    }
   };
 
   Toko.prototype.createCapturePanel = function (tabID) {
@@ -7520,6 +7556,45 @@ var Toko = (function () {
     t.addBinding(this.captureOptions, 'format', {
       options: this.CAPTURE_FORMATS,
     });
+
+    t.addBinding(this.captureOptions, 'framerate', {
+      options: this.CAPTURE_FRAMERATES,
+    }).on('change', e => {
+      frameRate(e.value);
+      this.updateDurationEstimate();
+    });
+
+    t.addBlade({ view: 'separator' });
+
+    t.addBinding(this.captureOptions, 'captureFixedNrFrames', {
+      label: 'fixed duration',
+    }).on('change', value => {
+      this.updateCaptureFrameSelector(value);
+    });
+
+    this.captureFrameControl = t
+      .addBinding(this.captureOptions, 'nrFrames', {
+        min: 0,
+        max: 1000,
+        step: 5,
+      })
+      .on('change', e => {
+        console.log(this.captureOptions.captureFixedNrFrames);
+        if (this.captureOptions.captureFixedNrFrames) {
+          this.captureOptions.duration = e.value;
+        }
+        this.updateDurationEstimate();
+      });
+
+    this.captureFrameDurationDisplay = t.addBinding(this.captureOptions, 'estimate', {
+      readonly: true,
+      label: 'time (sec)',
+    });
+
+    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+      this.captureFrameControl.hidden = true;
+      this.captureFrameDurationDisplay.hidden = true;
+    }
 
     t.addBlade({ view: 'separator' });
 
@@ -7541,11 +7616,28 @@ var Toko = (function () {
     this.stopCaptureButton.hidden = true;
   };
 
+  Toko.prototype.updateCaptureFrameSelector = function (e) {
+    if (e.value) {
+      this.captureFrameControl.hidden = false;
+      this.captureOptions.duration = this.captureOptions.nrFrames;
+      this.captureFrameDurationDisplay.hidden = false;
+      this.updateDurationEstimate();
+    } else {
+      this.captureFrameControl.hidden = true;
+      this.captureOptions.duration = null;
+      this.captureFrameDurationDisplay.hidden = true;
+    }
+  };
+
+  Toko.prototype.updateDurationEstimate = function () {
+    let e = Math.round((100 * parseInt(this.captureOptions.duration)) / parseInt(this.captureOptions.framerate)) / 100;
+    this.captureOptions.estimate = e;
+  };
+
   Toko.prototype.clickStartCapture = function () {
     this.stopCaptureButton.hidden = false;
     this.startCaptureButton.hidden = true;
     this.startCapture();
-    redraw(); // BUG: this should not be needed but for some reason it halts without it
   };
 
   Toko.prototype.clickStopCapture = function () {
@@ -7559,7 +7651,7 @@ var Toko = (function () {
       this.initCapture();
       window.captureStarted?.();
       this._captureStarted = true;
-      this.capturer.start();
+      this.capturer.start(this.captureOptions);
     }
   };
 
@@ -7567,47 +7659,18 @@ var Toko = (function () {
     if (this.options.captureFrames && this._captureStarted) {
       this.capturer.stop();
       window.captureStopped?.();
-      this.capturer.save();
       this._captureStarted = false;
     }
   };
 
-  Toko.prototype.captureFrame = function () {
-    if (this.options.captureFrames) {
-      // capture a frame
-      this.capturer.capture(document.getElementById('defaultCanvas0'));
-    } else {
-      this.stopCapture();
-    }
+  Toko.prototype.resetCapture = function () {
+    this.stopCaptureButton.hidden = true;
+    this.startCaptureButton.hidden = false;
+    this._captureStarted = false;
   };
 
-  Toko.prototype.getCaptureOptions = function (format = 'png') {
-    //
-    //  default options
-    //
-    let o = {
-      format: 'png',
-      framerate: this.options.captureFrameRate,
-      name: this.generateFilename('none', 'captured'),
-      display: false,
-      motionBlurFrames: 0,
-      verbose: false,
-    };
-    //
-    //  alternative options
-    //
-    switch (format) {
-      case 'gif':
-        o.format = 'gif';
-        o.quality = 10;
-        o.workersPath = this.options.gifWorkerPath;
-        break;
-      case 'jpg':
-        o.format = 'jpg';
-        break;
-    }
-
-    return o;
+  Toko.prototype.filenameCapture = function (date) {
+    return this.generateFilename('none', 'captured');
   };
 
   Toko.prototype.saveSketch = function () {

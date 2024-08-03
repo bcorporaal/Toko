@@ -18,10 +18,4 @@ Toko.prototype.endDraw = function () {
     this._frameTime += (deltaTime - this.FRAME_TIME) / this.FPS_FILTER_STRENGTH;
     this.pt.fps = this.pt.graph = Math.round(1000 / this.FRAME_TIME);
   }
-  //
-  //  capture a frame if we're actively capturing
-  //
-  if (this.options.captureFrames && this._captureStarted) {
-    this.captureFrame();
-  }
 };
