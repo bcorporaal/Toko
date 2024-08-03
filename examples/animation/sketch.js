@@ -4,6 +4,14 @@ let toko = new Toko();
 let particles = [];
 let attractors = [];
 
+P5Capture.setDefaultOptions({
+  format: 'mp4',
+  framerate: 30,
+  quality: 1,
+  // width: 320,
+  disableUi: true,
+});
+
 function preload () {
   //
   // All loading calls here
