@@ -110,7 +110,6 @@ Toko.prototype.startCapture = function () {
     this.initCapture();
     window.captureStarted?.();
     this._captureStarted = true;
-    console.log(this.captureOptions);
     this.capturer.start(this.captureOptions);
   }
 };
@@ -127,4 +126,8 @@ Toko.prototype.resetCapture = function () {
   this.stopCaptureButton.hidden = true;
   this.startCaptureButton.hidden = false;
   this._captureStarted = false;
+};
+
+Toko.prototype.filenameCapture = function (date) {
+  return this.generateFilename('none', 'captured');
 };

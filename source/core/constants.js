@@ -179,6 +179,9 @@ export const DEFAULT_CAPTURE_OPTIONS = {
     toko.resetCapture(); // used to ensure the reset always happens
     next();
   },
+  baseFilename: date => {
+    return toko.filenameCapture();
+  },
   // used by Toko but not by p5.capture
   captureFixedNrFrames: false,
   nrFrames: 0,

@@ -182,6 +182,9 @@ var Toko = (function () {
       toko.resetCapture(); // used to ensure the reset always happens
       next();
     },
+    baseFilename: date => {
+      return toko.filenameCapture();
+    },
     // used by Toko but not by p5.capture
     captureFixedNrFrames: false,
     nrFrames: 0,
@@ -7651,7 +7654,6 @@ var Toko = (function () {
       this.initCapture();
       window.captureStarted?.();
       this._captureStarted = true;
-      console.log(this.captureOptions);
       this.capturer.start(this.captureOptions);
     }
   };
@@ -7668,6 +7670,10 @@ var Toko = (function () {
     this.stopCaptureButton.hidden = true;
     this.startCaptureButton.hidden = false;
     this._captureStarted = false;
+  };
+
+  Toko.prototype.filenameCapture = function (date) {
+    return this.generateFilename('none', 'captured');
   };
 
   Toko.prototype.saveSketch = function () {
