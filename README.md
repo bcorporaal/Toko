@@ -11,7 +11,8 @@ For examples of generative art created with Toko see [Late Night Noodles on Inst
 
 ## Features
 
-- Easy capturing options for images and video
+- Easy capturing options for images and video using p5.capture
+- Create and save SVG images
 - Switching between canvas sizes
 - Larger canvas sizes are scaled to fit on the screen
 - Tweakpane integration to easily change sketch parameters
@@ -21,7 +22,6 @@ For examples of generative art created with Toko see [Late Night Noodles on Inst
 - Seeded random number generator class to create random but repeatable results
 - Addition noise and random functions like OpenSimplex and Poisson-Disk distributions
 - Grid generation and modification
-- Create and save SVG images
 
 ## Usage
 
@@ -31,7 +31,6 @@ There is no documentation yet, so see `toko/source` for details. Also, the examp
 
 ### General
 
-- Where possible use p5 functionality for saving images and video
 - Add more post-processing options
 - Streamline ui settings
 
@@ -61,6 +60,8 @@ If you have any questions or comments you can also contact me via [email](mailto
 
 ## Credits
 
+Many thanks to all the creator whose code or work is in some way of influence to Toko.
+
 Toko includes code from the following:<br>
 [Chromotome color palettes](https://github.com/kgolid/chromotome) by Kjetil Midtgarden Golid. MIT License.<br>
 [D3 color palettes](https://github.com/d3/d3) by Mike Bostock and others. ISC License.<br>
@@ -70,7 +71,7 @@ Toko includes code from the following:<br>
 
 Toko makes use of the following:<br>
 [Tweakpane](https://cocopon.github.io/tweakpane/) by Hiroki Kokubun for controls. MIT License.<br>
-[CCapture.js](https://github.com/spite/ccapture.js) by Jaume Sanchez for video capture. MIT License.<br>
+[p5.capture](https://github.com/tapioca24/p5.capture) by tapioca24 for video capture. MIT License.<br>
 [Chroma.js](https://github.com/gka/chroma.js) by Gregor Aisch for color manipulations. Apache License.<br>
 [Spectral.js](https://github.com/rvanwijnen/spectral.js) by Roland van Wijnen for color mixing. MIT License.<br>
 [p5.js-svg](https://github.com/zenozeng/p5.js-svg) by Zeno Zeng for SVG support. MIT License.<br>
