@@ -138,12 +138,9 @@ export const DEFAULT_OPTIONS = {
   additionalCanvasSizes: [],
   logFPS: false,
   captureFrames: false,
-  // captureFrameCount: 500,
-  // captureFrameRate: 15,
   captureFormat: 'mp4',
   canvasSize: SIZE_DEFAULT,
   seedString: '',
-  // gifWorkerPath: 'assets/js/gif/0.2.0/',
 };
 
 //
