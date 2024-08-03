@@ -19,13 +19,6 @@ export default [
     type: 'duotone',
   },
   {
-    name: 'dt02b',
-    colors: ['#eee3d3'],
-    stroke: '#302956',
-    background: '#f3c507',
-    type: 'duotone',
-  },
-  {
     name: 'dt03',
     colors: ['#000000', '#a7a7a7'],
     stroke: '#000000',
@@ -79,20 +72,6 @@ export default [
     colors: ['#e5dfcf', '#151513'],
     stroke: '#151513',
     background: '#e9b500',
-    type: 'duotone',
-  },
-  {
-    name: 'dt11',
-    colors: ['#ece9e2'],
-    stroke: '#221e1f',
-    background: '#75c4bf',
-    type: 'duotone',
-  },
-  {
-    name: 'dt12',
-    colors: ['#f5f2d3'],
-    stroke: '#073c5c',
-    background: '#c0d0c3',
     type: 'duotone',
   },
   {

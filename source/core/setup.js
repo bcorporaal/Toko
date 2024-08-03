@@ -6,7 +6,7 @@ Toko.prototype.setup = function (inputOptions) {
 
   // todo: fix the fps graph. Currently it increases when using the tweakpane controls
   this.capturer = {};
-  this.captureOptions = {};
+  this.captureOptions = this.DEFAULT_CAPTURE_OPTIONS;
 
   this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
 

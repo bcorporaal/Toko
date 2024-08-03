@@ -16,7 +16,7 @@ var Toko = (function () {
   //
   //  current version
   //
-  const VERSION = 'Toko v0.11.0';
+  const VERSION = 'Toko v0.12.0';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -141,9 +141,7 @@ var Toko = (function () {
     additionalCanvasSizes: [],
     logFPS: false,
     captureFrames: false,
-    captureFrameCount: 500,
-    captureFrameRate: 15,
-    captureFormat: 'png',
+    captureFormat: 'mp4',
     canvasSize: SIZE_DEFAULT,
     seedString: '',
   };
@@ -152,9 +150,42 @@ var Toko = (function () {
   //  Options for capture
   //
   const CAPTURE_FORMATS = {
+    WebM: 'webm',
+    MP4: 'mp4',
     PNG: 'png',
     JPG: 'jpg',
     GIF: 'gif',
+    WebP: 'webp',
+  };
+
+  const CAPTURE_FRAMERATES = {
+    15: 15,
+    24: 24,
+    30: 30,
+    60: 60,
+  };
+
+  const DEFAULT_CAPTURE_OPTIONS = {
+    format: 'mp4', //  export format
+    framerate: 30, //  recording framerate
+    bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
+    quality: 0.95, //  recording quality option (only available for WebM/GIF/JPG/WebP)
+    width: null, // 	output width. canvas width used as default
+    height: null, // 	output height. canvas height used as default
+    duration: null, // 	maximum recording duration in number of frames
+    autoSaveDuration: null, //  automatically downloads every n frames. convenient for long captures
+    disableUi: true, //  hide the ui
+    beforeDownload: (blob, context, next) => {
+      toko.resetCapture(); // used to ensure the reset always happens
+      next();
+    },
+    baseFilename: date => {
+      return toko.filenameCapture();
+    },
+    // used by Toko but not by p5.capture
+    captureFixedNrFrames: false,
+    nrFrames: 0,
+    estimate: '0',
   };
 
   //
@@ -163,10 +194,45 @@ var Toko = (function () {
   const FPS_FILTER_STRENGTH = 40;
   const FRAME_TIME = 16;
 
+  //
+  //  easing parameters
+  //
+  const EASE_LINEAR = 'Linear';
+  const EASE_SMOOTH = 'InOutSmoother';
+  const EASE_QUAD = 'Quad';
+  const EASE_CUBIC = 'Cubic';
+  const EASE_QUART = 'Quart';
+  const EASE_QUINT = 'Quint';
+  const EASE_EXPO = 'Expo';
+  const EASE_CIRC = 'Circ';
+  const EASE_ELASTIC = 'Elastic';
+  const EASE_BOUNCE = 'Bounce';
+  const EASE_BACK = 'Back';
+
+  const EASE_IN = 'In';
+  const EASE_OUT = 'Out';
+  const EASE_IN_OUT = 'InOut';
+
   var constants = /*#__PURE__*/Object.freeze({
     __proto__: null,
     CAPTURE_FORMATS: CAPTURE_FORMATS,
+    CAPTURE_FRAMERATES: CAPTURE_FRAMERATES,
+    DEFAULT_CAPTURE_OPTIONS: DEFAULT_CAPTURE_OPTIONS,
     DEFAULT_OPTIONS: DEFAULT_OPTIONS,
+    EASE_BACK: EASE_BACK,
+    EASE_BOUNCE: EASE_BOUNCE,
+    EASE_CIRC: EASE_CIRC,
+    EASE_CUBIC: EASE_CUBIC,
+    EASE_ELASTIC: EASE_ELASTIC,
+    EASE_EXPO: EASE_EXPO,
+    EASE_IN: EASE_IN,
+    EASE_IN_OUT: EASE_IN_OUT,
+    EASE_LINEAR: EASE_LINEAR,
+    EASE_OUT: EASE_OUT,
+    EASE_QUAD: EASE_QUAD,
+    EASE_QUART: EASE_QUART,
+    EASE_QUINT: EASE_QUINT,
+    EASE_SMOOTH: EASE_SMOOTH,
     FPS_FILTER_STRENGTH: FPS_FILTER_STRENGTH,
     FRAME_TIME: FRAME_TIME,
     SIZES: SIZES,
@@ -566,6 +632,12 @@ var Toko = (function () {
       this._rng = new Toko.RNG();
 
       console.log(this.VERSION);
+
+      //
+      //  set the default options for P5Capture.
+      //  this needs to happen before the p5 setup.
+      //
+      P5Capture.setDefaultOptions(this.DEFAULT_CAPTURE_OPTIONS);
     }
   }
 
@@ -1785,13 +1857,6 @@ var Toko = (function () {
       type: 'duotone',
     },
     {
-      name: 'dt02b',
-      colors: ['#eee3d3'],
-      stroke: '#302956',
-      background: '#f3c507',
-      type: 'duotone',
-    },
-    {
       name: 'dt03',
       colors: ['#000000', '#a7a7a7'],
       stroke: '#000000',
@@ -1845,20 +1910,6 @@ var Toko = (function () {
       colors: ['#e5dfcf', '#151513'],
       stroke: '#151513',
       background: '#e9b500',
-      type: 'duotone',
-    },
-    {
-      name: 'dt11',
-      colors: ['#ece9e2'],
-      stroke: '#221e1f',
-      background: '#75c4bf',
-      type: 'duotone',
-    },
-    {
-      name: 'dt12',
-      colors: ['#f5f2d3'],
-      stroke: '#073c5c',
-      background: '#c0d0c3',
       type: 'duotone',
     },
     {
@@ -3670,6 +3721,7 @@ var Toko = (function () {
   Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
   Toko.prototype.COLOR_COLLECTIONS = [];
   Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
+  Toko.prototype.EXTRA_SPECTRAL_COLORS = 25;
 
   Toko.prototype.DEFAULT_COLOR_OPTIONS = {
     reverse: false,
@@ -3677,12 +3729,14 @@ var Toko = (function () {
     mode: 'rgb',
     gamma: 1,
     correctLightness: false,
+    useSpectral: true,
     bezier: false,
     stepped: false,
     steps: 10,
     nrColors: 10,
     useSortOrder: false,
     constrainContrast: false,
+    nrDuotones: 12,
   };
 
   Toko.prototype.initColorDone = false;
@@ -3730,7 +3784,7 @@ var Toko = (function () {
     if (!this.initColorDone) {
       this._initColor();
     }
-    let sc, oSC;
+    let sc, oSC, eSC, expandedColorSet;
     let o = {};
 
     if (colorOptions._validated != true) {
@@ -3761,10 +3815,17 @@ var Toko = (function () {
     oSC = chroma.scale(colorSet).domain(colorOptions.domain).classes(colorSet.length);
 
     //
+    //  expand color set using Spectral
+    //
+    expandedColorSet = this._expandColorSet(colorSet);
+    eSC = chroma.scale(expandedColorSet).domain(colorOptions.domain).mode(colorOptions.mode);
+
+    //
     // only adjust gamma if needed
     //
     if (colorOptions.gamma != 1) {
       sc.gamma(colorOptions.gamma);
+      eSC.gamma(colorOptions.gamma);
     }
 
     //
@@ -3772,26 +3833,43 @@ var Toko = (function () {
     //
     if (colorOptions.correctLightness) {
       sc = sc.correctLightness();
+      eSC = eSC.correctLightness();
     }
 
     if (colorOptions.stepped && colorOptions.steps > 0) {
       sc = sc.classes(colorOptions.steps);
+      eSC = eSC.classes(colorOptions.steps);
     }
 
     o.scaleChroma = sc;
+    o.scaleSpectral = eSC;
     o.contrastColors = contrastColors;
     o.options = colorOptions;
-    o.list = sc.colors(colorOptions.nrColors);
-
     o.originalColors = colorSet;
 
-    o.scale = (i, useOriginal = false) => {
-      if (!useOriginal) {
-        return sc(i).hex();
-      } else {
-        return oSC(i).hex();
-      }
-    };
+    if (colorOptions.useSpectral) {
+      o.list = eSC.colors(colorOptions.nrColors);
+    } else {
+      o.list = sc.colors(colorOptions.nrColors);
+    }
+
+    if (colorOptions.useSpectral) {
+      o.scale = (i, useOriginal = false) => {
+        if (!useOriginal) {
+          return eSC(i).hex();
+        } else {
+          return oSC(i).hex();
+        }
+      };
+    } else {
+      o.scale = (i, useOriginal = false) => {
+        if (!useOriginal) {
+          return sc(i).hex();
+        } else {
+          return oSC(i).hex();
+        }
+      };
+    }
 
     o.originalScale = i => {
       return oSC(i).hex();
@@ -3844,7 +3922,99 @@ var Toko = (function () {
       return contrastColors[cc];
     };
 
+    o.duotones = this._findDuotones(o.originalColors, colorOptions.nrDuotones, colorOptions.reverse);
+
     return o;
+  };
+
+  //
+  //  from a palette create a set of color combinations
+  //
+  Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
+    let nrColors = inPalette.length;
+    let duotones = [];
+
+    for (let i = 0; i < nrColors; i++) {
+      for (let j = i + 1; j < nrColors; j++) {
+        let c1 = inPalette[i];
+        let c2 = inPalette[j];
+
+        let contrast = chroma.contrast(c1, c2);
+
+        //
+        //  arrange colors by luminance
+        //
+        let cB, cA;
+        let lum1 = chroma(c1).hsl()[2];
+        let lum2 = chroma(c2).hsl()[2];
+
+        if (reverse) {
+          cA = lum1 < lum2 ? c1 : c2;
+          cB = lum1 < lum2 ? c2 : c1;
+        } else {
+          cA = lum1 > lum2 ? c1 : c2;
+          cB = lum1 > lum2 ? c2 : c1;
+        }
+
+        duotones.push({
+          colors: [cA, cB],
+          backgroundColor: cA,
+          drawColor: cB,
+          contrast: contrast,
+        });
+      }
+    }
+
+    //  sort from high to low
+    duotones.sort((a, b) => b.contrast - a.contrast);
+
+    //  interleave from start and middle
+    //  [1,2,3,4,5,6] -> [1,4,2,5,3,6]
+    const n = duotones.length;
+    const mid = Math.floor(n / 2);
+    const interleaved = [];
+    for (let i = 0; i < mid; i++) {
+      interleaved.push(duotones[i]);
+      interleaved.push(duotones[i + mid]);
+    }
+    //  handle uneven lists
+    if (n % 2 !== 0) {
+      interleaved.push(duotones[n - 1]);
+    }
+
+    duotones = [...interleaved];
+
+    //
+    //  add copies to lengthen the array
+    //
+    while (duotones.length < minLength) {
+      duotones = duotones.concat(duotones);
+    }
+
+    //
+    //  reduce to required length and return
+    //
+    return duotones.slice(0, minLength);
+  };
+
+  //
+  //  expand the color set by interpolating using Spectral
+  //
+  Toko.prototype._expandColorSet = function (inColorSet) {
+    let newColorSet = [];
+    let n = inColorSet.length;
+
+    newColorSet.push(inColorSet[0]);
+    for (let i = 1; i < n; i++) {
+      let c0 = inColorSet[i - 1];
+      let c1 = inColorSet[i];
+      let extraColors = spectral.palette(c0, c1, this.EXTRA_SPECTRAL_COLORS);
+      extraColors = extraColors.slice(0, -1);
+      newColorSet = newColorSet.concat(extraColors);
+    }
+    newColorSet.push(inColorSet[n - 1]);
+
+    return newColorSet;
   };
 
   Toko.prototype._getColorScale = function (inPalette, colorOptions) {
@@ -4185,7 +4355,7 @@ var Toko = (function () {
 
     // todo: fix the fps graph. Currently it increases when using the tweakpane controls
     this.capturer = {};
-    this.captureOptions = {};
+    this.captureOptions = this.DEFAULT_CAPTURE_OPTIONS;
 
     this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
 
@@ -4359,12 +4529,6 @@ var Toko = (function () {
     if (this.options.logFPS) {
       this._frameTime += (deltaTime - this.FRAME_TIME) / this.FPS_FILTER_STRENGTH;
       this.pt.fps = this.pt.graph = Math.round(1000 / this.FRAME_TIME);
-    }
-    //
-    //  capture a frame if we're actively capturing
-    //
-    if (this.options.captureFrames && this._captureStarted) {
-      this.captureFrame();
     }
   };
 
@@ -6089,6 +6253,340 @@ var Toko = (function () {
     }
   };
 
+  // Based on
+  // https://gist.github.com/gre/1650294
+  // https://github.com/AndrewRayCode/easing-utils
+
+  // No easing, no acceleration
+  Toko.prototype.easeLinear = t => {
+    return t;
+  };
+
+  // Slight acceleration from zero to full speed
+  Toko.prototype.easeInSine = t => {
+    return -1 * Math.cos(t * (Math.PI / 2)) + 1;
+  };
+
+  // Slight deceleration at the end
+  Toko.prototype.easeOutSine = t => {
+    return Math.sin(t * (Math.PI / 2));
+  };
+
+  // Slight acceleration at beginning and slight deceleration at end
+  Toko.prototype.easeInOutSine = t => {
+    return -0.5 * (Math.cos(Math.PI * t) - 1);
+  };
+
+  // Accelerating from zero velocity
+  Toko.prototype.easeInQuad = t => {
+    return t * t;
+  };
+
+  // Decelerating to zero velocity
+  Toko.prototype.easeOutQuad = t => {
+    return t * (2 - t);
+  };
+
+  // Acceleration until halfway, then deceleration
+  Toko.prototype.easeInOutQuad = t => {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  };
+
+  // Accelerating from zero velocity
+  Toko.prototype.easeInCubic = t => {
+    return t * t * t;
+  };
+
+  // Decelerating to zero velocity
+  Toko.prototype.easeOutCubic = t => {
+    const t1 = t - 1;
+    return t1 * t1 * t1 + 1;
+  };
+
+  // Acceleration until halfway, then deceleration
+  Toko.prototype.easeInOutCubic = t => {
+    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+  };
+
+  // Accelerating from zero velocity
+  Toko.prototype.easeInQuart = t => {
+    return t * t * t * t;
+  };
+
+  // Decelerating to zero velocity
+  Toko.prototype.easeOutQuart = t => {
+    const t1 = t - 1;
+    return 1 - t1 * t1 * t1 * t1;
+  };
+
+  // Acceleration until halfway, then deceleration
+  Toko.prototype.easeInOutQuart = t => {
+    const t1 = t - 1;
+    return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * t1 * t1 * t1 * t1;
+  };
+
+  // Accelerating from zero velocity
+  Toko.prototype.easeInQuint = t => {
+    return t * t * t * t * t;
+  };
+
+  // Decelerating to zero velocity
+  Toko.prototype.easeOutQuint = t => {
+    const t1 = t - 1;
+    return 1 + t1 * t1 * t1 * t1 * t1;
+  };
+
+  // Acceleration until halfway, then deceleration
+  Toko.prototype.easeInOutQuint = t => {
+    const t1 = t - 1;
+    return t < 0.5 ? 16 * t * t * t * t * t : 1 + 16 * t1 * t1 * t1 * t1 * t1;
+  };
+
+  // Accelerate exponentially until finish
+  Toko.prototype.easeInExpo = t => {
+    if (t === 0) {
+      return 0;
+    }
+
+    return Math.pow(2, 10 * (t - 1));
+  };
+
+  // Initial exponential acceleration slowing to stop
+  Toko.prototype.easeOutExpo = t => {
+    if (t === 1) {
+      return 1;
+    }
+
+    return -Math.pow(2, -10 * t) + 1;
+  };
+
+  // Exponential acceleration and deceleration
+  Toko.prototype.easeInOutExpo = t => {
+    if (t === 0 || t === 1) {
+      return t;
+    }
+
+    const scaledTime = t * 2;
+    const scaledTime1 = scaledTime - 1;
+
+    if (scaledTime < 1) {
+      return 0.5 * Math.pow(2, 10 * scaledTime1);
+    }
+
+    return 0.5 * (-Math.pow(2, -10 * scaledTime1) + 2);
+  };
+
+  // Increasing velocity until stop
+  Toko.prototype.easeInCirc = t => {
+    const scaledTime = t / 1;
+    return -1 * (Math.sqrt(1 - scaledTime * t) - 1);
+  };
+
+  // Start fast, decreasing velocity until stop
+  Toko.prototype.easeOutCirc = t => {
+    const t1 = t - 1;
+    return Math.sqrt(1 - t1 * t1);
+  };
+
+  // Fast increase in velocity, fast decrease in velocity
+  Toko.prototype.easeInOutCirc = t => {
+    const scaledTime = t * 2;
+    const scaledTime1 = scaledTime - 2;
+
+    if (scaledTime < 1) {
+      return -0.5 * (Math.sqrt(1 - scaledTime * scaledTime) - 1);
+    }
+
+    return 0.5 * (Math.sqrt(1 - scaledTime1 * scaledTime1) + 1);
+  };
+
+  // Slow movement backwards then fast snap to finish
+  Toko.prototype.easeInBack = (t, magnitude = 1.70158) => {
+    return t * t * ((magnitude + 1) * t - magnitude);
+  };
+
+  // Fast snap to backwards point then slow resolve to finish
+  Toko.prototype.easeOutBack = (t, magnitude = 1.70158) => {
+    const scaledTime = t / 1 - 1;
+
+    return scaledTime * scaledTime * ((magnitude + 1) * scaledTime + magnitude) + 1;
+  };
+
+  // Slow movement backwards, fast snap to past finish, slow resolve to finish
+  Toko.prototype.easeInOutBack = (t, magnitude = 1.70158) => {
+    const scaledTime = t * 2;
+    const scaledTime2 = scaledTime - 2;
+
+    const s = magnitude * 1.525;
+
+    if (scaledTime < 1) {
+      return 0.5 * scaledTime * scaledTime * ((s + 1) * scaledTime - s);
+    }
+
+    return 0.5 * (scaledTime2 * scaledTime2 * ((s + 1) * scaledTime2 + s) + 2);
+  };
+  // Bounces slowly then quickly to finish
+  Toko.prototype.easeInElastic = (t, magnitude = 0.7) => {
+    if (t === 0 || t === 1) {
+      return t;
+    }
+
+    const scaledTime = t / 1;
+    const scaledTime1 = scaledTime - 1;
+
+    const p = 1 - magnitude;
+    const s = (p / (2 * Math.PI)) * Math.asin(1);
+
+    return -(Math.pow(2, 10 * scaledTime1) * Math.sin(((scaledTime1 - s) * (2 * Math.PI)) / p));
+  };
+
+  // Fast acceleration, bounces to zero
+  Toko.prototype.easeOutElastic = (t, magnitude = 0.7) => {
+    if (t === 0 || t === 1) {
+      return t;
+    }
+
+    const p = 1 - magnitude;
+    const scaledTime = t * 2;
+
+    const s = (p / (2 * Math.PI)) * Math.asin(1);
+    return Math.pow(2, -10 * scaledTime) * Math.sin(((scaledTime - s) * (2 * Math.PI)) / p) + 1;
+  };
+
+  // Slow start and end, two bounces sandwich a fast motion
+  Toko.prototype.easeInOutElastic = (t, magnitude = 0.65) => {
+    if (t === 0 || t === 1) {
+      return t;
+    }
+
+    const p = 1 - magnitude;
+    const scaledTime = t * 2;
+    const scaledTime1 = scaledTime - 1;
+
+    const s = (p / (2 * Math.PI)) * Math.asin(1);
+
+    if (scaledTime < 1) {
+      return -0.5 * (Math.pow(2, 10 * scaledTime1) * Math.sin(((scaledTime1 - s) * (2 * Math.PI)) / p));
+    }
+
+    return Math.pow(2, -10 * scaledTime1) * Math.sin(((scaledTime1 - s) * (2 * Math.PI)) / p) * 0.5 + 1;
+  };
+
+  // Bounce to completion
+  Toko.prototype.easeOutBounce = t => {
+    const scaledTime = t / 1;
+
+    if (scaledTime < 1 / 2.75) {
+      return 7.5625 * scaledTime * scaledTime;
+    } else if (scaledTime < 2 / 2.75) {
+      const scaledTime2 = scaledTime - 1.5 / 2.75;
+      return 7.5625 * scaledTime2 * scaledTime2 + 0.75;
+    } else if (scaledTime < 2.5 / 2.75) {
+      const scaledTime2 = scaledTime - 2.25 / 2.75;
+      return 7.5625 * scaledTime2 * scaledTime2 + 0.9375;
+    } else {
+      const scaledTime2 = scaledTime - 2.625 / 2.75;
+      return 7.5625 * scaledTime2 * scaledTime2 + 0.984375;
+    }
+  };
+
+  // Bounce increasing in velocity until completion
+  Toko.prototype.easeInBounce = t => {
+    return 1 - Toko.prototype.easeOutBounce(1 - t);
+  };
+
+  // Bounce in and bounce out
+  Toko.prototype.easeInOutBounce = t => {
+    if (t < 0.5) {
+      return Toko.prototype.easeInBounce(t * 2) * 0.5;
+    }
+
+    return Toko.prototype.easeOutBounce(t * 2 - 1) * 0.5 + 0.5;
+  };
+
+  // Extra smooth - Ken Perlin smoothstep function
+  Toko.prototype.easeInOutSmoother = t => {
+    var ts = t * t,
+      tc = ts * t;
+    return 6 * tc * ts - 15 * ts * ts + 10 * tc;
+  };
+
+  //
+  //  add easing selector
+  //
+  Toko.prototype.addEasingSelector = function (paneRef, pObject, incomingOptions) {
+    //
+    //  set default options
+    //
+    let o = {
+      // reserved for future defaults
+    };
+    //
+    // merge with default options
+    //
+    o = Object.assign({}, o, incomingOptions);
+
+    o.easeTypeControl = paneRef
+      .addBinding(pObject, o.typeKey, {
+        label: 'easing type',
+        options: {
+          Linear: this.EASE_LINEAR,
+          Smooth: this.EASE_SMOOTH,
+          Quad: this.EASE_QUAD,
+          Cubic: this.EASE_CUBIC,
+          Quart: this.EASE_QUART,
+          Quint: this.EASE_QUINT,
+          Expo: this.EASE_EXPO,
+          Circ: this.EASE_CIRC,
+          Elastic: this.EASE_ELASTIC,
+          Bounce: this.EASE_BOUNCE,
+          Back: this.EASE_BACK,
+        },
+      })
+      .on('change', ev => {
+        if (ev.value === this.EASE_LINEAR || ev.value === this.EASE_SMOOTH) {
+          o.easeDirectionControl.hidden = true;
+        } else {
+          o.easeDirectionControl.hidden = false;
+        }
+      });
+
+    o.easeDirectionControl = paneRef.addBinding(pObject, o.directionKey, {
+      label: 'direction',
+      options: {
+        In: this.EASE_IN,
+        Out: this.EASE_OUT,
+        InOut: this.EASE_IN_OUT,
+      },
+    });
+  };
+
+  //
+  //  get the easing equation based on the type and direction
+  //
+  Toko.prototype.getEasingFunction = function (easeType = this.EASE_QUAD, easeDirection = this.EASE_IN_OUT) {
+    let easeFunction = 'ease';
+    //
+    //  add the direction
+    //
+    if (easeType !== this.EASE_LINEAR && easeType !== this.EASE_SMOOTH) {
+      easeFunction += easeDirection;
+    }
+    //
+    //  add the type
+    //
+    easeFunction += easeType;
+
+    let f = toko[easeFunction];
+
+    if (typeof f === 'function') {
+      return f;
+    } else {
+      console.log(`ERROR: ${easeFunction} is not a function.`);
+      return null;
+    }
+  };
+
   //
   //  grid generators
   //
@@ -6822,6 +7320,23 @@ var Toko = (function () {
   };
 
   //
+  //  makeGradientStops
+  //
+  //  colors    Toko colors object
+  //  nrStops   number of stops in the gradient - default is 50
+  //
+  Toko.prototype.makeGradientStops = function (colors, nrStops = 50) {
+    let stops = [];
+    for (let i = 0; i < nrStops; i++) {
+      stops.push({
+        offset: map(i, 0, nrStops, 0, 1),
+        color: colors.scale(map(i, 0, nrStops, colors.options.domain[0], colors.options.domain[1])),
+      });
+    }
+    return stops;
+  };
+
+  //
   //  SHADOW & GLOW EFFECTS
   //
 
@@ -7027,8 +7542,12 @@ var Toko = (function () {
   };
 
   Toko.prototype.initCapture = function () {
-    let o = this.getCaptureOptions(this.captureOptions.format);
-    this.capturer = new CCapture(o);
+    this.capturer = P5Capture.getInstance();
+    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+      this.captureOptions.captureFixedNrFrames = false;
+    } else {
+      this.captureOptions.captureFixedNrFrames = true;
+    }
   };
 
   Toko.prototype.createCapturePanel = function (tabID) {
@@ -7038,7 +7557,46 @@ var Toko = (function () {
       options: this.CAPTURE_FORMATS,
     });
 
-    t.addBlade({view: 'separator'});
+    t.addBinding(this.captureOptions, 'framerate', {
+      options: this.CAPTURE_FRAMERATES,
+    }).on('change', e => {
+      frameRate(e.value);
+      this.updateDurationEstimate();
+    });
+
+    t.addBlade({ view: 'separator' });
+
+    t.addBinding(this.captureOptions, 'captureFixedNrFrames', {
+      label: 'fixed duration',
+    }).on('change', value => {
+      this.updateCaptureFrameSelector(value);
+    });
+
+    this.captureFrameControl = t
+      .addBinding(this.captureOptions, 'nrFrames', {
+        min: 0,
+        max: 1000,
+        step: 5,
+      })
+      .on('change', e => {
+        console.log(this.captureOptions.captureFixedNrFrames);
+        if (this.captureOptions.captureFixedNrFrames) {
+          this.captureOptions.duration = e.value;
+        }
+        this.updateDurationEstimate();
+      });
+
+    this.captureFrameDurationDisplay = t.addBinding(this.captureOptions, 'estimate', {
+      readonly: true,
+      label: 'time (sec)',
+    });
+
+    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+      this.captureFrameControl.hidden = true;
+      this.captureFrameDurationDisplay.hidden = true;
+    }
+
+    t.addBlade({ view: 'separator' });
 
     this.startCaptureButton = t
       .addButton({
@@ -7058,11 +7616,28 @@ var Toko = (function () {
     this.stopCaptureButton.hidden = true;
   };
 
+  Toko.prototype.updateCaptureFrameSelector = function (e) {
+    if (e.value) {
+      this.captureFrameControl.hidden = false;
+      this.captureOptions.duration = this.captureOptions.nrFrames;
+      this.captureFrameDurationDisplay.hidden = false;
+      this.updateDurationEstimate();
+    } else {
+      this.captureFrameControl.hidden = true;
+      this.captureOptions.duration = null;
+      this.captureFrameDurationDisplay.hidden = true;
+    }
+  };
+
+  Toko.prototype.updateDurationEstimate = function () {
+    let e = Math.round((100 * parseInt(this.captureOptions.duration)) / parseInt(this.captureOptions.framerate)) / 100;
+    this.captureOptions.estimate = e;
+  };
+
   Toko.prototype.clickStartCapture = function () {
     this.stopCaptureButton.hidden = false;
     this.startCaptureButton.hidden = true;
     this.startCapture();
-    redraw(); // BUG: this should not be needed but for some reason it halts without it
   };
 
   Toko.prototype.clickStopCapture = function () {
@@ -7076,7 +7651,7 @@ var Toko = (function () {
       this.initCapture();
       window.captureStarted?.();
       this._captureStarted = true;
-      this.capturer.start();
+      this.capturer.start(this.captureOptions);
     }
   };
 
@@ -7084,47 +7659,18 @@ var Toko = (function () {
     if (this.options.captureFrames && this._captureStarted) {
       this.capturer.stop();
       window.captureStopped?.();
-      this.capturer.save();
       this._captureStarted = false;
     }
   };
 
-  Toko.prototype.captureFrame = function () {
-    if (this.options.captureFrames) {
-      // capture a frame
-      this.capturer.capture(document.getElementById('defaultCanvas0'));
-    } else {
-      this.stopCapture();
-    }
+  Toko.prototype.resetCapture = function () {
+    this.stopCaptureButton.hidden = true;
+    this.startCaptureButton.hidden = false;
+    this._captureStarted = false;
   };
 
-  Toko.prototype.getCaptureOptions = function (format = 'png') {
-    //
-    //  default options
-    //
-    let o = {
-      format: 'png',
-      framerate: this.options.captureFrameRate,
-      name: this.generateFilename('none', 'captured'),
-      display: false,
-      motionBlurFrames: 0,
-      verbose: false,
-    };
-    //
-    //  alternative options
-    //
-    switch (format) {
-      case 'gif':
-        o.format = 'gif';
-        o.quality = 10;
-        o.workersPath = 'assets/js/gif/0.2.0/';
-        break;
-      case 'jpg':
-        o.format = 'jpg';
-        break;
-    }
-
-    return o;
+  Toko.prototype.filenameCapture = function (date) {
+    return this.generateFilename('none', 'captured');
   };
 
   Toko.prototype.saveSketch = function () {

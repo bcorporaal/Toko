@@ -13,7 +13,7 @@
 //
 //  current version
 //
-export const VERSION = 'Toko v0.11.0';
+export const VERSION = 'Toko v0.12.0';
 
 //
 //  Set of standard sizes for the canvas and exports
@@ -138,9 +138,7 @@ export const DEFAULT_OPTIONS = {
   additionalCanvasSizes: [],
   logFPS: false,
   captureFrames: false,
-  captureFrameCount: 500,
-  captureFrameRate: 15,
-  captureFormat: 'png',
+  captureFormat: 'mp4',
   canvasSize: SIZE_DEFAULT,
   seedString: '',
 };
@@ -149,9 +147,42 @@ export const DEFAULT_OPTIONS = {
 //  Options for capture
 //
 export const CAPTURE_FORMATS = {
+  WebM: 'webm',
+  MP4: 'mp4',
   PNG: 'png',
   JPG: 'jpg',
   GIF: 'gif',
+  WebP: 'webp',
+};
+
+export const CAPTURE_FRAMERATES = {
+  15: 15,
+  24: 24,
+  30: 30,
+  60: 60,
+};
+
+export const DEFAULT_CAPTURE_OPTIONS = {
+  format: 'mp4', //  export format
+  framerate: 30, //  recording framerate
+  bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
+  quality: 0.95, //  recording quality option (only available for WebM/GIF/JPG/WebP)
+  width: null, // 	output width. canvas width used as default
+  height: null, // 	output height. canvas height used as default
+  duration: null, // 	maximum recording duration in number of frames
+  autoSaveDuration: null, //  automatically downloads every n frames. convenient for long captures
+  disableUi: true, //  hide the ui
+  beforeDownload: (blob, context, next) => {
+    toko.resetCapture(); // used to ensure the reset always happens
+    next();
+  },
+  baseFilename: date => {
+    return toko.filenameCapture();
+  },
+  // used by Toko but not by p5.capture
+  captureFixedNrFrames: false,
+  nrFrames: 0,
+  estimate: '0',
 };
 
 //
@@ -159,3 +190,22 @@ export const CAPTURE_FORMATS = {
 //
 export const FPS_FILTER_STRENGTH = 40;
 export const FRAME_TIME = 16;
+
+//
+//  easing parameters
+//
+export const EASE_LINEAR = 'Linear';
+export const EASE_SMOOTH = 'InOutSmoother';
+export const EASE_QUAD = 'Quad';
+export const EASE_CUBIC = 'Cubic';
+export const EASE_QUART = 'Quart';
+export const EASE_QUINT = 'Quint';
+export const EASE_EXPO = 'Expo';
+export const EASE_CIRC = 'Circ';
+export const EASE_ELASTIC = 'Elastic';
+export const EASE_BOUNCE = 'Bounce';
+export const EASE_BACK = 'Back';
+
+export const EASE_IN = 'In';
+export const EASE_OUT = 'Out';
+export const EASE_IN_OUT = 'InOut';
