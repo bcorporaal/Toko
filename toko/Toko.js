@@ -170,6 +170,7 @@ var Toko = (function () {
   const CAPTURE_FRAMERATES = {
     15: 15,
     24: 24,
+    25: 25,
     30: 30,
     60: 60,
   };
