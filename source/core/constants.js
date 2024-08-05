@@ -47,6 +47,13 @@ export const SIZE_1080P = {
   pixelDensity: 2,
 };
 
+export const SIZE_1080P_PORTRAIT = {
+  name: '1080p_portrait',
+  width: 1080,
+  height: 1920,
+  pixelDensity: 2,
+};
+
 export const SIZE_720P = {
   name: '720p',
   width: 1280,
@@ -91,6 +98,7 @@ export var SIZES_LIST = {
   iphone_11: 'iphone_11',
   SD_720p: '720p',
   HD_1080p: '1080p',
+  HD_1080p_Portrait: '1080p_portrait',
   wide_screen: 'wide_screen',
   macbook_14: 'macbook_14',
   macbook_16: 'macbook_16',
@@ -103,6 +111,7 @@ export var SIZES = [
   SIZE_SQUARE_XL,
   SIZE_720P,
   SIZE_1080P,
+  SIZE_1080P_PORTRAIT,
   SIZE_IPHONE_11_WALLPAPER,
   SIZE_WIDE_SCREEN,
   SIZE_MACBOOK_14_WALLPAPER,

@@ -35,7 +35,7 @@ function setup () {
     //
     title: 'Toko demo', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
+    canvasSize: toko.SIZE_1080P_PORTRAIT, //  canvas size to use
     //
     //  additional options
     //
@@ -68,7 +68,7 @@ function setup () {
   //  sketch parameters
   //
   p = {
-    nrParticles: 4,
+    nrParticles: 10,
     plotMirrorParticle: false,
     trailLength: 80,
     fadeTrail: false,
