@@ -38,21 +38,13 @@ Toko.prototype.createCapturePanel = function (tabID) {
       step: 5,
     })
     .on('change', e => {
-      console.log(this.captureOptions.captureFixedNrFrames);
       if (this.captureOptions.captureFixedNrFrames) {
         this.captureOptions.duration = e.value;
       }
-      this.updateDurationEstimate();
     });
-
-  this.captureFrameDurationDisplay = t.addBinding(this.captureOptions, 'estimate', {
-    readonly: true,
-    label: 'time (sec)',
-  });
 
   if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
     this.captureFrameControl.hidden = true;
-    this.captureFrameDurationDisplay.hidden = true;
   }
 
   t.addBlade({ view: 'separator' });
@@ -79,18 +71,10 @@ Toko.prototype.updateCaptureFrameSelector = function (e) {
   if (e.value) {
     this.captureFrameControl.hidden = false;
     this.captureOptions.duration = this.captureOptions.nrFrames;
-    this.captureFrameDurationDisplay.hidden = false;
-    this.updateDurationEstimate();
   } else {
     this.captureFrameControl.hidden = true;
     this.captureOptions.duration = null;
-    this.captureFrameDurationDisplay.hidden = true;
   }
-};
-
-Toko.prototype.updateDurationEstimate = function () {
-  let e = Math.round((100 * parseInt(this.captureOptions.duration)) / parseInt(this.captureOptions.framerate)) / 100;
-  this.captureOptions.estimate = e;
 };
 
 Toko.prototype.clickStartCapture = function () {
