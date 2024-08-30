@@ -16,7 +16,7 @@ import judsonPalettes from '../color_palettes/judson';
 import jungPalettes from '../color_palettes/jung';
 import kovecsesPalettes from '../color_palettes/kovecses';
 import mayoPalettes from '../color_palettes/mayo';
-import metBrewerPalettes from '../color_palettes/metBrewer';
+import metBrewerPalettes from '../color_palettes/metbrewer';
 import ranganathPalettes from '../color_palettes/ranganath';
 import rohlfsPalettes from '../color_palettes/rohlfs';
 import roygbivsPalettes from '../color_palettes/roygbivs';
@@ -26,7 +26,7 @@ import tsuchimochiPalettes from '../color_palettes/tsuchimochi';
 import tundraPalettes from '../color_palettes/tundra';
 import orbifoldPalettes from '../color_palettes/orbifold';
 import lospecPalettes from '../color_palettes/lospec';
-import duotone from '../color_palettes/duotone';
+import momaPalettes from '../color_palettes/moma';
 
 Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
 Toko.prototype.COLOR_COLLECTIONS = [];
@@ -36,7 +36,7 @@ Toko.prototype.EXTRA_SPECTRAL_COLORS = 25;
 Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   reverse: false,
   domain: [0, 1],
-  mode: 'rgb',
+  mode: 'oklab',
   gamma: 1,
   correctLightness: false,
   useSpectral: true,
@@ -502,6 +502,7 @@ Toko.prototype._preprocessPalettes = function () {
     lospecPalettes,
     mayoPalettes,
     metBrewerPalettes,
+    momaPalettes,
     orbifoldPalettes,
     ranganathPalettes,
     rohlfsPalettes,
