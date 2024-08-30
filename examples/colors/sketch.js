@@ -118,6 +118,9 @@ function refresh () {
     constrainContrast: false,
     useSpectral: false,
     nrDuotones: 12,
+    mode: 'oklab',
+    bezier: false,
+    correctLightness: false,
   };
   //
   //  get colors
