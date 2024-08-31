@@ -34,7 +34,7 @@ import solublefishPalettes from '../color_palettes/soluble_fish';
 Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
 Toko.prototype.COLOR_COLLECTIONS = [];
 Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
-Toko.prototype.EXTRA_SPECTRAL_COLORS = 25;
+Toko.prototype.EXTRA_SPECTRAL_COLORS = 10;
 
 Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   reverse: false,

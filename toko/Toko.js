@@ -738,6 +738,12 @@ var Toko = (function () {
       type: 'basic',
     },
     {
+      name: '12bitRainbow', // source: https://iamkate.com/data/12-bit-rainbow/
+      colors: ['#817', '#a35', '#c66', '#e94', '#ed0', '#9d5', '#4d8', '#2cb', '#0bc', '#09c', '#36b', '#639'],
+      isPrimary: true,
+      type: 'basic',
+    },
+    {
       name: 'lighthouse',
       colors: ['#FF0A39', '#11C3EF', '#117092', '#E7F6FE'],
       isPrimary: true,
@@ -830,16 +836,7 @@ var Toko = (function () {
     },
     {
       name: 'pastel',
-      colors: [
-        '#F7884B',
-        '#E87A7A',
-        '#B8609A',
-        '#8F64B0',
-        '#7171C4',
-        '#5381E3',
-        '#41ADD4',
-        '#5CB592',
-      ],
+      colors: ['#F7884B', '#E87A7A', '#B8609A', '#8F64B0', '#7171C4', '#5381E3', '#41ADD4', '#5CB592'],
       isPrimary: false,
       type: 'basic',
     },
@@ -871,15 +868,7 @@ var Toko = (function () {
     },
     {
       name: 'sand',
-      colors: [
-        '#FCE29C',
-        '#FCD67A',
-        '#F0B46C',
-        '#D59262',
-        '#B47457',
-        '#81514B',
-        '#4C3C45',
-      ],
+      colors: ['#FCE29C', '#FCD67A', '#F0B46C', '#D59262', '#B47457', '#81514B', '#4C3C45'],
       isPrimary: true,
       type: 'basic',
     },
@@ -897,15 +886,7 @@ var Toko = (function () {
     },
     {
       name: 'westCoast',
-      colors: [
-        '#D9CCC0',
-        '#F19D1A',
-        '#DC306A',
-        '#7E245A',
-        '#398589',
-        '#093578',
-        '#0F1A5E',
-      ],
+      colors: ['#D9CCC0', '#F19D1A', '#DC306A', '#7E245A', '#398589', '#093578', '#0F1A5E'],
       isPrimary: true,
       type: 'basic',
     },
@@ -947,16 +928,7 @@ var Toko = (function () {
     },
     {
       name: 'soft',
-      colors: [
-        '#F2F5E7',
-        '#EBDED1',
-        '#E5B5B7',
-        '#D68097',
-        '#B06683',
-        '#705771',
-        '#294353',
-        '#0B3039',
-      ],
+      colors: ['#F2F5E7', '#EBDED1', '#E5B5B7', '#D68097', '#B06683', '#705771', '#294353', '#0B3039'],
       isPrimary: false,
       type: 'basic',
     },
@@ -4489,7 +4461,7 @@ var Toko = (function () {
   Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
   Toko.prototype.COLOR_COLLECTIONS = [];
   Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
-  Toko.prototype.EXTRA_SPECTRAL_COLORS = 25;
+  Toko.prototype.EXTRA_SPECTRAL_COLORS = 10;
 
   Toko.prototype.DEFAULT_COLOR_OPTIONS = {
     reverse: false,

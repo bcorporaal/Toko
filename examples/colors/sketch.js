@@ -118,7 +118,7 @@ function refresh () {
     constrainContrast: false,
     useSpectral: false,
     nrDuotones: 12,
-    mode: 'oklab',
+    mode: 'oklch',
     bezier: false,
     correctLightness: false,
   };
