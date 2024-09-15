@@ -4285,7 +4285,6 @@ var Toko = (function () {
     domain: [0, 1],
     mode: 'oklab',
     gamma: 1,
-    correctLightness: false,
     stepped: false,
     steps: 10,
     nrColors: 10,
@@ -4362,13 +4361,6 @@ var Toko = (function () {
     //
     if (colorOptions.gamma != 1) {
       sc.gamma(colorOptions.gamma);
-    }
-
-    //
-    // this does not work well with varied palettes so avoid
-    //
-    if (colorOptions.correctLightness) {
-      sc = sc.correctLightness();
     }
 
     if (colorOptions.stepped && colorOptions.steps > 0) {
