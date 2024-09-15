@@ -44,6 +44,7 @@ Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   useSortOrder: false,
   constrainContrast: false,
   nrDuotones: 12,
+  easing: null, // defined below
 };
 
 Toko.prototype.initColorDone = false;
@@ -62,6 +63,7 @@ Toko.prototype._validateColorOptions = function (colorOptions) {
   //
   // merge with default options
   //
+  this.DEFAULT_COLOR_OPTIONS.easing = this.easeLinear;
   colorOptions = Object.assign({}, this.DEFAULT_COLOR_OPTIONS, colorOptions);
 
   //
@@ -83,7 +85,7 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   if (!this.initColorDone) {
     this._initColor();
   }
-  let sc, oSC, eSC, expandedColorSet;
+  let sc, oSC;
   let o = {};
 
   if (colorOptions._validated != true) {

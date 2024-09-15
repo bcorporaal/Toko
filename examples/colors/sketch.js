@@ -116,8 +116,9 @@ function refresh () {
     reverse: p.reverse,
     sort: true,
     constrainContrast: false,
-    mode: 'lrgb',
+    mode: 'oklab',
     nrDuotones: 12,
+    easing: toko.easeInOutBounce,
   };
   colors1 = toko.getColorScale(this.p.palette, o1);
 
@@ -129,10 +130,9 @@ function refresh () {
     reverse: p.reverse,
     sort: false,
     constrainContrast: false,
+    mode: 'oklab',
     nrDuotones: 12,
-    mode: 'lrgb',
-    bezier: true,
-    correctLightness: false,
+    gamma: 1,
   };
   colors2 = toko.getColorScale(this.p.palette, o2);
 
@@ -257,72 +257,6 @@ function draw () {
   toko.endDraw(); // do not remove
   //---------------------------------------------
 }
-
-findDuotones = function (inPalette, minLength, reverse) {
-  let nrColors = inPalette.length;
-  let duotones = [];
-
-  for (let i = 0; i < nrColors; i++) {
-    for (let j = i + 1; j < nrColors; j++) {
-      let c1 = inPalette[i];
-      let c2 = inPalette[j];
-
-      let contrast = chroma.contrast(c1, c2);
-
-      //
-      //  arrange colors by luminance
-      //
-      let cB, cA;
-      let lum1 = chroma(c1).hsl()[2];
-      let lum2 = chroma(c2).hsl()[2];
-
-      if (reverse) {
-        cA = lum1 < lum2 ? c1 : c2;
-        cB = lum1 < lum2 ? c2 : c1;
-      } else {
-        cA = lum1 > lum2 ? c1 : c2;
-        cB = lum1 > lum2 ? c2 : c1;
-      }
-
-      duotones.push({
-        colors: [cA, cB],
-        backgroundColor: cA,
-        drawColor: cB,
-        contrast: contrast,
-      });
-    }
-  }
-
-  //  sort from high to low
-  duotones.sort((a, b) => b.contrast - a.contrast);
-
-  //  interleave from start and middle
-  //  [1,2,3,4,5,6] -> [1,4,2,5,3,6]
-  const n = duotones.length;
-  const mid = Math.floor(n / 2);
-  const interleaved = [];
-  for (let i = 0; i < mid; i++) {
-    interleaved.push(duotones[i]);
-    if (i + mid < n) {
-      interleaved.push(duotones[i + mid]);
-    }
-  }
-  duotones = [...interleaved];
-
-  //
-  //  copy items if there are fewer than minLength
-  //
-  if (duotones.length < minLength) {
-    let needed = minLength - duotones.length;
-    while (needed > 0) {
-      let itemsToCopy = Math.min(duotones.length, needed);
-      duotones.push(...duotones.slice(0, itemsToCopy));
-      needed -= itemsToCopy;
-    }
-  }
-
-  return duotones.slice(0, minLength);
-};
 
 //---------------------------------------------
 //
