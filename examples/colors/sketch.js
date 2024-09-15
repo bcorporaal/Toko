@@ -55,7 +55,7 @@ function setup () {
     interpolated: false,
     collections: toko.COLOR_COLLECTIONS,
     collection: 'basic',
-    palette: 'donut',
+    palette: 'fullRainbow',
     inverse: false,
     reverse: false,
     sort: false,
@@ -109,33 +109,34 @@ function refresh () {
   console.log('Toko - refresh');
 
   //
-  //  set domain range to number of steps
+  //  palette variation #1
   //
-  const o = {
+  const o1 = {
+    domain: [0, p.steps],
+    reverse: p.reverse,
+    sort: p.sort,
+    constrainContrast: false,
+    useSpectral: false,
+    mode: 'oklab',
+    nrDuotones: 12,
+  };
+  colors1 = toko.getColorScale(this.p.palette, o1);
+
+  //
+  //  palette variation #2
+  //
+  const o2 = {
     domain: [0, p.steps],
     reverse: p.reverse,
     sort: p.sort,
     constrainContrast: false,
     useSpectral: false,
     nrDuotones: 12,
-    mode: 'oklch',
+    mode: 'lrgb',
     bezier: false,
     correctLightness: false,
   };
-  //
-  //  get colors
-  //
-  colors = toko.getColorScale(this.p.palette, o);
-
-  const oSpectral = {
-    domain: [0, p.steps],
-    reverse: p.reverse,
-    sort: p.sort,
-    constrainContrast: false,
-    useSpectral: true,
-    nrDuotones: 12,
-  };
-  colorsSpectral = toko.getColorScale(this.p.palette, oSpectral);
+  colors2 = toko.getColorScale(this.p.palette, o2);
 
   //
   //  redraw with updated parameters
@@ -151,16 +152,14 @@ function draw () {
   clear();
   noStroke();
 
-  let bgndColor = colors.backgroundColor(p.inverse);
-  let drawColor = colors.drawColor(p.inverse);
+  let bgndColor = colors1.backgroundColor(p.inverse);
+  let drawColor = colors1.drawColor(p.inverse);
 
   background(bgndColor);
   noFill();
   stroke(drawColor);
   strokeWeight(1);
 
-  // noStroke();
-  // fill(drawColor);
   textFont(font);
 
   let margin = 60;
@@ -183,10 +182,10 @@ function draw () {
 
   rect(margin, y, w, rowHeight);
 
-  let nrColors = colors.originalColors.length;
+  let nrColors = colors2.originalColors.length;
   let cw = w / nrColors;
 
-  colors.originalColors.forEach((col, i) => {
+  colors2.originalColors.forEach((col, i) => {
     fill(col);
     rect(margin + i * cw, y, cw, rowHeight);
   });
@@ -199,12 +198,12 @@ function draw () {
   noStroke();
   fill(drawColor);
   textSize(14);
-  text('COLOR SCALE USING SPECTRAL', margin, y - 10);
+  text('COLOR SCALE #1', margin, y - 10);
   stroke(drawColor);
 
   for (let i = 0; i < p.steps; i++) {
     let x = margin + i * d;
-    stroke(colorsSpectral.scale(i));
+    stroke(colors1.scale(i));
     line(x, y, x, y + rowHeight);
   }
 
@@ -219,12 +218,12 @@ function draw () {
   noStroke();
   fill(drawColor);
   textSize(14);
-  text('COLOR SCALE WITHOUT SPECTRAL', margin, y - 10);
+  text('COLOR SCALE #2', margin, y - 10);
   stroke(drawColor);
 
   for (let i = 0; i < p.steps; i++) {
     let x = margin + i * d;
-    stroke(colors.scale(i));
+    stroke(colors2.scale(i));
     line(x, y, x, y + rowHeight);
   }
 
@@ -242,13 +241,13 @@ function draw () {
   text('DUOTONES', margin, y - 10);
   stroke(drawColor);
 
-  let nrDuotones = colors.duotones.length;
+  let nrDuotones = colors1.duotones.length;
   let subMargin = 20;
   let subWidth = (w - (nrDuotones - 1) * subMargin) / nrDuotones;
 
   x = margin;
   stroke(drawColor);
-  colors.duotones.forEach((dt, i) => {
+  colors1.duotones.forEach((dt, i) => {
     fill(dt.backgroundColor);
     rect(x, y, subWidth, rowHeight / 2);
     fill(dt.drawColor);

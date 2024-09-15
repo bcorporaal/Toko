@@ -32,8 +32,7 @@ import wesandersonPalettes from '../color_palettes/wesanderson';
 
 Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
 Toko.prototype.COLOR_COLLECTIONS = [];
-Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
-Toko.prototype.EXTRA_SPECTRAL_COLORS = 10;
+Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch', 'oklab', 'oklch'];
 
 Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   reverse: false,
@@ -41,7 +40,6 @@ Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   mode: 'oklab',
   gamma: 1,
   correctLightness: false,
-  useSpectral: true,
   bezier: false,
   stepped: false,
   steps: 10,
@@ -127,17 +125,10 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   oSC = chroma.scale(colorSet).domain(colorOptions.domain).classes(colorSet.length);
 
   //
-  //  expand color set using Spectral
-  //
-  expandedColorSet = this._expandColorSet(colorSet);
-  eSC = chroma.scale(expandedColorSet).domain(colorOptions.domain).mode(colorOptions.mode);
-
-  //
   // only adjust gamma if needed
   //
   if (colorOptions.gamma != 1) {
     sc.gamma(colorOptions.gamma);
-    eSC.gamma(colorOptions.gamma);
   }
 
   //
@@ -145,43 +136,25 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   //
   if (colorOptions.correctLightness) {
     sc = sc.correctLightness();
-    eSC = eSC.correctLightness();
   }
 
   if (colorOptions.stepped && colorOptions.steps > 0) {
     sc = sc.classes(colorOptions.steps);
-    eSC = eSC.classes(colorOptions.steps);
   }
 
   o.scaleChroma = sc;
-  o.scaleSpectral = eSC;
   o.contrastColors = contrastColors;
   o.options = colorOptions;
   o.originalColors = colorSet;
+  o.list = sc.colors(colorOptions.nrColors);
 
-  if (colorOptions.useSpectral) {
-    o.list = eSC.colors(colorOptions.nrColors);
-  } else {
-    o.list = sc.colors(colorOptions.nrColors);
-  }
-
-  if (colorOptions.useSpectral) {
-    o.scale = (i, useOriginal = false) => {
-      if (!useOriginal) {
-        return eSC(i).hex();
-      } else {
-        return oSC(i).hex();
-      }
-    };
-  } else {
-    o.scale = (i, useOriginal = false) => {
-      if (!useOriginal) {
-        return sc(i).hex();
-      } else {
-        return oSC(i).hex();
-      }
-    };
-  }
+  o.scale = (i, useOriginal = false) => {
+    if (!useOriginal) {
+      return sc(i).hex();
+    } else {
+      return oSC(i).hex();
+    }
+  };
 
   o.originalScale = i => {
     return oSC(i).hex();
@@ -307,26 +280,6 @@ Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
   //  reduce to required length and return
   //
   return duotones.slice(0, minLength);
-};
-
-//
-//  expand the color set by interpolating using Spectral
-//
-Toko.prototype._expandColorSet = function (inColorSet) {
-  let newColorSet = [];
-  let n = inColorSet.length;
-
-  newColorSet.push(inColorSet[0]);
-  for (let i = 1; i < n; i++) {
-    let c0 = inColorSet[i - 1];
-    let c1 = inColorSet[i];
-    let extraColors = spectral.palette(c0, c1, this.EXTRA_SPECTRAL_COLORS);
-    extraColors = extraColors.slice(0, -1);
-    newColorSet = newColorSet.concat(extraColors);
-  }
-  newColorSet.push(inColorSet[n - 1]);
-
-  return newColorSet;
 };
 
 Toko.prototype._getColorScale = function (inPalette, colorOptions) {
