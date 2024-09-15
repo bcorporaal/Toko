@@ -29,7 +29,6 @@ import lospecPalettes from '../color_palettes/lospec';
 import momaPalettes from '../color_palettes/moma';
 import feathersPalettes from '../color_palettes/feathers';
 import wesandersonPalettes from '../color_palettes/wesanderson';
-import solublefishPalettes from '../color_palettes/soluble_fish';
 
 Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
 Toko.prototype.COLOR_COLLECTIONS = [];
@@ -511,7 +510,6 @@ Toko.prototype._preprocessPalettes = function () {
     ranganathPalettes,
     rohlfsPalettes,
     roygbivsPalettes,
-    solublefishPalettes,
     spatialPalettes,
     systemPalettes,
     tsuchimochiPalettes,
