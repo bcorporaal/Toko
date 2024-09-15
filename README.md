@@ -74,6 +74,7 @@ Toko includes color palettes from the following:<br>
 Toko includes code from the following:<br>
 [SimplexNoiseJS](https://github.com/blindman67/SimplexNoiseJS) by Mark Spronck for OpenSimplex Noise. Unlicense.<br>
 [Quadtree](https://github.com/CodingTrain/QuadTree) by Daniel Shiffman / Coding Train for quadtree. MIT License.<br>
+[BezierEasing](https://github.com/thednp/bezier-easing/) by thednp. MIT License.<br>
 
 Toko makes use of the following:<br>
 [Tweakpane](https://cocopon.github.io/tweakpane/) by Hiroki Kokubun for controls. MIT License.<br>
