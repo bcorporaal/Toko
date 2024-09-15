@@ -4277,7 +4277,6 @@ var Toko = (function () {
     { name: 'asteroidcity3', colors: ['#fba72a', '#d3d4d8', '#cb7a5c', '#5785c1'], type: 'wesanderson' },
   ];
 
-  Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
   Toko.prototype.COLOR_COLLECTIONS = [];
   Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch', 'oklab', 'oklch'];
 
@@ -4287,7 +4286,6 @@ var Toko = (function () {
     mode: 'oklab',
     gamma: 1,
     correctLightness: false,
-    bezier: false,
     stepped: false,
     steps: 10,
     nrColors: 10,
@@ -4322,14 +4320,6 @@ var Toko = (function () {
     }
 
     //
-    // don't use bezier for more than a preset number of colors
-    //
-    if (colorOptions.bezier && colorOptions.length > this.MAX_COLORS_BEZIER) {
-      console.log(`INFO: Bezier does not work for more than $MAX_COLORS_BEZIER} colors`);
-      colorOptions.bezier = false;
-    }
-
-    //
     // set to validated, so it is not needlessly checked multiple times
     //
     colorOptions._validated = true;
@@ -4358,13 +4348,9 @@ var Toko = (function () {
     }
 
     //
-    // create a scale with bezier or use standard options
+    // create a scale
     //
-    if (colorOptions.bezier) {
-      sc = chroma.bezier(colorSet).scale();
-    } else {
-      sc = chroma.scale(colorSet).domain(colorOptions.domain).mode(colorOptions.mode);
-    }
+    sc = chroma.scale(colorSet).domain(colorOptions.domain).mode(colorOptions.mode);
 
     //
     // scale mapped to the original array of colors

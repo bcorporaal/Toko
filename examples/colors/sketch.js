@@ -114,10 +114,9 @@ function refresh () {
   const o1 = {
     domain: [0, p.steps],
     reverse: p.reverse,
-    sort: p.sort,
+    sort: true,
     constrainContrast: false,
-    useSpectral: false,
-    mode: 'oklab',
+    mode: 'lrgb',
     nrDuotones: 12,
   };
   colors1 = toko.getColorScale(this.p.palette, o1);
@@ -128,12 +127,11 @@ function refresh () {
   const o2 = {
     domain: [0, p.steps],
     reverse: p.reverse,
-    sort: p.sort,
+    sort: false,
     constrainContrast: false,
-    useSpectral: false,
     nrDuotones: 12,
     mode: 'lrgb',
-    bezier: false,
+    bezier: true,
     correctLightness: false,
   };
   colors2 = toko.getColorScale(this.p.palette, o2);

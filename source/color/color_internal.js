@@ -30,7 +30,6 @@ import momaPalettes from '../color_palettes/moma';
 import feathersPalettes from '../color_palettes/feathers';
 import wesandersonPalettes from '../color_palettes/wesanderson';
 
-Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
 Toko.prototype.COLOR_COLLECTIONS = [];
 Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch', 'oklab', 'oklch'];
 
@@ -40,7 +39,6 @@ Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   mode: 'oklab',
   gamma: 1,
   correctLightness: false,
-  bezier: false,
   stepped: false,
   steps: 10,
   nrColors: 10,
@@ -75,14 +73,6 @@ Toko.prototype._validateColorOptions = function (colorOptions) {
   }
 
   //
-  // don't use bezier for more than a preset number of colors
-  //
-  if (colorOptions.bezier && colorOptions.length > this.MAX_COLORS_BEZIER) {
-    console.log(`INFO: Bezier does not work for more than $MAX_COLORS_BEZIER} colors`);
-    colorOptions.bezier = false;
-  }
-
-  //
   // set to validated, so it is not needlessly checked multiple times
   //
   colorOptions._validated = true;
@@ -111,13 +101,9 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   }
 
   //
-  // create a scale with bezier or use standard options
+  // create a scale
   //
-  if (colorOptions.bezier) {
-    sc = chroma.bezier(colorSet).scale();
-  } else {
-    sc = chroma.scale(colorSet).domain(colorOptions.domain).mode(colorOptions.mode);
-  }
+  sc = chroma.scale(colorSet).domain(colorOptions.domain).mode(colorOptions.mode);
 
   //
   // scale mapped to the original array of colors
