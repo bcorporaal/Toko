@@ -54,11 +54,18 @@ export const SIZE_1080P_PORTRAIT = {
   pixelDensity: 2,
 };
 
-export const SIZE_720P = {
-  name: '720p',
-  width: 1280,
-  height: 720,
-  pixelDensity: 1,
+export const SIZE_4K = {
+  name: '4K',
+  width: 3840,
+  height: 2160,
+  pixelDensity: 2,
+};
+
+export const SIZE_4K_PORTRAIT = {
+  name: '4K_portrait',
+  width: 2160,
+  height: 3840,
+  pixelDensity: 2,
 };
 
 export const SIZE_IPHONE_11_WALLPAPER = {
@@ -96,10 +103,11 @@ export var SIZES_LIST = {
   default: 'default',
   square_HD: 'square_XL',
   iphone_11: 'iphone_11',
-  SD_720p: '720p',
   HD_1080p: '1080p',
   HD_1080p_Portrait: '1080p_portrait',
   wide_screen: 'wide_screen',
+  UHD_4K: '4K',
+  UHD_4K_Portrait: '4K_portrait',
   macbook_14: 'macbook_14',
   macbook_16: 'macbook_16',
   full_window: 'full_window',
@@ -109,9 +117,10 @@ export var SIZES = [
   SIZE_DEFAULT,
   SIZE_FULL,
   SIZE_SQUARE_XL,
-  SIZE_720P,
   SIZE_1080P,
   SIZE_1080P_PORTRAIT,
+  SIZE_4K,
+  SIZE_4K_PORTRAIT,
   SIZE_IPHONE_11_WALLPAPER,
   SIZE_WIDE_SCREEN,
   SIZE_MACBOOK_14_WALLPAPER,

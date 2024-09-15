@@ -57,11 +57,18 @@ var Toko = (function () {
     pixelDensity: 2,
   };
 
-  const SIZE_720P = {
-    name: '720p',
-    width: 1280,
-    height: 720,
-    pixelDensity: 1,
+  const SIZE_4K = {
+    name: '4K',
+    width: 3840,
+    height: 2160,
+    pixelDensity: 2,
+  };
+
+  const SIZE_4K_PORTRAIT = {
+    name: '4K_portrait',
+    width: 2160,
+    height: 3840,
+    pixelDensity: 2,
   };
 
   const SIZE_IPHONE_11_WALLPAPER = {
@@ -99,10 +106,11 @@ var Toko = (function () {
     default: 'default',
     square_HD: 'square_XL',
     iphone_11: 'iphone_11',
-    SD_720p: '720p',
     HD_1080p: '1080p',
     HD_1080p_Portrait: '1080p_portrait',
     wide_screen: 'wide_screen',
+    UHD_4K: '4K',
+    UHD_4K_Portrait: '4K_portrait',
     macbook_14: 'macbook_14',
     macbook_16: 'macbook_16',
     full_window: 'full_window',
@@ -112,9 +120,10 @@ var Toko = (function () {
     SIZE_DEFAULT,
     SIZE_FULL,
     SIZE_SQUARE_XL,
-    SIZE_720P,
     SIZE_1080P,
     SIZE_1080P_PORTRAIT,
+    SIZE_4K,
+    SIZE_4K_PORTRAIT,
     SIZE_IPHONE_11_WALLPAPER,
     SIZE_WIDE_SCREEN,
     SIZE_MACBOOK_14_WALLPAPER,
@@ -249,7 +258,8 @@ var Toko = (function () {
     SIZES_LIST: SIZES_LIST,
     SIZE_1080P: SIZE_1080P,
     SIZE_1080P_PORTRAIT: SIZE_1080P_PORTRAIT,
-    SIZE_720P: SIZE_720P,
+    SIZE_4K: SIZE_4K,
+    SIZE_4K_PORTRAIT: SIZE_4K_PORTRAIT,
     SIZE_DEFAULT: SIZE_DEFAULT,
     SIZE_FULL: SIZE_FULL,
     SIZE_IPHONE_11_WALLPAPER: SIZE_IPHONE_11_WALLPAPER,
