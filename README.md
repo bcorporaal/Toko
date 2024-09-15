@@ -62,10 +62,16 @@ If you have any questions or comments you can also contact me via [email](mailto
 
 Many thanks to all the creator whose code or work is in some way of influence to Toko.
 
+Toko includes color palettes from the following:<br>
+[Chromotome](https://github.com/kgolid/chromotome) by Kjetil Midtgarden Golid. MIT License.<br>
+[D3](https://github.com/d3/d3) by Mike Bostock and others. ISC License.<br>
+[Feathers](https://github.com/shandiya/feathers) by Shandiya Balasubramaniam. MIT License.<br>
+[Lospec](https://lospec.com/palette-list) by various contributers. Unknown license.<br>
+[Metbrewer](https://github.com/BlakeRMills/MetBrewer) by Blake Robert Mills. CC0-1.0 License.<br>
+[MoMAColors](https://github.com/BlakeRMills/MoMAColors) by Blake Robert Mills. MIT License.<br>
+[WesAnderson](https://github.com/karthik/wesanderson) by Karthik Ram & [Wes Anderson palettes](https://wesandersonpalettes.tumblr.com/). Unknown License.<br>
+
 Toko includes code from the following:<br>
-[Chromotome color palettes](https://github.com/kgolid/chromotome) by Kjetil Midtgarden Golid. MIT License.<br>
-[D3 color palettes](https://github.com/d3/d3) by Mike Bostock and others. ISC License.<br>
-[Lospec color palettes](https://lospec.com/palette-list) by various contributers. Unknown license.<br>
 [SimplexNoiseJS](https://github.com/blindman67/SimplexNoiseJS) by Mark Spronck for OpenSimplex Noise. Unlicense.<br>
 [Quadtree](https://github.com/CodingTrain/QuadTree) by Daniel Shiffman / Coding Train for quadtree. MIT License.<br>
 
