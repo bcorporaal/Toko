@@ -4,6 +4,9 @@ import Toko from '../core/main';
 //  based on https://github.com/thednp/bezier-easing/
 //  by thednp
 //
+//  myEasingFunction = new Toko.CubicBezier(P1.x, P1.y, P2.x, P2.y, customName)
+//
+//  use https://cubic-bezier.com/ to find suitable parameters
 
 Toko.CubicBezier = (function () {
   'use strict';
