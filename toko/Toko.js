@@ -4291,7 +4291,8 @@ var Toko = (function () {
     useSortOrder: false,
     constrainContrast: false,
     nrDuotones: 12,
-    easing: null, // defined below
+    easingParameters: [0.25, 0.25, 0.75, 0.75],
+    useEasing: false,
   };
 
   Toko.prototype.initColorDone = false;
@@ -4351,12 +4352,12 @@ var Toko = (function () {
     //
     // create a scale
     //
-    sc = chroma.scale(colorSet).domain(colorOptions.domain).mode(colorOptions.mode);
+    sc = chroma.scale(colorSet).domain([0, 1]).mode(colorOptions.mode);
 
     //
     // scale mapped to the original array of colors
     //
-    oSC = chroma.scale(colorSet).domain(colorOptions.domain).classes(colorSet.length);
+    oSC = chroma.scale(colorSet).domain([0, 1]).classes(colorSet.length);
 
     //
     // only adjust gamma if needed
@@ -4369,17 +4370,42 @@ var Toko = (function () {
       sc = sc.classes(colorOptions.steps);
     }
 
+    //
+    //  check domain and turn on remapping if it is not [0,1]
+    //
+    o.domain = colorOptions.domain;
+    if (colorOptions.domain[0] !== 0 || colorOptions.domain[1] !== 1) {
+      o.remapDomain = true;
+    } else {
+      o.remapDomain = false;
+    }
+
     o.scaleChroma = sc;
     o.contrastColors = contrastColors;
     o.options = colorOptions;
     o.originalColors = colorSet;
     o.list = sc.colors(colorOptions.nrColors);
 
+    if (colorOptions.useEasing) {
+      let par = colorOptions.easingParameters;
+      o.easing = new Toko.CubicBezier(par[0], par[1], par[2], par[3]);
+    } else {
+      o.easing = i => {
+        return i;
+      };
+    }
+
     o.scale = (i, useOriginal = false) => {
+      if (o.remapDomain) {
+        i = map(i, o.domain[0], o.domain[1], 0, 1);
+      }
+
+      let ie = o.easing(i);
+
       if (!useOriginal) {
-        return sc(i).hex();
+        return sc(ie).hex();
       } else {
-        return oSC(i).hex();
+        return oSC(ie).hex();
       }
     };
 
@@ -7104,6 +7130,9 @@ var Toko = (function () {
   //  based on https://github.com/thednp/bezier-easing/
   //  by thednp
   //
+  //  myEasingFunction = new Toko.CubicBezier(P1.x, P1.y, P2.x, P2.y, customName)
+  //
+  //  use https://cubic-bezier.com/ to find suitable parameters
 
   Toko.CubicBezier = (function () {
     var C = Object.defineProperty;
