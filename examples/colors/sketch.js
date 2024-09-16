@@ -62,6 +62,7 @@ function setup () {
     constrainContrast: false,
     interval: { min: 16, max: 48 },
     file: '',
+    easingParameters: [0.25, 0.25, 0.75, 0.75],
   };
 
   //
@@ -81,8 +82,25 @@ function setup () {
   // toko.pane.tab.addBinding(p, 'interpolated');
   toko.pane.tab.addBinding(p, 'reverse', { label: 'reverse palette' });
   // toko.pane.tab.addBinding(p, 'sort', { label: 'sort metBrewer' });
-  toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
+  let testThing = toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
   // toko.pane.tab.addBinding(p, 'constrainContrast', { label: 'limit contrast' });
+
+  testThing.hidden = true;
+
+  toko.pane.tab
+    .addBlade({
+      view: 'cubicbezier',
+      value: p.easingParameters,
+      expanded: true,
+      label: 'easing',
+      picker: 'inline',
+    })
+    .on('change', ev => {
+      //
+      //  push any changes back to the parameters
+      //  currently tweakpane does not do this automatically
+      p.easingParameters = ev.value.comps_;
+    });
 
   // toko.pane.tab.addBinding(p, 'interval', {
   //   min: 0,
@@ -118,7 +136,8 @@ function refresh () {
     constrainContrast: false,
     mode: 'oklab',
     nrDuotones: 12,
-    easing: toko.easeInOutBounce,
+    easingParameters: p.easingParameters,
+    useEasing: true,
   };
   colors1 = toko.getColorScale(this.p.palette, o1);
 
