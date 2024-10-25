@@ -81,6 +81,7 @@ function setup () {
   // toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1 });
   // toko.pane.tab.addBinding(p, 'interpolated');
   toko.pane.tab.addBinding(p, 'reverse', { label: 'reverse palette' });
+  toko.pane.tab.addBinding(p, 'inverse', { label: 'inverse palette' });
   // toko.pane.tab.addBinding(p, 'sort', { label: 'sort metBrewer' });
   let testThing = toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
   // toko.pane.tab.addBinding(p, 'constrainContrast', { label: 'limit contrast' });
@@ -101,12 +102,6 @@ function setup () {
       //  currently tweakpane does not do this automatically
       p.easingParameters = ev.value.comps_;
     });
-
-  // toko.pane.tab.addBinding(p, 'interval', {
-  //   min: 0,
-  //   max: 100,
-  //   step: 1,
-  // });
 
   //
   //  listen to tweakpane changes
