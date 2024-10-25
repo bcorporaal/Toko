@@ -44,7 +44,6 @@ There is no documentation yet, so see `toko/source` for details. Also, the examp
 
 - Add cosine palettes again
 - Define a core set of palettes across collections
-- Add duotone palettes
 
 ## Contributing
 
@@ -80,7 +79,6 @@ Toko makes use of the following:<br>
 [Tweakpane](https://cocopon.github.io/tweakpane/) by Hiroki Kokubun for controls. MIT License.<br>
 [p5.capture](https://github.com/tapioca24/p5.capture) by tapioca24 for video capture. MIT License.<br>
 [Chroma.js](https://github.com/gka/chroma.js) by Gregor Aisch for color manipulations. Apache License.<br>
-[Spectral.js](https://github.com/rvanwijnen/spectral.js) by Roland van Wijnen for color mixing. MIT License.<br>
 [p5.js-svg](https://github.com/zenozeng/p5.js-svg) by Zeno Zeng for SVG support. MIT License.<br>
 
 ## License
