@@ -3811,6 +3811,63 @@ var Toko = (function () {
       ],
       type: 'lospec',
     },
+    {
+      name: 'pollen8', // https://lospec.com/palette-list/pollen8
+      colors: ['#73464c', '#ab5675', '#ee6a7c', '#ffa7a5', '#ffe07e', '#72dcbb', '#34acba'],
+      type: 'lospec',
+    },
+    {
+      name: 'neon_space', // https://lospec.com/palette-list/neon-space
+      colors: ['#df0772', '#fe546f', '#ff9e7d', '#ffd080', '#0bffe6', '#01cbcf', '#0188a5', '#3e3264', '#352a55'],
+      type: 'lospec',
+    },
+    {
+      name: 'salad_bowl', // https://lospec.com/palette-list/salad-bowl
+      colors: ['#541b3c', '#802040', '#a04040', '#c06040', '#e0e080', '#a0c040', '#60a040', '#206040', '#103040'],
+      type: 'lospec',
+    },
+    {
+      name: 'seafoam', // https://lospec.com/palette-list/seafoam
+      colors: ['#37364e', '#355d69', '#6aae9d', '#b9d4b4', '#f4e9d4', '#d0baa9', '#9e8e91', '#5b4a68'],
+      type: 'lospec',
+    },
+    {
+      name: 'chasm', // https://lospec.com/palette-list/chasm
+      colors: [
+        '#85daeb',
+        '#5fc9e7',
+        '#5fa1e7',
+        '#5f6ee7',
+        '#4c60aa',
+        '#444774',
+        '#32313b',
+        '#463c5e',
+        '#5d4776',
+        '#855395',
+      ],
+      type: 'lospec',
+    },
+    {
+      name: 'soapy10', // https://lospec.com/palette-list/soapy-10
+      colors: [
+        '#54cea7',
+        '#2ba4a6',
+        '#0c6987',
+        '#054b84',
+        '#0d2147',
+        '#ffb0bf',
+        '#ff82bd',
+        '#d74ac7',
+        '#a825ba',
+        '#682b9c',
+      ],
+      type: 'lospec',
+    },
+    {
+      name: 'synthetic80s', // https://lospec.com/palette-list/synthetic-80s
+      colors: ['#e46018', '#fcb800', '#008894', '#004058', '#290d28', '#9d2496', '#db24d4'],
+      type: 'lospec',
+    },
   ];
 
   //
