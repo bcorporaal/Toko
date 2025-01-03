@@ -109,7 +109,15 @@ Toko.prototype.stopCapture = function () {
   }
 };
 
-Toko.prototype.resetCapture = function () {
+//
+//  called by p5.capture just ahead of downlaoding the video
+//
+Toko.prototype.resetCapture = function (videoFilename) {
+  //  remove the extension
+  let filename = typeof videoFilename === 'string' ? videoFilename.replace(/\.[^/.]+$/, '') : videoFilename;
+  //  save the settings
+  this.saveSettings(filename);
+  //  reset the capture buttons
   this.stopCaptureButton.hidden = true;
   this.startCaptureButton.hidden = false;
   this._captureStarted = false;

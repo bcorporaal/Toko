@@ -160,7 +160,6 @@ var Toko = (function () {
     logFPS: false,
     log: true,
     captureFrames: false,
-    captureFormat: 'mp4',
     canvasSize: SIZE_DEFAULT,
     seedString: '',
   };
@@ -196,7 +195,7 @@ var Toko = (function () {
     autoSaveDuration: null, //  automatically downloads every n frames. convenient for long captures
     disableUi: true, //  hide the ui
     beforeDownload: (blob, context, next) => {
-      toko.resetCapture(); // used to ensure the reset always happens
+      toko.resetCapture(context.filename); // used to ensure the reset always happens
       next();
     },
     baseFilename: date => {
@@ -8323,7 +8322,15 @@ var Toko = (function () {
     }
   };
 
-  Toko.prototype.resetCapture = function () {
+  //
+  //  called by p5.capture just ahead of downlaoding the video
+  //
+  Toko.prototype.resetCapture = function (videoFilename) {
+    //  remove the extension
+    let filename = typeof videoFilename === 'string' ? videoFilename.replace(/\.[^/.]+$/, '') : videoFilename;
+    //  save the settings
+    this.saveSettings(filename);
+    //  reset the capture buttons
     this.stopCaptureButton.hidden = true;
     this.startCaptureButton.hidden = false;
     this._captureStarted = false;

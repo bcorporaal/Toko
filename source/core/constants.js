@@ -157,7 +157,6 @@ export const DEFAULT_OPTIONS = {
   logFPS: false,
   log: true,
   captureFrames: false,
-  captureFormat: 'mp4',
   canvasSize: SIZE_DEFAULT,
   seedString: '',
 };
@@ -193,7 +192,7 @@ export const DEFAULT_CAPTURE_OPTIONS = {
   autoSaveDuration: null, //  automatically downloads every n frames. convenient for long captures
   disableUi: true, //  hide the ui
   beforeDownload: (blob, context, next) => {
-    toko.resetCapture(); // used to ensure the reset always happens
+    toko.resetCapture(context.filename); // used to ensure the reset always happens
     next();
   },
   baseFilename: date => {
