@@ -66,7 +66,6 @@ function setup () {
       refreshBeforeCapture: false,
       recordButtonOnMainTab: true,
       nrFrames: 600,
-      estimate: '0',
     },
     log: true, //  log to console
   });

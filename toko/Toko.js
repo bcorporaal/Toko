@@ -204,7 +204,6 @@ var Toko = (function () {
     refreshBeforeCapture: true,
     recordButtonOnMainTab: true,
     nrFrames: 0,
-    estimate: '0',
   };
 
   const RECORD_BUTTON_LABEL = '🔴 Record';
@@ -4924,10 +4923,8 @@ var Toko = (function () {
   };
 
   Toko.prototype.setup = function (inputOptions) {
-    this.capturer = {};
-
+    this.capturer = {}; // the p5.capture object
     this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
-
     this.receivingFileNow = false;
 
     //
@@ -4974,6 +4971,7 @@ var Toko = (function () {
       this.pane = {};
       this.pane.tab = this.basePaneTab.pages[0];
       this.pane.events = this.basePane;
+
       //
       // use (p) to show or hide the panel
       //

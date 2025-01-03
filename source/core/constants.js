@@ -201,7 +201,6 @@ export const DEFAULT_CAPTURE_OPTIONS = {
   refreshBeforeCapture: true,
   recordButtonOnMainTab: true,
   nrFrames: 0,
-  estimate: '0',
 };
 
 export const RECORD_BUTTON_LABEL = '🔴 Record';
