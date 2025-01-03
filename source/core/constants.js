@@ -133,7 +133,7 @@ export var SIZES = [
 export const TABS_PARAMETERS = 'Parameters';
 export const TABS_ADVANCED = 'Size';
 export const TABS_FPS = 'FPS';
-export const TABS_CAPTURE = 'Record';
+export const TABS_CAPTURE = 'Capture';
 
 export var TAB_ID_CAPTURE = -1;
 export var TAB_ID_FPS = -1;
@@ -182,6 +182,7 @@ export const CAPTURE_FRAMERATES = {
 };
 
 export const DEFAULT_CAPTURE_OPTIONS = {
+  //  p5.capture options
   format: 'mp4', //  export format
   framerate: 30, //  recording framerate
   bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
@@ -200,9 +201,15 @@ export const DEFAULT_CAPTURE_OPTIONS = {
   },
   // used by Toko but not by p5.capture
   captureFixedNrFrames: false,
+  refreshBeforeCapture: true,
+  recordButtonOnMainTab: true,
   nrFrames: 0,
   estimate: '0',
 };
+
+export const RECORD_BUTTON_LABEL = '🔴 Record';
+export const REFRESH_RECORD_BUTTON_LABEL = '🔴 Refresh & record';
+export const STOP_BUTTON_LABEL = '⬛️ Stop recording';
 
 //
 //  Parameters to calculate frames per second

@@ -136,7 +136,7 @@ var Toko = (function () {
   const TABS_PARAMETERS = 'Parameters';
   const TABS_ADVANCED = 'Size';
   const TABS_FPS = 'FPS';
-  const TABS_CAPTURE = 'Record';
+  const TABS_CAPTURE = 'Capture';
 
   var TAB_ID_CAPTURE = -1;
   var TAB_ID_FPS = -1;
@@ -185,6 +185,7 @@ var Toko = (function () {
   };
 
   const DEFAULT_CAPTURE_OPTIONS = {
+    //  p5.capture options
     format: 'mp4', //  export format
     framerate: 30, //  recording framerate
     bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
@@ -203,9 +204,15 @@ var Toko = (function () {
     },
     // used by Toko but not by p5.capture
     captureFixedNrFrames: false,
+    refreshBeforeCapture: true,
+    recordButtonOnMainTab: true,
     nrFrames: 0,
     estimate: '0',
   };
+
+  const RECORD_BUTTON_LABEL = '🔴 Record';
+  const REFRESH_RECORD_BUTTON_LABEL = '🔴 Refresh & record';
+  const STOP_BUTTON_LABEL = '⬛️ Stop recording';
 
   //
   //  Parameters to calculate frames per second
@@ -254,6 +261,8 @@ var Toko = (function () {
     EASE_SMOOTH: EASE_SMOOTH,
     FPS_FILTER_STRENGTH: FPS_FILTER_STRENGTH,
     FRAME_TIME: FRAME_TIME,
+    RECORD_BUTTON_LABEL: RECORD_BUTTON_LABEL,
+    REFRESH_RECORD_BUTTON_LABEL: REFRESH_RECORD_BUTTON_LABEL,
     SIZES: SIZES,
     SIZES_LIST: SIZES_LIST,
     SIZE_1080P: SIZE_1080P,
@@ -267,6 +276,7 @@ var Toko = (function () {
     SIZE_MACBOOK_16_WALLPAPER: SIZE_MACBOOK_16_WALLPAPER,
     SIZE_SQUARE_XL: SIZE_SQUARE_XL,
     SIZE_WIDE_SCREEN: SIZE_WIDE_SCREEN,
+    STOP_BUTTON_LABEL: STOP_BUTTON_LABEL,
     TABS_ADVANCED: TABS_ADVANCED,
     TABS_CAPTURE: TABS_CAPTURE,
     TABS_FPS: TABS_FPS,
@@ -8215,15 +8225,27 @@ var Toko = (function () {
 
   Toko.prototype.initCapture = function () {
     this.capturer = P5Capture.getInstance();
+    //  just in case the duration was not set properly
     if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
       this.captureOptions.captureFixedNrFrames = false;
     } else {
       this.captureOptions.captureFixedNrFrames = true;
     }
+    //  refresh the sketch before capture
+    if (this.captureOptions.refreshBeforeCapture) {
+      refresh();
+    }
   };
 
   Toko.prototype.createCapturePanel = function (tabID) {
-    var t = this.basePaneTab.pages[tabID];
+    let t = this.basePaneTab.pages[tabID];
+    let tb;
+    if (this.captureOptions.recordButtonOnMainTab) {
+      tb = this.basePaneTab.pages[0];
+      tb.addBlade({ view: 'separator' });
+    } else {
+      tb = t;
+    }
 
     t.addBinding(this.captureOptions, 'format', {
       options: this.CAPTURE_FORMATS,
@@ -8234,6 +8256,14 @@ var Toko = (function () {
     }).on('change', e => {
       frameRate(e.value);
       this.updateDurationEstimate();
+    });
+
+    t.addBlade({ view: 'separator' });
+
+    t.addBinding(this.captureOptions, 'refreshBeforeCapture', {
+      label: 'refresh first',
+    }).on('change', value => {
+      this.updateRecordButtonLabel(value);
     });
 
     t.addBlade({ view: 'separator' });
@@ -8265,15 +8295,15 @@ var Toko = (function () {
 
     t.addBlade({ view: 'separator' });
 
-    this.startCaptureButton = t
+    this.startCaptureButton = tb
       .addButton({
-        title: '🔴 Record',
+        title: this.captureOptions.refreshBeforeCapture ? this.REFRESH_RECORD_BUTTON_LABEL : this.RECORD_BUTTON_LABEL,
       })
       .on('click', value => {
         this.clickStartCapture();
       });
 
-    this.stopCaptureButton = t
+    this.stopCaptureButton = tb
       .addButton({
         title: '⬛️ Stop recording',
       })
@@ -8290,6 +8320,14 @@ var Toko = (function () {
     } else {
       this.captureFrameControl.hidden = true;
       this.captureOptions.duration = null;
+    }
+  };
+
+  Toko.prototype.updateRecordButtonLabel = function (e) {
+    if (e.value) {
+      this.startCaptureButton.title = this.REFRESH_RECORD_BUTTON_LABEL;
+    } else {
+      this.startCaptureButton.title = this.RECORD_BUTTON_LABEL;
     }
   };
 

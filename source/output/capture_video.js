@@ -2,15 +2,27 @@ import Toko from '../core/main';
 
 Toko.prototype.initCapture = function () {
   this.capturer = P5Capture.getInstance();
+  //  just in case the duration was not set properly
   if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
     this.captureOptions.captureFixedNrFrames = false;
   } else {
     this.captureOptions.captureFixedNrFrames = true;
   }
+  //  refresh the sketch before capture
+  if (this.captureOptions.refreshBeforeCapture) {
+    refresh();
+  }
 };
 
 Toko.prototype.createCapturePanel = function (tabID) {
-  var t = this.basePaneTab.pages[tabID];
+  let t = this.basePaneTab.pages[tabID];
+  let tb;
+  if (this.captureOptions.recordButtonOnMainTab) {
+    tb = this.basePaneTab.pages[0];
+    tb.addBlade({ view: 'separator' });
+  } else {
+    tb = t;
+  }
 
   t.addBinding(this.captureOptions, 'format', {
     options: this.CAPTURE_FORMATS,
@@ -21,6 +33,14 @@ Toko.prototype.createCapturePanel = function (tabID) {
   }).on('change', e => {
     frameRate(e.value);
     this.updateDurationEstimate();
+  });
+
+  t.addBlade({ view: 'separator' });
+
+  t.addBinding(this.captureOptions, 'refreshBeforeCapture', {
+    label: 'refresh first',
+  }).on('change', value => {
+    this.updateRecordButtonLabel(value);
   });
 
   t.addBlade({ view: 'separator' });
@@ -52,15 +72,15 @@ Toko.prototype.createCapturePanel = function (tabID) {
 
   t.addBlade({ view: 'separator' });
 
-  this.startCaptureButton = t
+  this.startCaptureButton = tb
     .addButton({
-      title: '🔴 Record',
+      title: this.captureOptions.refreshBeforeCapture ? this.REFRESH_RECORD_BUTTON_LABEL : this.RECORD_BUTTON_LABEL,
     })
     .on('click', value => {
       this.clickStartCapture();
     });
 
-  this.stopCaptureButton = t
+  this.stopCaptureButton = tb
     .addButton({
       title: '⬛️ Stop recording',
     })
@@ -77,6 +97,14 @@ Toko.prototype.updateCaptureFrameSelector = function (e) {
   } else {
     this.captureFrameControl.hidden = true;
     this.captureOptions.duration = null;
+  }
+};
+
+Toko.prototype.updateRecordButtonLabel = function (e) {
+  if (e.value) {
+    this.startCaptureButton.title = this.REFRESH_RECORD_BUTTON_LABEL;
+  } else {
+    this.startCaptureButton.title = this.RECORD_BUTTON_LABEL;
   }
 };
 
