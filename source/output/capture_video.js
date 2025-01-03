@@ -7,7 +7,6 @@ Toko.prototype.initCapture = function () {
   } else {
     this.captureOptions.captureFixedNrFrames = true;
   }
-  console.log(this.captureOptions);
 };
 
 Toko.prototype.createCapturePanel = function (tabID) {
