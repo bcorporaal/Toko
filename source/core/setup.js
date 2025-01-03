@@ -58,9 +58,8 @@ Toko.prototype.setup = function (inputOptions) {
       switch (event.key.toLocaleLowerCase()) {
         case 'p':
           var e = document.getElementsByClassName('tp-dfwv')[0];
-          if (e.style.display == 'block') e.style.display = 'none';
+          if (e.style.display === 'block') e.style.display = 'none';
           else e.style.display = 'block';
-
           break;
       }
     };
@@ -69,11 +68,18 @@ Toko.prototype.setup = function (inputOptions) {
     // add any additional canvas sizes that were passed along
     //
     let n = this.options.additionalCanvasSizes.length;
+    let useCustomSize = false;
+    let selectedCustomSize = null;
     if (n > 0) {
       for (let i = 0; i < n; i++) {
         this.addCanvasSize(this.options.additionalCanvasSizes[i]);
+        if (this.options.additionalCanvasSizes[i].useThisSize) {
+          useCustomSize = true;
+          selectedCustomSize = this.options.additionalCanvasSizes[i];
+        }
       }
     }
+    this.options.canvasSize = useCustomSize ? selectedCustomSize : this.options.canvasSize;
 
     //
     // add advanced options

@@ -52,6 +52,7 @@ function setup () {
         width: 1200,
         height: 900,
         pixelDensity: 2,
+        useThisSize: true, //  use this size by default
       },
     ],
     captureFrames: true, //  add record option in tweakpane
