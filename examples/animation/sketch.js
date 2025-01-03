@@ -63,6 +63,8 @@ function setup () {
       quality: 0.95, //  recording quality option (only available for WebM/GIF/JPG/WebP)
       // used by Toko but not by p5.capture
       captureFixedNrFrames: true,
+      refreshBeforeCapture: false,
+      recordButtonOnMainTab: true,
       nrFrames: 600,
       estimate: '0',
     },
@@ -184,6 +186,7 @@ function setup () {
 }
 
 function refresh () {
+  console.log('refresh');
   //
   //  set color parameters
   //
