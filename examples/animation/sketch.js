@@ -61,18 +61,6 @@ function setup () {
       framerate: 60, //  recording framerate
       bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
       quality: 0.95, //  recording quality option (only available for WebM/GIF/JPG/WebP)
-      width: null, // 	output width. canvas width used as default
-      height: null, // 	output height. canvas height used as default
-      duration: null, // 	maximum recording duration in number of frames
-      autoSaveDuration: null, //  automatically downloads every n frames. convenient for long captures
-      disableUi: true, //  hide the ui
-      beforeDownload: (blob, context, next) => {
-        toko.resetCapture(); // used to ensure the reset always happens
-        next();
-      },
-      baseFilename: date => {
-        return toko.filenameCapture();
-      },
       // used by Toko but not by p5.capture
       captureFixedNrFrames: true,
       nrFrames: 600,
