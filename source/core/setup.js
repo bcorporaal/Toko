@@ -117,15 +117,17 @@ Toko.prototype.endSetup = function () {
       this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
         view: 'separator',
       });
-      this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({ title: 'Save sketch' }).on('click', value => {
-        this.saveSketch();
-      });
+      this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
+        .addButton({ title: this.SAVE_SKETCH_BUTTON_LABEL })
+        .on('click', value => {
+          this.saveSketch();
+        });
     } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
       this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
         view: 'separator',
       });
       this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
-        .addButton({ title: 'Save sketch & settings' })
+        .addButton({ title: this.SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL })
         .on('click', value => {
           this.saveSketchAndSettings();
         });

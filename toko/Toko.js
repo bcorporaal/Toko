@@ -206,6 +206,8 @@ var Toko = (function () {
     nrFrames: 0,
   };
 
+  const SAVE_SKETCH__BUTTON_LABEL = '💾 Save sketch';
+  const SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL = '💾 Save sketch & settings';
   const RECORD_BUTTON_LABEL = '🔴 Record';
   const REFRESH_RECORD_BUTTON_LABEL = '🔴 Refresh & record';
   const STOP_BUTTON_LABEL = '⬛️ Stop recording';
@@ -251,6 +253,8 @@ var Toko = (function () {
     EASE_SMOOTH: EASE_SMOOTH,
     RECORD_BUTTON_LABEL: RECORD_BUTTON_LABEL,
     REFRESH_RECORD_BUTTON_LABEL: REFRESH_RECORD_BUTTON_LABEL,
+    SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL: SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL,
+    SAVE_SKETCH__BUTTON_LABEL: SAVE_SKETCH__BUTTON_LABEL,
     SIZES: SIZES,
     SIZES_LIST: SIZES_LIST,
     SIZE_1080P: SIZE_1080P,
@@ -5038,15 +5042,17 @@ var Toko = (function () {
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
           view: 'separator',
         });
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({ title: 'Save sketch' }).on('click', value => {
-          this.saveSketch();
-        });
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
+          .addButton({ title: this.SAVE_SKETCH_BUTTON_LABEL })
+          .on('click', value => {
+            this.saveSketch();
+          });
       } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
           view: 'separator',
         });
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
-          .addButton({ title: 'Save sketch & settings' })
+          .addButton({ title: this.SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL })
           .on('click', value => {
             this.saveSketchAndSettings();
           });

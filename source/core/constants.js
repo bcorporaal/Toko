@@ -203,6 +203,8 @@ export const DEFAULT_CAPTURE_OPTIONS = {
   nrFrames: 0,
 };
 
+export const SAVE_SKETCH__BUTTON_LABEL = '💾 Save sketch';
+export const SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL = '💾 Save sketch & settings';
 export const RECORD_BUTTON_LABEL = '🔴 Record';
 export const REFRESH_RECORD_BUTTON_LABEL = '🔴 Refresh & record';
 export const STOP_BUTTON_LABEL = '⬛️ Stop recording';
