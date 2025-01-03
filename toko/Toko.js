@@ -4933,7 +4933,6 @@ var Toko = (function () {
 
     // todo: fix the fps graph. Currently it increases when using the tweakpane controls
     this.capturer = {};
-    this.captureOptions = this.DEFAULT_CAPTURE_OPTIONS;
 
     this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
 
@@ -4943,6 +4942,7 @@ var Toko = (function () {
     // merge incoming options with the defaults
     //
     this.options = Object.assign({}, this.DEFAULT_OPTIONS, inputOptions);
+    this.captureOptions = Object.assign({}, this.DEFAULT_CAPTURE_OPTIONS, inputOptions.captureOptions);
 
     if (this.options.acceptDroppedSettings || this.options.acceptDroppedFiles) {
       p5Canvas.drop(this.dropFile.bind(this));
@@ -5085,7 +5085,6 @@ var Toko = (function () {
     }
 
     if (this.options.captureFrames) {
-      this.captureOptions.format = this.options.captureFormat;
       this.createCapturePanel(this.TAB_ID_CAPTURE);
     }
   };
@@ -8213,6 +8212,7 @@ var Toko = (function () {
     } else {
       this.captureOptions.captureFixedNrFrames = true;
     }
+    console.log(this.captureOptions);
   };
 
   Toko.prototype.createCapturePanel = function (tabID) {
@@ -8250,7 +8250,10 @@ var Toko = (function () {
       });
 
     if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
-      this.captureFrameControl.hidden = true;
+      this.captureOptions.duration = 0;
+    }
+    if (this.captureOptions.captureFixedNrFrames) {
+      this.captureFrameControl.hidden = false;
     }
 
     t.addBlade({ view: 'separator' });

@@ -6,7 +6,6 @@ Toko.prototype.setup = function (inputOptions) {
 
   // todo: fix the fps graph. Currently it increases when using the tweakpane controls
   this.capturer = {};
-  this.captureOptions = this.DEFAULT_CAPTURE_OPTIONS;
 
   this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
 
@@ -16,6 +15,7 @@ Toko.prototype.setup = function (inputOptions) {
   // merge incoming options with the defaults
   //
   this.options = Object.assign({}, this.DEFAULT_OPTIONS, inputOptions);
+  this.captureOptions = Object.assign({}, this.DEFAULT_CAPTURE_OPTIONS, inputOptions.captureOptions);
 
   if (this.options.acceptDroppedSettings || this.options.acceptDroppedFiles) {
     p5Canvas.drop(this.dropFile.bind(this));
@@ -158,7 +158,6 @@ Toko.prototype.endSetup = function () {
   }
 
   if (this.options.captureFrames) {
-    this.captureOptions.format = this.options.captureFormat;
     this.createCapturePanel(this.TAB_ID_CAPTURE);
   }
 };

@@ -7,6 +7,7 @@ Toko.prototype.initCapture = function () {
   } else {
     this.captureOptions.captureFixedNrFrames = true;
   }
+  console.log(this.captureOptions);
 };
 
 Toko.prototype.createCapturePanel = function (tabID) {
@@ -44,7 +45,10 @@ Toko.prototype.createCapturePanel = function (tabID) {
     });
 
   if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
-    this.captureFrameControl.hidden = true;
+    this.captureOptions.duration = 0;
+  }
+  if (this.captureOptions.captureFixedNrFrames) {
+    this.captureFrameControl.hidden = false;
   }
 
   t.addBlade({ view: 'separator' });

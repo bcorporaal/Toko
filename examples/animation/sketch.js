@@ -55,9 +55,33 @@ function setup () {
       },
     ],
     captureFrames: true, //  add record option in tweakpane
-    captureFrameCount: 999, //  max number of frames captured (is this actually used?)
-    captureFrameRate: 15, //  basic frame rate for capture
-    captureFormat: toko.CAPTURE_FORMATS.PNG, //  default image format for capture
+    // captureFrameCount: 999, //  max number of frames captured (is this actually used?)
+    // captureFrameRate: 15, //  basic frame rate for capture
+    // captureFormat: toko.CAPTURE_FORMATS.PNG, //  default image format for capture
+
+    captureOptions: {
+      format: toko.CAPTURE_FORMATS.MP4, //  export format
+      framerate: 60, //  recording framerate
+      bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
+      quality: 0.95, //  recording quality option (only available for WebM/GIF/JPG/WebP)
+      width: null, // 	output width. canvas width used as default
+      height: null, // 	output height. canvas height used as default
+      duration: null, // 	maximum recording duration in number of frames
+      autoSaveDuration: null, //  automatically downloads every n frames. convenient for long captures
+      disableUi: true, //  hide the ui
+      beforeDownload: (blob, context, next) => {
+        toko.resetCapture(); // used to ensure the reset always happens
+        next();
+      },
+      baseFilename: date => {
+        return toko.filenameCapture();
+      },
+      // used by Toko but not by p5.capture
+      captureFixedNrFrames: true,
+      nrFrames: 600,
+      estimate: '0',
+    },
+
     logFPS: false, //  log the fps in tweakpane (not working properly)
   });
 
