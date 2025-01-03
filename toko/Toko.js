@@ -158,6 +158,7 @@ var Toko = (function () {
     showAdvancedOptions: false,
     additionalCanvasSizes: [],
     logFPS: false,
+    log: true,
     captureFrames: false,
     captureFormat: 'mp4',
     canvasSize: SIZE_DEFAULT,
@@ -730,8 +731,6 @@ var Toko = (function () {
       //  preseed the random function
       //
       this._rng = new Toko.RNG();
-
-      console.log(this.VERSION);
 
       //
       //  set the default options for P5Capture.
@@ -4929,8 +4928,6 @@ var Toko = (function () {
   };
 
   Toko.prototype.setup = function (inputOptions) {
-    console.log('Toko - setup');
-
     // todo: fix the fps graph. Currently it increases when using the tweakpane controls
     this.capturer = {};
 
@@ -5025,6 +5022,9 @@ var Toko = (function () {
             this.setCanvasSize(s);
           });
       }
+
+      this.log(this.VERSION);
+      this.log('Toko - setup done');
     }
     //
     // set the label and document title
@@ -5036,7 +5036,7 @@ var Toko = (function () {
   };
 
   Toko.prototype.endSetup = function () {
-    console.log('Toko - endSetup');
+    this.log('Toko - endSetup');
 
     //
     // store the current canvas size as the default
@@ -5169,6 +5169,15 @@ var Toko = (function () {
     let c = color(hexColor);
     c.setAlpha(alpha);
     return c;
+  };
+
+  //
+  //  simple logging function that can be turned off
+  //
+  Toko.prototype.log = function (...args) {
+    if (this.options.log) {
+      console.log(...args);
+    }
   };
 
   //

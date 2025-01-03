@@ -55,9 +55,6 @@ function setup () {
       },
     ],
     captureFrames: true, //  add record option in tweakpane
-    // captureFrameCount: 999, //  max number of frames captured (is this actually used?)
-    // captureFrameRate: 15, //  basic frame rate for capture
-    // captureFormat: toko.CAPTURE_FORMATS.PNG, //  default image format for capture
 
     captureOptions: {
       format: toko.CAPTURE_FORMATS.MP4, //  export format
@@ -83,6 +80,7 @@ function setup () {
     },
 
     logFPS: false, //  log the fps in tweakpane (not working properly)
+    log: true, //  log to console
   });
 
   //

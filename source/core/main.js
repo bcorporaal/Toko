@@ -16,8 +16,6 @@ class Toko {
     //
     this._rng = new Toko.RNG();
 
-    console.log(this.VERSION);
-
     //
     //  set the default options for P5Capture.
     //  this needs to happen before the p5 setup.

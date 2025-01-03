@@ -155,6 +155,7 @@ export const DEFAULT_OPTIONS = {
   showAdvancedOptions: false,
   additionalCanvasSizes: [],
   logFPS: false,
+  log: true,
   captureFrames: false,
   captureFormat: 'mp4',
   canvasSize: SIZE_DEFAULT,

@@ -2,8 +2,6 @@ import '../core/constants';
 import Toko from './main';
 
 Toko.prototype.setup = function (inputOptions) {
-  console.log('Toko - setup');
-
   // todo: fix the fps graph. Currently it increases when using the tweakpane controls
   this.capturer = {};
 
@@ -98,6 +96,9 @@ Toko.prototype.setup = function (inputOptions) {
           this.setCanvasSize(s);
         });
     }
+
+    this.log(this.VERSION);
+    this.log('Toko - setup done');
   }
   //
   // set the label and document title
@@ -109,7 +110,7 @@ Toko.prototype.setup = function (inputOptions) {
 };
 
 Toko.prototype.endSetup = function () {
-  console.log('Toko - endSetup');
+  this.log('Toko - endSetup');
 
   //
   // store the current canvas size as the default
