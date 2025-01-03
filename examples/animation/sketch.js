@@ -68,8 +68,6 @@ function setup () {
       nrFrames: 600,
       estimate: '0',
     },
-
-    logFPS: false, //  log the fps in tweakpane (not working properly)
     log: true, //  log to console
   });
 

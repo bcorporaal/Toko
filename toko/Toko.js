@@ -135,11 +135,9 @@ var Toko = (function () {
   //
   const TABS_PARAMETERS = 'Parameters';
   const TABS_ADVANCED = 'Size';
-  const TABS_FPS = 'FPS';
   const TABS_CAPTURE = 'Capture';
 
   var TAB_ID_CAPTURE = -1;
-  var TAB_ID_FPS = -1;
   var TAB_ID_PARAMETERS = 0;
   var TAB_ID_ADVANCED = 1;
 
@@ -157,7 +155,6 @@ var Toko = (function () {
     hideParameterPanel: false,
     showAdvancedOptions: false,
     additionalCanvasSizes: [],
-    logFPS: false,
     log: true,
     captureFrames: false,
     canvasSize: SIZE_DEFAULT,
@@ -215,12 +212,6 @@ var Toko = (function () {
   const STOP_BUTTON_LABEL = '⬛️ Stop recording';
 
   //
-  //  Parameters to calculate frames per second
-  //
-  const FPS_FILTER_STRENGTH = 40;
-  const FRAME_TIME = 16;
-
-  //
   //  easing parameters
   //
   const EASE_LINEAR = 'Linear';
@@ -259,8 +250,6 @@ var Toko = (function () {
     EASE_QUART: EASE_QUART,
     EASE_QUINT: EASE_QUINT,
     EASE_SMOOTH: EASE_SMOOTH,
-    FPS_FILTER_STRENGTH: FPS_FILTER_STRENGTH,
-    FRAME_TIME: FRAME_TIME,
     RECORD_BUTTON_LABEL: RECORD_BUTTON_LABEL,
     REFRESH_RECORD_BUTTON_LABEL: REFRESH_RECORD_BUTTON_LABEL,
     SIZES: SIZES,
@@ -279,11 +268,9 @@ var Toko = (function () {
     STOP_BUTTON_LABEL: STOP_BUTTON_LABEL,
     TABS_ADVANCED: TABS_ADVANCED,
     TABS_CAPTURE: TABS_CAPTURE,
-    TABS_FPS: TABS_FPS,
     TABS_PARAMETERS: TABS_PARAMETERS,
     TAB_ID_ADVANCED: TAB_ID_ADVANCED,
     TAB_ID_CAPTURE: TAB_ID_CAPTURE,
-    TAB_ID_FPS: TAB_ID_FPS,
     TAB_ID_PARAMETERS: TAB_ID_PARAMETERS,
     VERSION: VERSION
   });
@@ -4937,7 +4924,6 @@ var Toko = (function () {
   };
 
   Toko.prototype.setup = function (inputOptions) {
-    // todo: fix the fps graph. Currently it increases when using the tweakpane controls
     this.capturer = {};
 
     this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
@@ -4972,10 +4958,6 @@ var Toko = (function () {
       if (this.options.captureFrames) {
         tabs.push({ title: this.TABS_CAPTURE });
         this.TAB_ID_CAPTURE = tabs.length - 1;
-      }
-      if (this.options.logFPS) {
-        tabs.push({ title: this.TABS_FPS });
-        this.TAB_ID_FPS = tabs.length - 1;
       }
 
       this.basePaneTab = this.basePane.addTab({ pages: tabs });
@@ -5053,22 +5035,6 @@ var Toko = (function () {
     this.SIZE_DEFAULT.width = width;
     this.SIZE_DEFAULT.height = height;
 
-    if (this.options.logFPS) {
-      this.pt = { fps: 0, graph: 0 };
-
-      var f = this.basePaneTab.pages[this.TAB_ID_FPS];
-
-      f.addBinding(this.pt, 'fps', { interval: 200, readonly: true });
-
-      f.addBinding(this.pt, 'graph', {
-        view: 'graph',
-        interval: 100,
-        min: 0,
-        max: 120,
-        readonly: true,
-      });
-    }
-
     if (this.options.useParameterPanel) {
       if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
@@ -5109,13 +5075,6 @@ var Toko = (function () {
     //	will be called at the end of the draw loop
     //
     //--------------------------------------------
-    //
-    //	track fps with a simple filter to dampen any short spikes
-    //
-    if (this.options.logFPS) {
-      this._frameTime += (deltaTime - this.FRAME_TIME) / this.FPS_FILTER_STRENGTH;
-      this.pt.fps = this.pt.graph = Math.round(1000 / this.FRAME_TIME);
-    }
   };
 
   //

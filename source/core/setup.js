@@ -2,7 +2,6 @@ import '../core/constants';
 import Toko from './main';
 
 Toko.prototype.setup = function (inputOptions) {
-  // todo: fix the fps graph. Currently it increases when using the tweakpane controls
   this.capturer = {};
 
   this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
@@ -37,10 +36,6 @@ Toko.prototype.setup = function (inputOptions) {
     if (this.options.captureFrames) {
       tabs.push({ title: this.TABS_CAPTURE });
       this.TAB_ID_CAPTURE = tabs.length - 1;
-    }
-    if (this.options.logFPS) {
-      tabs.push({ title: this.TABS_FPS });
-      this.TAB_ID_FPS = tabs.length - 1;
     }
 
     this.basePaneTab = this.basePane.addTab({ pages: tabs });
@@ -117,22 +112,6 @@ Toko.prototype.endSetup = function () {
   //
   this.SIZE_DEFAULT.width = width;
   this.SIZE_DEFAULT.height = height;
-
-  if (this.options.logFPS) {
-    this.pt = { fps: 0, graph: 0 };
-
-    var f = this.basePaneTab.pages[this.TAB_ID_FPS];
-
-    f.addBinding(this.pt, 'fps', { interval: 200, readonly: true });
-
-    f.addBinding(this.pt, 'graph', {
-      view: 'graph',
-      interval: 100,
-      min: 0,
-      max: 120,
-      readonly: true,
-    });
-  }
 
   if (this.options.useParameterPanel) {
     if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {

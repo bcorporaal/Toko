@@ -132,11 +132,9 @@ export var SIZES = [
 //
 export const TABS_PARAMETERS = 'Parameters';
 export const TABS_ADVANCED = 'Size';
-export const TABS_FPS = 'FPS';
 export const TABS_CAPTURE = 'Capture';
 
 export var TAB_ID_CAPTURE = -1;
-export var TAB_ID_FPS = -1;
 export var TAB_ID_PARAMETERS = 0;
 export var TAB_ID_ADVANCED = 1;
 
@@ -154,7 +152,6 @@ export const DEFAULT_OPTIONS = {
   hideParameterPanel: false,
   showAdvancedOptions: false,
   additionalCanvasSizes: [],
-  logFPS: false,
   log: true,
   captureFrames: false,
   canvasSize: SIZE_DEFAULT,
@@ -210,12 +207,6 @@ export const DEFAULT_CAPTURE_OPTIONS = {
 export const RECORD_BUTTON_LABEL = '🔴 Record';
 export const REFRESH_RECORD_BUTTON_LABEL = '🔴 Refresh & record';
 export const STOP_BUTTON_LABEL = '⬛️ Stop recording';
-
-//
-//  Parameters to calculate frames per second
-//
-export const FPS_FILTER_STRENGTH = 40;
-export const FRAME_TIME = 16;
 
 //
 //  easing parameters
