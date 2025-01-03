@@ -8238,7 +8238,9 @@ var Toko = (function () {
   };
 
   Toko.prototype.createCapturePanel = function (tabID) {
+    //  tab for options
     let t = this.basePaneTab.pages[tabID];
+    //  tab for buttons depending on the options
     let tb;
     if (this.captureOptions.recordButtonOnMainTab) {
       tb = this.basePaneTab.pages[0];
