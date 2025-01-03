@@ -34,7 +34,6 @@ Toko.prototype.createCapturePanel = function (tabID) {
     options: this.CAPTURE_FRAMERATES,
   }).on('change', e => {
     frameRate(e.value);
-    this.updateDurationEstimate();
   });
 
   t.addBlade({ view: 'separator' });
