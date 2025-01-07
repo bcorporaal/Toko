@@ -206,6 +206,8 @@ var Toko = (function () {
     nrFrames: 0,
   };
 
+  const DEFAULT_CAPTURE_DURATION = 100; // number of frames captured when undefined but recording for fixed number of frames
+
   const SAVE_SKETCH__BUTTON_LABEL = '💾 Save sketch';
   const SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL = '💾 Save sketch & settings';
   const RECORD_BUTTON_LABEL = '🔴 Record';
@@ -235,6 +237,7 @@ var Toko = (function () {
     __proto__: null,
     CAPTURE_FORMATS: CAPTURE_FORMATS,
     CAPTURE_FRAMERATES: CAPTURE_FRAMERATES,
+    DEFAULT_CAPTURE_DURATION: DEFAULT_CAPTURE_DURATION,
     DEFAULT_CAPTURE_OPTIONS: DEFAULT_CAPTURE_OPTIONS,
     DEFAULT_OPTIONS: DEFAULT_OPTIONS,
     EASE_BACK: EASE_BACK,
@@ -8194,12 +8197,15 @@ var Toko = (function () {
 
   Toko.prototype.initCapture = function () {
     this.capturer = P5Capture.getInstance();
+
     //  just in case the duration was not set properly
-    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
-      this.captureOptions.captureFixedNrFrames = false;
-    } else {
-      this.captureOptions.captureFixedNrFrames = true;
+    if (this.captureOptions.captureFixedNrFrames) {
+      this.captureOptions.duration = this.captureOptions.nrFrames;
+      if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+        this.captureOptions = this.DEFAULT_CAPTURE_DURATION;
+      }
     }
+
     //  refresh the sketch before capture
     if (this.captureOptions.refreshBeforeCapture) {
       refresh();
@@ -8256,11 +8262,8 @@ var Toko = (function () {
         }
       });
 
-    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
-      this.captureOptions.duration = 0;
-    }
-    if (this.captureOptions.captureFixedNrFrames) {
-      this.captureFrameControl.hidden = false;
+    if (this.captureOptions.captureFixedNrFrames == false) {
+      this.captureFrameControl.hidden = true;
     }
 
     t.addBlade({ view: 'separator' });
@@ -8337,7 +8340,9 @@ var Toko = (function () {
     //  remove the extension
     let filename = typeof videoFilename === 'string' ? videoFilename.replace(/\.[^/.]+$/, '') : videoFilename;
     //  save the settings
-    this.saveSettings(filename);
+    if (this.options.saveSettingsWithSketch) {
+      this.saveSettings(filename);
+    }
     //  reset the capture buttons
     this.stopCaptureButton.hidden = true;
     this.startCaptureButton.hidden = false;

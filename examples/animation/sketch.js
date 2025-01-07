@@ -58,15 +58,15 @@ function setup () {
     captureFrames: true, //  add record option in tweakpane
 
     captureOptions: {
-      format: toko.CAPTURE_FORMATS.MP4, //  export format
-      framerate: 60, //  recording framerate
+      format: toko.CAPTURE_FORMATS.PNG, //  export format
+      framerate: 30, //  recording framerate
       bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
       quality: 0.95, //  recording quality option (only available for WebM/GIF/JPG/WebP)
       // used by Toko but not by p5.capture
-      captureFixedNrFrames: true,
+      captureFixedNrFrames: true, //  whether the capture is for a fixed duration
       refreshBeforeCapture: false,
       recordButtonOnMainTab: true,
-      nrFrames: 600,
+      nrFrames: 300,
     },
     log: true, //  log to console
   });

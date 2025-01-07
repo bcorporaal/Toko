@@ -2,12 +2,15 @@ import Toko from '../core/main';
 
 Toko.prototype.initCapture = function () {
   this.capturer = P5Capture.getInstance();
+
   //  just in case the duration was not set properly
-  if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
-    this.captureOptions.captureFixedNrFrames = false;
-  } else {
-    this.captureOptions.captureFixedNrFrames = true;
+  if (this.captureOptions.captureFixedNrFrames) {
+    this.captureOptions.duration = this.captureOptions.nrFrames;
+    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+      this.captureOptions = this.DEFAULT_CAPTURE_DURATION;
+    }
   }
+
   //  refresh the sketch before capture
   if (this.captureOptions.refreshBeforeCapture) {
     refresh();
@@ -64,11 +67,8 @@ Toko.prototype.createCapturePanel = function (tabID) {
       }
     });
 
-  if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
-    this.captureOptions.duration = 0;
-  }
-  if (this.captureOptions.captureFixedNrFrames) {
-    this.captureFrameControl.hidden = false;
+  if (this.captureOptions.captureFixedNrFrames == false) {
+    this.captureFrameControl.hidden = true;
   }
 
   t.addBlade({ view: 'separator' });
@@ -145,7 +145,9 @@ Toko.prototype.resetCapture = function (videoFilename) {
   //  remove the extension
   let filename = typeof videoFilename === 'string' ? videoFilename.replace(/\.[^/.]+$/, '') : videoFilename;
   //  save the settings
-  this.saveSettings(filename);
+  if (this.options.saveSettingsWithSketch) {
+    this.saveSettings(filename);
+  }
   //  reset the capture buttons
   this.stopCaptureButton.hidden = true;
   this.startCaptureButton.hidden = false;
