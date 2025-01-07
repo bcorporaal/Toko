@@ -116,7 +116,7 @@ var Toko = (function () {
     full_window: 'full_window',
   };
 
-  var SIZES = [
+  const SIZES = [
     SIZE_DEFAULT,
     SIZE_FULL,
     SIZE_SQUARE_XL,
@@ -137,9 +137,9 @@ var Toko = (function () {
   const TABS_ADVANCED = 'Size';
   const TABS_CAPTURE = 'Capture';
 
-  var TAB_ID_CAPTURE = -1;
-  var TAB_ID_PARAMETERS = 0;
-  var TAB_ID_ADVANCED = 1;
+  const TAB_ID_CAPTURE = -1;
+  const TAB_ID_PARAMETERS = 0;
+  const TAB_ID_ADVANCED = 1;
 
   //
   //	Default options for setup

@@ -113,7 +113,7 @@ export var SIZES_LIST = {
   full_window: 'full_window',
 };
 
-export var SIZES = [
+export const SIZES = [
   SIZE_DEFAULT,
   SIZE_FULL,
   SIZE_SQUARE_XL,
@@ -134,9 +134,9 @@ export const TABS_PARAMETERS = 'Parameters';
 export const TABS_ADVANCED = 'Size';
 export const TABS_CAPTURE = 'Capture';
 
-export var TAB_ID_CAPTURE = -1;
-export var TAB_ID_PARAMETERS = 0;
-export var TAB_ID_ADVANCED = 1;
+export const TAB_ID_CAPTURE = -1;
+export const TAB_ID_PARAMETERS = 0;
+export const TAB_ID_ADVANCED = 1;
 
 //
 //	Default options for setup
