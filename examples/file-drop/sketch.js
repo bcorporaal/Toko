@@ -110,10 +110,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   //  nothing much to do here until an image is dropped
   if (!somethingDropped) {
     background('#62BFAD');
@@ -125,10 +121,6 @@ function draw () {
   } else {
     plotImage();
   }
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //

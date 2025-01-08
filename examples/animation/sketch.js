@@ -245,10 +245,6 @@ function clearTrails () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw();
-  //---------------------------------------------
-
   clear();
   noStroke();
 
@@ -335,10 +331,6 @@ function draw () {
       }
     }
   }
-
-  //---------------------------------------------
-  toko.endDraw();
-  //---------------------------------------------
 }
 
 function attractorForce (attractor, position) {

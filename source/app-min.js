@@ -8,7 +8,6 @@ import './color/color_external';
 import './color/color_internal';
 
 import './core/setup';
-import './core/loop';
 import './core/canvas';
 import './core/util';
 import './core/tweakpane';

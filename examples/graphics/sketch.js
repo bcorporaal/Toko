@@ -183,10 +183,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   clear();
 
   let bgndColor = colors.backgroundColor(p.reverseBgnd);
@@ -280,10 +276,6 @@ function draw () {
       blue: 0,
     },
   );
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //---------------------------------------------

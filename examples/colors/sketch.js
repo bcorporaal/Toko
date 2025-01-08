@@ -157,10 +157,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   clear();
   noStroke();
 
@@ -266,10 +262,6 @@ function draw () {
     rect(x, y + rowHeight / 2, subWidth, rowHeight / 2);
     x += subMargin + subWidth;
   });
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //---------------------------------------------

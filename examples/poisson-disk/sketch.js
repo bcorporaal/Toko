@@ -161,10 +161,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   clear();
   noStroke();
 
@@ -210,10 +206,6 @@ function draw () {
     strokeWeight(1);
     circle(mouseX, mouseY, p.highlightRadius);
   }
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //---------------------------------------------
