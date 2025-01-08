@@ -730,7 +730,7 @@ var Toko = (function () {
       }
 
       //
-      //  preseed the random function
+      //  pre-seed the random function
       //
       this._rng = new Toko.RNG();
 
@@ -5077,27 +5077,20 @@ var Toko = (function () {
     }
   };
 
-  Toko.prototype.startDraw = function () {
-    //
-    //	will be called at the start of the draw loop
-    //
-  };
-
-  Toko.prototype.endDraw = function () {
-    //
-    //	will be called at the end of the draw loop
-    //
-    //--------------------------------------------
-  };
-
   //
   //  resize canvas to a new size while fitting within the window
   //
   Toko.prototype.setCanvasSize = function (inSize) {
     let margin = 80;
     let zoomFactor = 1;
-    let displayFactor = inSize.pixelDensity / 2;
-    let newWidthString, newHeightString;
+    const displayFactor = inSize.pixelDensity / 2;
+    let newWidthString = '',
+      newHeightString = '';
+
+    if (typeof windowWidth === 'undefined' || typeof windowHeight === 'undefined') {
+      console.error('windowWidth or windowHeight is not defined');
+      return;
+    }
 
     if (!inSize.fullWindow) {
       zoomFactor = Math.min(1, ((windowWidth - margin) / inSize.width) * displayFactor);
@@ -7818,71 +7811,71 @@ var Toko = (function () {
     get x () {
       return this._x;
     }
-    set x (in_x) {
-      this._x = in_x;
+    set x (x) {
+      this._x = x;
     }
 
     get y () {
       return this._y;
     }
-    set y (in_y) {
-      this._y = in_y;
+    set y (y) {
+      this._y = y;
     }
 
     get width () {
       return this._width;
     }
-    set width (in_width) {
-      this._width = in_width;
+    set width (width) {
+      this._width = width;
     }
 
     get height () {
       return this._height;
     }
-    set height (in_height) {
-      this._height = in_height;
+    set height (height) {
+      this._height = height;
     }
 
     get row () {
       return this._row;
     }
-    set row (in_row) {
-      this._row = in_row;
+    set row (row) {
+      this._row = row;
     }
 
     get column () {
       return this._column;
     }
-    set column (in_column) {
-      this._column = in_column;
+    set column (column) {
+      this._column = column;
     }
 
     get gridWidth () {
       return this._gridWidth;
     }
-    set gridWidth (in_gridWidth) {
-      this._gridWidth = in_gridWidth;
+    set gridWidth (gridWidth) {
+      this._gridWidth = gridWidth;
     }
 
     get gridHeight () {
       return this._gridHeight;
     }
-    set gridHeight (in_gridHeight) {
-      this._gridHeight = in_gridHeight;
+    set gridHeight (gridHeight) {
+      this._gridHeight = gridHeight;
     }
 
     get value () {
       return this._value;
     }
-    set value (in_value) {
-      this._value = in_value;
+    set value (value) {
+      this._value = value;
     }
 
     get counter () {
       return this._counter;
     }
-    set counter (in_counter) {
-      this._counter = in_counter;
+    set counter (counter) {
+      this._counter = counter;
     }
   };
 

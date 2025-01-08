@@ -12,7 +12,7 @@ class Toko {
     }
 
     //
-    //  preseed the random function
+    //  pre-seed the random function
     //
     this._rng = new Toko.RNG();
 
