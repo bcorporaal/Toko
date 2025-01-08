@@ -84,12 +84,6 @@ function setup () {
   toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
   toko.pane.tab.addBinding(p, 'constrainContrast', { label: 'limit contrast' });
 
-  // toko.pane.tab.addBinding(p, 'interval', {
-  //   min: 0,
-  //   max: 100,
-  //   step: 1,
-  // });
-
   //
   //  listen to tweakpane changes
   //
@@ -131,15 +125,15 @@ function draw () {
   clear();
   noStroke();
 
-  let bgndColor = colors.backgroundColor(p.inverse);
-  let drawColor = colors.drawColor(p.inverse);
+  const bgndColor = colors.backgroundColor(p.inverse);
+  const drawColor = colors.drawColor(p.inverse);
 
   background(bgndColor);
   stroke(drawColor);
   strokeWeight(1);
 
-  let m = 75; // margin
-  let s = 10; // spacing
+  const m = 75; // margin
+  const s = 10; // spacing
   let w = (width - m * 2 - (p.steps - 1) * s) / p.steps;
   let h = (height - m * 2 - (p.steps - 1) * s) / p.steps;
 
