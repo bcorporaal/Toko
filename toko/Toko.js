@@ -4373,7 +4373,7 @@ var Toko = (function () {
     colorOptions = Object.assign({}, this.DEFAULT_COLOR_OPTIONS, colorOptions);
 
     //
-    //  add defoult RNG if none was defined
+    //  add default RNG if none was defined
     //
     if (colorOptions.rng == undefined) {
       colorOptions.rng = this._rng;
@@ -4472,13 +4472,13 @@ var Toko = (function () {
     };
 
     o.randomColor = (useOriginal = false, shift = { h: 0, s: 0, l: 0 }) => {
-      let r = colorOptions.rng.random();
-      let d = colorOptions.domain;
       let c;
+      let r = colorOptions.rng.random();
+
       if (!useOriginal) {
-        c = sc(d[0] + r * (d[1] - d[0])).hex();
+        c = sc(r).hex();
       } else {
-        c = oSC(d[0] + r * (d[1] - d[0])).hex();
+        c = oSC(r).hex();
       }
 
       if (shift.h != 0 || shift.s != 0 || shift.l != 0) {
@@ -4494,8 +4494,7 @@ var Toko = (function () {
 
     o.randomOriginalColor = (shift = { h: 0, s: 0, l: 0 }) => {
       let r = colorOptions.rng.random();
-      let d = colorOptions.domain;
-      let c = oSC(d[0] + r * (d[1] - d[0])).hex();
+      let c = oSC(r).hex();
 
       if (shift.h != 0 || shift.s != 0 || shift.l != 0) {
         let cShifted = chroma(c).hsl();
@@ -4644,7 +4643,7 @@ var Toko = (function () {
   Toko.prototype._getAnotherPalette = function (inPalette, paletteType = 'all', justPrimary = true, direction = 1) {
     let tempPaletteList = this._getPaletteListRaw(paletteType, justPrimary);
     var i = tempPaletteList.findIndex(p => p.name === inPalette);
-    if (i === undefined) {
+    if (i === -1) {
       console.log('palette not found: ' + inPalette);
       return inPalette;
     } else {

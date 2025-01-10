@@ -323,7 +323,7 @@ function draw () {
     colorShift = { h: 0, s: 0.1, l: 0.1 };
   }
   for (var i = 0; i < n; i++) {
-    fill(colors.randomOriginalColor(colorShift));
+    fill(colors.randomColor(true, colorShift));
 
     c = gridSet.cells[i];
     rect(c.x, c.y, c.width, c.height);
