@@ -7260,7 +7260,7 @@ var Toko = (function () {
   //
 
   Toko.Grid = class {
-    SPLIT_HORIZONTAL = 'split_horizonal';
+    SPLIT_HORIZONTAL = 'split_horizontal';
     SPLIT_VERTICAL = 'split_vertical';
     SPLIT_LONGEST = 'split_longest';
     SPLIT_MIX = 'split_mix';
@@ -7272,18 +7272,7 @@ var Toko = (function () {
       this._y = y;
       this._width = width;
       this._height = height;
-      this._cells = [
-        new Toko.GridCell(
-          this._x,
-          this._y,
-          this._width,
-          this._height,
-          0,
-          0,
-          this._width,
-          this._height,
-        ),
-      ];
+      this._cells = [new Toko.GridCell(this._x, this._y, this._width, this._height, 0, 0, this._width, this._height)];
       this._points = [];
       this._pointsAreUpdated = false;
       this._openSpaces = [];
@@ -7324,12 +7313,10 @@ var Toko = (function () {
       this._points = [];
       let tempPoints = [];
       let uniquePoints = [];
-      let c;
       //
       //  gather all points as strings
       //
-      for (let n = 0; n < this._cells.length; n++) {
-        c = this._cells[n];
+      this._cells.forEach(c => {
         // top left corner
         tempPoints.push(`${c.x}-${c.y}`);
         // top right corner
@@ -7338,7 +7325,7 @@ var Toko = (function () {
         tempPoints.push(`${c.x}-${c.y + c.height}`);
         // bottom right corner
         tempPoints.push(`${c.x + c.width}-${c.y + c.height}`);
-      }
+      });
       //
       //  deduplicate using a set
       //
@@ -7347,10 +7334,9 @@ var Toko = (function () {
       // parse back to vectors
       //
       uniquePoints.forEach(element => {
-        let a = element.split('-');
-        this._points.push(createVector(parseFloat(a[0]), parseFloat(a[1])));
+        let coordinates = element.split('-');
+        this._points.push(createVector(parseFloat(coordinates[0]), parseFloat(coordinates[1])));
       });
-
       return this._points;
     }
 
@@ -7366,13 +7352,7 @@ var Toko = (function () {
     //  snapToPixel     - if set to true all sizes and positions are rounded to a pixel
     //                    This can result in the cells not filling the complete grid space
     //
-    packGrid (
-      columns,
-      rows,
-      cellShapes,
-      fillEmptySpaces = true,
-      snapToPixel = true,
-    ) {
+    packGrid (columns, rows, cellShapes, fillEmptySpaces = true, snapToPixel = true) {
       this._pointsAreValid = false;
       this._cells = [];
       let cw, rh;
@@ -7410,16 +7390,7 @@ var Toko = (function () {
           // check if space is available
           if (this.spaceAvailable(c, r, w, h)) {
             // if it is available, add a cell with the picked size
-            newCell = new Toko.GridCell(
-              this._x + c * cw,
-              this._y + r * rh,
-              w * cw,
-              h * rh,
-              c,
-              r,
-              w,
-              h,
-            );
+            newCell = new Toko.GridCell(this._x + c * cw, this._y + r * rh, w * cw, h * rh, c, r, w, h);
             newCell.counter = tryCounter;
             this._cells.push(newCell);
             // claim the space
@@ -7482,16 +7453,7 @@ var Toko = (function () {
             w = cellShapes[s][0];
             h = cellShapes[s][1];
             if (this.spaceAvailable(i, j, w, h)) {
-              newCell = new Toko.GridCell(
-                this._x + i * cw,
-                this._y + j * rh,
-                w * cw,
-                h * rh,
-                i,
-                j,
-                cw,
-                rh,
-              );
+              newCell = new Toko.GridCell(this._x + i * cw, this._y + j * rh, w * cw, h * rh, i, j, cw, rh);
               newCell.counter = s;
               this._cells.push(newCell);
               this.fillSpace(i, j, w, h);
@@ -7543,10 +7505,8 @@ var Toko = (function () {
     resetOpenSpaces (columns, rows) {
       this._openSpaces = [];
       for (let i = 0; i < columns; i++) {
-        this._openSpaces[i] = new Array();
-        for (let j = 0; j < rows; j++) {
-          this._openSpaces[i][j] = true;
-        }
+        this._openSpaces[i] = Array(rows);
+        this._openSpaces[i].fill(true);
       }
     }
 
@@ -7579,12 +7539,7 @@ var Toko = (function () {
     //                    SPLIT_MIX         = split along both axis randomly
     //                    SPLIT_SQUARE      = split cells into 4 new cells
     //
-    splitRecursive (
-      nrLoops = 1,
-      chance = 0.5,
-      minSize = 10,
-      splitStyle = this.SPLIT_MIX,
-    ) {
+    splitRecursive (nrLoops = 1, chance = 0.5, minSize = 10, splitStyle = this.SPLIT_MIX) {
       if (splitStyle == this.SPLIT_SQUARE) {
         // reduce the chance because the square split creates 4 cells instead of 2
         chance *= 0.5;
@@ -7670,11 +7625,7 @@ var Toko = (function () {
         newCells.push(new Toko.GridCell(x + w2, y, w2, h2));
         newCells.push(new Toko.GridCell(x + w2, y + h2, w2, h2));
         newCells.push(new Toko.GridCell(x, y + h2, w2, h2));
-        newCells[0].counter =
-          newCells[1].counter =
-          newCells[2].counter =
-          newCells[3].counter =
-            c;
+        newCells[0].counter = newCells[1].counter = newCells[2].counter = newCells[3].counter = c;
       } else {
         newCells.push(cell);
       }
@@ -7734,19 +7685,15 @@ var Toko = (function () {
       //  find the max value of counter in all the cells
       //  see https://stackoverflow.com/questions/4020796/finding-the-max-value-of-an-attribute-in-an-array-of-objects
       //
-      let maxC = this._cells.reduce((a, b) =>
-        a.counter > b.counter ? a : b,
-      ).counter;
+      if (this._cells.length === 0) return 0;
+      let maxC = Math.max(...this._cells.map(cell => cell.counter));
       return maxC;
     }
-
     get minCounter () {
-      let minC = this._cells.reduce((a, b) =>
-        a.counter < b.counter ? a : b,
-      ).counter;
+      if (this._cells.length === 0) return 0;
+      let minC = Math.min(...this._cells.map(cell => cell.counter));
       return minC;
     }
-
     get width () {
       return this._width;
     }
@@ -7794,6 +7741,31 @@ var Toko = (function () {
   //    counter     - used to track how often a cell is split
   //
 
+  /**
+    /**
+     * @param {number} x - x position on the canvas
+     * @param {number} y - y position on the canvas
+     * @param {number} width - width of the cell
+     * @param {number} height - height of the cell
+     * @param {number} [column=0] - x position in columns
+     * @param {number} [row=0] - y position in rows
+     * @param {number} [gridWidth=0] - number of columns wide
+     * @param {number} [gridHeight=0] - number of rows height
+   * @param {number} [gridWidth=0] - The number of columns wide.
+   * @param {number} [gridHeight=0] - The number of rows height.
+   * @property {number} value - The value per cell that can be set and used for visual effects. Default is 0.
+   * @property {number} counter - Used to track how often a cell is split. Default is 0.
+   * @param {number} x - The x position on the canvas.
+   * @param {number} y - The y position on the canvas.
+   * @param {number} width - The width of the cell.
+   * @param {number} height - The height of the cell.
+   * @param {number} [column=0] - The x position in columns.
+   * @param {number} [row=0] - The y position in rows.
+   * @param {number} [gridWidth=0] - The number of columns wide.
+   * @param {number} [gridHeight=0] - The number of rows height.
+   * @property {number} value - The value per cell that can be set and used for visual effects.
+   * @property {number} counter - Used to track how often a cell is split.
+   */
   Toko.GridCell = class {
     constructor (x, y, width, height, column = 0, row = 0, gridWidth = 0, gridHeight = 0) {
       this._x = x;

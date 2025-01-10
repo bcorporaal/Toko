@@ -18,6 +18,31 @@ import Toko from '../core/main';
 //    counter     - used to track how often a cell is split
 //
 
+/**
+  /**
+   * @param {number} x - x position on the canvas
+   * @param {number} y - y position on the canvas
+   * @param {number} width - width of the cell
+   * @param {number} height - height of the cell
+   * @param {number} [column=0] - x position in columns
+   * @param {number} [row=0] - y position in rows
+   * @param {number} [gridWidth=0] - number of columns wide
+   * @param {number} [gridHeight=0] - number of rows height
+ * @param {number} [gridWidth=0] - The number of columns wide.
+ * @param {number} [gridHeight=0] - The number of rows height.
+ * @property {number} value - The value per cell that can be set and used for visual effects. Default is 0.
+ * @property {number} counter - Used to track how often a cell is split. Default is 0.
+ * @param {number} x - The x position on the canvas.
+ * @param {number} y - The y position on the canvas.
+ * @param {number} width - The width of the cell.
+ * @param {number} height - The height of the cell.
+ * @param {number} [column=0] - The x position in columns.
+ * @param {number} [row=0] - The y position in rows.
+ * @param {number} [gridWidth=0] - The number of columns wide.
+ * @param {number} [gridHeight=0] - The number of rows height.
+ * @property {number} value - The value per cell that can be set and used for visual effects.
+ * @property {number} counter - Used to track how often a cell is split.
+ */
 Toko.GridCell = class {
   constructor (x, y, width, height, column = 0, row = 0, gridWidth = 0, gridHeight = 0) {
     this._x = x;
