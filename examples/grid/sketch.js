@@ -66,7 +66,6 @@ function setup () {
   let g = new Toko.Grid();
 
   p = {
-    // seed: 29,
     gridSeed: 'ABCDEF',
     colorSeed: 'ghijkl',
     // grid
@@ -114,12 +113,6 @@ function setup () {
       packed: 'packed',
     },
   });
-  toko.pane.tab.addBlade({ view: 'separator' });
-  // toko.pane.tab.addBinding(p, 'seed', {
-  //   min: 1,
-  //   max: 2000,
-  //   step: 1,
-  // });
   //
   //  add controls for the base grid rows and columns
   //
