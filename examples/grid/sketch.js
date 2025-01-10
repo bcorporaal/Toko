@@ -48,14 +48,6 @@ function setup () {
     useParameterPanel: true, //  use the tweakpane panel for settings
     showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
     captureFrames: false, //  no record option
-    additionalCanvasSizes: [
-      {
-        name: 'extra wide',
-        width: 3515,
-        height: 1080,
-        pixelDensity: 2,
-      },
-    ],
   });
 
   //
@@ -113,6 +105,7 @@ function setup () {
       packed: 'packed',
     },
   });
+
   //
   //  add controls for the base grid rows and columns
   //
@@ -129,6 +122,7 @@ function setup () {
     max: 100,
     step: 1,
   });
+
   //
   //  add controls for the recursive grid
   //
@@ -159,6 +153,7 @@ function setup () {
     max: 25,
     step: 1,
   });
+
   //
   //  add controls for the packed grid
   //
@@ -168,6 +163,7 @@ function setup () {
   f2.addBinding(p, 'cellShapes');
   f2.addBinding(p, 'noEmptySpaces');
   f2.addBinding(p, 'snapToPixel');
+
   //
   //  add controls to change the colors
   //
@@ -219,6 +215,7 @@ function setup () {
     max: 100,
     step: 5,
   });
+
   //
   //  listen to tweakpane changes
   //
@@ -297,8 +294,6 @@ function draw () {
   //  set the background and stroke colors
   //
   let bgndColor = colors.backgroundColor(p.invertBgnd);
-  let drawColor = colors.drawColor(p.invertBgnd);
-
   background(bgndColor);
   if (p.stroke) {
     strokeWeight(p.strokeWeight);
@@ -317,7 +312,6 @@ function draw () {
   }
   for (var i = 0; i < n; i++) {
     fill(colors.randomColor(true, colorShift));
-
     c = gridSet.cells[i];
     rect(c.x, c.y, c.width, c.height);
   }
