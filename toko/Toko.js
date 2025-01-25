@@ -8217,7 +8217,7 @@ var Toko = (function () {
     this.captureFrameControl = t
       .addBinding(this.captureOptions, 'nrFrames', {
         min: 0,
-        max: 1000,
+        max: 2400,
         step: 5,
       })
       .on('change', e => {
