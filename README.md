@@ -59,7 +59,7 @@ If you have any questions or comments you can also contact me via [email](mailto
 
 ## Credits
 
-Many thanks to all the creator whose code or work is in some way of influence to Toko.
+Many thanks to all the creators whose code or work is in some way of influence to Toko.
 
 Toko includes color palettes from the following sources:<br>
 [Chromotome](https://github.com/kgolid/chromotome) by Kjetil Midtgarden Golid. MIT License.<br>
