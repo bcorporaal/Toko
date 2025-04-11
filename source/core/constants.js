@@ -205,7 +205,7 @@ export const DEFAULT_CAPTURE_OPTIONS = {
 
 export const DEFAULT_CAPTURE_DURATION = 100; // number of frames captured when undefined but recording for fixed number of frames
 
-export const SAVE_SKETCH__BUTTON_LABEL = '💾 Save sketch';
+export const SAVE_SKETCH_BUTTON_LABEL = '💾 Save sketch';
 export const SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL = '💾 Save sketch & settings';
 export const RECORD_BUTTON_LABEL = '🔴 Record';
 export const REFRESH_RECORD_BUTTON_LABEL = '🔴 Refresh & record';

@@ -208,7 +208,7 @@ var Toko = (function () {
 
   const DEFAULT_CAPTURE_DURATION = 100; // number of frames captured when undefined but recording for fixed number of frames
 
-  const SAVE_SKETCH__BUTTON_LABEL = '💾 Save sketch';
+  const SAVE_SKETCH_BUTTON_LABEL = '💾 Save sketch';
   const SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL = '💾 Save sketch & settings';
   const RECORD_BUTTON_LABEL = '🔴 Record';
   const REFRESH_RECORD_BUTTON_LABEL = '🔴 Refresh & record';
@@ -257,7 +257,7 @@ var Toko = (function () {
     RECORD_BUTTON_LABEL: RECORD_BUTTON_LABEL,
     REFRESH_RECORD_BUTTON_LABEL: REFRESH_RECORD_BUTTON_LABEL,
     SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL: SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL,
-    SAVE_SKETCH__BUTTON_LABEL: SAVE_SKETCH__BUTTON_LABEL,
+    SAVE_SKETCH_BUTTON_LABEL: SAVE_SKETCH_BUTTON_LABEL,
     SIZES: SIZES,
     SIZES_LIST: SIZES_LIST,
     SIZE_1080P: SIZE_1080P,
