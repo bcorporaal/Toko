@@ -1,28 +1,25 @@
 import Toko from '../core/main';
 
 Toko.prototype.generateFilename = function (extension = 'svg', verb = 'sketched') {
-  var adj1 = this.randomAdjective();
-  var adj2 = this.randomAdjective();
-  var noun = this.randomNoun();
+  const adj1 = this.randomAdjective();
+  const adj2 = this.randomAdjective();
+  const noun = this.randomNoun();
 
-  var filename = this._getTimeStamp() + '_';
+  const timestamp = this._getTimeStamp();
+  const baseFilename = `${timestamp}_${verb}_the_${adj1}_${adj2}_${noun}`;
 
-  if (extension != '' && extension != 'none') {
-    filename = filename + verb + '_the' + '_' + adj1 + '_' + adj2 + '_' + noun + '.' + extension;
-  } else {
-    filename = filename + verb + '_the' + '_' + adj1 + '_' + adj2 + '_' + noun;
-  }
-  return filename;
+  return extension && extension !== 'none' ? `${baseFilename}.${extension}` : baseFilename;
 };
 
 Toko.prototype._getTimeStamp = function () {
-  //
-  // create a yyyymmdd string
-  //
-  var d = new Date();
-  var day = ('0' + d.getDate()).slice(-2);
-  var month = ('0' + (d.getMonth() + 1)).slice(-2);
-  var year = d.getFullYear();
+  // Get the current date
+  const d = new Date();
 
-  return year + month + day;
+  // Destructure to get year, month, and day
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const day = String(d.getDate()).padStart(2, '0'); // Ensures two-digit day
+
+  // Return formatted timestamp
+  return `${year}${month}${day}`;
 };
