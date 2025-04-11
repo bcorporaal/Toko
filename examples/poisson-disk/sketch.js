@@ -33,7 +33,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'Poisson Disk sampling', //  title displayed
+    title: 'Poisson Disk sampling & Quadtree', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //

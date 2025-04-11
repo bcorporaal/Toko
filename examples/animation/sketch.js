@@ -33,7 +33,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'Toko demo', //  title displayed
+    title: 'Animation & recording', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_1080P_PORTRAIT, //  canvas size to use
     //

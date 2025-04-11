@@ -2,10 +2,10 @@ p5.disableFriendlyErrors = false; // disables FES to speed things up a little bi
 
 let toko = new Toko();
 
+let font;
+
 function preload () {
-  //
-  // All loading calls here
-  //
+  font = loadFont('../../assets/fonts/ttf/UdonMonoWeb-Regular.ttf');
 }
 
 function setup () {
@@ -31,7 +31,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'Color grid', //  title displayed
+    title: 'Color scales', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
@@ -51,17 +51,18 @@ function setup () {
   //  sketch parameters
   //
   p = {
-    steps: 10,
+    steps: 2000,
     interpolated: false,
     collections: toko.COLOR_COLLECTIONS,
     collection: 'basic',
-    palette: 'westCoast',
+    palette: 'fullRainbow',
     inverse: false,
     reverse: false,
     sort: false,
     constrainContrast: false,
     interval: { min: 16, max: 48 },
     file: '',
+    easingParameters: [0.25, 0.25, 0.75, 0.75],
   };
 
   //
@@ -77,12 +78,23 @@ function setup () {
     paletteKey: 'palette',
   });
 
-  toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1 });
-  toko.pane.tab.addBinding(p, 'interpolated');
+  toko.pane.tab.addBinding(p, 'inverse', { label: 'inverse bgnd' });
   toko.pane.tab.addBinding(p, 'reverse', { label: 'reverse palette' });
-  toko.pane.tab.addBinding(p, 'sort', { label: 'sort metBrewer' });
-  toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
-  toko.pane.tab.addBinding(p, 'constrainContrast', { label: 'limit contrast' });
+
+  toko.pane.tab
+    .addBlade({
+      view: 'cubicbezier',
+      value: p.easingParameters,
+      expanded: true,
+      label: 'easing',
+      picker: 'inline',
+    })
+    .on('change', ev => {
+      //
+      //  push any changes back to the parameters
+      //  currently tweakpane does not do this automatically
+      p.easingParameters = ev.value.comps_;
+    });
 
   //
   //  listen to tweakpane changes
@@ -103,18 +115,35 @@ function refresh () {
   console.log('Toko - refresh');
 
   //
-  //  set domain range to number of steps
+  //  palette variation #1
   //
-  const o = {
-    domain: [0, p.steps * p.steps],
+  const o1 = {
+    domain: [0, p.steps],
     reverse: p.reverse,
-    sort: p.sort,
-    constrainContrast: p.constrainContrast,
+    sort: true,
+    constrainContrast: false,
+    mode: 'oklab',
+    nrDuotones: 12,
+    gamma: 1,
   };
+  colors1 = toko.getColorScale(this.p.palette, o1);
+
   //
-  //  get colors
+  //  palette variation #2
   //
-  colors = toko.getColorScale(this.p.palette, o);
+  const o2 = {
+    domain: [0, p.steps],
+    reverse: p.reverse,
+    sort: false,
+    constrainContrast: false,
+    mode: 'oklab',
+    nrDuotones: 12,
+    useEasing: true,
+    easingParameters: p.easingParameters,
+    gamma: 1,
+  };
+  colors2 = toko.getColorScale(this.p.palette, o2);
+
   //
   //  redraw with updated parameters
   //
@@ -125,27 +154,108 @@ function draw () {
   clear();
   noStroke();
 
-  const bgndColor = colors.backgroundColor(p.inverse);
-  const drawColor = colors.drawColor(p.inverse);
+  let bgndColor = colors1.backgroundColor(p.inverse);
+  let drawColor = colors1.drawColor(p.inverse);
 
   background(bgndColor);
+  noFill();
   stroke(drawColor);
   strokeWeight(1);
 
-  const m = 75; // margin
-  const s = 10; // spacing
-  let w = (width - m * 2 - (p.steps - 1) * s) / p.steps;
-  let h = (height - m * 2 - (p.steps - 1) * s) / p.steps;
+  textFont(font);
+
+  let margin = 60;
+  let nrRows = 4;
+  let rowHeight = (height - 5 * margin) / nrRows;
+  let x = margin;
+  let y = 0;
+  let w = width - 2 * margin;
+  let d = w / p.steps;
 
   //
-  //  draw a grid with the colors from the palette
+  //  original palette
   //
+  y = margin;
+  noStroke();
+  fill(drawColor);
+  textSize(14);
+  text('PALETTE COLORS', margin, y - 10);
+  stroke(drawColor);
+
+  rect(margin, y, w, rowHeight);
+
+  let nrColors = colors2.originalColors.length;
+  let cw = w / nrColors;
+
+  colors2.originalColors.forEach((col, i) => {
+    fill(col);
+    rect(margin + i * cw, y, cw, rowHeight);
+  });
+  noFill();
+
+  //
+  //  default scale
+  //
+  y = 2 * margin + rowHeight;
+  noStroke();
+  fill(drawColor);
+  textSize(14);
+  text('COLOR SCALE WITHOUT EASING', margin, y - 10);
+  stroke(drawColor);
+
   for (let i = 0; i < p.steps; i++) {
-    for (let j = 0; j < p.steps; j++) {
-      fill(colors.scale(i + j * p.steps, !p.interpolated));
-      rect(i * (w + s) + m, j * (h + s) + m, w, h);
-    }
+    let x = margin + i * d;
+    stroke(colors1.scale(i));
+    line(x, y, x, y + rowHeight);
   }
+
+  stroke(drawColor);
+  noFill();
+  rect(margin, y, w, rowHeight);
+
+  //
+  //  adjusted scale
+  //
+  y = 3 * margin + 2 * rowHeight;
+  noStroke();
+  fill(drawColor);
+  textSize(14);
+  text('COLOR SCALE WITH BEZIER EASING', margin, y - 10);
+  stroke(drawColor);
+
+  for (let i = 0; i < p.steps; i++) {
+    let x = margin + i * d;
+    stroke(colors2.scale(i));
+    line(x, y, x, y + rowHeight);
+  }
+
+  stroke(drawColor);
+  noFill();
+  rect(margin, y, w, rowHeight);
+
+  //
+  //  duotones
+  //
+  y = 4 * margin + 3 * rowHeight;
+  noStroke();
+  fill(drawColor);
+  textSize(14);
+  text('DUOTONES', margin, y - 10);
+  stroke(drawColor);
+
+  let nrDuotones = colors1.duotones.length;
+  let subMargin = 20;
+  let subWidth = (w - (nrDuotones - 1) * subMargin) / nrDuotones;
+
+  x = margin;
+  stroke(drawColor);
+  colors1.duotones.forEach((dt, i) => {
+    fill(dt.backgroundColor);
+    rect(x, y, subWidth, rowHeight / 2);
+    fill(dt.drawColor);
+    rect(x, y + rowHeight / 2, subWidth, rowHeight / 2);
+    x += subMargin + subWidth;
+  });
 }
 
 //---------------------------------------------
