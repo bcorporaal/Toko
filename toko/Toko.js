@@ -5586,6 +5586,12 @@ var Toko = (function () {
     return this._rng.randomChar(inString);
   };
   //
+  // random string from provided string or lowercase
+  //
+  Toko.prototype.randomString = function (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+    return this._rng.randomString(count, inString);
+  };
+  //
   // stepped random number in range
   //
   Toko.prototype.steppedRandom = function (min = 0, max = 1, step = 0.1) {
@@ -5848,9 +5854,26 @@ var Toko = (function () {
     // without input it returns a random lowercase letter
     //
     randomChar = function (inString = 'abcdefghijklmnopqrstuvwxyz') {
-      let l = inString.length,
-        r = Math.floor(this.random(0, l));
+      if (inString.length === 0) {
+        throw new Error('randomChar: Input string cannot be empty.');
+      }
+      let r = Math.floor(this.random(0, inString.length));
       return inString.charAt(r);
+    };
+
+    //
+    // random string of length count selected from a provided string
+    // without input it returns a random lowercase letter
+    //
+    randomString = function (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+      if (inString.length === 0) {
+        throw new Error('randomString: Input string cannot be empty.');
+      }
+      let output = '';
+      for (var i = 0; i < count; i++) {
+        output += this.randomChar(inString);
+      }
+      return output;
     };
 
     //
@@ -8133,30 +8156,27 @@ var Toko = (function () {
   };
 
   Toko.prototype.generateFilename = function (extension = 'svg', verb = 'sketched') {
-    var adj1 = this.randomAdjective();
-    var adj2 = this.randomAdjective();
-    var noun = this.randomNoun();
+    const adj1 = this.randomAdjective();
+    const adj2 = this.randomAdjective();
+    const noun = this.randomNoun();
 
-    var filename = this._getTimeStamp() + '_';
+    const timestamp = this._getTimeStamp();
+    const baseFilename = `${timestamp}_${verb}_the_${adj1}_${adj2}_${noun}`;
 
-    if (extension != '' && extension != 'none') {
-      filename = filename + verb + '_the' + '_' + adj1 + '_' + adj2 + '_' + noun + '.' + extension;
-    } else {
-      filename = filename + verb + '_the' + '_' + adj1 + '_' + adj2 + '_' + noun;
-    }
-    return filename;
+    return extension && extension !== 'none' ? `${baseFilename}.${extension}` : baseFilename;
   };
 
   Toko.prototype._getTimeStamp = function () {
-    //
-    // create a yyyymmdd string
-    //
-    var d = new Date();
-    var day = ('0' + d.getDate()).slice(-2);
-    var month = ('0' + (d.getMonth() + 1)).slice(-2);
-    var year = d.getFullYear();
+    // Get the current date
+    const d = new Date();
 
-    return year + month + day;
+    // Destructure to get year, month, and day
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(d.getDate()).padStart(2, '0'); // Ensures two-digit day
+
+    // Return formatted timestamp
+    return `${year}${month}${day}`;
   };
 
   Toko.prototype.initCapture = function () {
