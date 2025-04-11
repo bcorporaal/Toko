@@ -78,15 +78,8 @@ function setup () {
     paletteKey: 'palette',
   });
 
-  // toko.pane.tab.addBinding(p, 'steps', { min: 2, max: 40, step: 1 });
-  // toko.pane.tab.addBinding(p, 'interpolated');
+  toko.pane.tab.addBinding(p, 'inverse', { label: 'inverse bgnd' });
   toko.pane.tab.addBinding(p, 'reverse', { label: 'reverse palette' });
-  toko.pane.tab.addBinding(p, 'inverse', { label: 'inverse palette' });
-  // toko.pane.tab.addBinding(p, 'sort', { label: 'sort metBrewer' });
-  let testThing = toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
-  // toko.pane.tab.addBinding(p, 'constrainContrast', { label: 'limit contrast' });
-
-  testThing.hidden = true;
 
   toko.pane.tab
     .addBlade({
@@ -131,8 +124,7 @@ function refresh () {
     constrainContrast: false,
     mode: 'oklab',
     nrDuotones: 12,
-    easingParameters: p.easingParameters,
-    useEasing: true,
+    gamma: 1,
   };
   colors1 = toko.getColorScale(this.p.palette, o1);
 
@@ -146,6 +138,8 @@ function refresh () {
     constrainContrast: false,
     mode: 'oklab',
     nrDuotones: 12,
+    useEasing: true,
+    easingParameters: p.easingParameters,
     gamma: 1,
   };
   colors2 = toko.getColorScale(this.p.palette, o2);
@@ -185,7 +179,7 @@ function draw () {
   noStroke();
   fill(drawColor);
   textSize(14);
-  text('ORIGINAL COLORS', margin, y - 10);
+  text('PALETTE COLORS', margin, y - 10);
   stroke(drawColor);
 
   rect(margin, y, w, rowHeight);
@@ -206,7 +200,7 @@ function draw () {
   noStroke();
   fill(drawColor);
   textSize(14);
-  text('COLOR SCALE #1', margin, y - 10);
+  text('COLOR SCALE WITHOUT EASING', margin, y - 10);
   stroke(drawColor);
 
   for (let i = 0; i < p.steps; i++) {
@@ -226,7 +220,7 @@ function draw () {
   noStroke();
   fill(drawColor);
   textSize(14);
-  text('COLOR SCALE #2', margin, y - 10);
+  text('COLOR SCALE WITH BEZIER EASING', margin, y - 10);
   stroke(drawColor);
 
   for (let i = 0; i < p.steps; i++) {
