@@ -61,7 +61,7 @@ If you have any questions or comments you can also contact me via [email](mailto
 
 Many thanks to all the creator whose code or work is in some way of influence to Toko.
 
-Toko includes color palettes from the following:<br>
+Toko includes color palettes from the following sources:<br>
 [Chromotome](https://github.com/kgolid/chromotome) by Kjetil Midtgarden Golid. MIT License.<br>
 [D3](https://github.com/d3/d3) by Mike Bostock and others. ISC License.<br>
 [Feathers](https://github.com/shandiya/feathers) by Shandiya Balasubramaniam. MIT License.<br>
@@ -70,12 +70,13 @@ Toko includes color palettes from the following:<br>
 [MoMAColors](https://github.com/BlakeRMills/MoMAColors) by Blake Robert Mills. MIT License.<br>
 [WesAnderson](https://github.com/karthik/wesanderson) by Karthik Ram & [Wes Anderson palettes](https://wesandersonpalettes.tumblr.com/). Unknown License.<br>
 
-Toko includes code from the following:<br>
+Toko includes code from the following projects:<br>
 [SimplexNoiseJS](https://github.com/blindman67/SimplexNoiseJS) by Mark Spronck for OpenSimplex Noise. Unlicense.<br>
 [Quadtree](https://github.com/CodingTrain/QuadTree) by Daniel Shiffman / Coding Train for quadtree. MIT License.<br>
 [BezierEasing](https://github.com/thednp/bezier-easing/) by thednp. MIT License.<br>
 
 Toko makes use of the following:<br>
+[p5.js](https://github.com/processing/p5.js) by [many contributors](https://github.com/processing/p5.js?tab=readme-ov-file#contributors). LGPL-2.1 license.<br>
 [Tweakpane](https://cocopon.github.io/tweakpane/) by Hiroki Kokubun for controls. MIT License.<br>
 [p5.capture](https://github.com/tapioca24/p5.capture) by tapioca24 for video capture. MIT License.<br>
 [Chroma.js](https://github.com/gka/chroma.js) by Gregor Aisch for color manipulations. Apache License.<br>
