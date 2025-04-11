@@ -16,7 +16,7 @@ import judsonPalettes from '../color_palettes/judson';
 import jungPalettes from '../color_palettes/jung';
 import kovecsesPalettes from '../color_palettes/kovecses';
 import mayoPalettes from '../color_palettes/mayo';
-import metBrewerPalettes from '../color_palettes/metBrewer';
+import metBrewerPalettes from '../color_palettes/metbrewer';
 import ranganathPalettes from '../color_palettes/ranganath';
 import rohlfsPalettes from '../color_palettes/rohlfs';
 import roygbivsPalettes from '../color_palettes/roygbivs';
@@ -26,27 +26,26 @@ import tsuchimochiPalettes from '../color_palettes/tsuchimochi';
 import tundraPalettes from '../color_palettes/tundra';
 import orbifoldPalettes from '../color_palettes/orbifold';
 import lospecPalettes from '../color_palettes/lospec';
-import duotone from '../color_palettes/duotone';
+import momaPalettes from '../color_palettes/moma';
+import feathersPalettes from '../color_palettes/feathers';
+import wesandersonPalettes from '../color_palettes/wesanderson';
 
-Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
 Toko.prototype.COLOR_COLLECTIONS = [];
-Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
-Toko.prototype.EXTRA_SPECTRAL_COLORS = 25;
+Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch', 'oklab', 'oklch'];
 
 Toko.prototype.DEFAULT_COLOR_OPTIONS = {
   reverse: false,
   domain: [0, 1],
-  mode: 'rgb',
+  mode: 'oklab',
   gamma: 1,
-  correctLightness: false,
-  useSpectral: true,
-  bezier: false,
   stepped: false,
   steps: 10,
   nrColors: 10,
   useSortOrder: false,
   constrainContrast: false,
   nrDuotones: 12,
+  easingParameters: [0.25, 0.25, 0.75, 0.75],
+  useEasing: false,
 };
 
 Toko.prototype.initColorDone = false;
@@ -65,21 +64,14 @@ Toko.prototype._validateColorOptions = function (colorOptions) {
   //
   // merge with default options
   //
+  this.DEFAULT_COLOR_OPTIONS.easing = this.easeLinear;
   colorOptions = Object.assign({}, this.DEFAULT_COLOR_OPTIONS, colorOptions);
 
   //
-  //  add defoult RNG if none was defined
+  //  add default RNG if none was defined
   //
   if (colorOptions.rng == undefined) {
     colorOptions.rng = this._rng;
-  }
-
-  //
-  // don't use bezier for more than a preset number of colors
-  //
-  if (colorOptions.bezier && colorOptions.length > this.MAX_COLORS_BEZIER) {
-    console.log(`INFO: Bezier does not work for more than $MAX_COLORS_BEZIER} colors`);
-    colorOptions.bezier = false;
   }
 
   //
@@ -94,7 +86,7 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   if (!this.initColorDone) {
     this._initColor();
   }
-  let sc, oSC, eSC, expandedColorSet;
+  let sc, oSC;
   let o = {};
 
   if (colorOptions._validated != true) {
@@ -111,88 +103,77 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
   }
 
   //
-  // create a scale with bezier or use standard options
+  // create a scale
   //
-  if (colorOptions.bezier) {
-    sc = chroma.bezier(colorSet).scale();
-  } else {
-    sc = chroma.scale(colorSet).domain(colorOptions.domain).mode(colorOptions.mode);
-  }
+  sc = chroma.scale(colorSet).domain([0, 1]).mode(colorOptions.mode);
 
   //
   // scale mapped to the original array of colors
   //
-  oSC = chroma.scale(colorSet).domain(colorOptions.domain).classes(colorSet.length);
-
-  //
-  //  expand color set using Spectral
-  //
-  expandedColorSet = this._expandColorSet(colorSet);
-  eSC = chroma.scale(expandedColorSet).domain(colorOptions.domain).mode(colorOptions.mode);
+  oSC = chroma.scale(colorSet).domain([0, 1]).classes(colorSet.length);
 
   //
   // only adjust gamma if needed
   //
   if (colorOptions.gamma != 1) {
     sc.gamma(colorOptions.gamma);
-    eSC.gamma(colorOptions.gamma);
-  }
-
-  //
-  // this does not work well with varied palettes so avoid
-  //
-  if (colorOptions.correctLightness) {
-    sc = sc.correctLightness();
-    eSC = eSC.correctLightness();
   }
 
   if (colorOptions.stepped && colorOptions.steps > 0) {
     sc = sc.classes(colorOptions.steps);
-    eSC = eSC.classes(colorOptions.steps);
+  }
+
+  //
+  //  check domain and turn on remapping if it is not [0,1]
+  //
+  o.domain = colorOptions.domain;
+  if (colorOptions.domain[0] !== 0 || colorOptions.domain[1] !== 1) {
+    o.remapDomain = true;
+  } else {
+    o.remapDomain = false;
   }
 
   o.scaleChroma = sc;
-  o.scaleSpectral = eSC;
   o.contrastColors = contrastColors;
   o.options = colorOptions;
   o.originalColors = colorSet;
+  o.list = sc.colors(colorOptions.nrColors);
 
-  if (colorOptions.useSpectral) {
-    o.list = eSC.colors(colorOptions.nrColors);
+  if (colorOptions.useEasing) {
+    let par = colorOptions.easingParameters;
+    o.easing = new Toko.CubicBezier(par[0], par[1], par[2], par[3]);
   } else {
-    o.list = sc.colors(colorOptions.nrColors);
-  }
-
-  if (colorOptions.useSpectral) {
-    o.scale = (i, useOriginal = false) => {
-      if (!useOriginal) {
-        return eSC(i).hex();
-      } else {
-        return oSC(i).hex();
-      }
-    };
-  } else {
-    o.scale = (i, useOriginal = false) => {
-      if (!useOriginal) {
-        return sc(i).hex();
-      } else {
-        return oSC(i).hex();
-      }
+    o.easing = i => {
+      return i;
     };
   }
+
+  o.scale = (i, useOriginal = false) => {
+    if (o.remapDomain) {
+      i = map(i, o.domain[0], o.domain[1], 0, 1);
+    }
+
+    let ie = o.easing(i);
+
+    if (!useOriginal) {
+      return sc(ie).hex();
+    } else {
+      return oSC(ie).hex();
+    }
+  };
 
   o.originalScale = i => {
     return oSC(i).hex();
   };
 
   o.randomColor = (useOriginal = false, shift = { h: 0, s: 0, l: 0 }) => {
-    let r = colorOptions.rng.random();
-    let d = colorOptions.domain;
     let c;
+    let r = colorOptions.rng.random();
+
     if (!useOriginal) {
-      c = sc(d[0] + r * (d[1] - d[0])).hex();
+      c = sc(r).hex();
     } else {
-      c = oSC(d[0] + r * (d[1] - d[0])).hex();
+      c = oSC(r).hex();
     }
 
     if (shift.h != 0 || shift.s != 0 || shift.l != 0) {
@@ -208,8 +189,7 @@ Toko.prototype._createColorScale = function (colorSet, colorOptions, extraColors
 
   o.randomOriginalColor = (shift = { h: 0, s: 0, l: 0 }) => {
     let r = colorOptions.rng.random();
-    let d = colorOptions.domain;
-    let c = oSC(d[0] + r * (d[1] - d[0])).hex();
+    let c = oSC(r).hex();
 
     if (shift.h != 0 || shift.s != 0 || shift.l != 0) {
       let cShifted = chroma(c).hsl();
@@ -307,26 +287,6 @@ Toko.prototype._findDuotones = function (inPalette, minLength, reverse) {
   return duotones.slice(0, minLength);
 };
 
-//
-//  expand the color set by interpolating using Spectral
-//
-Toko.prototype._expandColorSet = function (inColorSet) {
-  let newColorSet = [];
-  let n = inColorSet.length;
-
-  newColorSet.push(inColorSet[0]);
-  for (let i = 1; i < n; i++) {
-    let c0 = inColorSet[i - 1];
-    let c1 = inColorSet[i];
-    let extraColors = spectral.palette(c0, c1, this.EXTRA_SPECTRAL_COLORS);
-    extraColors = extraColors.slice(0, -1);
-    newColorSet = newColorSet.concat(extraColors);
-  }
-  newColorSet.push(inColorSet[n - 1]);
-
-  return newColorSet;
-};
-
 Toko.prototype._getColorScale = function (inPalette, colorOptions) {
   if (!this.initColorDone) {
     this._initColor();
@@ -378,7 +338,7 @@ Toko.prototype._getColorScale = function (inPalette, colorOptions) {
 Toko.prototype._getAnotherPalette = function (inPalette, paletteType = 'all', justPrimary = true, direction = 1) {
   let tempPaletteList = this._getPaletteListRaw(paletteType, justPrimary);
   var i = tempPaletteList.findIndex(p => p.name === inPalette);
-  if (i === undefined) {
+  if (i === -1) {
     console.log('palette not found: ' + inPalette);
     return inPalette;
   } else {
@@ -492,6 +452,7 @@ Toko.prototype._preprocessPalettes = function () {
     ducciPalettes,
     duotonePalettes,
     expositoPalettes,
+    feathersPalettes,
     flourishPalettes,
     golidmiscPalettes,
     hildaPalettes,
@@ -502,6 +463,7 @@ Toko.prototype._preprocessPalettes = function () {
     lospecPalettes,
     mayoPalettes,
     metBrewerPalettes,
+    momaPalettes,
     orbifoldPalettes,
     ranganathPalettes,
     rohlfsPalettes,
@@ -510,6 +472,7 @@ Toko.prototype._preprocessPalettes = function () {
     systemPalettes,
     tsuchimochiPalettes,
     tundraPalettes,
+    wesandersonPalettes,
   );
   //
   //  add missing fields and make list of all palettes

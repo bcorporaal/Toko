@@ -8,6 +8,12 @@ export default [
     type: 'basic',
   },
   {
+    name: '12bitRainbow', // source: https://iamkate.com/data/12-bit-rainbow/
+    colors: ['#817', '#a35', '#c66', '#e94', '#ed0', '#9d5', '#4d8', '#2cb', '#0bc', '#09c', '#36b', '#639'],
+    isPrimary: true,
+    type: 'basic',
+  },
+  {
     name: 'lighthouse',
     colors: ['#FF0A39', '#11C3EF', '#117092', '#E7F6FE'],
     isPrimary: true,
@@ -100,16 +106,7 @@ export default [
   },
   {
     name: 'pastel',
-    colors: [
-      '#F7884B',
-      '#E87A7A',
-      '#B8609A',
-      '#8F64B0',
-      '#7171C4',
-      '#5381E3',
-      '#41ADD4',
-      '#5CB592',
-    ],
+    colors: ['#F7884B', '#E87A7A', '#B8609A', '#8F64B0', '#7171C4', '#5381E3', '#41ADD4', '#5CB592'],
     isPrimary: false,
     type: 'basic',
   },
@@ -141,15 +138,7 @@ export default [
   },
   {
     name: 'sand',
-    colors: [
-      '#FCE29C',
-      '#FCD67A',
-      '#F0B46C',
-      '#D59262',
-      '#B47457',
-      '#81514B',
-      '#4C3C45',
-    ],
+    colors: ['#FCE29C', '#FCD67A', '#F0B46C', '#D59262', '#B47457', '#81514B', '#4C3C45'],
     isPrimary: true,
     type: 'basic',
   },
@@ -167,15 +156,7 @@ export default [
   },
   {
     name: 'westCoast',
-    colors: [
-      '#D9CCC0',
-      '#F19D1A',
-      '#DC306A',
-      '#7E245A',
-      '#398589',
-      '#093578',
-      '#0F1A5E',
-    ],
+    colors: ['#D9CCC0', '#F19D1A', '#DC306A', '#7E245A', '#398589', '#093578', '#0F1A5E'],
     isPrimary: true,
     type: 'basic',
   },
@@ -217,16 +198,7 @@ export default [
   },
   {
     name: 'soft',
-    colors: [
-      '#F2F5E7',
-      '#EBDED1',
-      '#E5B5B7',
-      '#D68097',
-      '#B06683',
-      '#705771',
-      '#294353',
-      '#0B3039',
-    ],
+    colors: ['#F2F5E7', '#EBDED1', '#E5B5B7', '#D68097', '#B06683', '#705771', '#294353', '#0B3039'],
     isPrimary: false,
     type: 'basic',
   },

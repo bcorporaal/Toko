@@ -33,7 +33,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'Graphics example', //  title displayed
+    title: 'Graphical effects - noise & glow', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
@@ -183,10 +183,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   clear();
 
   let bgndColor = colors.backgroundColor(p.reverseBgnd);
@@ -280,10 +276,6 @@ function draw () {
       blue: 0,
     },
   );
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //---------------------------------------------

@@ -58,7 +58,6 @@ function setup () {
   let g = new Toko.Grid();
 
   p = {
-    // seed: 29,
     gridSeed: 'ABCDEF',
     colorSeed: 'ghijkl',
     // grid
@@ -106,12 +105,7 @@ function setup () {
       packed: 'packed',
     },
   });
-  toko.pane.tab.addBlade({ view: 'separator' });
-  // toko.pane.tab.addBinding(p, 'seed', {
-  //   min: 1,
-  //   max: 2000,
-  //   step: 1,
-  // });
+
   //
   //  add controls for the base grid rows and columns
   //
@@ -256,10 +250,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   let c, n;
   clear();
   //
@@ -319,15 +309,11 @@ function draw () {
     colorShift = { h: 0, s: 0.1, l: 0.1 };
   }
   for (var i = 0; i < n; i++) {
-    fill(colors.randomOriginalColor(colorShift));
+    fill(colors.randomColor(true, colorShift));
 
     c = gridSet.cells[i];
     rect(c.x, c.y, c.width, c.height);
   }
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //---------------------------------------------

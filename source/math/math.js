@@ -26,3 +26,21 @@ Toko.wrap = function (value, min = 0, max = 100) {
 Toko.numDigits = function (x) {
   return (Math.log10((x ^ (x >> 31)) - (x >> 31)) | 0) + 1;
 };
+
+//
+//  map value from the range iStart to iStop, to oStart, oStop
+//  if clamp is set to true, the output is clamped to the bounds
+//
+//  inputs are not validated, hopefully making it a little faster than p5.js
+//
+Toko.map = function (value, iStart, iStop, oStart, oStop, clamp = false) {
+  let val = oStart + (oStop - oStart) * (((value - iStart) * 1.0) / (iStop - iStart));
+  if (!clamp) {
+    return val;
+  }
+  if (oStart < oStop) {
+    return Math.min(Math.max(val, oStart), oStop);
+  } else {
+    return Math.min(Math.max(val, oStop), oStart);
+  }
+};

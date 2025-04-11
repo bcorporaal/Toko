@@ -2,15 +2,32 @@ import Toko from '../core/main';
 
 Toko.prototype.initCapture = function () {
   this.capturer = P5Capture.getInstance();
-  if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
-    this.captureOptions.captureFixedNrFrames = false;
-  } else {
-    this.captureOptions.captureFixedNrFrames = true;
+
+  //  just in case the duration was not set properly
+  if (this.captureOptions.captureFixedNrFrames) {
+    this.captureOptions.duration = this.captureOptions.nrFrames;
+    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+      this.captureOptions = this.DEFAULT_CAPTURE_DURATION;
+    }
+  }
+
+  //  refresh the sketch before capture
+  if (this.captureOptions.refreshBeforeCapture) {
+    refresh();
   }
 };
 
 Toko.prototype.createCapturePanel = function (tabID) {
-  var t = this.basePaneTab.pages[tabID];
+  //  tab for options
+  let t = this.basePaneTab.pages[tabID];
+  //  tab for buttons depending on the options
+  let tb;
+  if (this.captureOptions.recordButtonOnMainTab) {
+    tb = this.basePaneTab.pages[0];
+    tb.addBlade({ view: 'separator' });
+  } else {
+    tb = t;
+  }
 
   t.addBinding(this.captureOptions, 'format', {
     options: this.CAPTURE_FORMATS,
@@ -20,7 +37,14 @@ Toko.prototype.createCapturePanel = function (tabID) {
     options: this.CAPTURE_FRAMERATES,
   }).on('change', e => {
     frameRate(e.value);
-    this.updateDurationEstimate();
+  });
+
+  t.addBlade({ view: 'separator' });
+
+  t.addBinding(this.captureOptions, 'refreshBeforeCapture', {
+    label: 'refresh first',
+  }).on('change', value => {
+    this.updateRecordButtonLabel(value);
   });
 
   t.addBlade({ view: 'separator' });
@@ -34,38 +58,30 @@ Toko.prototype.createCapturePanel = function (tabID) {
   this.captureFrameControl = t
     .addBinding(this.captureOptions, 'nrFrames', {
       min: 0,
-      max: 1000,
+      max: 2400,
       step: 5,
     })
     .on('change', e => {
-      console.log(this.captureOptions.captureFixedNrFrames);
       if (this.captureOptions.captureFixedNrFrames) {
         this.captureOptions.duration = e.value;
       }
-      this.updateDurationEstimate();
     });
 
-  this.captureFrameDurationDisplay = t.addBinding(this.captureOptions, 'estimate', {
-    readonly: true,
-    label: 'time (sec)',
-  });
-
-  if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+  if (this.captureOptions.captureFixedNrFrames == false) {
     this.captureFrameControl.hidden = true;
-    this.captureFrameDurationDisplay.hidden = true;
   }
 
   t.addBlade({ view: 'separator' });
 
-  this.startCaptureButton = t
+  this.startCaptureButton = tb
     .addButton({
-      title: '🔴 Record',
+      title: this.captureOptions.refreshBeforeCapture ? this.REFRESH_RECORD_BUTTON_LABEL : this.RECORD_BUTTON_LABEL,
     })
     .on('click', value => {
       this.clickStartCapture();
     });
 
-  this.stopCaptureButton = t
+  this.stopCaptureButton = tb
     .addButton({
       title: '⬛️ Stop recording',
     })
@@ -79,18 +95,18 @@ Toko.prototype.updateCaptureFrameSelector = function (e) {
   if (e.value) {
     this.captureFrameControl.hidden = false;
     this.captureOptions.duration = this.captureOptions.nrFrames;
-    this.captureFrameDurationDisplay.hidden = false;
-    this.updateDurationEstimate();
   } else {
     this.captureFrameControl.hidden = true;
     this.captureOptions.duration = null;
-    this.captureFrameDurationDisplay.hidden = true;
   }
 };
 
-Toko.prototype.updateDurationEstimate = function () {
-  let e = Math.round((100 * parseInt(this.captureOptions.duration)) / parseInt(this.captureOptions.framerate)) / 100;
-  this.captureOptions.estimate = e;
+Toko.prototype.updateRecordButtonLabel = function (e) {
+  if (e.value) {
+    this.startCaptureButton.title = this.REFRESH_RECORD_BUTTON_LABEL;
+  } else {
+    this.startCaptureButton.title = this.RECORD_BUTTON_LABEL;
+  }
 };
 
 Toko.prototype.clickStartCapture = function () {
@@ -122,7 +138,17 @@ Toko.prototype.stopCapture = function () {
   }
 };
 
-Toko.prototype.resetCapture = function () {
+//
+//  called by p5.capture just ahead of downlaoding the video
+//
+Toko.prototype.resetCapture = function (videoFilename) {
+  //  remove the extension
+  let filename = typeof videoFilename === 'string' ? videoFilename.replace(/\.[^/.]+$/, '') : videoFilename;
+  //  save the settings
+  if (this.options.saveSettingsWithSketch) {
+    this.saveSettings(filename);
+  }
+  //  reset the capture buttons
   this.stopCaptureButton.hidden = true;
   this.startCaptureButton.hidden = false;
   this._captureStarted = false;

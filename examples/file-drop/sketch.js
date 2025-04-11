@@ -34,7 +34,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'File drop example', //  title displayed
+    title: 'Image file drop example', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
@@ -110,10 +110,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   //  nothing much to do here until an image is dropped
   if (!somethingDropped) {
     background('#62BFAD');
@@ -121,14 +117,10 @@ function draw () {
     textFont('Udon mono web');
     textAlign(CENTER, CENTER);
     textSize(30);
-    text('Drop an image file on the canvas', width / 2, height / 2);
+    text('Drop a PNG or JPG file on the canvas', width / 2, height / 2);
   } else {
     plotImage();
   }
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //
@@ -210,7 +202,7 @@ function receivedFile (file) {
   //
   console.log(`Toko - receivedFile - received a ${file.subtype} file.`);
 
-  if (file.subtype == 'png' || file.subtype == 'jpg') {
+  if (file.subtype == 'png' || file.subtype == 'jpg' || file.subtype == 'jpeg') {
     loadImage(file.data, imageLoaded);
   } else {
     console.log(`${file.subtype} files are not accepted.`);

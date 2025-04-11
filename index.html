@@ -1,36 +1,38 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>to be replaced</title>
+    <title>Toko example sketches</title>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" width="device-width," initial-scale="1.0," maximum-scale="1.0," user-scalable="0" />
-    <link rel="stylesheet" href="assets/css/main.css" />
+    <link rel="stylesheet" href="../../assets/css/main.css" />
     <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
   </head>
-
-  <body>
-    <div class="sketch-wrapper">
-      <div class="sketch--flexible" id="sketch-canvas"></div>
+  <body class="home">
+    <div class="container">
+      <div class="sketchlist">
+        <h1>Toko example sketches</h1>
+        <hr />
+        <ul>
+          <li><a href="examples/basic-template/index.html">Basic template</a></li>
+          <li><a href="examples/color-scale/index.html">Color scales</a></li>
+          <li><a href="examples/animation/index.html">Animation</a></li>
+          <li><a href="examples/easing/index.html">Easing & duotone colors</a></li>
+          <li><a href="examples/file-drop/index.html">Image file drop</a></li>
+          <li><a href="examples/graphics/index.html">Graphical effects</a></li>
+          <li><a href="examples/grid/index.html">Grid</a></li>
+          <li><a href="examples/grid-svg/index.html">Grid (svg)</a></li>
+          <li><a href="examples/openSimplex/index.html">Open Simplex noise</a></li>
+          <li><a href="examples/poisson-disk/index.html">Poisson Disk & Quadtree</a></li>
+        </ul>
+        <hr />
+        <ul>
+          <li><a href="https://latenightnoodles.net">late Night Noodles</a></li>
+          <li><a href="https://github.com/bcorporaal/Toko">Toko on Github</a></li>
+        </ul>
+        <p><a href="https://github.com/bcorporaal/Toko?tab=MIT-1-ov-file">MIT License</a></p>
+      </div>
     </div>
-    <div class="labels">
-      <div class="label--title" id="sketch-title">to be replaced</div>
-    </div>
-    <script type="module">
-      import * as Tweakpane from './assets/js/tweakpane/4.0.4/tweakpane-4.0.4.min.js';
-      import * as TweakpaneEssentialsPlugin from './assets/js/tweakpane/plugin-essentials-0.2.1/tweakpane-plugin-essentials-0.2.1.min.js';
-      import * as TweakpaneCamerakitPlugin from './assets/js/tweakpane/plugin-camerakit-0.3.0/tweakpane-plugin-camerakit-0.3.0.min.js';
-      // Export them as a global variable - A bit hacky but this keeps the urls flexible
-      window.Tweakpane = Tweakpane;
-      window.TweakpaneEssentialsPlugin = TweakpaneEssentialsPlugin;
-      window.TweakpaneCamerakitPlugin = TweakpaneCamerakitPlugin;
-    </script>
-    <script language="javascript" type="text/javascript" src="assets/js/chroma/2.7.0/chroma.min.js"></script>
-    <script language="javascript" type="text/javascript" src="assets/js/spectral/spectral.min.js"></script>
-    <script language="javascript" type="text/javascript" src="assets/js/p5/1.9.4/p5.min.js"></script>
-    <script language="javascript" type="text/javascript" src="assets/js/p5.capture/p5.capture.umd.min.js"></script>
-    <script language="javascript" type="text/javascript" src="toko/Toko.js"></script>
-    <script language="javascript" type="text/javascript" src="sketch.js"></script>
   </body>
 </html>

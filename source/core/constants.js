@@ -13,7 +13,7 @@
 //
 //  current version
 //
-export const VERSION = 'Toko v0.12.0';
+export const VERSION = 'Toko v0.13.0';
 
 //
 //  Set of standard sizes for the canvas and exports
@@ -47,11 +47,25 @@ export const SIZE_1080P = {
   pixelDensity: 2,
 };
 
-export const SIZE_720P = {
-  name: '720p',
-  width: 1280,
-  height: 720,
-  pixelDensity: 1,
+export const SIZE_1080P_PORTRAIT = {
+  name: '1080p_portrait',
+  width: 1080,
+  height: 1920,
+  pixelDensity: 2,
+};
+
+export const SIZE_4K = {
+  name: '4K',
+  width: 3840,
+  height: 2160,
+  pixelDensity: 2,
+};
+
+export const SIZE_4K_PORTRAIT = {
+  name: '4K_portrait',
+  width: 2160,
+  height: 3840,
+  pixelDensity: 2,
 };
 
 export const SIZE_IPHONE_11_WALLPAPER = {
@@ -89,20 +103,24 @@ export var SIZES_LIST = {
   default: 'default',
   square_HD: 'square_XL',
   iphone_11: 'iphone_11',
-  SD_720p: '720p',
   HD_1080p: '1080p',
+  HD_1080p_Portrait: '1080p_portrait',
   wide_screen: 'wide_screen',
+  UHD_4K: '4K',
+  UHD_4K_Portrait: '4K_portrait',
   macbook_14: 'macbook_14',
   macbook_16: 'macbook_16',
   full_window: 'full_window',
 };
 
-export var SIZES = [
+export const SIZES = [
   SIZE_DEFAULT,
   SIZE_FULL,
   SIZE_SQUARE_XL,
-  SIZE_720P,
   SIZE_1080P,
+  SIZE_1080P_PORTRAIT,
+  SIZE_4K,
+  SIZE_4K_PORTRAIT,
   SIZE_IPHONE_11_WALLPAPER,
   SIZE_WIDE_SCREEN,
   SIZE_MACBOOK_14_WALLPAPER,
@@ -114,13 +132,11 @@ export var SIZES = [
 //
 export const TABS_PARAMETERS = 'Parameters';
 export const TABS_ADVANCED = 'Size';
-export const TABS_FPS = 'FPS';
-export const TABS_CAPTURE = 'Record';
+export const TABS_CAPTURE = 'Capture';
 
-export var TAB_ID_CAPTURE = -1;
-export var TAB_ID_FPS = -1;
-export var TAB_ID_PARAMETERS = 0;
-export var TAB_ID_ADVANCED = 1;
+export const TAB_ID_CAPTURE = -1;
+export const TAB_ID_PARAMETERS = 0;
+export const TAB_ID_ADVANCED = 1;
 
 //
 //	Default options for setup
@@ -136,9 +152,8 @@ export const DEFAULT_OPTIONS = {
   hideParameterPanel: false,
   showAdvancedOptions: false,
   additionalCanvasSizes: [],
-  logFPS: false,
+  log: true,
   captureFrames: false,
-  captureFormat: 'mp4',
   canvasSize: SIZE_DEFAULT,
   seedString: '',
 };
@@ -158,11 +173,13 @@ export const CAPTURE_FORMATS = {
 export const CAPTURE_FRAMERATES = {
   15: 15,
   24: 24,
+  25: 25,
   30: 30,
   60: 60,
 };
 
 export const DEFAULT_CAPTURE_OPTIONS = {
+  //  p5.capture options
   format: 'mp4', //  export format
   framerate: 30, //  recording framerate
   bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
@@ -173,7 +190,7 @@ export const DEFAULT_CAPTURE_OPTIONS = {
   autoSaveDuration: null, //  automatically downloads every n frames. convenient for long captures
   disableUi: true, //  hide the ui
   beforeDownload: (blob, context, next) => {
-    toko.resetCapture(); // used to ensure the reset always happens
+    toko.resetCapture(context.filename); // used to ensure the reset always happens
     next();
   },
   baseFilename: date => {
@@ -181,15 +198,18 @@ export const DEFAULT_CAPTURE_OPTIONS = {
   },
   // used by Toko but not by p5.capture
   captureFixedNrFrames: false,
+  refreshBeforeCapture: true,
+  recordButtonOnMainTab: true,
   nrFrames: 0,
-  estimate: '0',
 };
 
-//
-//  Parameters to calculate frames per second
-//
-export const FPS_FILTER_STRENGTH = 40;
-export const FRAME_TIME = 16;
+export const DEFAULT_CAPTURE_DURATION = 100; // number of frames captured when undefined but recording for fixed number of frames
+
+export const SAVE_SKETCH_BUTTON_LABEL = '💾 Save sketch';
+export const SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL = '💾 Save sketch & settings';
+export const RECORD_BUTTON_LABEL = '🔴 Record';
+export const REFRESH_RECORD_BUTTON_LABEL = '🔴 Refresh & record';
+export const STOP_BUTTON_LABEL = '⬛️ Stop recording';
 
 //
 //  easing parameters

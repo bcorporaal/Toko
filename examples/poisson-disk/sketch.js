@@ -33,7 +33,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'Poisson Disk sampling', //  title displayed
+    title: 'Poisson Disk sampling & Quadtree', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
@@ -161,10 +161,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   clear();
   noStroke();
 
@@ -210,10 +206,6 @@ function draw () {
     strokeWeight(1);
     circle(mouseX, mouseY, p.highlightRadius);
   }
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //---------------------------------------------

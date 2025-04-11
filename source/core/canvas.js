@@ -6,8 +6,14 @@ import Toko from './main';
 Toko.prototype.setCanvasSize = function (inSize) {
   let margin = 80;
   let zoomFactor = 1;
-  let displayFactor = inSize.pixelDensity / 2;
-  let newWidthString, newHeightString;
+  const displayFactor = inSize.pixelDensity / 2;
+  let newWidthString = '',
+    newHeightString = '';
+
+  if (typeof windowWidth === 'undefined' || typeof windowHeight === 'undefined') {
+    console.error('windowWidth or windowHeight is not defined');
+    return;
+  }
 
   if (!inSize.fullWindow) {
     zoomFactor = Math.min(1, ((windowWidth - margin) / inSize.width) * displayFactor);

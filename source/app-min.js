@@ -8,7 +8,6 @@ import './color/color_external';
 import './color/color_internal';
 
 import './core/setup';
-import './core/loop';
 import './core/canvas';
 import './core/util';
 import './core/tweakpane';
@@ -19,6 +18,7 @@ import './math/rng';
 import './math/openSimplex';
 import './math/quadTree';
 import './math/easing';
+import './math/cubic-bezier';
 
 import './geometry/grid';
 import './geometry/gridCell';

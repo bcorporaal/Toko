@@ -158,10 +158,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   clear();
 
   background(colors.duotones[p.duotone].backgroundColor);
@@ -218,10 +214,6 @@ function draw () {
       endShape();
     }
   }
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //---------------------------------------------

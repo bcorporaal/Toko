@@ -16,7 +16,7 @@ var Toko = (function () {
   //
   //  current version
   //
-  const VERSION = 'Toko v0.12.0';
+  const VERSION = 'Toko v0.13.0';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -50,11 +50,25 @@ var Toko = (function () {
     pixelDensity: 2,
   };
 
-  const SIZE_720P = {
-    name: '720p',
-    width: 1280,
-    height: 720,
-    pixelDensity: 1,
+  const SIZE_1080P_PORTRAIT = {
+    name: '1080p_portrait',
+    width: 1080,
+    height: 1920,
+    pixelDensity: 2,
+  };
+
+  const SIZE_4K = {
+    name: '4K',
+    width: 3840,
+    height: 2160,
+    pixelDensity: 2,
+  };
+
+  const SIZE_4K_PORTRAIT = {
+    name: '4K_portrait',
+    width: 2160,
+    height: 3840,
+    pixelDensity: 2,
   };
 
   const SIZE_IPHONE_11_WALLPAPER = {
@@ -92,20 +106,24 @@ var Toko = (function () {
     default: 'default',
     square_HD: 'square_XL',
     iphone_11: 'iphone_11',
-    SD_720p: '720p',
     HD_1080p: '1080p',
+    HD_1080p_Portrait: '1080p_portrait',
     wide_screen: 'wide_screen',
+    UHD_4K: '4K',
+    UHD_4K_Portrait: '4K_portrait',
     macbook_14: 'macbook_14',
     macbook_16: 'macbook_16',
     full_window: 'full_window',
   };
 
-  var SIZES = [
+  const SIZES = [
     SIZE_DEFAULT,
     SIZE_FULL,
     SIZE_SQUARE_XL,
-    SIZE_720P,
     SIZE_1080P,
+    SIZE_1080P_PORTRAIT,
+    SIZE_4K,
+    SIZE_4K_PORTRAIT,
     SIZE_IPHONE_11_WALLPAPER,
     SIZE_WIDE_SCREEN,
     SIZE_MACBOOK_14_WALLPAPER,
@@ -117,13 +135,11 @@ var Toko = (function () {
   //
   const TABS_PARAMETERS = 'Parameters';
   const TABS_ADVANCED = 'Size';
-  const TABS_FPS = 'FPS';
-  const TABS_CAPTURE = 'Record';
+  const TABS_CAPTURE = 'Capture';
 
-  var TAB_ID_CAPTURE = -1;
-  var TAB_ID_FPS = -1;
-  var TAB_ID_PARAMETERS = 0;
-  var TAB_ID_ADVANCED = 1;
+  const TAB_ID_CAPTURE = -1;
+  const TAB_ID_PARAMETERS = 0;
+  const TAB_ID_ADVANCED = 1;
 
   //
   //	Default options for setup
@@ -139,9 +155,8 @@ var Toko = (function () {
     hideParameterPanel: false,
     showAdvancedOptions: false,
     additionalCanvasSizes: [],
-    logFPS: false,
+    log: true,
     captureFrames: false,
-    captureFormat: 'mp4',
     canvasSize: SIZE_DEFAULT,
     seedString: '',
   };
@@ -161,11 +176,13 @@ var Toko = (function () {
   const CAPTURE_FRAMERATES = {
     15: 15,
     24: 24,
+    25: 25,
     30: 30,
     60: 60,
   };
 
   const DEFAULT_CAPTURE_OPTIONS = {
+    //  p5.capture options
     format: 'mp4', //  export format
     framerate: 30, //  recording framerate
     bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
@@ -176,7 +193,7 @@ var Toko = (function () {
     autoSaveDuration: null, //  automatically downloads every n frames. convenient for long captures
     disableUi: true, //  hide the ui
     beforeDownload: (blob, context, next) => {
-      toko.resetCapture(); // used to ensure the reset always happens
+      toko.resetCapture(context.filename); // used to ensure the reset always happens
       next();
     },
     baseFilename: date => {
@@ -184,15 +201,18 @@ var Toko = (function () {
     },
     // used by Toko but not by p5.capture
     captureFixedNrFrames: false,
+    refreshBeforeCapture: true,
+    recordButtonOnMainTab: true,
     nrFrames: 0,
-    estimate: '0',
   };
 
-  //
-  //  Parameters to calculate frames per second
-  //
-  const FPS_FILTER_STRENGTH = 40;
-  const FRAME_TIME = 16;
+  const DEFAULT_CAPTURE_DURATION = 100; // number of frames captured when undefined but recording for fixed number of frames
+
+  const SAVE_SKETCH_BUTTON_LABEL = '💾 Save sketch';
+  const SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL = '💾 Save sketch & settings';
+  const RECORD_BUTTON_LABEL = '🔴 Record';
+  const REFRESH_RECORD_BUTTON_LABEL = '🔴 Refresh & record';
+  const STOP_BUTTON_LABEL = '⬛️ Stop recording';
 
   //
   //  easing parameters
@@ -217,6 +237,7 @@ var Toko = (function () {
     __proto__: null,
     CAPTURE_FORMATS: CAPTURE_FORMATS,
     CAPTURE_FRAMERATES: CAPTURE_FRAMERATES,
+    DEFAULT_CAPTURE_DURATION: DEFAULT_CAPTURE_DURATION,
     DEFAULT_CAPTURE_OPTIONS: DEFAULT_CAPTURE_OPTIONS,
     DEFAULT_OPTIONS: DEFAULT_OPTIONS,
     EASE_BACK: EASE_BACK,
@@ -233,12 +254,16 @@ var Toko = (function () {
     EASE_QUART: EASE_QUART,
     EASE_QUINT: EASE_QUINT,
     EASE_SMOOTH: EASE_SMOOTH,
-    FPS_FILTER_STRENGTH: FPS_FILTER_STRENGTH,
-    FRAME_TIME: FRAME_TIME,
+    RECORD_BUTTON_LABEL: RECORD_BUTTON_LABEL,
+    REFRESH_RECORD_BUTTON_LABEL: REFRESH_RECORD_BUTTON_LABEL,
+    SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL: SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL,
+    SAVE_SKETCH_BUTTON_LABEL: SAVE_SKETCH_BUTTON_LABEL,
     SIZES: SIZES,
     SIZES_LIST: SIZES_LIST,
     SIZE_1080P: SIZE_1080P,
-    SIZE_720P: SIZE_720P,
+    SIZE_1080P_PORTRAIT: SIZE_1080P_PORTRAIT,
+    SIZE_4K: SIZE_4K,
+    SIZE_4K_PORTRAIT: SIZE_4K_PORTRAIT,
     SIZE_DEFAULT: SIZE_DEFAULT,
     SIZE_FULL: SIZE_FULL,
     SIZE_IPHONE_11_WALLPAPER: SIZE_IPHONE_11_WALLPAPER,
@@ -246,13 +271,12 @@ var Toko = (function () {
     SIZE_MACBOOK_16_WALLPAPER: SIZE_MACBOOK_16_WALLPAPER,
     SIZE_SQUARE_XL: SIZE_SQUARE_XL,
     SIZE_WIDE_SCREEN: SIZE_WIDE_SCREEN,
+    STOP_BUTTON_LABEL: STOP_BUTTON_LABEL,
     TABS_ADVANCED: TABS_ADVANCED,
     TABS_CAPTURE: TABS_CAPTURE,
-    TABS_FPS: TABS_FPS,
     TABS_PARAMETERS: TABS_PARAMETERS,
     TAB_ID_ADVANCED: TAB_ID_ADVANCED,
     TAB_ID_CAPTURE: TAB_ID_CAPTURE,
-    TAB_ID_FPS: TAB_ID_FPS,
     TAB_ID_PARAMETERS: TAB_ID_PARAMETERS,
     VERSION: VERSION
   });
@@ -270,26 +294,33 @@ var Toko = (function () {
     'aged',
     'alert',
     'alien',
+    'analog',
     'ancient',
     'animated',
+    'aqua',
+    'astro',
     'atomic',
     'autumn',
     'bashful',
     'batty',
     'bemused',
     'billowing',
+    'bitter',
     'bittersweet',
     'black',
     'blue',
     'bold',
+    'bouncing',
     'bright',
     'broad',
+    'broken',
     'bronze',
     'calm',
     'carbon',
     'carefree',
     'caribbean',
     'chestnut',
+    'cold',
     'cool',
     'cosmic',
     'crimson',
@@ -304,6 +335,7 @@ var Toko = (function () {
     'delicate',
     'descending',
     'divine',
+    'dotted',
     'droll',
     'dry',
     'easy',
@@ -334,6 +366,7 @@ var Toko = (function () {
     'grunge',
     'hidden',
     'holy',
+    'iced',
     'icy',
     'idiosyncratic',
     'imaginary',
@@ -350,16 +383,19 @@ var Toko = (function () {
     'lively',
     'long',
     'lopsided',
+    'loud',
     'lucky',
     'magic',
     'maroon',
     'marvelous',
     'maximum',
     'melodramatic',
+    'metal',
     'middle',
     'misty',
     'mixed',
     'morning',
+    'muddy',
     'mute',
     'mystic',
     'nameless',
@@ -377,6 +413,7 @@ var Toko = (function () {
     'patient',
     'permanent',
     'petite',
+    'pixelated',
     'plain',
     'plucky',
     'polished',
@@ -388,10 +425,12 @@ var Toko = (function () {
     'rapid',
     'raspy',
     'red',
+    'reflective',
     'restless',
     'rough',
     'round',
     'royal',
+    'rusted',
     'rustic',
     'rusty',
     'scarlet',
@@ -421,8 +460,10 @@ var Toko = (function () {
     'super',
     'sweet',
     'throbbing',
+    'thrumming',
     'tight',
     'tiny',
+    'transparent',
     'tricky',
     'tropical',
     'twilight',
@@ -445,6 +486,7 @@ var Toko = (function () {
 
   const NOUNS = [
     'adventure',
+    'air',
     'alchemy',
     'art',
     'avocado',
@@ -452,11 +494,15 @@ var Toko = (function () {
     'bar',
     'base',
     'basket',
+    'bay',
     'beauty',
     'being',
+    'belt',
     'bird',
     'bison',
     'block',
+    'bloom',
+    'blue',
     'boat',
     'bonus',
     'bottle',
@@ -471,60 +517,88 @@ var Toko = (function () {
     'canary',
     'cell',
     'cherry',
+    'clear',
     'clock',
     'cloud',
+    'cookie',
+    'coral',
+    'cotton',
     'credit',
     'crocodile',
+    'curry',
+    'cyan',
+    'daisy',
     'dance',
     'dandelion',
     'darkness',
     'dawn',
+    'deep',
     'desert',
     'dew',
     'diamond',
     'dinosaur',
+    'discovery',
     'disk',
     'dragon',
     'dream',
     'duck',
+    'duke',
+    'dusk',
     'dust',
+    'eden',
     'experience',
     'explosion',
     'feather',
+    'feelings',
     'field',
+    'fiesta,',
     'fire',
     'firefly',
     'flamingo',
+    'flow',
     'flower',
+    'foam',
     'fog',
     'forest',
+    'fox',
+    'fresco',
     'frog',
     'frost',
     'fruitbat',
     'future',
     'gallery',
     'glade',
+    'glass',
     'glitter',
+    'glow',
     'goose',
     'grass',
+    'green',
+    'grey',
     'hall',
     'hamster',
     'hat',
     'haze',
     'heart',
     'hill',
+    'ice',
     'igloo',
+    'island',
     'jungle',
     'king',
     'lab',
     'lake',
     'leaf',
     'light',
+    'lime',
     'limit',
     'lobster',
+    'log',
+    'love',
     'machine',
     'math',
     'meadow',
+    'mist',
     'mode',
     'moon',
     'moose',
@@ -532,7 +606,13 @@ var Toko = (function () {
     'mountain',
     'mouse',
     'mud',
+    'muse',
+    'nation',
     'night',
+    'nights',
+    'oasis',
+    'obscura',
+    'ocean',
     'operation',
     'orchid',
     'owl',
@@ -540,6 +620,7 @@ var Toko = (function () {
     'panda',
     'pandemonium',
     'paper',
+    'paradise',
     'pearl',
     'penguin',
     'perspective',
@@ -552,14 +633,18 @@ var Toko = (function () {
     'powdered',
     'prince',
     'princess',
+    'pura',
     'queen',
     'rain',
     'rainbow',
+    'rapids',
     'recipe',
     'resonance',
+    'revival',
     'rice',
     'river',
     'rocket',
+    'rose',
     'salad',
     'scene',
     'sea',
@@ -573,7 +658,13 @@ var Toko = (function () {
     'snowflake',
     'sound',
     'space',
+    'spaceship',
+    'sparkle',
+    'splash',
     'spoon',
+    'spray',
+    'spring',
+    'squeeze',
     'star',
     'statue',
     'stroke',
@@ -582,9 +673,12 @@ var Toko = (function () {
     'surf',
     'tango',
     'term',
+    'thing',
     'thunder',
     'ticket',
     'tiger',
+    'tint',
+    'toast',
     'tooth',
     'toy',
     'tree',
@@ -593,21 +687,30 @@ var Toko = (function () {
     'umbrella',
     'union',
     'unit',
+    'velvet',
+    'verde',
     'view',
     'violet',
+    'vitale',
     'voice',
+    'void',
     'volcano',
+    'vortex',
     'water',
     'waterfall',
+    'waters',
     'wave',
     'weasel',
+    'whisper',
     'wildflower',
     'wind',
     'window',
     'winter',
+    'wish',
     'wizard',
     'wood',
     'woodpecker',
+    'zing',
   ];
 
   var words = /*#__PURE__*/Object.freeze({
@@ -627,11 +730,9 @@ var Toko = (function () {
       }
 
       //
-      //  preseed the random function
+      //  pre-seed the random function
       //
       this._rng = new Toko.RNG();
-
-      console.log(this.VERSION);
 
       //
       //  set the default options for P5Capture.
@@ -723,6 +824,12 @@ var Toko = (function () {
       colors: ['#F7A13D', '#54ADFD', '#FE766C', '#112264', '#005BF7', '#FC0340'],
       stroke: '#21202E',
       background: '#F8F8F8',
+      isPrimary: true,
+      type: 'basic',
+    },
+    {
+      name: '12bitRainbow', // source: https://iamkate.com/data/12-bit-rainbow/
+      colors: ['#817', '#a35', '#c66', '#e94', '#ed0', '#9d5', '#4d8', '#2cb', '#0bc', '#09c', '#36b', '#639'],
       isPrimary: true,
       type: 'basic',
     },
@@ -819,16 +926,7 @@ var Toko = (function () {
     },
     {
       name: 'pastel',
-      colors: [
-        '#F7884B',
-        '#E87A7A',
-        '#B8609A',
-        '#8F64B0',
-        '#7171C4',
-        '#5381E3',
-        '#41ADD4',
-        '#5CB592',
-      ],
+      colors: ['#F7884B', '#E87A7A', '#B8609A', '#8F64B0', '#7171C4', '#5381E3', '#41ADD4', '#5CB592'],
       isPrimary: false,
       type: 'basic',
     },
@@ -860,15 +958,7 @@ var Toko = (function () {
     },
     {
       name: 'sand',
-      colors: [
-        '#FCE29C',
-        '#FCD67A',
-        '#F0B46C',
-        '#D59262',
-        '#B47457',
-        '#81514B',
-        '#4C3C45',
-      ],
+      colors: ['#FCE29C', '#FCD67A', '#F0B46C', '#D59262', '#B47457', '#81514B', '#4C3C45'],
       isPrimary: true,
       type: 'basic',
     },
@@ -886,15 +976,7 @@ var Toko = (function () {
     },
     {
       name: 'westCoast',
-      colors: [
-        '#D9CCC0',
-        '#F19D1A',
-        '#DC306A',
-        '#7E245A',
-        '#398589',
-        '#093578',
-        '#0F1A5E',
-      ],
+      colors: ['#D9CCC0', '#F19D1A', '#DC306A', '#7E245A', '#398589', '#093578', '#0F1A5E'],
       isPrimary: true,
       type: 'basic',
     },
@@ -936,16 +1018,7 @@ var Toko = (function () {
     },
     {
       name: 'soft',
-      colors: [
-        '#F2F5E7',
-        '#EBDED1',
-        '#E5B5B7',
-        '#D68097',
-        '#B06683',
-        '#705771',
-        '#294353',
-        '#0B3039',
-      ],
+      colors: ['#F2F5E7', '#EBDED1', '#E5B5B7', '#D68097', '#B06683', '#705771', '#294353', '#0B3039'],
       isPrimary: false,
       type: 'basic',
     },
@@ -3646,6 +3719,77 @@ var Toko = (function () {
       type: 'lospec',
     },
     {
+      name: 'midnight_ablaze',
+      colors: ['#ff8274', '#d53c6a', '#7c183c', '#460e2b', '#31051e', '#1f0510', '#130208'],
+      type: 'lospec',
+    },
+    {
+      name: 'taliwan', // https://lospec.com/palette-list/taliwan
+      colors: [
+        '#f2eef1',
+        '#ffa7bf',
+        '#ec7d9b',
+        '#e64667',
+        '#a02552',
+        '#75024d',
+        '#2c0f30',
+        '#e18434',
+        '#ffa01b',
+        '#ffbd20',
+      ],
+      type: 'lospec',
+    },
+    {
+      name: 'spanish_sunset', // https://lospec.com/palette-list/spanish-sunset
+      colors: ['#f5ddbc', '#fabb64', '#fd724e', '#a02f40', '#5f2f45'],
+      type: 'lospec',
+    },
+    {
+      name: 'late_night_bath', // https://lospec.com/palette-list/late-night-bath
+      colors: ['#282d3c', '#5b5d70', '#74838c', '#ffc4b8', '#f69197'],
+      type: 'lospec',
+    },
+    {
+      name: 'vaporhaze', // https://lospec.com/palette-list/vaporhaze-16
+      colors: [
+        '#00474f',
+        '#225054',
+        '#475b58',
+        '#6a645d',
+        '#8e6e61',
+        '#b17766',
+        '#d4826b',
+        '#f88c6e',
+        '#156d8e',
+        '#467b96',
+        '#6b869b',
+        '#8e8f9f',
+        '#b199a3',
+        '#d5a3a7',
+        '#f8adac',
+        '#ffbdbb',
+      ],
+      type: 'lospec',
+    },
+    {
+      name: 'neon_reflection', // https://lospec.com/palette-list/dr-neon-reflection
+      colors: [
+        '#b1e2e7',
+        '#5be4b9',
+        '#10bdc6',
+        '#517cb8',
+        '#394072',
+        '#7441ae',
+        '#bb49d7',
+        '#f69dbd',
+        '#d8d272',
+        '#f3ad58',
+        '#e74a9d',
+        '#af517a',
+      ],
+      type: 'lospec',
+    },
+    {
       name: '17pastels', // https://lospec.com/palette-list/17pastels
       colors: [
         '#373254',
@@ -3669,74 +3813,544 @@ var Toko = (function () {
       type: 'lospec',
     },
     {
-      name: 'lospec500', // https://lospec.com/palette-list/lospec500
+      name: 'pollen8', // https://lospec.com/palette-list/pollen8
+      colors: ['#73464c', '#ab5675', '#ee6a7c', '#ffa7a5', '#ffe07e', '#72dcbb', '#34acba'],
+      type: 'lospec',
+    },
+    {
+      name: 'neon_space', // https://lospec.com/palette-list/neon-space
+      colors: ['#df0772', '#fe546f', '#ff9e7d', '#ffd080', '#0bffe6', '#01cbcf', '#0188a5', '#3e3264', '#352a55'],
+      type: 'lospec',
+    },
+    {
+      name: 'salad_bowl', // https://lospec.com/palette-list/salad-bowl
+      colors: ['#541b3c', '#802040', '#a04040', '#c06040', '#e0e080', '#a0c040', '#60a040', '#206040', '#103040'],
+      type: 'lospec',
+    },
+    {
+      name: 'seafoam', // https://lospec.com/palette-list/seafoam
+      colors: ['#37364e', '#355d69', '#6aae9d', '#b9d4b4', '#f4e9d4', '#d0baa9', '#9e8e91', '#5b4a68'],
+      type: 'lospec',
+    },
+    {
+      name: 'chasm', // https://lospec.com/palette-list/chasm
       colors: [
-        '#10121c',
-        '#2c1e31',
-        '#6b2643',
-        '#ac2847',
-        '#ec273f',
-        '#94493a',
-        '#de5d3a',
-        '#e98537',
-        '#f3a833',
-        '#4d3533',
-        '#6e4c30',
-        '#a26d3f',
-        '#ce9248',
-        '#dab163',
-        '#e8d282',
-        '#f7f3b7',
-        '#1e4044',
-        '#006554',
-        '#26854c',
-        '#5ab552',
-        '#9de64e',
-        '#008b8b',
-        '#62a477',
-        '#a6cb96',
-        '#d3eed3',
-        '#3e3b65',
-        '#3859b3',
-        '#3388de',
-        '#36c5f4',
-        '#6dead6',
-        '#5e5b8c',
-        '#8c78a5',
-        '#b0a7b8',
-        '#deceed',
-        '#9a4d76',
-        '#c878af',
-        '#cc99ff',
-        '#fa6e79',
-        '#ffa2ac',
-        '#ffd1d5',
-        '#f6e8e0',
-        '#ffffff',
+        '#85daeb',
+        '#5fc9e7',
+        '#5fa1e7',
+        '#5f6ee7',
+        '#4c60aa',
+        '#444774',
+        '#32313b',
+        '#463c5e',
+        '#5d4776',
+        '#855395',
       ],
+      type: 'lospec',
+    },
+    {
+      name: 'soapy10', // https://lospec.com/palette-list/soapy-10
+      colors: [
+        '#54cea7',
+        '#2ba4a6',
+        '#0c6987',
+        '#054b84',
+        '#0d2147',
+        '#ffb0bf',
+        '#ff82bd',
+        '#d74ac7',
+        '#a825ba',
+        '#682b9c',
+      ],
+      type: 'lospec',
+    },
+    {
+      name: 'synthetic80s', // https://lospec.com/palette-list/synthetic-80s
+      colors: ['#e46018', '#fcb800', '#008894', '#004058', '#290d28', '#9d2496', '#db24d4'],
       type: 'lospec',
     },
   ];
 
-  Toko.prototype.MAX_COLORS_BEZIER = 5; // maximum number of colors for which bezier works well
+  //
+  //  moma color palettes
+  //  https://github.com/BlakeRMills/MoMAColors
+  //
+  var momaPalettes = [
+    {
+      name: 'Abbott',
+      colors: ['#950404', '#e04b28', '#c38961', '#9f5630', '#388f30', '#0f542f', '#007d82', '#004042'],
+      isPrimary: true,
+      sortOrder: [1, 6, 5, 4, 3, 8, 2, 7],
+      type: 'momacolors',
+    },
+    {
+      name: 'Alkalay1',
+      colors: ['#241d1d', '#5b2125', '#8d3431', '#bf542e', '#e9a800'],
+      isPrimary: true,
+      sortOrder: [5, 1, 4, 3, 2],
+      type: 'momacolors',
+    },
+    {
+      name: 'Alkalay2',
+      colors: ['#ebcf2e', '#b4bf3a', '#88ab38', '#5e9432', '#3b7d31', '#225f2f', '#244422', '#252916'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      type: 'momacolors',
+    },
+
+    {
+      name: 'Althoff',
+      colors: ['#ff9898', '#d9636c', '#a91e45', '#691238', '#251714'],
+      isPrimary: true,
+      sortOrder: [2, 4, 1, 3, 5],
+      type: 'momacolors',
+    },
+    {
+      name: 'Andri',
+      colors: ['#f56455', '#15134b', '#87c785', '#572f30'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4],
+      type: 'momacolors',
+    },
+    {
+      name: 'Avedon',
+      colors: [
+        '#ff7200',
+        '#ff8827',
+        '#ff9c4c',
+        '#ffb274',
+        '#f1caa8',
+        '#e3e1dc',
+        '#c2ceaa',
+        '#a1ba77',
+        '#8bac54',
+        '#7ea13e',
+        '#648c16',
+      ],
+      isPrimary: true,
+      sortOrder: [10, 1, 8, 4, 6, 3, 7, 5, 9, 2, 11],
+      type: 'momacolors',
+    },
+    {
+      name: 'Budnitz',
+      colors: ['#86dd45', '#f6e71c', '#fda900', '#fd5300', '#57348b'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5],
+      type: 'momacolors',
+    },
+    {
+      name: 'Clay',
+      colors: ['#c48329', '#8b3b36', '#a2b4b7', '#514a2e', '#cf9860', '#8E4115'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6],
+      type: 'momacolors',
+    },
+    {
+      name: 'Connors',
+      colors: ['#d92a05', '#f35d36', '#fc9073', '#ffba1b', '#60cfa1'],
+      isPrimary: true,
+      sortOrder: [5, 1, 4, 3, 2],
+      type: 'momacolors',
+    },
+    {
+      name: 'Dali',
+      colors: ['#b4b87f', '#9c913f', '#585b33', '#6ea8ab', '#397893', '#31333f', '#8f5715', '#ba9a44', '#cfbb83'],
+      isPrimary: true,
+      sortOrder: [8, 3, 7, 1, 5, 9, 2, 6, 4],
+      type: 'momacolors',
+    },
+    {
+      name: 'Doughton',
+      colors: [
+        '#155b51',
+        '#216f63',
+        '#2d8277',
+        '#3a9387',
+        '#45a395',
+        '#c468b2',
+        '#af509c',
+        '#803777',
+        '#5d2155',
+        '#45113f',
+      ],
+      isPrimary: true,
+      sortOrder: [9, 3, 7, 1, 5, 6, 2, 8, 4, 10],
+      type: 'momacolors',
+    },
+    {
+      name: 'Ernst',
+      colors: ['#e8e79a', '#c2d89a', '#8cbf9a', '#5fa2a4', '#477b95', '#315b88', '#24396b', '#191f40'],
+      isPrimary: true,
+      sortOrder: [4, 2, 6, 1, 3, 8, 5, 7],
+      type: 'momacolors',
+    },
+    {
+      name: 'Exter',
+      colors: [
+        '#ffec9d',
+        '#fac881',
+        '#f4a464',
+        '#e87444',
+        '#d9402a',
+        '#bf2729',
+        '#912534',
+        '#64243e',
+        '#3d1b28',
+        '#161212',
+      ],
+      isPrimary: true,
+      sortOrder: [4, 9, 2, 5, 7, 1, 6, 3, 8, 10],
+      type: 'momacolors',
+    },
+    {
+      name: 'Flash',
+      colors: ['#e3c0db', '#db95cb', '#cd64b5', '#B83D9F', '#900c7e', '#680369', '#41045a', '#140e3a'],
+      isPrimary: true,
+      sortOrder: [4, 6, 1, 7, 2, 5, 3, 8],
+      type: 'momacolors',
+    },
+    {
+      name: 'Fritsch',
+      colors: ['#0f8d7b', '#8942bd', '#1e1a1a', '#eadd17'],
+      isPrimary: true,
+      sortOrder: [1, 3, 4, 2],
+      type: 'momacolors',
+    },
+    {
+      name: 'Kippenberger',
+      colors: [
+        '#8b174d',
+        '#ae2565',
+        '#c1447e',
+        '#d06c9b',
+        '#da9fb8',
+        '#d9d2cc',
+        '#adbe7c',
+        '#8ba749',
+        '#6e8537',
+        '#4f5f28',
+        '#343d1f',
+      ],
+      isPrimary: true,
+      sortOrder: [10, 6, 1, 8, 4, 3, 5, 9, 2, 7, 11],
+      type: 'momacolors',
+    },
+    {
+      name: 'Klein',
+      colors: [
+        '#ff4d6f',
+        '#579ea4',
+        '#df7713',
+        '#f9c000',
+        '#86ad34',
+        '#5d7298',
+        '#81b28d',
+        '#7e1a2f',
+        '#2d2651',
+        '#c8350d',
+        '#bd777a',
+      ],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      type: 'momacolors',
+    },
+    {
+      name: 'Koons',
+      colors: ['#d8537d', '#6DC5B2', '#eeca76', '#5d2314', '#b5282a'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 5, 4],
+      type: 'momacolors',
+    },
+    {
+      name: 'Levine1 ',
+      colors: ['#E0D9B2', '#818053', '#6B3848', '#8B3E50', '#D5BB6C', '#3F3A4B', '#474C66', '#A5806F'],
+      isPrimary: true,
+      sortOrder: [5, 4, 6, 1, 2, 7, 3, 8],
+      type: 'momacolors',
+    },
+    {
+      name: 'Levine2 ',
+      colors: ['#E3C1CB', '#AD5A6B', '#C993A2', '#365C83', '#384351', '#4D8F8B', '#CDD6AD'],
+      isPrimary: true,
+      sortOrder: [7, 1, 5, 3, 6, 2, 4],
+      type: 'momacolors',
+    },
+    {
+      name: 'Liu',
+      colors: ['#9fd7bd', '#9b5c1c', '#97c124', '#3b5f13', '#ddb25d', '#5c4a32'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6],
+      type: 'momacolors',
+    },
+    {
+      name: 'Lupi',
+      colors: ['#61bea4', '#b6e7e0', '#aa3f5d', '#daa5ac', '#98a54f', '#2e92a2', '#ffb651', '#d85a44'],
+      isPrimary: true,
+      sortOrder: [1, 6, 2, 8, 7, 3, 4, 5],
+      type: 'momacolors',
+    },
+    {
+      name: 'Ohchi',
+      colors: ['#582851', '#40606d', '#69a257', '#e3d19c', '#c4024d'],
+      isPrimary: true,
+      sortOrder: [3, 4, 1, 2, 5],
+      type: 'momacolors',
+    },
+    {
+      name: 'OKeeffe',
+      colors: ['#f3d567', '#ee9b43', '#e74b47', '#b80422', '#172767', '#19798b'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6],
+      type: 'momacolors',
+    },
+
+    {
+      name: 'Palermo',
+      colors: ['#1b80ad', '#ea5b57', '#9c5555', '#0c3c5f'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4],
+      type: 'momacolors',
+    },
+    {
+      name: 'Panton',
+      colors: ['#e84a00', '#bb1d2c', '#9b0c43', '#661f66', '#2c1f62', '#006289', '#004759'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6, 7, 8],
+      type: 'momacolors',
+    },
+    {
+      name: 'Picabia',
+      colors: [
+        '#53362e',
+        '#744940',
+        '#9f7064',
+        '#c99582',
+        '#e6bcac',
+        '#e2d8d6',
+        '#a5a6ae',
+        '#858794',
+        '#666879',
+        '#515260',
+        '#3d3d47',
+      ],
+      isPrimary: true,
+      sortOrder: [10, 4, 8, 1, 6, 3, 7, 2, 9, 5, 11],
+      type: 'momacolors',
+    },
+    {
+      name: 'Picasso',
+      colors: ['#d5968c', '#c2676d', '#5c363a', '#995041', '#45939c', '#0f6a81'],
+      isPrimary: true,
+      sortOrder: [6, 3, 4, 2, 1, 5],
+      type: 'momacolors',
+    },
+    {
+      name: 'Rattner',
+      colors: ['#de8e69', '#f1be99', '#c1bd38', '#7a9132', '#4c849a', '#184363', '#5d5686', '#a39fc9'],
+      isPrimary: true,
+      sortOrder: [1, 5, 6, 2, 3, 7, 8, 4],
+      type: 'momacolors',
+    },
+    {
+      name: 'Sidhu',
+      colors: ['#af4646', '#762b35', '#005187', '#251c4a', '#78adb7', '#4c9a77', '#1b7975'],
+      isPrimary: true,
+      sortOrder: [5, 2, 6, 7, 3, 4, 1],
+      type: 'momacolors',
+    },
+    {
+      name: 'Smith',
+      colors: ['#ef7923', '#75bca9', '#7b89bb', '#e9de97', '#2a2e38'],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5],
+      type: 'momacolors',
+    },
+    {
+      name: 'ustwo',
+      colors: ['#d7433b', '#f06a63', '#ff8e5e', '#ffcc3d', '#95caa6', '#008d98'],
+      isPrimary: true,
+      sortOrder: [6, 5, 2, 3, 1, 4],
+      type: 'momacolors',
+    },
+    {
+      name: 'VanGogh',
+      colors: ['#c3a016', '#c3d878', '#58a787', '#8ebacd', '#246893', '#163274', '#0C1F4b'],
+      isPrimary: true,
+      sortOrder: [2, 4, 3, 6, 1, 5, 7],
+      type: 'momacolors',
+    },
+    {
+      name: 'vonHeyl',
+      colors: ['#f96149', '#ffa479', '#e7d800', '#94aec2', '#0d0c0b'],
+      isPrimary: true,
+      sortOrder: [1, 4, 2, 3, 5],
+      type: 'momacolors',
+    },
+    {
+      name: 'Warhol',
+      colors: [
+        '#ff0066',
+        '#328c97',
+        '#d1aac2',
+        '#a5506d',
+        '#b3e0bf',
+        '#2A9D3D',
+        '#edf181',
+        '#db7003',
+        '#fba600',
+        '#f8c1a6',
+        '#A30000',
+        '#ff3200',
+        '#011a51',
+        '#97d1d9',
+        '#916c37',
+      ],
+      isPrimary: true,
+      sortOrder: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+      type: 'momacolors',
+    },
+  ];
+
+  //
+  // Australian bird plumages
+  // https://github.com/shandiya/feathers
+  //
+  var feathersPalettes = [
+    {
+      name: 'spotted_pardalote',
+      colors: ['#feca00', '#d36328', '#cb0300', '#b4b9b3', '#424847', '#000100'],
+      type: 'feathers',
+    },
+    {
+      name: 'plains_wanderer',
+      colors: ['#edd8c5', '#d09a5e', '#e7aa01', '#ac570f', '#73481b', '#442c0e', '#0d0403'],
+      type: 'feathers',
+    },
+    {
+      name: 'bee_eater',
+      colors: ['#00346E', '#007CBF', '#06ABDF', '#EDD03E', '#F5A200', '#6D8600', '#424D0C'],
+      type: 'feathers',
+    },
+    {
+      name: 'rose_crowned_fruit_dove',
+      colors: ['#BD338F', '#EB8252', '#F5DC83', '#CDD4DC', '#8098A2', '#8FA33F', '#5F7929', '#014820'],
+      type: 'feathers',
+    },
+    {
+      name: 'eastern_rosella',
+      colors: ['#cd3122', '#f4c623', '#bee183', '#6c905e', '#2f533c', '#b8c9dc', '#2f7ab9'],
+      type: 'feathers',
+    },
+    {
+      name: 'oriole',
+      colors: [
+        '#8a3223',
+        '#bb5645',
+        '#d97878',
+        '#e2aba0',
+        '#d0cfe9',
+        '#a29eb8',
+        '#6c6b75',
+        '#b8a53f',
+        '#93862a',
+        '#4d4019',
+      ],
+      type: 'feathers',
+    },
+    {
+      name: 'princess_parrot',
+      colors: ['#7090c9', '#8cb3de', '#afbe9f', '#616020', '#6eb245', '#214917', '#cf2236', '#d683ad'],
+      type: 'feathers',
+    },
+    { name: 'superb_fairy_wren', colors: ['#4F3321', '#AA7853', '#D9C4A7', '#B03F05', '#020503'], type: 'feathers' },
+    {
+      name: 'cassowary',
+      colors: ['#BDA14D', '#3EBCB6', '#0169C4', '#153460', '#D5114E', '#A56EB6', '#4B1C57', '#09090C'],
+      type: 'feathers',
+    },
+    {
+      name: 'yellow_robin',
+      colors: ['#E19E00', '#FBEB5B', '#85773A', '#979EB9', '#727B98', '#454B56', '#201B1E'],
+      type: 'feathers',
+    },
+    { name: 'galah', colors: ['#FFD2CF', '#E9A7BB', '#D05478', '#AAB9CC', '#8390A2', '#4C5766'], type: 'feathers' },
+  ];
+
+  //
+  //  Wes Anderson movie color palettes
+  //  https://github.com/karthik/wesanderson
+  //
+  var wesandersonPalettes = [
+    {
+      name: 'bottlerocket1',
+      colors: ['#a42820', '#5f5647', '#9b110e', '#3f5151', '#4e2a1e', '#550307', '#0c1707'],
+      type: 'wesanderson',
+    },
+    { name: 'bottlerocket2', colors: ['#fad510', '#cb2314', '#273046', '#354823', '#1e1e1e'], type: 'wesanderson' },
+    { name: 'rushmore1', colors: ['#e1bd6d', '#eabe94', '#0b775e', '#35274a', '#f2300f'], type: 'wesanderson' },
+    { name: 'rushmore', colors: ['#e1bd6d', '#eabe94', '#0b775e', '#35274a', '#f2300f'], type: 'wesanderson' },
+    { name: 'royal1', colors: ['#899da4', '#c93312', '#faefd1', '#dc863b'], type: 'wesanderson' },
+    { name: 'royal2', colors: ['#9a8822', '#f5cdb4', '#f8afa8', '#fddda0', '#74a089'], type: 'wesanderson' },
+    { name: 'zissou1', colors: ['#3b9ab2', '#78b7c5', '#ebcc2a', '#e1af00', '#f21a00'], type: 'wesanderson' },
+    {
+      name: 'zissou2',
+      colors: [
+        '#3a9ab2',
+        '#6fb2c1',
+        '#91bab6',
+        '#a5c2a3',
+        '#bdc881',
+        '#dccb4e',
+        '#e3b710',
+        '#e79805',
+        '#ec7a05',
+        '#ef5703',
+        '#f11b00',
+      ],
+      type: 'wesanderson',
+    },
+    { name: 'darjeeling1', colors: ['#ff0000', '#00a08a', '#f2ad00', '#f98400', '#5bbcd6'], type: 'wesanderson' },
+    { name: 'darjeeling2', colors: ['#eccbae', '#046c9a', '#d69c4e', '#abddde', '#000000'], type: 'wesanderson' },
+    { name: 'chevalier1', colors: ['#446455', '#fdd262', '#d3dddc', '#c7b19c'], type: 'wesanderson' },
+    { name: 'fantasticfox1', colors: ['#dd8d29', '#e2d200', '#46acc8', '#e58601', '#b40f20'], type: 'wesanderson' },
+    { name: 'moonrise1', colors: ['#f3df6c', '#ceab07', '#d5d5d3', '#24281a'], type: 'wesanderson' },
+    { name: 'moonrise2', colors: ['#798e87', '#c27d38', '#ccc591', '#29211f'], type: 'wesanderson' },
+    { name: 'moonrise3', colors: ['#85d4e3', '#f4b5bd', '#9c964a', '#cdc08c', '#fad77b'], type: 'wesanderson' },
+    { name: 'cavalcanti1', colors: ['#d8b70a', '#02401b', '#a2a475', '#81a88d', '#972d15'], type: 'wesanderson' },
+    { name: 'grandbudapest1', colors: ['#f1bb7b', '#fd6467', '#5b1a18', '#d67236'], type: 'wesanderson' },
+    { name: 'grandbudapest2', colors: ['#e6a0c4', '#c6cdf7', '#d8a499', '#7294d4'], type: 'wesanderson' },
+    {
+      name: 'isleofdogs1',
+      colors: ['#9986a5', '#79402e', '#ccba72', '#0f0d0e', '#d9d0d3', '#8d8680'],
+      type: 'wesanderson',
+    },
+    { name: 'isleofdogs2', colors: ['#ead3bf', '#aa9486', '#b6854d', '#39312f', '#1c1718'], type: 'wesanderson' },
+    { name: 'frenchdispatch', colors: ['#90d4cc', '#bd3027', '#b0afa2', '#7fc0c6', '#9d9c85'], type: 'wesanderson' },
+    { name: 'asteroidcity1', colors: ['#0a9f9d', '#ceb175', '#e54e21', '#6c8645', '#c18748'], type: 'wesanderson' },
+    {
+      name: 'asteroidcity2',
+      colors: ['#c52e19', '#ac9765', '#54d8b1', '#b67c3b', '#175149', '#af4e24'],
+      type: 'wesanderson',
+    },
+    { name: 'asteroidcity3', colors: ['#fba72a', '#d3d4d8', '#cb7a5c', '#5785c1'], type: 'wesanderson' },
+  ];
+
   Toko.prototype.COLOR_COLLECTIONS = [];
-  Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch'];
-  Toko.prototype.EXTRA_SPECTRAL_COLORS = 25;
+  Toko.prototype.MODELIST = ['rgb', 'lrgb', 'lab', 'hsl', 'lch', 'oklab', 'oklch'];
 
   Toko.prototype.DEFAULT_COLOR_OPTIONS = {
     reverse: false,
     domain: [0, 1],
-    mode: 'rgb',
+    mode: 'oklab',
     gamma: 1,
-    correctLightness: false,
-    useSpectral: true,
-    bezier: false,
     stepped: false,
     steps: 10,
     nrColors: 10,
     useSortOrder: false,
     constrainContrast: false,
     nrDuotones: 12,
+    easingParameters: [0.25, 0.25, 0.75, 0.75],
+    useEasing: false,
   };
 
   Toko.prototype.initColorDone = false;
@@ -3755,21 +4369,14 @@ var Toko = (function () {
     //
     // merge with default options
     //
+    this.DEFAULT_COLOR_OPTIONS.easing = this.easeLinear;
     colorOptions = Object.assign({}, this.DEFAULT_COLOR_OPTIONS, colorOptions);
 
     //
-    //  add defoult RNG if none was defined
+    //  add default RNG if none was defined
     //
     if (colorOptions.rng == undefined) {
       colorOptions.rng = this._rng;
-    }
-
-    //
-    // don't use bezier for more than a preset number of colors
-    //
-    if (colorOptions.bezier && colorOptions.length > this.MAX_COLORS_BEZIER) {
-      console.log(`INFO: Bezier does not work for more than $MAX_COLORS_BEZIER} colors`);
-      colorOptions.bezier = false;
     }
 
     //
@@ -3784,7 +4391,7 @@ var Toko = (function () {
     if (!this.initColorDone) {
       this._initColor();
     }
-    let sc, oSC, eSC, expandedColorSet;
+    let sc, oSC;
     let o = {};
 
     if (colorOptions._validated != true) {
@@ -3801,88 +4408,77 @@ var Toko = (function () {
     }
 
     //
-    // create a scale with bezier or use standard options
+    // create a scale
     //
-    if (colorOptions.bezier) {
-      sc = chroma.bezier(colorSet).scale();
-    } else {
-      sc = chroma.scale(colorSet).domain(colorOptions.domain).mode(colorOptions.mode);
-    }
+    sc = chroma.scale(colorSet).domain([0, 1]).mode(colorOptions.mode);
 
     //
     // scale mapped to the original array of colors
     //
-    oSC = chroma.scale(colorSet).domain(colorOptions.domain).classes(colorSet.length);
-
-    //
-    //  expand color set using Spectral
-    //
-    expandedColorSet = this._expandColorSet(colorSet);
-    eSC = chroma.scale(expandedColorSet).domain(colorOptions.domain).mode(colorOptions.mode);
+    oSC = chroma.scale(colorSet).domain([0, 1]).classes(colorSet.length);
 
     //
     // only adjust gamma if needed
     //
     if (colorOptions.gamma != 1) {
       sc.gamma(colorOptions.gamma);
-      eSC.gamma(colorOptions.gamma);
-    }
-
-    //
-    // this does not work well with varied palettes so avoid
-    //
-    if (colorOptions.correctLightness) {
-      sc = sc.correctLightness();
-      eSC = eSC.correctLightness();
     }
 
     if (colorOptions.stepped && colorOptions.steps > 0) {
       sc = sc.classes(colorOptions.steps);
-      eSC = eSC.classes(colorOptions.steps);
+    }
+
+    //
+    //  check domain and turn on remapping if it is not [0,1]
+    //
+    o.domain = colorOptions.domain;
+    if (colorOptions.domain[0] !== 0 || colorOptions.domain[1] !== 1) {
+      o.remapDomain = true;
+    } else {
+      o.remapDomain = false;
     }
 
     o.scaleChroma = sc;
-    o.scaleSpectral = eSC;
     o.contrastColors = contrastColors;
     o.options = colorOptions;
     o.originalColors = colorSet;
+    o.list = sc.colors(colorOptions.nrColors);
 
-    if (colorOptions.useSpectral) {
-      o.list = eSC.colors(colorOptions.nrColors);
+    if (colorOptions.useEasing) {
+      let par = colorOptions.easingParameters;
+      o.easing = new Toko.CubicBezier(par[0], par[1], par[2], par[3]);
     } else {
-      o.list = sc.colors(colorOptions.nrColors);
-    }
-
-    if (colorOptions.useSpectral) {
-      o.scale = (i, useOriginal = false) => {
-        if (!useOriginal) {
-          return eSC(i).hex();
-        } else {
-          return oSC(i).hex();
-        }
-      };
-    } else {
-      o.scale = (i, useOriginal = false) => {
-        if (!useOriginal) {
-          return sc(i).hex();
-        } else {
-          return oSC(i).hex();
-        }
+      o.easing = i => {
+        return i;
       };
     }
+
+    o.scale = (i, useOriginal = false) => {
+      if (o.remapDomain) {
+        i = map(i, o.domain[0], o.domain[1], 0, 1);
+      }
+
+      let ie = o.easing(i);
+
+      if (!useOriginal) {
+        return sc(ie).hex();
+      } else {
+        return oSC(ie).hex();
+      }
+    };
 
     o.originalScale = i => {
       return oSC(i).hex();
     };
 
     o.randomColor = (useOriginal = false, shift = { h: 0, s: 0, l: 0 }) => {
-      let r = colorOptions.rng.random();
-      let d = colorOptions.domain;
       let c;
+      let r = colorOptions.rng.random();
+
       if (!useOriginal) {
-        c = sc(d[0] + r * (d[1] - d[0])).hex();
+        c = sc(r).hex();
       } else {
-        c = oSC(d[0] + r * (d[1] - d[0])).hex();
+        c = oSC(r).hex();
       }
 
       if (shift.h != 0 || shift.s != 0 || shift.l != 0) {
@@ -3898,8 +4494,7 @@ var Toko = (function () {
 
     o.randomOriginalColor = (shift = { h: 0, s: 0, l: 0 }) => {
       let r = colorOptions.rng.random();
-      let d = colorOptions.domain;
-      let c = oSC(d[0] + r * (d[1] - d[0])).hex();
+      let c = oSC(r).hex();
 
       if (shift.h != 0 || shift.s != 0 || shift.l != 0) {
         let cShifted = chroma(c).hsl();
@@ -3997,26 +4592,6 @@ var Toko = (function () {
     return duotones.slice(0, minLength);
   };
 
-  //
-  //  expand the color set by interpolating using Spectral
-  //
-  Toko.prototype._expandColorSet = function (inColorSet) {
-    let newColorSet = [];
-    let n = inColorSet.length;
-
-    newColorSet.push(inColorSet[0]);
-    for (let i = 1; i < n; i++) {
-      let c0 = inColorSet[i - 1];
-      let c1 = inColorSet[i];
-      let extraColors = spectral.palette(c0, c1, this.EXTRA_SPECTRAL_COLORS);
-      extraColors = extraColors.slice(0, -1);
-      newColorSet = newColorSet.concat(extraColors);
-    }
-    newColorSet.push(inColorSet[n - 1]);
-
-    return newColorSet;
-  };
-
   Toko.prototype._getColorScale = function (inPalette, colorOptions) {
     if (!this.initColorDone) {
       this._initColor();
@@ -4068,7 +4643,7 @@ var Toko = (function () {
   Toko.prototype._getAnotherPalette = function (inPalette, paletteType = 'all', justPrimary = true, direction = 1) {
     let tempPaletteList = this._getPaletteListRaw(paletteType, justPrimary);
     var i = tempPaletteList.findIndex(p => p.name === inPalette);
-    if (i === undefined) {
+    if (i === -1) {
       console.log('palette not found: ' + inPalette);
       return inPalette;
     } else {
@@ -4182,6 +4757,7 @@ var Toko = (function () {
       ducciPalettes,
       duotonePalettes,
       expositoPalettes,
+      feathersPalettes,
       flourishPalettes,
       golidmiscPalettes,
       hildaPalettes,
@@ -4192,6 +4768,7 @@ var Toko = (function () {
       lospecPalettes,
       mayoPalettes,
       metBrewerPalettes,
+      momaPalettes,
       orbifoldPalettes,
       ranganathPalettes,
       rohlfsPalettes,
@@ -4200,6 +4777,7 @@ var Toko = (function () {
       systemPalettes,
       tsuchimochiPalettes,
       tundraPalettes,
+      wesandersonPalettes,
     );
     //
     //  add missing fields and make list of all palettes
@@ -4351,20 +4929,15 @@ var Toko = (function () {
   };
 
   Toko.prototype.setup = function (inputOptions) {
-    console.log('Toko - setup');
-
-    // todo: fix the fps graph. Currently it increases when using the tweakpane controls
-    this.capturer = {};
-    this.captureOptions = this.DEFAULT_CAPTURE_OPTIONS;
-
+    this.capturer = {}; // the p5.capture object
     this.paletteSelectorData = {}; // array of double dropdowns to select a palette from a collection
-
     this.receivingFileNow = false;
 
     //
     // merge incoming options with the defaults
     //
     this.options = Object.assign({}, this.DEFAULT_OPTIONS, inputOptions);
+    this.captureOptions = Object.assign({}, this.DEFAULT_CAPTURE_OPTIONS, inputOptions.captureOptions);
 
     if (this.options.acceptDroppedSettings || this.options.acceptDroppedFiles) {
       p5Canvas.drop(this.dropFile.bind(this));
@@ -4389,10 +4962,6 @@ var Toko = (function () {
         tabs.push({ title: this.TABS_CAPTURE });
         this.TAB_ID_CAPTURE = tabs.length - 1;
       }
-      if (this.options.logFPS) {
-        tabs.push({ title: this.TABS_FPS });
-        this.TAB_ID_FPS = tabs.length - 1;
-      }
 
       this.basePaneTab = this.basePane.addTab({ pages: tabs });
 
@@ -4408,6 +4977,7 @@ var Toko = (function () {
       this.pane = {};
       this.pane.tab = this.basePaneTab.pages[0];
       this.pane.events = this.basePane;
+
       //
       // use (p) to show or hide the panel
       //
@@ -4415,9 +4985,8 @@ var Toko = (function () {
         switch (event.key.toLocaleLowerCase()) {
           case 'p':
             var e = document.getElementsByClassName('tp-dfwv')[0];
-            if (e.style.display == 'block') e.style.display = 'none';
+            if (e.style.display === 'block') e.style.display = 'none';
             else e.style.display = 'block';
-
             break;
         }
       };
@@ -4426,11 +4995,18 @@ var Toko = (function () {
       // add any additional canvas sizes that were passed along
       //
       let n = this.options.additionalCanvasSizes.length;
+      let useCustomSize = false;
+      let selectedCustomSize = null;
       if (n > 0) {
         for (let i = 0; i < n; i++) {
           this.addCanvasSize(this.options.additionalCanvasSizes[i]);
+          if (this.options.additionalCanvasSizes[i].useThisSize) {
+            useCustomSize = true;
+            selectedCustomSize = this.options.additionalCanvasSizes[i];
+          }
         }
       }
+      this.options.canvasSize = useCustomSize ? selectedCustomSize : this.options.canvasSize;
 
       //
       // add advanced options
@@ -4447,6 +5023,9 @@ var Toko = (function () {
             this.setCanvasSize(s);
           });
       }
+
+      this.log(this.VERSION);
+      this.log('Toko - setup done');
     }
     //
     // set the label and document title
@@ -4458,7 +5037,7 @@ var Toko = (function () {
   };
 
   Toko.prototype.endSetup = function () {
-    console.log('Toko - endSetup');
+    this.log('Toko - endSetup');
 
     //
     // store the current canvas size as the default
@@ -4466,36 +5045,22 @@ var Toko = (function () {
     this.SIZE_DEFAULT.width = width;
     this.SIZE_DEFAULT.height = height;
 
-    if (this.options.logFPS) {
-      this.pt = { fps: 0, graph: 0 };
-
-      var f = this.basePaneTab.pages[this.TAB_ID_FPS];
-
-      f.addBinding(this.pt, 'fps', { interval: 200, readonly: true });
-
-      f.addBinding(this.pt, 'graph', {
-        view: 'graph',
-        interval: 100,
-        min: 0,
-        max: 120,
-        readonly: true,
-      });
-    }
-
     if (this.options.useParameterPanel) {
       if (this.options.showSaveSketchButton && !this.options.saveSettingsWithSketch) {
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
           view: 'separator',
         });
-        this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addButton({ title: 'Save sketch' }).on('click', value => {
-          this.saveSketch();
-        });
+        this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
+          .addButton({ title: this.SAVE_SKETCH_BUTTON_LABEL })
+          .on('click', value => {
+            this.saveSketch();
+          });
       } else if (this.options.showSaveSketchButton && this.options.saveSettingsWithSketch) {
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS].addBlade({
           view: 'separator',
         });
         this.basePaneTab.pages[this.TAB_ID_PARAMETERS]
-          .addButton({ title: 'Save sketch & settings' })
+          .addButton({ title: this.SAVE_SKETCH_AND_SETTINGS_BUTTON_LABEL })
           .on('click', value => {
             this.saveSketchAndSettings();
           });
@@ -4507,28 +5072,7 @@ var Toko = (function () {
     }
 
     if (this.options.captureFrames) {
-      this.captureOptions.format = this.options.captureFormat;
       this.createCapturePanel(this.TAB_ID_CAPTURE);
-    }
-  };
-
-  Toko.prototype.startDraw = function () {
-    //
-    //	will be called at the start of the draw loop
-    //
-  };
-
-  Toko.prototype.endDraw = function () {
-    //
-    //	will be called at the end of the draw loop
-    //
-    //--------------------------------------------
-    //
-    //	track fps with a simple filter to dampen any short spikes
-    //
-    if (this.options.logFPS) {
-      this._frameTime += (deltaTime - this.FRAME_TIME) / this.FPS_FILTER_STRENGTH;
-      this.pt.fps = this.pt.graph = Math.round(1000 / this.FRAME_TIME);
     }
   };
 
@@ -4538,8 +5082,14 @@ var Toko = (function () {
   Toko.prototype.setCanvasSize = function (inSize) {
     let margin = 80;
     let zoomFactor = 1;
-    let displayFactor = inSize.pixelDensity / 2;
-    let newWidthString, newHeightString;
+    const displayFactor = inSize.pixelDensity / 2;
+    let newWidthString = '',
+      newHeightString = '';
+
+    if (typeof windowWidth === 'undefined' || typeof windowHeight === 'undefined') {
+      console.error('windowWidth or windowHeight is not defined');
+      return;
+    }
 
     if (!inSize.fullWindow) {
       zoomFactor = Math.min(1, ((windowWidth - margin) / inSize.width) * displayFactor);
@@ -4592,6 +5142,15 @@ var Toko = (function () {
     let c = color(hexColor);
     c.setAlpha(alpha);
     return c;
+  };
+
+  //
+  //  simple logging function that can be turned off
+  //
+  Toko.prototype.log = function (...args) {
+    if (this.options.log) {
+      console.log(...args);
+    }
   };
 
   //
@@ -4953,6 +5512,24 @@ var Toko = (function () {
   };
 
   //
+  //  map value from the range iStart to iStop, to oStart, oStop
+  //  if clamp is set to true, the output is clamped to the bounds
+  //
+  //  inputs are not validated, hopefully making it a little faster than p5.js
+  //
+  Toko.map = function (value, iStart, iStop, oStart, oStop, clamp = false) {
+    let val = oStart + (oStop - oStart) * (((value - iStart) * 1.0) / (iStop - iStart));
+    if (!clamp) {
+      return val;
+    }
+    if (oStart < oStop) {
+      return Math.min(Math.max(val, oStart), oStop);
+    } else {
+      return Math.min(Math.max(val, oStop), oStart);
+    }
+  };
+
+  //
   // pass through functions for the internal RNG object
   //
   Toko.prototype.resetRNG = function (seed) {
@@ -5007,6 +5584,12 @@ var Toko = (function () {
   //
   Toko.prototype.randomChar = function (inString = 'abcdefghijklmnopqrstuvwxyz') {
     return this._rng.randomChar(inString);
+  };
+  //
+  // random string from provided string or lowercase
+  //
+  Toko.prototype.randomString = function (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+    return this._rng.randomString(count, inString);
   };
   //
   // stepped random number in range
@@ -5271,9 +5854,26 @@ var Toko = (function () {
     // without input it returns a random lowercase letter
     //
     randomChar = function (inString = 'abcdefghijklmnopqrstuvwxyz') {
-      let l = inString.length,
-        r = Math.floor(this.random(0, l));
+      if (inString.length === 0) {
+        throw new Error('randomChar: Input string cannot be empty.');
+      }
+      let r = Math.floor(this.random(0, inString.length));
       return inString.charAt(r);
+    };
+
+    //
+    // random string of length count selected from a provided string
+    // without input it returns a random lowercase letter
+    //
+    randomString = function (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+      if (inString.length === 0) {
+        throw new Error('randomString: Input string cannot be empty.');
+      }
+      let output = '';
+      for (var i = 0; i < count; i++) {
+        output += this.randomChar(inString);
+      }
+      return output;
     };
 
     //
@@ -6588,6 +7188,75 @@ var Toko = (function () {
   };
 
   //
+  //  based on https://github.com/thednp/bezier-easing/
+  //  by thednp
+  //
+  //  myEasingFunction = new Toko.CubicBezier(P1.x, P1.y, P2.x, P2.y, customName)
+  //
+  //  use https://cubic-bezier.com/ to find suitable parameters
+
+  Toko.CubicBezier = (function () {
+    var C = Object.defineProperty;
+    var x = (n, i, e) => (i in n ? C(n, i, { enumerable: !0, configurable: !0, writable: !0, value: e }) : (n[i] = e));
+    var h = (n, i, e) => x(n, typeof i != 'symbol' ? i + '' : i, e);
+    class n {
+      constructor (e, l, t, s, c) {
+        h(this, 'cx');
+        h(this, 'bx');
+        h(this, 'ax');
+        h(this, 'cy');
+        h(this, 'by');
+        h(this, 'ay');
+        const r = e || 0,
+          a = l || 0,
+          u = t || 1,
+          p = s || 1,
+          v = o => typeof o == 'number',
+          y = [e, l, t, s].every(v),
+          m = c || (y ? `cubic-bezier(${[r, a, u, p].join(',')})` : 'linear');
+        (this.cx = 3 * r),
+          (this.bx = 3 * (u - r) - this.cx),
+          (this.ax = 1 - this.cx - this.bx),
+          (this.cy = 3 * a),
+          (this.by = 3 * (p - a) - this.cy),
+          (this.ay = 1 - this.cy - this.by);
+        const b = o => this.sampleCurveY(this.solveCurveX(o));
+        return Object.defineProperty(b, 'name', { writable: !0 }), (b.name = m), b;
+      }
+      sampleCurveX (e) {
+        return ((this.ax * e + this.bx) * e + this.cx) * e;
+      }
+      sampleCurveY (e) {
+        return ((this.ay * e + this.by) * e + this.cy) * e;
+      }
+      sampleCurveDerivativeX (e) {
+        return (3 * this.ax * e + 2 * this.bx) * e + this.cx;
+      }
+      solveCurveX (e) {
+        if (e <= 0) return 0;
+        if (e >= 1) return 1;
+        let t = e,
+          s = 0,
+          c = 0;
+        for (let u = 0; u < 8; u += 1) {
+          if (((s = this.sampleCurveX(t) - e), Math.abs(s) < 1e-6)) return t;
+          c = this.sampleCurveDerivativeX(t);
+          if (Math.abs(c) < 1e-6) break;
+          t -= s / c;
+        }
+        let r = 0,
+          a = 1;
+        for (t = e; r < a; ) {
+          if (((s = this.sampleCurveX(t)), Math.abs(s - e) < 1e-6)) return t;
+          e > s ? (r = t) : (a = t), (t = (a - r) * 0.5 + r);
+        }
+        return t;
+      }
+    }
+    return n;
+  })();
+
+  //
   //  grid generators
   //
   //  create grids by recursive splitting cells or packing cells
@@ -6613,7 +7282,7 @@ var Toko = (function () {
   //
 
   Toko.Grid = class {
-    SPLIT_HORIZONTAL = 'split_horizonal';
+    SPLIT_HORIZONTAL = 'split_horizontal';
     SPLIT_VERTICAL = 'split_vertical';
     SPLIT_LONGEST = 'split_longest';
     SPLIT_MIX = 'split_mix';
@@ -6625,18 +7294,7 @@ var Toko = (function () {
       this._y = y;
       this._width = width;
       this._height = height;
-      this._cells = [
-        new Toko.GridCell(
-          this._x,
-          this._y,
-          this._width,
-          this._height,
-          0,
-          0,
-          this._width,
-          this._height,
-        ),
-      ];
+      this._cells = [new Toko.GridCell(this._x, this._y, this._width, this._height, 0, 0, this._width, this._height)];
       this._points = [];
       this._pointsAreUpdated = false;
       this._openSpaces = [];
@@ -6677,12 +7335,10 @@ var Toko = (function () {
       this._points = [];
       let tempPoints = [];
       let uniquePoints = [];
-      let c;
       //
       //  gather all points as strings
       //
-      for (let n = 0; n < this._cells.length; n++) {
-        c = this._cells[n];
+      this._cells.forEach(c => {
         // top left corner
         tempPoints.push(`${c.x}-${c.y}`);
         // top right corner
@@ -6691,7 +7347,7 @@ var Toko = (function () {
         tempPoints.push(`${c.x}-${c.y + c.height}`);
         // bottom right corner
         tempPoints.push(`${c.x + c.width}-${c.y + c.height}`);
-      }
+      });
       //
       //  deduplicate using a set
       //
@@ -6700,10 +7356,9 @@ var Toko = (function () {
       // parse back to vectors
       //
       uniquePoints.forEach(element => {
-        let a = element.split('-');
-        this._points.push(createVector(parseFloat(a[0]), parseFloat(a[1])));
+        let coordinates = element.split('-');
+        this._points.push(createVector(parseFloat(coordinates[0]), parseFloat(coordinates[1])));
       });
-
       return this._points;
     }
 
@@ -6719,13 +7374,7 @@ var Toko = (function () {
     //  snapToPixel     - if set to true all sizes and positions are rounded to a pixel
     //                    This can result in the cells not filling the complete grid space
     //
-    packGrid (
-      columns,
-      rows,
-      cellShapes,
-      fillEmptySpaces = true,
-      snapToPixel = true,
-    ) {
+    packGrid (columns, rows, cellShapes, fillEmptySpaces = true, snapToPixel = true) {
       this._pointsAreValid = false;
       this._cells = [];
       let cw, rh;
@@ -6763,16 +7412,7 @@ var Toko = (function () {
           // check if space is available
           if (this.spaceAvailable(c, r, w, h)) {
             // if it is available, add a cell with the picked size
-            newCell = new Toko.GridCell(
-              this._x + c * cw,
-              this._y + r * rh,
-              w * cw,
-              h * rh,
-              c,
-              r,
-              w,
-              h,
-            );
+            newCell = new Toko.GridCell(this._x + c * cw, this._y + r * rh, w * cw, h * rh, c, r, w, h);
             newCell.counter = tryCounter;
             this._cells.push(newCell);
             // claim the space
@@ -6835,16 +7475,7 @@ var Toko = (function () {
             w = cellShapes[s][0];
             h = cellShapes[s][1];
             if (this.spaceAvailable(i, j, w, h)) {
-              newCell = new Toko.GridCell(
-                this._x + i * cw,
-                this._y + j * rh,
-                w * cw,
-                h * rh,
-                i,
-                j,
-                cw,
-                rh,
-              );
+              newCell = new Toko.GridCell(this._x + i * cw, this._y + j * rh, w * cw, h * rh, i, j, cw, rh);
               newCell.counter = s;
               this._cells.push(newCell);
               this.fillSpace(i, j, w, h);
@@ -6896,10 +7527,8 @@ var Toko = (function () {
     resetOpenSpaces (columns, rows) {
       this._openSpaces = [];
       for (let i = 0; i < columns; i++) {
-        this._openSpaces[i] = new Array();
-        for (let j = 0; j < rows; j++) {
-          this._openSpaces[i][j] = true;
-        }
+        this._openSpaces[i] = Array(rows);
+        this._openSpaces[i].fill(true);
       }
     }
 
@@ -6932,12 +7561,7 @@ var Toko = (function () {
     //                    SPLIT_MIX         = split along both axis randomly
     //                    SPLIT_SQUARE      = split cells into 4 new cells
     //
-    splitRecursive (
-      nrLoops = 1,
-      chance = 0.5,
-      minSize = 10,
-      splitStyle = this.SPLIT_MIX,
-    ) {
+    splitRecursive (nrLoops = 1, chance = 0.5, minSize = 10, splitStyle = this.SPLIT_MIX) {
       if (splitStyle == this.SPLIT_SQUARE) {
         // reduce the chance because the square split creates 4 cells instead of 2
         chance *= 0.5;
@@ -7023,11 +7647,7 @@ var Toko = (function () {
         newCells.push(new Toko.GridCell(x + w2, y, w2, h2));
         newCells.push(new Toko.GridCell(x + w2, y + h2, w2, h2));
         newCells.push(new Toko.GridCell(x, y + h2, w2, h2));
-        newCells[0].counter =
-          newCells[1].counter =
-          newCells[2].counter =
-          newCells[3].counter =
-            c;
+        newCells[0].counter = newCells[1].counter = newCells[2].counter = newCells[3].counter = c;
       } else {
         newCells.push(cell);
       }
@@ -7087,19 +7707,15 @@ var Toko = (function () {
       //  find the max value of counter in all the cells
       //  see https://stackoverflow.com/questions/4020796/finding-the-max-value-of-an-attribute-in-an-array-of-objects
       //
-      let maxC = this._cells.reduce((a, b) =>
-        a.counter > b.counter ? a : b,
-      ).counter;
+      if (this._cells.length === 0) return 0;
+      let maxC = Math.max(...this._cells.map(cell => cell.counter));
       return maxC;
     }
-
     get minCounter () {
-      let minC = this._cells.reduce((a, b) =>
-        a.counter < b.counter ? a : b,
-      ).counter;
+      if (this._cells.length === 0) return 0;
+      let minC = Math.min(...this._cells.map(cell => cell.counter));
       return minC;
     }
-
     get width () {
       return this._width;
     }
@@ -7147,6 +7763,31 @@ var Toko = (function () {
   //    counter     - used to track how often a cell is split
   //
 
+  /**
+    /**
+     * @param {number} x - x position on the canvas
+     * @param {number} y - y position on the canvas
+     * @param {number} width - width of the cell
+     * @param {number} height - height of the cell
+     * @param {number} [column=0] - x position in columns
+     * @param {number} [row=0] - y position in rows
+     * @param {number} [gridWidth=0] - number of columns wide
+     * @param {number} [gridHeight=0] - number of rows height
+   * @param {number} [gridWidth=0] - The number of columns wide.
+   * @param {number} [gridHeight=0] - The number of rows height.
+   * @property {number} value - The value per cell that can be set and used for visual effects. Default is 0.
+   * @property {number} counter - Used to track how often a cell is split. Default is 0.
+   * @param {number} x - The x position on the canvas.
+   * @param {number} y - The y position on the canvas.
+   * @param {number} width - The width of the cell.
+   * @param {number} height - The height of the cell.
+   * @param {number} [column=0] - The x position in columns.
+   * @param {number} [row=0] - The y position in rows.
+   * @param {number} [gridWidth=0] - The number of columns wide.
+   * @param {number} [gridHeight=0] - The number of rows height.
+   * @property {number} value - The value per cell that can be set and used for visual effects.
+   * @property {number} counter - Used to track how often a cell is split.
+   */
   Toko.GridCell = class {
     constructor (x, y, width, height, column = 0, row = 0, gridWidth = 0, gridHeight = 0) {
       this._x = x;
@@ -7164,71 +7805,71 @@ var Toko = (function () {
     get x () {
       return this._x;
     }
-    set x (in_x) {
-      this._x = in_x;
+    set x (x) {
+      this._x = x;
     }
 
     get y () {
       return this._y;
     }
-    set y (in_y) {
-      this._y = in_y;
+    set y (y) {
+      this._y = y;
     }
 
     get width () {
       return this._width;
     }
-    set width (in_width) {
-      this._width = in_width;
+    set width (width) {
+      this._width = width;
     }
 
     get height () {
       return this._height;
     }
-    set height (in_height) {
-      this._height = in_height;
+    set height (height) {
+      this._height = height;
     }
 
     get row () {
       return this._row;
     }
-    set row (in_row) {
-      this._row = in_row;
+    set row (row) {
+      this._row = row;
     }
 
     get column () {
       return this._column;
     }
-    set column (in_column) {
-      this._column = in_column;
+    set column (column) {
+      this._column = column;
     }
 
     get gridWidth () {
       return this._gridWidth;
     }
-    set gridWidth (in_gridWidth) {
-      this._gridWidth = in_gridWidth;
+    set gridWidth (gridWidth) {
+      this._gridWidth = gridWidth;
     }
 
     get gridHeight () {
       return this._gridHeight;
     }
-    set gridHeight (in_gridHeight) {
-      this._gridHeight = in_gridHeight;
+    set gridHeight (gridHeight) {
+      this._gridHeight = gridHeight;
     }
 
     get value () {
       return this._value;
     }
-    set value (in_value) {
-      this._value = in_value;
+    set value (value) {
+      this._value = value;
     }
 
     get counter () {
       return this._counter;
     }
-    set counter (in_counter) {
-      this._counter = in_counter;
+    set counter (counter) {
+      this._counter = counter;
     }
   };
 
@@ -7239,18 +7880,18 @@ var Toko = (function () {
   //
   //  rotate current transformation matrix around a specific point
   //
-  Toko.prototype.rotateAround = function (x, y, angle) {
+  Toko.prototype.rotateAround = function (x, y, inAngle) {
     translate(x, y);
-    rotate(angle);
+    rotate(inAngle);
     translate(-x, -y);
   };
 
   //
-  //  rotate current transformation matrix around a specific point
+  //  scale current transformation matrix around a specific point
   //
-  Toko.prototype.scaleAround = function (x, y, scale) {
+  Toko.prototype.scaleAround = function (x, y, inScale) {
     translate(x, y);
-    scale(scale);
+    scale(inScale);
     translate(-x, -y);
   };
 
@@ -7515,43 +8156,57 @@ var Toko = (function () {
   };
 
   Toko.prototype.generateFilename = function (extension = 'svg', verb = 'sketched') {
-    var adj1 = this.randomAdjective();
-    var adj2 = this.randomAdjective();
-    var noun = this.randomNoun();
+    const adj1 = this.randomAdjective();
+    const adj2 = this.randomAdjective();
+    const noun = this.randomNoun();
 
-    var filename = this._getTimeStamp() + '_';
+    const timestamp = this._getTimeStamp();
+    const baseFilename = `${timestamp}_${verb}_the_${adj1}_${adj2}_${noun}`;
 
-    if (extension != '' && extension != 'none') {
-      filename = filename + verb + '_the' + '_' + adj1 + '_' + adj2 + '_' + noun + '.' + extension;
-    } else {
-      filename = filename + verb + '_the' + '_' + adj1 + '_' + adj2 + '_' + noun;
-    }
-    return filename;
+    return extension && extension !== 'none' ? `${baseFilename}.${extension}` : baseFilename;
   };
 
   Toko.prototype._getTimeStamp = function () {
-    //
-    // create a yyyymmdd string
-    //
-    var d = new Date();
-    var day = ('0' + d.getDate()).slice(-2);
-    var month = ('0' + (d.getMonth() + 1)).slice(-2);
-    var year = d.getFullYear();
+    // Get the current date
+    const d = new Date();
 
-    return year + month + day;
+    // Destructure to get year, month, and day
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(d.getDate()).padStart(2, '0'); // Ensures two-digit day
+
+    // Return formatted timestamp
+    return `${year}${month}${day}`;
   };
 
   Toko.prototype.initCapture = function () {
     this.capturer = P5Capture.getInstance();
-    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
-      this.captureOptions.captureFixedNrFrames = false;
-    } else {
-      this.captureOptions.captureFixedNrFrames = true;
+
+    //  just in case the duration was not set properly
+    if (this.captureOptions.captureFixedNrFrames) {
+      this.captureOptions.duration = this.captureOptions.nrFrames;
+      if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+        this.captureOptions = this.DEFAULT_CAPTURE_DURATION;
+      }
+    }
+
+    //  refresh the sketch before capture
+    if (this.captureOptions.refreshBeforeCapture) {
+      refresh();
     }
   };
 
   Toko.prototype.createCapturePanel = function (tabID) {
-    var t = this.basePaneTab.pages[tabID];
+    //  tab for options
+    let t = this.basePaneTab.pages[tabID];
+    //  tab for buttons depending on the options
+    let tb;
+    if (this.captureOptions.recordButtonOnMainTab) {
+      tb = this.basePaneTab.pages[0];
+      tb.addBlade({ view: 'separator' });
+    } else {
+      tb = t;
+    }
 
     t.addBinding(this.captureOptions, 'format', {
       options: this.CAPTURE_FORMATS,
@@ -7561,7 +8216,14 @@ var Toko = (function () {
       options: this.CAPTURE_FRAMERATES,
     }).on('change', e => {
       frameRate(e.value);
-      this.updateDurationEstimate();
+    });
+
+    t.addBlade({ view: 'separator' });
+
+    t.addBinding(this.captureOptions, 'refreshBeforeCapture', {
+      label: 'refresh first',
+    }).on('change', value => {
+      this.updateRecordButtonLabel(value);
     });
 
     t.addBlade({ view: 'separator' });
@@ -7575,38 +8237,30 @@ var Toko = (function () {
     this.captureFrameControl = t
       .addBinding(this.captureOptions, 'nrFrames', {
         min: 0,
-        max: 1000,
+        max: 2400,
         step: 5,
       })
       .on('change', e => {
-        console.log(this.captureOptions.captureFixedNrFrames);
         if (this.captureOptions.captureFixedNrFrames) {
           this.captureOptions.duration = e.value;
         }
-        this.updateDurationEstimate();
       });
 
-    this.captureFrameDurationDisplay = t.addBinding(this.captureOptions, 'estimate', {
-      readonly: true,
-      label: 'time (sec)',
-    });
-
-    if (this.captureOptions.duration === null || this.captureOptions.duration === undefined) {
+    if (this.captureOptions.captureFixedNrFrames == false) {
       this.captureFrameControl.hidden = true;
-      this.captureFrameDurationDisplay.hidden = true;
     }
 
     t.addBlade({ view: 'separator' });
 
-    this.startCaptureButton = t
+    this.startCaptureButton = tb
       .addButton({
-        title: '🔴 Record',
+        title: this.captureOptions.refreshBeforeCapture ? this.REFRESH_RECORD_BUTTON_LABEL : this.RECORD_BUTTON_LABEL,
       })
       .on('click', value => {
         this.clickStartCapture();
       });
 
-    this.stopCaptureButton = t
+    this.stopCaptureButton = tb
       .addButton({
         title: '⬛️ Stop recording',
       })
@@ -7620,18 +8274,18 @@ var Toko = (function () {
     if (e.value) {
       this.captureFrameControl.hidden = false;
       this.captureOptions.duration = this.captureOptions.nrFrames;
-      this.captureFrameDurationDisplay.hidden = false;
-      this.updateDurationEstimate();
     } else {
       this.captureFrameControl.hidden = true;
       this.captureOptions.duration = null;
-      this.captureFrameDurationDisplay.hidden = true;
     }
   };
 
-  Toko.prototype.updateDurationEstimate = function () {
-    let e = Math.round((100 * parseInt(this.captureOptions.duration)) / parseInt(this.captureOptions.framerate)) / 100;
-    this.captureOptions.estimate = e;
+  Toko.prototype.updateRecordButtonLabel = function (e) {
+    if (e.value) {
+      this.startCaptureButton.title = this.REFRESH_RECORD_BUTTON_LABEL;
+    } else {
+      this.startCaptureButton.title = this.RECORD_BUTTON_LABEL;
+    }
   };
 
   Toko.prototype.clickStartCapture = function () {
@@ -7663,7 +8317,17 @@ var Toko = (function () {
     }
   };
 
-  Toko.prototype.resetCapture = function () {
+  //
+  //  called by p5.capture just ahead of downlaoding the video
+  //
+  Toko.prototype.resetCapture = function (videoFilename) {
+    //  remove the extension
+    let filename = typeof videoFilename === 'string' ? videoFilename.replace(/\.[^/.]+$/, '') : videoFilename;
+    //  save the settings
+    if (this.options.saveSettingsWithSketch) {
+      this.saveSettings(filename);
+    }
+    //  reset the capture buttons
     this.stopCaptureButton.hidden = true;
     this.startCaptureButton.hidden = false;
     this._captureStarted = false;

@@ -232,9 +232,26 @@ Toko.RNG = class {
   // without input it returns a random lowercase letter
   //
   randomChar = function (inString = 'abcdefghijklmnopqrstuvwxyz') {
-    let l = inString.length,
-      r = Math.floor(this.random(0, l));
+    if (inString.length === 0) {
+      throw new Error('randomChar: Input string cannot be empty.');
+    }
+    let r = Math.floor(this.random(0, inString.length));
     return inString.charAt(r);
+  };
+
+  //
+  // random string of length count selected from a provided string
+  // without input it returns a random lowercase letter
+  //
+  randomString = function (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+    if (inString.length === 0) {
+      throw new Error('randomString: Input string cannot be empty.');
+    }
+    let output = '';
+    for (var i = 0; i < count; i++) {
+      output += this.randomChar(inString);
+    }
+    return output;
   };
 
   //

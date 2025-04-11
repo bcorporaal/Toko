@@ -57,6 +57,12 @@ Toko.prototype.randomChar = function (inString = 'abcdefghijklmnopqrstuvwxyz') {
   return this._rng.randomChar(inString);
 };
 //
+// random string from provided string or lowercase
+//
+Toko.prototype.randomString = function (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+  return this._rng.randomString(count, inString);
+};
+//
 // stepped random number in range
 //
 Toko.prototype.steppedRandom = function (min = 0, max = 1, step = 0.1) {

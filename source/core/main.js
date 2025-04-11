@@ -12,11 +12,9 @@ class Toko {
     }
 
     //
-    //  preseed the random function
+    //  pre-seed the random function
     //
     this._rng = new Toko.RNG();
-
-    console.log(this.VERSION);
 
     //
     //  set the default options for P5Capture.

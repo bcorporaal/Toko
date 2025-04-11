@@ -129,6 +129,77 @@ export default [
     type: 'lospec',
   },
   {
+    name: 'midnight_ablaze',
+    colors: ['#ff8274', '#d53c6a', '#7c183c', '#460e2b', '#31051e', '#1f0510', '#130208'],
+    type: 'lospec',
+  },
+  {
+    name: 'taliwan', // https://lospec.com/palette-list/taliwan
+    colors: [
+      '#f2eef1',
+      '#ffa7bf',
+      '#ec7d9b',
+      '#e64667',
+      '#a02552',
+      '#75024d',
+      '#2c0f30',
+      '#e18434',
+      '#ffa01b',
+      '#ffbd20',
+    ],
+    type: 'lospec',
+  },
+  {
+    name: 'spanish_sunset', // https://lospec.com/palette-list/spanish-sunset
+    colors: ['#f5ddbc', '#fabb64', '#fd724e', '#a02f40', '#5f2f45'],
+    type: 'lospec',
+  },
+  {
+    name: 'late_night_bath', // https://lospec.com/palette-list/late-night-bath
+    colors: ['#282d3c', '#5b5d70', '#74838c', '#ffc4b8', '#f69197'],
+    type: 'lospec',
+  },
+  {
+    name: 'vaporhaze', // https://lospec.com/palette-list/vaporhaze-16
+    colors: [
+      '#00474f',
+      '#225054',
+      '#475b58',
+      '#6a645d',
+      '#8e6e61',
+      '#b17766',
+      '#d4826b',
+      '#f88c6e',
+      '#156d8e',
+      '#467b96',
+      '#6b869b',
+      '#8e8f9f',
+      '#b199a3',
+      '#d5a3a7',
+      '#f8adac',
+      '#ffbdbb',
+    ],
+    type: 'lospec',
+  },
+  {
+    name: 'neon_reflection', // https://lospec.com/palette-list/dr-neon-reflection
+    colors: [
+      '#b1e2e7',
+      '#5be4b9',
+      '#10bdc6',
+      '#517cb8',
+      '#394072',
+      '#7441ae',
+      '#bb49d7',
+      '#f69dbd',
+      '#d8d272',
+      '#f3ad58',
+      '#e74a9d',
+      '#af517a',
+    ],
+    type: 'lospec',
+  },
+  {
     name: '17pastels', // https://lospec.com/palette-list/17pastels
     colors: [
       '#373254',
@@ -152,51 +223,60 @@ export default [
     type: 'lospec',
   },
   {
-    name: 'lospec500', // https://lospec.com/palette-list/lospec500
+    name: 'pollen8', // https://lospec.com/palette-list/pollen8
+    colors: ['#73464c', '#ab5675', '#ee6a7c', '#ffa7a5', '#ffe07e', '#72dcbb', '#34acba'],
+    type: 'lospec',
+  },
+  {
+    name: 'neon_space', // https://lospec.com/palette-list/neon-space
+    colors: ['#df0772', '#fe546f', '#ff9e7d', '#ffd080', '#0bffe6', '#01cbcf', '#0188a5', '#3e3264', '#352a55'],
+    type: 'lospec',
+  },
+  {
+    name: 'salad_bowl', // https://lospec.com/palette-list/salad-bowl
+    colors: ['#541b3c', '#802040', '#a04040', '#c06040', '#e0e080', '#a0c040', '#60a040', '#206040', '#103040'],
+    type: 'lospec',
+  },
+  {
+    name: 'seafoam', // https://lospec.com/palette-list/seafoam
+    colors: ['#37364e', '#355d69', '#6aae9d', '#b9d4b4', '#f4e9d4', '#d0baa9', '#9e8e91', '#5b4a68'],
+    type: 'lospec',
+  },
+  {
+    name: 'chasm', // https://lospec.com/palette-list/chasm
     colors: [
-      '#10121c',
-      '#2c1e31',
-      '#6b2643',
-      '#ac2847',
-      '#ec273f',
-      '#94493a',
-      '#de5d3a',
-      '#e98537',
-      '#f3a833',
-      '#4d3533',
-      '#6e4c30',
-      '#a26d3f',
-      '#ce9248',
-      '#dab163',
-      '#e8d282',
-      '#f7f3b7',
-      '#1e4044',
-      '#006554',
-      '#26854c',
-      '#5ab552',
-      '#9de64e',
-      '#008b8b',
-      '#62a477',
-      '#a6cb96',
-      '#d3eed3',
-      '#3e3b65',
-      '#3859b3',
-      '#3388de',
-      '#36c5f4',
-      '#6dead6',
-      '#5e5b8c',
-      '#8c78a5',
-      '#b0a7b8',
-      '#deceed',
-      '#9a4d76',
-      '#c878af',
-      '#cc99ff',
-      '#fa6e79',
-      '#ffa2ac',
-      '#ffd1d5',
-      '#f6e8e0',
-      '#ffffff',
+      '#85daeb',
+      '#5fc9e7',
+      '#5fa1e7',
+      '#5f6ee7',
+      '#4c60aa',
+      '#444774',
+      '#32313b',
+      '#463c5e',
+      '#5d4776',
+      '#855395',
     ],
+    type: 'lospec',
+  },
+  {
+    name: 'soapy10', // https://lospec.com/palette-list/soapy-10
+    colors: [
+      '#54cea7',
+      '#2ba4a6',
+      '#0c6987',
+      '#054b84',
+      '#0d2147',
+      '#ffb0bf',
+      '#ff82bd',
+      '#d74ac7',
+      '#a825ba',
+      '#682b9c',
+    ],
+    type: 'lospec',
+  },
+  {
+    name: 'synthetic80s', // https://lospec.com/palette-list/synthetic-80s
+    colors: ['#e46018', '#fcb800', '#008894', '#004058', '#290d28', '#9d2496', '#db24d4'],
     type: 'lospec',
   },
 ];

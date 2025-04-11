@@ -97,17 +97,15 @@ html, body {
   height: 100%;
 }
 
-.labels a {
+.labels a,.labels{
   color: #343a40;
   text-decoration: none;
+  font-size: calc(0.5vw + 0.55rem);
+  font-weight: 400;
 }
 
 .labels a:hover {
-  color: #0c8599;
-}
-
-.labels a:hover span.label--text {
-  border-bottom: solid 1px #0c8599;
+  border-bottom: 1px solid #343a40;
 }
 
 .label--back {

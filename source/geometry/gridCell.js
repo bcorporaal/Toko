@@ -18,6 +18,31 @@ import Toko from '../core/main';
 //    counter     - used to track how often a cell is split
 //
 
+/**
+  /**
+   * @param {number} x - x position on the canvas
+   * @param {number} y - y position on the canvas
+   * @param {number} width - width of the cell
+   * @param {number} height - height of the cell
+   * @param {number} [column=0] - x position in columns
+   * @param {number} [row=0] - y position in rows
+   * @param {number} [gridWidth=0] - number of columns wide
+   * @param {number} [gridHeight=0] - number of rows height
+ * @param {number} [gridWidth=0] - The number of columns wide.
+ * @param {number} [gridHeight=0] - The number of rows height.
+ * @property {number} value - The value per cell that can be set and used for visual effects. Default is 0.
+ * @property {number} counter - Used to track how often a cell is split. Default is 0.
+ * @param {number} x - The x position on the canvas.
+ * @param {number} y - The y position on the canvas.
+ * @param {number} width - The width of the cell.
+ * @param {number} height - The height of the cell.
+ * @param {number} [column=0] - The x position in columns.
+ * @param {number} [row=0] - The y position in rows.
+ * @param {number} [gridWidth=0] - The number of columns wide.
+ * @param {number} [gridHeight=0] - The number of rows height.
+ * @property {number} value - The value per cell that can be set and used for visual effects.
+ * @property {number} counter - Used to track how often a cell is split.
+ */
 Toko.GridCell = class {
   constructor (x, y, width, height, column = 0, row = 0, gridWidth = 0, gridHeight = 0) {
     this._x = x;
@@ -35,70 +60,70 @@ Toko.GridCell = class {
   get x () {
     return this._x;
   }
-  set x (in_x) {
-    this._x = in_x;
+  set x (x) {
+    this._x = x;
   }
 
   get y () {
     return this._y;
   }
-  set y (in_y) {
-    this._y = in_y;
+  set y (y) {
+    this._y = y;
   }
 
   get width () {
     return this._width;
   }
-  set width (in_width) {
-    this._width = in_width;
+  set width (width) {
+    this._width = width;
   }
 
   get height () {
     return this._height;
   }
-  set height (in_height) {
-    this._height = in_height;
+  set height (height) {
+    this._height = height;
   }
 
   get row () {
     return this._row;
   }
-  set row (in_row) {
-    this._row = in_row;
+  set row (row) {
+    this._row = row;
   }
 
   get column () {
     return this._column;
   }
-  set column (in_column) {
-    this._column = in_column;
+  set column (column) {
+    this._column = column;
   }
 
   get gridWidth () {
     return this._gridWidth;
   }
-  set gridWidth (in_gridWidth) {
-    this._gridWidth = in_gridWidth;
+  set gridWidth (gridWidth) {
+    this._gridWidth = gridWidth;
   }
 
   get gridHeight () {
     return this._gridHeight;
   }
-  set gridHeight (in_gridHeight) {
-    this._gridHeight = in_gridHeight;
+  set gridHeight (gridHeight) {
+    this._gridHeight = gridHeight;
   }
 
   get value () {
     return this._value;
   }
-  set value (in_value) {
-    this._value = in_value;
+  set value (value) {
+    this._value = value;
   }
 
   get counter () {
     return this._counter;
   }
-  set counter (in_counter) {
-    this._counter = in_counter;
+  set counter (counter) {
+    this._counter = counter;
   }
 };

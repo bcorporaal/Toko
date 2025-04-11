@@ -33,9 +33,9 @@ function setup () {
     //
     //  basic options
     //
-    title: 'Toko demo', //  title displayed
+    title: 'Animation & recording', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
+    canvasSize: toko.SIZE_1080P_PORTRAIT, //  canvas size to use
     //
     //  additional options
     //
@@ -52,14 +52,23 @@ function setup () {
         width: 1200,
         height: 900,
         pixelDensity: 2,
+        useThisSize: true, //  use this size by default
       },
     ],
     captureFrames: true, //  add record option in tweakpane
-    captureFrameCount: 999, //  max number of frames captured (is this actually used?)
-    captureFrameRate: 15, //  basic frame rate for capture
-    // captureFormat: 'png', //  default image format for capture
-    // gifWorkerPath: '../../assets/js/gif/0.2.0/', // set the path to the worked needed for GIF capture
-    logFPS: false, //  log the fps in tweakpane (not working properly)
+
+    captureOptions: {
+      format: toko.CAPTURE_FORMATS.PNG, //  export format
+      framerate: 30, //  recording framerate
+      bitrate: 5000, // 	recording bitrate in kbps (only available for MP4)
+      quality: 0.95, //  recording quality option (only available for WebM/GIF/JPG/WebP)
+      // used by Toko but not by p5.capture
+      captureFixedNrFrames: true, //  whether the capture is for a fixed duration
+      refreshBeforeCapture: false,
+      recordButtonOnMainTab: true,
+      nrFrames: 300,
+    },
+    log: true, //  log to console
   });
 
   //
@@ -68,7 +77,7 @@ function setup () {
   //  sketch parameters
   //
   p = {
-    nrParticles: 4,
+    nrParticles: 10,
     plotMirrorParticle: false,
     trailLength: 80,
     fadeTrail: false,
@@ -175,6 +184,7 @@ function setup () {
 }
 
 function refresh () {
+  console.log('refresh');
   //
   //  set color parameters
   //
@@ -235,10 +245,6 @@ function clearTrails () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw();
-  //---------------------------------------------
-
   clear();
   noStroke();
 
@@ -325,10 +331,6 @@ function draw () {
       }
     }
   }
-
-  //---------------------------------------------
-  toko.endDraw();
-  //---------------------------------------------
 }
 
 function attractorForce (attractor, position) {

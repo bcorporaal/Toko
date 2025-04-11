@@ -24,3 +24,12 @@ Toko.prototype.colorAlpha = function (hexColor, alpha = 255) {
   c.setAlpha(alpha);
   return c;
 };
+
+//
+//  simple logging function that can be turned off
+//
+Toko.prototype.log = function (...args) {
+  if (this.options.log) {
+    console.log(...args);
+  }
+};

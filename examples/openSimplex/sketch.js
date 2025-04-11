@@ -34,7 +34,7 @@ function setup () {
     //
     //  basic options
     //
-    title: 'OpenSimplex noise demo', //  title displayed
+    title: 'OpenSimplex noise', //  title displayed
     sketchElementId: sketchElementId, //  id used to create the p5 canvas
     canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
     //
@@ -131,10 +131,6 @@ function refresh () {
 }
 
 function draw () {
-  //---------------------------------------------
-  toko.startDraw(); // do not remove
-  //---------------------------------------------
-
   clear();
   noStroke();
 
@@ -159,10 +155,6 @@ function draw () {
       rect(x, y, w, h);
     }
   }
-
-  //---------------------------------------------
-  toko.endDraw(); // do not remove
-  //---------------------------------------------
 }
 
 //---------------------------------------------
