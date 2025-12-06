@@ -1,0 +1,9 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+config.codekit3
+.DS_Store
+node_modules
+.idea
+.vscode
+.gitignore
+.prettierignore
+.prettierrc.json
