@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>q5 : Learn</title>
+	<link rel="icon" href="/q5js_logo.avif">
+	<link rel="stylesheet" type="text/css" href="docs.css" />
+</head>
+
+<body class="dark">
+	<header>
+		<div class="header-container">
+			<button id="toggleNavButton"></button>
+			<a id="homeLink" href="../home">
+				<button id="homeButton">
+					<img class="logo" src="/assets/q5js_icon-light.png" alt="">
+					<img class="brand" src="/assets/q5js_brand-light.avif">
+				</button>
+			</a>
+			<div class="input-wrapper search-bar">
+				<span class="magnify-glass"></span>
+				<input autocomplete="off" type="text" id="searchInput" class="dialog-input" placeholder="Search">
+				<div id="searchResultsContainer" class="search-results">
+					<div class="search-result prompt-message">Start typing to search the documentation</div>
+				</div>
+			</div>
+			<div class="selectors-container">
+				<div class="select-wrapper code-select">
+					<label for="codeModeSelect" class="code-label"></label>
+					<select id="codeModeSelect" class="code-mode" title="Select renderer">
+						<option value="webgpu">WebGPU</option>
+						<option value="c2d">Canvas2D</option>
+					</select>
+				</div>
+				<div class="select-wrapper lang-select">
+					<label for="langSelect" class="lang-label"></label>
+					<select id="langSelect" title="Select language">
+						<option value="en">English</option>
+						<option value="es">Español</option>
+					</select>
+				</div>
+				<div class="select-wrapper theme-select">
+					<label for="themeSelect" class="theme-label"></label>
+					<select id="themeSelect" title="Select theme">
+						<option value="light">Light</option>
+						<option value="dark">Dark</option>
+					</select>
+				</div>
+			</div>
+			<button id="settingsToggle" class="settings-toggle" aria-controls="selectorsContainer" aria-expanded="false"
+				title="Settings"></button>
+		</div>
+	</header>
+	<div class="allContent">
+		<nav id="navbar" class="navopen"></nav>
+		<main id="content" class="fade-in"></main>
+	</div>
+
+	<script src="/q5.js"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
+	<script src="mini-editor.js"></script>
+	<script src="/home/theme.js"></script>
+
+	<script src="docs.js"></script>
+</body>
+
+</html>

@@ -1,114 +1,86 @@
-p5.disableFriendlyErrors = false; // disables FES to speed things up a little bit
-
-let toko = new Toko();
+//---------------------------------------------
+//
+//  FILE DROP
+//
+//---------------------------------------------
 
 let img;
 let somethingDropped = false;
 
-function preload () {
-  //
-  // All loading calls here
-  //
-}
+let tokoWrapper = new TokoWrapper({
+  title: 'File drop',
+  addInfoToTitle: true,
+  showCanvasSizeOptions: true,
+  showSaveSketchButton: true,
+  acceptDroppedFiles: true,
+});
 
-function setup () {
-  //------------------------------------------------------
-  //
-  //  set base canvas
-  //
-  let sketchElementId = 'sketch-canvas';
-  let canvasWidth = 0; // can be 0 because it is set based on the size in the html
-  let canvasHeight = 0;
+//---------------------------------------------
+//
+//  SKETCH PARAMETERS - p
+//
+//---------------------------------------------
+let p = {
+  pointSize: 10,
+  pointSpacing: 10,
+  maxPoints: 1000,
+  threshold: { min: 0, max: 128 },
+};
 
-  //
-  //  the size is set using the Toko setup options
-  //
-  p5Canvas = createCanvas(canvasWidth, canvasHeight, P2D);
-  p5Canvas.parent(sketchElementId);
-
-  //-------------------------------------------------------
-  //
-  //  start Toko
-  //
-  toko.setup({
-    //
-    //  basic options
-    //
-    title: 'Image file drop example', //  title displayed
-    sketchElementId: sketchElementId, //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
-    //
-    //  additional options
-    //
-    showSaveSketchButton: true, //  show save image button in tweakpane
-    saveSettingsWithSketch: true, //  save json of settings together with the image
-    acceptDroppedSettings: true, //  accept dropped json files with settings
-    acceptDroppedFiles: true, //  accept dropped files
-    useParameterPanel: true, //  use the tweakpane panel for settings
-    showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
-    captureFrames: false, //  no record option
-  });
-
-  //
-  //-------------------------------------------------------
-  //
-  //  sketch parameters
-  //
-  p = {
-    pointSize: 10,
-    pointSpacing: 10,
-    maxPoints: 1000,
-    threshold: { min: 0, max: 128 },
-  };
-
-  //
-  //  basic controls
-  //
-  toko.pane.tab.addBinding(p, 'pointSize', {
+//---------------------------------------------
+//
+//  SET UP PANEL CONTROLS
+//
+//---------------------------------------------
+function setupPanelControls (panelObject) {
+  panelObject.primaryTab.addBinding(p, 'pointSize', {
     min: 1,
     max: 100,
     step: 1,
   });
 
-  toko.pane.tab.addBinding(p, 'pointSpacing', {
+  panelObject.primaryTab.addBinding(p, 'pointSpacing', {
     min: 5,
     max: 100,
     step: 1,
   });
 
-  toko.pane.tab.addBinding(p, 'threshold', {
+  panelObject.primaryTab.addBinding(p, 'threshold', {
     min: 0,
     max: 255,
     step: 1,
   });
 
-  toko.pane.tab.addBinding(p, 'maxPoints', {
+  panelObject.primaryTab.addBinding(p, 'maxPoints', {
     min: 1,
     max: 10000,
     step: 100,
   });
-
-  //
-  //  listen to tweakpane changes
-  //
-  toko.pane.events.on('change', value => {
-    refresh();
-  });
-
-  refresh();
-  noLoop();
-
-  //---------------------------------------------
-  toko.endSetup();
-  //---------------------------------------------
 }
 
-function refresh () {
-  //  redraw with updated parameters
-  //
-  redraw();
+//---------------------------------------------
+//
+//  SETUP - standard p5.js setup function
+//
+//---------------------------------------------
+function setup () {
+  let p5Canvas = createCanvas(100, 100, tokoWrapper.renderMode);
+  p5Canvas.parent(tokoWrapper.sketchElementId);
+  tokoWrapper.storeCanvas(p5Canvas);
 }
 
+//---------------------------------------------
+//
+//  REFRESH - called when a parameter changes
+//
+//---------------------------------------------
+function refresh () {}
+
+//---------------------------------------------
+//
+//  DRAW - standard p5.js draw function
+//
+//---------------------------------------------
 function draw () {
   //  nothing much to do here until an image is dropped
   if (!somethingDropped) {
@@ -129,6 +101,7 @@ function draw () {
 function plotImage () {
   somethingDropped = true;
   clear();
+  background('white');
   noStroke();
 
   imageWidth = img.width;
@@ -153,47 +126,7 @@ function plotImage () {
       circle(x, y, p.pointSize);
     }
   }
-}
-
-//---------------------------------------------
-//
-//  EVENTS
-//
-//---------------------------------------------
-
-function captureStarted () {
-  //
-  //  called when capture has started, use to reset visuals
-  //
-  console.log('Toko - captureStarted');
-}
-
-function captureStopped () {
-  //
-  //  called when capture is stopped, use to reset visuals
-  //
-  console.log('Toko - captureStopped');
-}
-
-function canvasResized () {
-  //
-  //  called when the canvas was resized
-  //
-  console.log('Toko - canvasResized');
-}
-
-function windowResized () {
-  //
-  //  resize the canvas when the framing div was resized
-  //
-  console.log('Toko - windowResized');
-
-  var newWidth = document.getElementById('sketch-canvas').offsetWidth;
-  var newHeight = document.getElementById('sketch-canvas').offsetHeight;
-
-  if (newWidth != width || newHeight != height) {
-    canvasResized();
-  }
+  noLoop();
 }
 
 function receivedFile (file) {
