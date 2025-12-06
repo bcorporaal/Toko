@@ -1,115 +1,77 @@
-p5.disableFriendlyErrors = false; // disables FES to speed things up a little bit
-
-let toko = new Toko();
+//---------------------------------------------
+//
+//  GRID
+//
+//---------------------------------------------
 
 let seedHistory = [],
   seedHistoryIndex = 0,
   colorRNG,
-  gridRNG;
+  gridRNG,
+  g;
 
-function preload () {
-  //
-  // All loading calls here
-  //
-}
+let tokoWrapper = new TokoWrapper({
+  title: 'Grid',
+  addInfoToTitle: true,
+  showCanvasSizeOptions: true,
+  showSaveSketchButton: true,
+});
 
-function setup () {
-  //------------------------------------------------------
-  //
-  //  set base canvas
-  //
-  let sketchElementId = 'sketch-canvas';
-  let canvasWidth = 0; // can be 0 because it is set based on the size in the html
-  let canvasHeight = 0;
+//---------------------------------------------
+//
+//  SKETCH PARAMETERS - p
+//
+//---------------------------------------------
+let p = {
+  gridSeed: 'ABCDEF',
+  colorSeed: 'ghijkl',
+  // grid
+  margin: 30,
+  rows: 12,
+  columns: 12,
+  nrLoops: 5,
+  splitChance: 0.5,
+  minSize: 10,
+  gridType: 'packed',
+  splitType: 'split_mix',
+  cellShapes: '[2,2],[3,1],[1,3]',
+  noEmptySpaces: true,
+  snapToPixel: true,
+  // color
+  collections: ['basic', 'd3', 'duotone', 'golid', 'system', 'orbifold'],
+  collection: 'basic',
+  palette: 'donut',
+  invertBgnd: true,
+  useScale: true,
+  stroke: true,
+  strokeWeight: 1.5,
+  strokeAlpha: 100,
+  colorShift: true,
+};
 
-  //
-  //  the size is set using the Toko setup options
-  //
-  p5Canvas = createCanvas(canvasWidth, canvasHeight, P2D);
-  p5Canvas.parent(sketchElementId);
-
-  //-------------------------------------------------------
-  //
-  //  start Toko
-  //
-  toko.setup({
-    //
-    //  basic options
-    //
-    title: 'Toko grid', //  title displayed
-    sketchElementId: sketchElementId, //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
-    //
-    //  additional options
-    //
-    showSaveSketchButton: true, //  show save image button in tweakpane
-    saveSettingsWithSketch: true, //  save json of settings together with the image
-    acceptDroppedSettings: true, //  accept dropped json files with settings
-    useParameterPanel: true, //  use the tweakpane panel for settings
-    showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
-    captureFrames: false, //  no record option
-  });
-
-  //
-  //-------------------------------------------------------
-  //
-  //  sketch parameters
-  //
-  let g = new Toko.Grid();
-
-  p = {
-    gridSeed: 'ABCDEF',
-    colorSeed: 'ghijkl',
-    // grid
-    margin: 30,
-    rows: 12,
-    columns: 12,
-    nrLoops: 5,
-    splitChance: 0.5,
-    minSize: 10,
-    gridType: 'packed',
-    splitType: g.SPLIT_MIX,
-    cellShapes: '[2,2],[3,1],[1,3]',
-    noEmptySpaces: true,
-    snapToPixel: true,
-    // color
-    collections: ['basic', 'd3', 'duotone', 'golid', 'system', 'orbifold'],
-    collection: 'basic',
-    palette: 'donut',
-    invertBgnd: true,
-    useScale: true,
-    stroke: true,
-    strokeWeight: 1.5,
-    strokeAlpha: 100,
-    colorShift: true,
-  };
-
-  colorRNG = new Toko.RNG();
-  gridRNG = new Toko.RNG();
-
-  toko.addRandomSeedControl(toko.pane.tab, p, {
+//---------------------------------------------
+//
+//  SET UP PANEL CONTROLS
+//
+//---------------------------------------------
+function setupPanelControls (panelObject) {
+  panelObject.addRandomSeedControl(panelObject.primaryTab, p, {
     seedStringKey: 'gridSeed',
     label: 'grid seed',
     rng: gridRNG,
   });
 
-  toko.pane.tab.addBlade({ view: 'separator' });
+  panelObject.primaryTab.addBlade({ view: 'separator' });
 
-  //
-  //  add controls for the grid selector
-  //
-  toko.pane.tab.addBlade({ view: 'separator' });
-  toko.pane.tab.addBinding(p, 'gridType', {
+  panelObject.primaryTab.addBlade({ view: 'separator' });
+  panelObject.primaryTab.addBinding(p, 'gridType', {
     options: {
       recursive: 'recursive',
       packed: 'packed',
     },
   });
 
-  //
-  //  add controls for the base grid rows and columns
-  //
-  f0 = toko.pane.tab.addFolder({
+  f0 = panelObject.primaryTab.addFolder({
     title: 'Base grid',
   });
   f0.addBinding(p, 'columns', {
@@ -123,10 +85,7 @@ function setup () {
     step: 1,
   });
 
-  //
-  //  add controls for the recursive grid
-  //
-  f1 = toko.pane.tab.addFolder({
+  f1 = panelObject.primaryTab.addFolder({
     title: 'Recursive grid',
   });
   f1.addBinding(p, 'nrLoops', {
@@ -154,24 +113,18 @@ function setup () {
     step: 1,
   });
 
-  //
-  //  add controls for the packed grid
-  //
-  f2 = toko.pane.tab.addFolder({
+  f2 = panelObject.primaryTab.addFolder({
     title: 'Packed grid',
   });
   f2.addBinding(p, 'cellShapes');
   f2.addBinding(p, 'noEmptySpaces');
   f2.addBinding(p, 'snapToPixel');
 
-  //
-  //  add controls to change the colors
-  //
-  f6 = toko.pane.tab.addFolder({
+  f6 = panelObject.primaryTab.addFolder({
     title: 'Colors',
     expanded: false,
   });
-  toko.addPaletteSelector(f6, p, {
+  panelObject.addPaletteSelector(f6, p, {
     index: 1,
     justPrimary: true,
     sorted: true,
@@ -183,7 +136,7 @@ function setup () {
 
   f6.addBlade({ view: 'separator' });
 
-  toko.addRandomSeedControl(f6, p, {
+  panelObject.addRandomSeedControl(f6, p, {
     seedStringKey: 'colorSeed',
     label: 'color seed',
     rng: colorRNG,
@@ -191,10 +144,7 @@ function setup () {
 
   f6.addBinding(p, 'colorShift');
 
-  //
-  //  add controls to change the colors
-  //
-  f7 = toko.pane.tab.addFolder({
+  f7 = panelObject.primaryTab.addFolder({
     title: 'Grid frame',
     expanded: false,
   });
@@ -215,22 +165,32 @@ function setup () {
     max: 100,
     step: 5,
   });
-
-  //
-  //  listen to tweakpane changes
-  //
-  toko.pane.events.on('change', value => {
-    refresh();
-  });
-
-  refresh();
-  noLoop();
-
-  //---------------------------------------------
-  toko.endSetup();
-  //---------------------------------------------
 }
 
+//---------------------------------------------
+//
+//  SETUP - standard p5.js setup function
+//
+//---------------------------------------------
+function setup () {
+  let p5Canvas = createCanvas(100, 100, tokoWrapper.renderMode);
+  p5Canvas.parent(tokoWrapper.sketchElementId);
+  tokoWrapper.storeCanvas(p5Canvas);
+
+  //
+  //  initialize the RNGs and grid
+  //  doing this here to ensure p5 functions are available
+  //
+  colorRNG = new Toko.RNG();
+  gridRNG = new Toko.RNG();
+  g = new Toko.Grid();
+}
+
+//---------------------------------------------
+//
+//  REFRESH - called when a parameter changes
+//
+//---------------------------------------------
 function refresh () {
   //
   //  toggle panels
@@ -247,12 +207,13 @@ function refresh () {
   //
   gridRNG.resetSeed();
   colorRNG.resetSeed();
-
-  //  redraw with updated parameters
-  //
-  redraw();
 }
 
+//---------------------------------------------
+//
+//  DRAW - standard p5.js draw function
+//
+//---------------------------------------------
 function draw () {
   let c, n;
   clear();
@@ -288,7 +249,7 @@ function draw () {
   //
   //  get colors
   //
-  colors = toko.getColorScale(this.p.palette, o);
+  colors = toko.getColorScale(p.palette, o);
 
   //
   //  set the background and stroke colors
@@ -315,53 +276,6 @@ function draw () {
     c = gridSet.cells[i];
     rect(c.x, c.y, c.width, c.height);
   }
-}
 
-//---------------------------------------------
-//
-//  EVENTS
-//
-//---------------------------------------------
-
-function captureStarted () {
-  //
-  //  called when capture has started, use to reset visuals
-  //
-  console.log('Toko - captureStarted');
-}
-
-function captureStopped () {
-  //
-  //  called when capture is stopped, use to reset visuals
-  //
-  console.log('Toko - captureStopped');
-}
-
-function canvasResized () {
-  //
-  //  called when the canvas was resized
-  //
-  console.log('Toko - canvasResized');
-}
-
-function windowResized () {
-  //
-  //  resize the canvas when the framing div was resized
-  //
-  console.log('Toko - windowResized');
-
-  var newWidth = document.getElementById('sketch-canvas').offsetWidth;
-  var newHeight = document.getElementById('sketch-canvas').offsetHeight;
-
-  if (newWidth != width || newHeight != height) {
-    canvasResized();
-  }
-}
-
-function receivedFile (file) {
-  //
-  //  called when a file is dropped on the sketch
-  //  tweakpane settings are automatically updated
-  //
-  console.log('Toko - receivedFile');
+  noLoop();
 }

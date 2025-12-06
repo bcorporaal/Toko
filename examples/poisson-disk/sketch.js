@@ -1,81 +1,53 @@
-p5.disableFriendlyErrors = false; // disables FES to speed things up a little bit
-
-let toko = new Toko();
+//---------------------------------------------
+//
+//  POISSON DISK
+//
+//---------------------------------------------
 
 let dotQuadtree, points;
 
-function preload () {
-  //
-  // All loading calls here
-  //
-}
+let tokoWrapper = new TokoWrapper({
+  title: 'Poisson disk',
+  addInfoToTitle: true,
+  showCanvasSizeOptions: true,
+  showSaveSketchButton: true,
+});
 
-function setup () {
-  //------------------------------------------------------
-  //
-  //  set base canvas
-  //
-  let sketchElementId = 'sketch-canvas';
-  let canvasWidth = 0;
-  let canvasHeight = 0;
+//---------------------------------------------
+//
+//  SKETCH PARAMETERS - p
+//
+//---------------------------------------------
+let pointRNG = new Toko.RNG();
+let p = {
+  pointSeed: 'POISSON',
+  radius: 0.7,
+  spacing: 10,
+  alpha: 1,
+  collections: toko.COLOR_COLLECTIONS,
+  collection: 'metbrewer',
+  palette: 'archambault',
+  inverse: true,
+  highlightRadius: 200,
+  showEdge: false,
+  showHighlight: true,
+};
 
-  //
-  //  the size is set using the Toko setup options
-  //
-  p5Canvas = createCanvas(canvasWidth, canvasHeight, P2D);
-  p5Canvas.parent(sketchElementId);
-
-  //-------------------------------------------------------
-  //
-  //  start Toko
-  //
-  toko.setup({
-    //
-    //  basic options
-    //
-    title: 'Poisson Disk sampling & Quadtree', //  title displayed
-    sketchElementId: sketchElementId, //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
-    //
-    //  additional options
-    //
-    showSaveSketchButton: true, //  show save image button in tweakpane
-    saveSettingsWithSketch: true, //  save json of settings together with the image
-    acceptDroppedSettings: true, //  accept dropped json files with settings
-    useParameterPanel: true, //  use the tweakpane panel for settings
-    showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
-    captureFrames: false, //  no record option
-  });
-
-  //
-  //-------------------------------------------------------
-  //
-  //  sketch parameters
-  //
-  p = {
-    pointSeed: 'POISSON',
-    radius: 0.7,
-    spacing: 10,
-    alpha: 1,
-    collections: toko.COLOR_COLLECTIONS,
-    collection: 'metbrewer',
-    palette: 'archambault',
-    inverse: true,
-    blendMode: BLEND,
-    sequential: false,
-    highlightRadius: 200,
-    showEdge: false,
-    showHighlight: true,
-  };
-
-  toko.addRandomSeedControl(toko.pane.tab, p, {
+//---------------------------------------------
+//
+//  SET UP PANEL CONTROLS
+//
+//---------------------------------------------
+function setupPanelControls (panelObject) {
+  panelObject.addRandomSeedControl(panelObject.primaryTab, p, {
     seedStringKey: 'pointSeed',
     label: 'point seed',
+    rng: pointRNG,
   });
 
-  toko.pane.tab.addBlade({ view: 'separator' });
+  panelObject.primaryTab.addBlade({ view: 'separator' });
 
-  toko.addPaletteSelector(toko.pane.tab, p, {
+  panelObject.addPaletteSelector(panelObject.primaryTab, p, {
     index: 4,
     justPrimary: true,
     sorted: true,
@@ -85,42 +57,38 @@ function setup () {
     paletteKey: 'palette',
   });
 
-  // add blendmode selector
-  toko.addBlendModeSelector(toko.pane.tab, p, {
-    blendModeKey: 'blendMode',
-  });
-  toko.pane.tab.addBinding(p, 'inverse', { label: 'invert bgnd' });
-  toko.pane.tab.addBinding(p, 'alpha', { min: 0, max: 1, step: 0.1 });
-  toko.pane.tab.addBinding(p, 'sequential');
+  panelObject.primaryTab.addBinding(p, 'inverse', { label: 'invert bgnd' });
+  panelObject.primaryTab.addBinding(p, 'alpha', { min: 0, max: 1, step: 0.1 });
 
-  toko.pane.tab.addBlade({ view: 'separator' });
+  panelObject.primaryTab.addBlade({ view: 'separator' });
 
-  toko.pane.tab.addBinding(p, 'radius', { min: 0.1, max: 5, step: 0.1 });
-  toko.pane.tab.addBinding(p, 'spacing', { min: 5, max: 50, step: 5 });
+  panelObject.primaryTab.addBinding(p, 'radius', { min: 0.1, max: 5, step: 0.1 });
+  panelObject.primaryTab.addBinding(p, 'spacing', { min: 5, max: 50, step: 5 });
 
-  toko.pane.tab.addBlade({ view: 'separator' });
+  panelObject.primaryTab.addBlade({ view: 'separator' });
 
-  toko.pane.tab.addBinding(p, 'showHighlight');
-  toko.pane.tab.addBinding(p, 'highlightRadius', { min: 0, max: 300, step: 5 });
-  toko.pane.tab.addBinding(p, 'showEdge');
-
-  //
-  //  listen to tweakpane changes
-  //
-  toko.pane.events.on('change', value => {
-    refresh();
-  });
-
-  refresh();
-
-  //---------------------------------------------
-  toko.endSetup();
-  //---------------------------------------------
+  panelObject.primaryTab.addBinding(p, 'showHighlight');
+  panelObject.primaryTab.addBinding(p, 'highlightRadius', { min: 0, max: 300, step: 5 });
+  panelObject.primaryTab.addBinding(p, 'showEdge');
 }
 
-function refresh () {
-  console.log('Toko - refresh');
+//---------------------------------------------
+//
+//  SETUP - standard p5.js setup function
+//
+//---------------------------------------------
+function setup () {
+  let p5Canvas = createCanvas(100, 100, tokoWrapper.renderMode);
+  p5Canvas.parent(tokoWrapper.sketchElementId);
+  tokoWrapper.storeCanvas(p5Canvas);
+}
 
+//---------------------------------------------
+//
+//  REFRESH - called when a parameter changes
+//
+//---------------------------------------------
+function refresh () {
   //
   //  create a fresh quadtree
   //
@@ -130,36 +98,33 @@ function refresh () {
   //
   points = toko.poissonDisk(width, height, p.spacing);
   //
-  //  set domain range to number of steps
+  //  get the color scale
   //
   const o = {
     domain: [0, 1],
   };
-  //
-  //  get colors
-  //
-  colors = toko.getColorScale(this.p.palette, o);
-  blendMode(p.blendMode);
+
+  colors = toko.getColorScale(p.palette, o);
   //
   //  add all points to the quadtree and give each point a color
   //
   let n = points.length;
   for (let i = 0; i < points.length; i++) {
-    let quadtreeCircle = new Toko.QuadTree.Circle(points[i].x, points[i].y, p.radius * p.spacing, { id: i });
+    let quadtreeCircle = new Toko.QuadTreeCircle(points[i].x, points[i].y, p.radius * p.spacing, { id: i });
     dotQuadtree.insert(quadtreeCircle);
-    if (p.sequential) {
-      points[i].color = toko.colorAlpha(colors.scale(i / n), 255 * p.alpha);
-    } else {
-      points[i].color = toko.colorAlpha(colors.randomOriginalColor(), 255 * p.alpha);
-    }
+    points[i].color = toko.colorAlpha(colors.randomOriginalColor(), 255 * p.alpha);
   }
   //
-  //  redraw with updated parameters
+  //  reset the random seed to get the same output again
   //
   toko.resetSeed();
-  redraw();
 }
 
+//---------------------------------------------
+//
+//  DRAW - standard p5.js draw function
+//
+//---------------------------------------------
 function draw () {
   clear();
   noStroke();
@@ -167,7 +132,7 @@ function draw () {
   let bgndColor = colors.backgroundColor(p.inverse);
   background(bgndColor);
 
-  let areaToCheck = new Toko.QuadTree.Circle(mouseX, mouseY, p.highlightRadius / 2);
+  let areaToCheck = new Toko.QuadTreeCircle(mouseX, mouseY, p.highlightRadius / 2);
   let circlesToCheck = dotQuadtree.query(areaToCheck);
 
   //
@@ -206,53 +171,4 @@ function draw () {
     strokeWeight(1);
     circle(mouseX, mouseY, p.highlightRadius);
   }
-}
-
-//---------------------------------------------
-//
-//  EVENTS
-//
-//---------------------------------------------
-
-function captureStarted () {
-  //
-  //  called when capture has started, use to reset visuals
-  //
-  console.log('Toko - captureStarted');
-}
-
-function captureStopped () {
-  //
-  //  called when capture is stopped, use to reset visuals
-  //
-  console.log('Toko - captureStopped');
-}
-
-function canvasResized () {
-  //
-  //  called when the canvas was resized
-  //
-  console.log('Toko - canvasResized');
-}
-
-function windowResized () {
-  //
-  //  resize the canvas when the framing div was resized
-  //
-  console.log('Toko - windowResized');
-
-  var newWidth = document.getElementById('sketch-canvas').offsetWidth;
-  var newHeight = document.getElementById('sketch-canvas').offsetHeight;
-
-  if (newWidth != width || newHeight != height) {
-    canvasResized();
-  }
-}
-
-function receivedFile (file) {
-  //
-  //  called when a file is dropped on the sketch
-  //  tweakpane settings are automatically updated
-  //
-  console.log('Toko - receivedFile');
 }

@@ -1,74 +1,45 @@
-p5.disableFriendlyErrors = false; // disables FES to speed things up a little bit
-
-let toko = new Toko();
+//---------------------------------------------
+//
+//  COLOR SCALE
+//
+//---------------------------------------------
 
 let font;
 
-function preload () {
-  font = loadFont('../../assets/fonts/ttf/UdonMonoWeb-Regular.ttf');
-}
+let tokoWrapper = new TokoWrapper({
+  title: 'Color scale',
+  addInfoToTitle: true,
+  showCanvasSizeOptions: true,
+  showSaveSketchButton: true,
+});
 
-function setup () {
-  //------------------------------------------------------
-  //
-  //  set base canvas
-  //
-  let sketchElementId = 'sketch-canvas';
-  let canvasWidth = 0;
-  let canvasHeight = 0;
+//---------------------------------------------
+//
+//  SKETCH PARAMETERS - p
+//
+//---------------------------------------------
+let p = {
+  steps: 2000,
+  interpolated: false,
+  collections: toko.COLOR_COLLECTIONS,
+  collection: 'basic',
+  palette: 'fullRainbow',
+  inverse: false,
+  reverse: false,
+  sort: false,
+  constrainContrast: false,
+  interval: { min: 16, max: 48 },
+  file: '',
+  easingParameters: [0.25, 0.25, 0.75, 0.75],
+};
 
-  //
-  //  the size is set using the Toko setup options
-  //
-  p5Canvas = createCanvas(canvasWidth, canvasHeight, P2D);
-  p5Canvas.parent(sketchElementId);
-
-  //-------------------------------------------------------
-  //
-  //  start Toko
-  //
-  toko.setup({
-    //
-    //  basic options
-    //
-    title: 'Color scales', //  title displayed
-    sketchElementId: sketchElementId, //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
-    //
-    //  additional options
-    //
-    showSaveSketchButton: true, //  show save image button in tweakpane
-    saveSettingsWithSketch: true, //  save json of settings together with the image
-    acceptDroppedSettings: true, //  accept dropped json files with settings
-    useParameterPanel: true, //  use the tweakpane panel for settings
-    showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
-    captureFrames: false, //  no record option
-  });
-
-  //
-  //-------------------------------------------------------
-  //
-  //  sketch parameters
-  //
-  p = {
-    steps: 2000,
-    interpolated: false,
-    collections: toko.COLOR_COLLECTIONS,
-    collection: 'basic',
-    palette: 'fullRainbow',
-    inverse: false,
-    reverse: false,
-    sort: false,
-    constrainContrast: false,
-    interval: { min: 16, max: 48 },
-    file: '',
-    easingParameters: [0.25, 0.25, 0.75, 0.75],
-  };
-
-  //
-  //  add controls to change the colors
-  //
-  toko.addPaletteSelector(toko.pane.tab, p, {
+//---------------------------------------------
+//
+//  SET UP PANEL CONTROLS
+//
+//---------------------------------------------
+function setupPanelControls (panelObject) {
+  panelObject.addPaletteSelector(panelObject.primaryTab, p, {
     index: 1,
     justPrimary: true,
     sorted: true,
@@ -78,10 +49,10 @@ function setup () {
     paletteKey: 'palette',
   });
 
-  toko.pane.tab.addBinding(p, 'inverse', { label: 'inverse bgnd' });
-  toko.pane.tab.addBinding(p, 'reverse', { label: 'reverse palette' });
+  panelObject.primaryTab.addBinding(p, 'inverse', { label: 'inverse bgnd' });
+  panelObject.primaryTab.addBinding(p, 'reverse', { label: 'reverse palette' });
 
-  toko.pane.tab
+  panelObject.primaryTab
     .addBlade({
       view: 'cubicbezier',
       value: p.easingParameters,
@@ -90,30 +61,28 @@ function setup () {
       picker: 'inline',
     })
     .on('change', ev => {
-      //
-      //  push any changes back to the parameters
-      //  currently tweakpane does not do this automatically
       p.easingParameters = ev.value.comps_;
     });
-
-  //
-  //  listen to tweakpane changes
-  //
-  toko.pane.events.on('change', value => {
-    refresh();
-  });
-
-  refresh();
-  noLoop();
-
-  //---------------------------------------------
-  toko.endSetup();
-  //---------------------------------------------
 }
 
-function refresh () {
-  console.log('Toko - refresh');
+//---------------------------------------------
+//
+//  SETUP - standard p5.js setup function
+//
+//---------------------------------------------
+async function setup () {
+  let p5Canvas = createCanvas(100, 100, tokoWrapper.renderMode);
+  p5Canvas.parent(tokoWrapper.sketchElementId);
+  tokoWrapper.storeCanvas(p5Canvas);
+  font = await loadFont('../../assets/fonts/ttf/UdonMonoWeb-Regular.ttf');
+}
 
+//---------------------------------------------
+//
+//  REFRESH - called when a parameter changes
+//
+//---------------------------------------------
+function refresh () {
   //
   //  palette variation #1
   //
@@ -126,7 +95,7 @@ function refresh () {
     nrDuotones: 12,
     gamma: 1,
   };
-  colors1 = toko.getColorScale(this.p.palette, o1);
+  colors1 = toko.getColorScale(p.palette, o1);
 
   //
   //  palette variation #2
@@ -142,14 +111,14 @@ function refresh () {
     easingParameters: p.easingParameters,
     gamma: 1,
   };
-  colors2 = toko.getColorScale(this.p.palette, o2);
-
-  //
-  //  redraw with updated parameters
-  //
-  redraw();
+  colors2 = toko.getColorScale(p.palette, o2);
 }
 
+//---------------------------------------------
+//
+//  DRAW - standard p5.js draw function
+//
+//---------------------------------------------
 function draw () {
   clear();
   noStroke();
@@ -256,53 +225,6 @@ function draw () {
     rect(x, y + rowHeight / 2, subWidth, rowHeight / 2);
     x += subMargin + subWidth;
   });
-}
 
-//---------------------------------------------
-//
-//  EVENTS
-//
-//---------------------------------------------
-
-function captureStarted () {
-  //
-  //  called when capture has started, use to reset visuals
-  //
-  console.log('Toko - captureStarted');
-}
-
-function captureStopped () {
-  //
-  //  called when capture is stopped, use to reset visuals
-  //
-  console.log('Toko - captureStopped');
-}
-
-function canvasResized () {
-  //
-  //  called when the canvas was resized
-  //
-  console.log('Toko - canvasResized');
-}
-
-function windowResized () {
-  //
-  //  resize the canvas when the framing div was resized
-  //
-  console.log('Toko - windowResized');
-
-  var newWidth = document.getElementById('sketch-canvas').offsetWidth;
-  var newHeight = document.getElementById('sketch-canvas').offsetHeight;
-
-  if (newWidth != width || newHeight != height) {
-    canvasResized();
-  }
-}
-
-function receivedFile (file) {
-  //
-  //  called when a file is dropped on the sketch
-  //  tweakpane settings are automatically updated
-  //
-  console.log('Toko - receivedFile');
+  noLoop();
 }

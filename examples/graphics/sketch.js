@@ -1,100 +1,68 @@
-p5.disableFriendlyErrors = false; // disables FES to speed things up a little bit
+//---------------------------------------------
+//
+//  GRAPHICS
+//
+//---------------------------------------------
 
-let toko = new Toko();
-// let colorVariations;
 let jiggleRNG = new Toko.RNG();
 
-function preload () {
-  //
-  // All loading calls here
-  //
-}
+let tokoWrapper = new TokoWrapper({
+  title: 'Graphics',
+  addInfoToTitle: true,
+  showCanvasSizeOptions: true,
+  showSaveSketchButton: true,
+});
 
-function setup () {
-  //------------------------------------------------------
-  //
-  //  set base canvas
-  //
-  let sketchElementId = 'sketch-canvas';
-  let canvasWidth = 0;
-  let canvasHeight = 0;
+//---------------------------------------------
+//
+//  SKETCH PARAMETERS - p
+//
+//---------------------------------------------
+let p = {
+  // rng seed
+  seed: '',
 
-  //
-  //  the size is set using the Toko setup options
-  //
-  p5Canvas = createCanvas(canvasWidth, canvasHeight, P2D);
-  p5Canvas.parent(sketchElementId);
+  // color & effects
+  collections: toko.COLOR_COLLECTIONS,
+  collection: 'jung',
+  palette: 'jung_croc',
+  glow: true,
+  interpolated: false,
+  reverseGrad: false,
+  reverseBgnd: false,
 
-  //-------------------------------------------------------
-  //
-  //  start Toko
-  //
-  toko.setup({
-    //
-    //  basic options
-    //
-    title: 'Graphical effects - noise & glow', //  title displayed
-    sketchElementId: sketchElementId, //  id used to create the p5 canvas
-    canvasSize: toko.SIZE_DEFAULT, //  canvas size to use
-    //
-    //  additional options
-    //
-    showSaveSketchButton: true, //  show save image button in tweakpane
-    saveSettingsWithSketch: true, //  save json of settings together with the image
-    acceptDroppedSettings: true, //  accept dropped json files with settings
-    useParameterPanel: true, //  use the tweakpane panel for settings
-    showAdvancedOptions: true, //  show advanced settings in tweakpane, like size
-    captureFrames: false, //  no record option
-  });
+  // geometry
+  nrSlices: 24,
+  snapStep: 0.04,
+  leftRange: { min: 0, max: 0.3 },
+  rightRange: { min: 0.7, max: 1 },
+  jiggle: 3,
 
-  //
-  //  sketch parameters
-  //
-  p = {
-    // rng seed
-    seed: '',
+  // shuffle
+  switches: 100,
+  radius: 0.3,
+};
 
-    // color & effects
-    collections: toko.COLOR_COLLECTIONS,
-    collection: 'jung',
-    palette: 'jung_croc',
-    glow: true,
-    interpolated: false,
-    reverseGrad: false,
-    reverseBgnd: false,
-
-    // geometry
-    nrSlices: 24,
-    snapStep: 0.04,
-    leftRange: { min: 0, max: 0.3 },
-    rightRange: { min: 0.7, max: 1 },
-    jiggle: 3,
-
-    // shuffle
-    switches: 100,
-    radius: 0.3,
-  };
-
-  //
-  //  controls for the RNG seed
-  //
-  const fr = toko.pane.tab.addFolder({
+//---------------------------------------------
+//
+//  SET UP PANEL CONTROLS
+//
+//---------------------------------------------
+function setupPanelControls (panelObject) {
+  const fr = panelObject.primaryTab.addFolder({
     title: 'RNG',
   });
 
-  toko.addRandomSeedControl(fr, p, {
+  panelObject.addRandomSeedControl(fr, p, {
     seedStringKey: 'seed',
     label: 'seed',
   });
 
-  //
-  //  controls for the color settings
-  //
-  const fc = toko.pane.tab.addFolder({
+  const fc = panelObject.primaryTab.addFolder({
     title: 'Color & effects',
   });
 
-  toko.addPaletteSelector(fc, p, {
+  panelObject.addPaletteSelector(fc, p, {
     index: 1,
     justPrimary: true,
     sorted: true,
@@ -111,10 +79,7 @@ function setup () {
   fc.addBlade({ view: 'separator' });
   fc.addBinding(p, 'glow');
 
-  //
-  //  controls for the slices and position
-  //
-  const fg = toko.pane.tab.addFolder({
+  const fg = panelObject.primaryTab.addFolder({
     title: 'Geometry',
   });
 
@@ -132,56 +97,44 @@ function setup () {
   fg.addBinding(p, 'snapStep', { min: 0, max: 0.2, step: 0.01 });
   fg.addBinding(p, 'jiggle', { min: 0, max: 10, step: 0.5 });
 
-  //
-  //  controls for how slices get shuffled
-  //
-  const fs = toko.pane.tab.addFolder({
+  const fs = panelObject.primaryTab.addFolder({
     title: 'Shuffle',
   });
 
   fs.addBinding(p, 'switches', { min: 0, max: 200, step: 1 });
   fs.addBinding(p, 'radius', { min: 0, max: 1, step: 0.1 });
-
-  //
-  //  listen to tweakpane changes
-  //
-  toko.pane.events.on('change', value => {
-    refresh();
-  });
-
-  refresh();
-  noLoop();
-
-  //---------------------------------------------
-  toko.endSetup();
-  //---------------------------------------------
 }
 
+//---------------------------------------------
+//
+//  SETUP - standard p5.js setup function
+//
+//---------------------------------------------
+function setup () {
+  let p5Canvas = createCanvas(100, 100, tokoWrapper.renderMode);
+  p5Canvas.parent(tokoWrapper.sketchElementId);
+  tokoWrapper.storeCanvas(p5Canvas);
+}
+
+//---------------------------------------------
+//
+//  REFRESH - called when a parameter changes
+//
+//---------------------------------------------
 function refresh () {
-  console.log('Toko - refresh');
-
-  //
-  //  reset the seed to get the same results again
-  //
   toko.resetSeed();
-
-  //
-  //  set domain range to number of steps
-  //
   const o = {
     domain: [0, p.nrSlices],
     reverse: p.reverseGrad,
   };
-  //
-  //  get colors
-  //
-  colors = toko.getColorScale(this.p.palette, o);
-  //
-  //  redraw with updated parameters
-  //
-  redraw();
+  colors = toko.getColorScale(p.palette, o);
 }
 
+//---------------------------------------------
+//
+//  DRAW - standard p5.js draw function
+//
+//---------------------------------------------
 function draw () {
   clear();
 
@@ -276,53 +229,6 @@ function draw () {
       blue: 0,
     },
   );
-}
 
-//---------------------------------------------
-//
-//  EVENTS
-//
-//---------------------------------------------
-
-function captureStarted () {
-  //
-  //  called when capture has started, use to reset visuals
-  //
-  console.log('Toko - captureStarted');
-}
-
-function captureStopped () {
-  //
-  //  called when capture is stopped, use to reset visuals
-  //
-  console.log('Toko - captureStopped');
-}
-
-function canvasResized () {
-  //
-  //  called when the canvas was resized
-  //
-  console.log('Toko - canvasResized');
-}
-
-function windowResized () {
-  //
-  //  resize the canvas when the framing div was resized
-  //
-  console.log('Toko - windowResized');
-
-  var newWidth = document.getElementById('sketch-canvas').offsetWidth;
-  var newHeight = document.getElementById('sketch-canvas').offsetHeight;
-
-  if (newWidth != width || newHeight != height) {
-    canvasResized();
-  }
-}
-
-function receivedFile (file) {
-  //
-  //  called when a file is dropped on the sketch
-  //  tweakpane settings are automatically updated
-  //
-  console.log('Toko - receivedFile');
+  noLoop();
 }

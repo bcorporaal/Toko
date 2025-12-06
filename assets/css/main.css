@@ -1,3 +1,4 @@
+/* Tweakpane overrides */
 :root {
   --tp-base-background-color: hsla(230, 7%, 17%, 1);
   --tp-base-shadow-color: hsla(0, 0%, 0%, 0.2);
@@ -45,6 +46,26 @@
 	src: url('../fonts/woff2/UdonMonoWeb-Regular.woff2') format('woff2'), url('../fonts/ttf/UdonMonoWeb-Regular.ttf') format('truetype');
 }
 
+@font-face {
+	font-family: 'Udon mono Web';
+	font-display: swap;
+	font-weight: 700;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('../fonts/woff2/UdonMonoWeb-Bold.woff2') format('woff2'), url('../fonts/ttf/UdonMonoWeb-Bold.ttf') format('truetype');
+}
+
+:root {
+  /* Font sizes - made with https://www.fluid-type-scale.com/ */
+  --fs-sm: clamp(0.6rem, 0.15vi + 0.54rem, 0.66rem);
+  --fs-base: clamp(0.75rem, 0.33vi + 0.63rem, 0.88rem);
+  --fs-md: clamp(0.94rem, 0.61vi + 0.71rem, 1.17rem);
+  --fs-lg: clamp(1.17rem, 1.02vi + 0.79rem, 1.55rem);
+  --fs-xl: clamp(1.46rem, 1.62vi + 0.86rem, 2.07rem);
+  --fs-xxl: clamp(1.83rem, 2.48vi + 0.9rem, 2.76rem);
+  --fs-xxxl: clamp(2.29rem, 3.72vi + 0.9rem, 3.68rem);
+}
+
 body {
   background-color: #f8f9fa;
   font-family: "Udon mono Web";
@@ -55,6 +76,10 @@ body {
 html, body {
   margin: 0;
   padding: 0;
+}
+
+main {
+  display: none;
 }
 
 .sketch-wrapper {
@@ -100,9 +125,10 @@ html, body {
 .labels a,.labels{
   color: #343a40;
   text-decoration: none;
-  font-size: calc(0.5vw + 0.55rem);
+  font-size: var(--fs-base);
   font-weight: 400;
 }
+
 
 .labels a:hover {
   border-bottom: 1px solid #343a40;
@@ -113,6 +139,21 @@ html, body {
   float: left;
   top: 1.2em;
   left: 1.2em;
+}
+
+.label--fps {
+  position: absolute;
+  float: left;
+  top: 1.2em;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--fs-base);
+  font-weight: 400;
+  color: #f8f9fa;
+  background-color: #343a40;
+  padding: 0.2em 0.3em;
+  margin: -0.2em -0.3em;
+  border-radius: 0.2em;
 }
 
 .label--title {
@@ -151,29 +192,47 @@ html, body {
 .sketchlist a {
   text-decoration: none;
   color: #343a40;
+  border-bottom: 1px solid #dedede;
 }
 .sketchlist a:hover {
   border-bottom: 1px solid #343a40;
 }
+
 .sketchlist h1 {
-  font-size: calc(0.5vw + 0.55rem);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  padding-bottom: 0.75em;
+}
+
+.sketchlist h2 {
+  font-size: var(--fs-base);
   font-weight: 400;
+  text-transform: uppercase;
+  margin-top: 1.5em;
 }
 .sketchlist hr {
   border: 0;
   border-bottom: 1px solid #343a40;
+  margin-bottom: 1.5em;
 }
 .sketchlist ul {
-  column-count: 3;
+  column-count: 4;
   column-gap: 4em;
   list-style-type: none;
   margin: 0;
-  padding: 0.5em 0 0.5em 0;
+  padding: 0 0 1em 0;
 }
 .sketchlist li {
-  font-size: calc(0.5vw + 0.55rem);
-  line-height: 1.7em;
+  font-size: var(--fs-base);
+  line-height: 1.5em;
+}
+.sketchlist ul > li:first-child {
+  text-transform: uppercase;
+}
+.sketchlist hr:last-of-type + ul > li:first-child {
+  text-transform: none;
 }
 .sketchlist p {
-  font-size: calc(0.5vw + 0.55rem);
+  font-size: var(--fs-base);
 }
