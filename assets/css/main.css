@@ -211,11 +211,17 @@ main {
   text-transform: uppercase;
   margin-top: 1.5em;
 }
+
 .sketchlist hr {
   border: 0;
   border-bottom: 1px solid #343a40;
   margin-bottom: 1.5em;
 }
+
+.sketchlist p {
+  margin-bottom: 3em;
+}
+
 .sketchlist ul {
   column-count: 4;
   column-gap: 4em;
