@@ -235,7 +235,7 @@ src/
 │   ├── lifecycle/      # Lifecycle event handlers
 │   ├── adapters/       # Variant-specific implementations
 │   ├── toko-library.js
-│   └── toko-library-min.js # Used to compile minified version
+│   └── toko-library-min.js # Used to compile a minified version with Codekit
 └── toko-wrapper/       # Integration layer and UI
     ├── adapters/       # Wrapper-specific adapters
     ├── canvas/         # Canvas management and sizing
@@ -246,7 +246,7 @@ src/
     ├── ui/             # Tweakpane and UI controls
     ├── util/           # Wrapper utility functions
     ├── toko-wrapper.js
-    └── toko-wrapper-min.js # Used to compile minified version
+    └── toko-wrapper-min.js # Used to compile a minified version with Codekit
 ```
 
 ## Contributing
