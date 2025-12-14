@@ -155,6 +155,20 @@ const nearby = quadTree.query(range);
 
 See the [`examples/`](examples/) folder for usage examples.
 
+### Viewing Examples Online
+
+The examples are available online via GitHub Pages. To enable GitHub Pages for this repository:
+
+1. Go to your repository Settings → Pages
+2. Under "Source", select "Deploy from a branch"
+3. Choose your default branch (usually `main`)
+4. Select `/ (root)` as the folder
+5. Click Save
+
+The site will be available at `https://[username].github.io/toko/` or `https://[org].github.io/toko/`.
+
+The repository includes a `.nojekyll` file to ensure GitHub Pages serves the files directly without Jekyll processing.
+
 ## Code Organization
 
 ```
