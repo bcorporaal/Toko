@@ -117,7 +117,7 @@ Provides utility functions independent of any other libraries or html setup.
 
 Integrates libraries like Tweakpane and p5.capture, into a html template to add functions like video and image capture, parameter panel and easy resizing.
 
-Because I like to keep things simple and avoid commandline tools, I'm using [CodeKit](https://codekitapp.com/) to compile the files. This means that the importing of classes follows a specific that works well with CodeKit but might not be what you're used to or is best practice. Ah well…
+Because I like to keep things simple and avoid commandline tools, I'm using [CodeKit](https://codekitapp.com/) to compile the files. This means that the importing of classes follows a specific structure that works well with CodeKit but might not be what you're used to or is best practice. Ah well…
 
 ## Key Classes & Functions
 
