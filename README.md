@@ -49,18 +49,24 @@ For additional functionality and convenience, use Toko-wrapper as well. See the 
 
 ```javascript
 // Toko automatically initializes and detects your p5.js variant
-// Access functions and classes through the global toko instance
+// Access functions and classes through the global toko instance or Toko class
+// Both toko (lowercase) and Toko (capital) work for accessing classes
 
 function setup() {
   createCanvas(800, 600);
 
   // Create a grid with recursive splitting
-  const grid = new toko.Grid(0, 0, width, height);
-  grid.splitRecursive(3, 0.5, 20, grid.SPLIT_LONGEST);
+  // Note: Split constants are accessed via Toko.Grid (e.g., Toko.Grid.SPLIT_LONGEST)
+  const grid = new Toko.Grid(0, 0, width, height);
+  grid.splitRecursive(3, 0.5, 20, Toko.Grid.SPLIT_LONGEST);
 
-  // Use seeded random number generation
+  // Use seeded random number generation (global RNG)
   toko.setSeed('mySeed123');
   const randomValue = toko.random(0, 100);
+
+  // Or create individual RNG instances for independent random sequences
+  const myRNG = new Toko.RNG('mySeed123');
+  const anotherValue = myRNG.random(0, 100);
 
   // Generate noise
   const noiseValue = toko.openSimplexNoise('seed').noise2D(10.5, 20.3);
@@ -84,11 +90,13 @@ function draw() {
 <script src='path/to/p5.tokoWrapper.js'></script>;
 
 // Initialize with options
+// Note: TokoWrapper.RENDER_MODES provides render mode constants (P2D, WEBGL, SVG, WEBGPU)
 const tokoWrapper = new TokoWrapper({
   title: 'My Generative Project',
   useParameterPanel: true,
   showCaptureOptions: true,
   canvasSize: TokoWrapper.SIZE_1080P,
+  renderMode: TokoWrapper.RENDER_MODES.P2D, // or WEBGL, SVG, WEBGPU
 });
 
 function setup() {
@@ -118,42 +126,91 @@ See the [functions reference](functions.md) for more.
 ### Grid System
 
 ```javascript
-const grid = new toko.Grid(x, y, width, height);
-grid.splitRecursive(loops, chance, minSize, strategy);
+// Create a grid (both toko.Grid and Toko.Grid work)
+const grid = new Toko.Grid(x, y, width, height);
+
+// Split constants are accessed via Toko.Grid:
+// - Toko.Grid.SPLIT_HORIZONTAL
+// - Toko.Grid.SPLIT_VERTICAL
+// - Toko.Grid.SPLIT_LONGEST
+// - Toko.Grid.SPLIT_MIX
+// - Toko.Grid.SPLIT_SQUARE
+grid.splitRecursive(loops, chance, minSize, Toko.Grid.SPLIT_LONGEST);
 grid.packGrid(columns, rows, cellShapes);
 ```
 
 ### Random Number Generation
 
 ```javascript
+// Global RNG functions (use the shared RNG instance)
 toko.setSeed('mySeed');
 toko.random(min, max);
 toko.poissonDisk(width, height, radius);
 toko.shuffle(array);
-```
 
-Individual Random Number Generators can be created on the fly.
+// Individual RNG instances (for independent random sequences)
+const myRNG = new Toko.RNG('mySeed');
+const value = myRNG.random(0, 100);
+const anotherRNG = new Toko.RNG('differentSeed');
+```
 
 ### Noise Functions
 
 ```javascript
-const noise = toko.openSimplexNoise('seed');
-noise.noise2D(x, y);
-noise.noise3D(x, y, z);
-noise.noise4D(x, y, z, w);
+const noiseSource = toko.openSimplexNoise('seed');
+noiseSource.noise2D(x, y);
+noiseSource.noise3D(x, y, z);
+noiseSource.noise4D(x, y, z, w);
 ```
 
 ### Spatial Queries
 
 ```javascript
-const quadTree = new toko.QuadTree(boundary, capacity);
+const quadTree = new Toko.QuadTree(boundary, capacity);
 quadTree.insert(point);
 const nearby = quadTree.query(range);
 ```
 
+### Color Functions
+
+```javascript
+// Get a color scale from a palette
+const colors = toko.getColorScale('viridis', {
+  domain: [0, 1],
+  reverse: false,
+});
+const color = colors.scale(0.5); // Get color at position 0.5
+
+// Create colors with alpha transparency
+const transparentRed = toko.colorAlpha('#ff0000', 128);
+```
+
+### Graphics Functions
+
+```javascript
+// Transformations
+toko.rotateAround(centerX, centerY, angle);
+toko.scaleAround(centerX, centerY, scale);
+
+// Polygon drawing
+toko.plotPolygon(x, y, size, sides, rotation);
+const vertices = toko.polygonVertices(x, y, size, sides);
+toko.plotVertices(vertices);
+```
+
+### Utility Functions
+
+```javascript
+// Animation utilities
+const pulseValue = toko.pulse(0.05); // Pulsing value between 0 and 1
+
+// Information
+const info = toko.getInfo(); // Get library information
+```
+
 ## Examples
 
-See the [`examples/`](examples/) folder for usage examples.
+See the [online examples](https://bcorporaal.github.io/Toko/) or the [`examples/`](examples/) folder for more on the features of Toko.
 
 ## Code Organization
 
@@ -194,7 +251,7 @@ src/
 
 ## Contributing
 
-While I mostly made this for myself, I certainly welcome contributions! Here's how you can help:
+While I mostly made this for myself, I certainly welcome feedback and contributions! Here's how you can help:
 
 ### Ways to Contribute
 
