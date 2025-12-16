@@ -1328,7 +1328,7 @@
       label: o.label,
     });
     seedStringForm.on('change', e => {
-      o.rng.pushSeed(e.value);
+      o.rng.seed = e.value;
     });
 
     const op = {
