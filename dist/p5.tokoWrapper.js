@@ -8,7 +8,7 @@
    * @readonly
    * @enum {string}
    */
-  const VERSION = '1.0.0';
+  const VERSION = '1.0.1';
 
   /**
    * Library variant constants
@@ -1328,7 +1328,7 @@
       label: o.label,
     });
     seedStringForm.on('change', e => {
-      o.rng.pushSeed(e.value);
+      o.rng.seed = e.value;
     });
 
     const op = {
