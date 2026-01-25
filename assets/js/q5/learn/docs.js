@@ -4,11 +4,12 @@
  * AI was used to generate parts of this script.
  */
 
-// reduce WebGPU memory usage since each learn pages
-// creates many Q5 instances
+// reduce WebGPU memory usage per Q5 instance
+// since these pages use a lot of them
 Q5.MAX_TRANSFORMS = 1000;
 Q5.MAX_RECTS = 10000;
 Q5.MAX_ELLIPSES = 1000;
+
 // Q5.online = false;
 
 toggleNavButton.addEventListener('pointerup', () => {
@@ -46,15 +47,15 @@ function convertTSDefToMarkdown(data) {
 	const allLines = data.split('\n');
 	const firstSectionIdx = allLines.findIndex((l) => l.trim().startsWith('// '));
 	const lines = allLines.slice(firstSectionIdx >= 0 ? firstSectionIdx : 0);
-	(insideJSDoc = false),
-		(insideParams = false),
-		(insideProps = false),
-		(insideExample = false),
-		(hasExample = false),
-		(jsDocBuffer = ''),
-		(inClassDef = false),
-		(currentClassName = ''),
-		(curEmoji = '');
+	let insideJSDoc = false,
+		insideParams = false,
+		insideProps = false,
+		insideExample = false,
+		hasExample = false,
+		jsDocBuffer = '',
+		inClassDef = false,
+		currentClassName = '',
+		curEmoji = '';
 
 	// track when we are skipping over a namespace/interface block
 	let skippingBlock = false;
@@ -142,7 +143,7 @@ function convertTSDefToMarkdown(data) {
 			// classes are represented in .d.ts as properties (e.g. `static Image: { ... }`)
 			// which are handled elsewhere. So always treat 'class' as a top-level
 			// class beginning and update currentClassName.
-			let classMatch = line.match(/class\s+(\w+)/);
+			let classMatch = line.match(/class\s+([a-zA-Z0-9_\u00C0-\u00FF]+)/);
 			currentClassName = classMatch ? classMatch[1] : '';
 			inClassDef = true;
 		} else if (inClassDef && line.startsWith('constructor')) {
@@ -158,7 +159,7 @@ function convertTSDefToMarkdown(data) {
 			continue;
 		} else if (line.includes('(')) {
 			// capture a function/method name, its params, and any return/type (allow complex types)
-			let funcMatch = line.match(/(\w+)\s*\(([^)]*)\)\s*:\s*([^;]+)/);
+			let funcMatch = line.match(/([a-zA-Z0-9_\u00C0-\u00FF]+)\s*\(([^)]*)\)\s*:\s*([^;]+)/);
 			if (funcMatch) {
 				let [_, funcName, funcParams, funcType] = funcMatch;
 				if (!line.startsWith('function ')) {
@@ -173,8 +174,10 @@ function convertTSDefToMarkdown(data) {
 				hasExample = false;
 			}
 		} else if (
-			/^\s*static\s+\w+\s*:\s*\{/.test(line) ||
-			(/^\s*static\s+\w+\s*:\s*$/.test(line) && i + 1 < lines.length && lines[i + 1].trim().startsWith('{'))
+			/^\s*static\s+[a-zA-Z0-9_\u00C0-\u00FF]+\s*:\s*\{/.test(line) ||
+			(/^\s*static\s+[a-zA-Z0-9_\u00C0-\u00FF]+\s*:\s*$/.test(line) &&
+				i + 1 < lines.length &&
+				lines[i + 1].trim().startsWith('{'))
 		) {
 			// Skip nested static type blocks inside classes e.g. `static Image: { ... }`.
 			// If the brace is on the next line, we detect it and begin skipping.
@@ -343,7 +346,9 @@ async function loadDtsAndRender(useWebGPU) {
 	const prevSection = currentSectionId;
 	// Build file name according to renderer + language. English (en) is default and has no suffix.
 	const baseName = useWebGPU ? 'q5' : 'q5-c2d';
-	const langSuffix = lang && lang !== 'en' ? `_${lang}` : '';
+	const langSuffix = lang && lang !== 'en' ? `-${lang}` : '';
+
+	Q5.lang = lang;
 
 	// TODO: enable when WebGPU becomes the default
 	// const dir = lang == 'en' && useWebGPU ? '/' : `/defs/`;
@@ -352,7 +357,7 @@ async function loadDtsAndRender(useWebGPU) {
 	const dtsFile = `${dir}${baseName}${langSuffix}.d.ts`;
 	// load the d.ts file for the requested renderer + language
 	const data = await fetch(dtsFile).then((res) => res.text());
-	markdownText = convertTSDefToMarkdown(data);
+	let markdownText = convertTSDefToMarkdown(data);
 	// Clean JSDoc example blocks (remove leading '*' and common indent)
 	markdownText = cleanJSDocExamples(markdownText);
 	sections = parseMarkdownIntoSections(markdownText);
@@ -789,7 +794,7 @@ function updateNavigationActiveState() {
 }
 
 async function displayContent() {
-	const hash = location.hash.slice(1).split('?')[0]; // Remove query params from hash
+	const hash = decodeURIComponent(location.hash.slice(1).split('?')[0]); // Remove query params from hash
 	if (!hash) {
 		// Find the first section ID (e.g., "coreSection")
 		const firstSectionId = Object.keys(sections)[0];

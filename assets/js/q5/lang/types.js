@@ -76,6 +76,8 @@ function parseMarkdownFile(filePath) {
 					name: memberName,
 					fullName: fullName,
 					description: '',
+					webgpuDescription: '',
+					c2dDescription: '',
 					params: [],
 					webgpuExamples: [],
 					c2dExamples: [],
@@ -88,6 +90,8 @@ function parseMarkdownFile(filePath) {
 					name: fullName,
 					fullName: fullName,
 					description: '',
+					webgpuDescription: '',
+					c2dDescription: '',
 					params: [],
 					webgpuExamples: [],
 					c2dExamples: [],
@@ -96,6 +100,7 @@ function parseMarkdownFile(filePath) {
 				};
 			}
 
+			currentExampleType = null;
 			i++;
 
 			// Collect description
@@ -171,6 +176,14 @@ function parseMarkdownFile(filePath) {
 			continue;
 		}
 
+		if (currentEntry && currentExampleType) {
+			if (currentExampleType === 'webgpu') {
+				currentEntry.webgpuDescription += line + '\n';
+			} else if (currentExampleType === 'c2d') {
+				currentEntry.c2dDescription += line + '\n';
+			}
+		}
+
 		i++;
 	}
 
@@ -203,6 +216,8 @@ function parseMarkdownFile(filePath) {
 				name: className,
 				fullName: className,
 				description: constructor ? constructor.description : '',
+				webgpuDescription: constructor ? constructor.webgpuDescription : '',
+				c2dDescription: constructor ? constructor.c2dDescription : '',
 				params: constructor ? constructor.params : [],
 				webgpuExamples: [],
 				c2dExamples: [],
@@ -240,7 +255,7 @@ function extractEmojiMappings(baseDtsPath) {
 	const mappings = {};
 
 	for (const line of lines) {
-		const match = line.match(/^\s*\/\/\s+([^\w\s]+)\s+([a-z]+)\s*$/);
+		const match = line.match(/^\s*\/\/\s+([^\w\s]+)\s+([\w\u00A0-\uFFFFu00A0-\uFFFF]+)\s*$/);
 		if (match) {
 			const emoji = match[1].replace(/\uFE0F/g, '');
 			const section = match[2];
@@ -264,9 +279,9 @@ function extractBaseSignatures(baseDtsPath) {
 		const line = lines[i];
 
 		// Look for function declarations
-		const funcMatch = line.match(/^\s*function\s+(\w+)\s*\([^)]*\)/);
-		const varMatch = line.match(/^\s*(?:var|let|const)\s+(\w+)\s*:/);
-		const classMatch = line.match(/^\s*class\s+(\w+)/);
+		const funcMatch = line.match(/^\s*function\s+([\w\u00A0-\uFFFF]+)\s*\([^)]*\)/);
+		const varMatch = line.match(/^\s*(?:var|let|const)\s+([\w\u00A0-\uFFFF]+)\s*:/);
+		const classMatch = line.match(/^\s*class\s+([\w\u00A0-\uFFFF]+)/);
 
 		if (funcMatch || varMatch || classMatch) {
 			const name = (funcMatch || varMatch || classMatch)[1];
@@ -289,6 +304,23 @@ function generateJSDoc(func, emoji, includeExamples = true, exampleType = 'c2d',
 
 	if (func.description) {
 		const descLines = func.description.split('\n');
+		descLines.forEach((line) => {
+			lines.push(`${indent} * ${line}`);
+		});
+	}
+
+	let specificDesc = '';
+	if (exampleType === 'webgpu' && func.webgpuDescription) {
+		specificDesc = func.webgpuDescription.trim();
+	} else if (exampleType === 'c2d' && func.c2dDescription) {
+		specificDesc = func.c2dDescription.trim();
+	}
+
+	if (specificDesc) {
+		if (func.description) {
+			lines.push(`${indent} *`);
+		}
+		const descLines = specificDesc.split('\n');
 		descLines.forEach((line) => {
 			lines.push(`${indent} * ${line}`);
 		});
@@ -440,7 +472,7 @@ function buildDtsFile(sections, baseDtsPath, outputPath, includeExamples = true,
 			d._section = null;
 			for (const [sec, lines] of Object.entries(baseSectionBlocks)) {
 				const txt = lines.join('\n');
-				if (txt.indexOf(d.name) !== -1) {
+				if (txt.indexOf(d.text) !== -1) {
 					d._section = sec;
 					break;
 				}
@@ -457,8 +489,10 @@ function buildDtsFile(sections, baseDtsPath, outputPath, includeExamples = true,
 		const section = sections[sectionName];
 		const emoji = emojiMappings[sectionName];
 
+		const displaySectionName = section.sectionName || sectionName;
+
 		push('');
-		output.push(`\t// ${emoji} ${sectionName}`);
+		output.push(`\t// ${emoji} ${displaySectionName}`);
 
 		// Add section description if available (as block comment)
 		if (section.sectionDescription) {
@@ -532,7 +566,7 @@ function buildDtsFile(sections, baseDtsPath, outputPath, includeExamples = true,
 							chunk = [];
 							return;
 						}
-						let m = sigLine.trim().match(/^(?:static\s+)?(\w+)\b/);
+						let m = sigLine.trim().match(/^(?:static\s+)?([\w\u00A0-\uFFFF]+)\b/);
 						if (!m) {
 							chunk = [];
 							return;
@@ -708,27 +742,7 @@ function buildDtsFile(sections, baseDtsPath, outputPath, includeExamples = true,
 	console.log(`✅ Generated ${path.basename(outputPath)}`);
 }
 
-/**
- * Main function
- */
-function main() {
-	// support a language code argument (two-letter), default to 'en'
-	// usage: node types.js [lang] or node types.js --lang=fr
-	const argv = process.argv.slice(2);
-	let lang = 'en';
-	for (const a of argv) {
-		if (a === '-h' || a === '--help') {
-			console.log('Usage: types.js [lang]  OR  types.js --lang=<two-letter-code>\nDefault: en');
-			process.exit(0);
-		}
-		if (a.startsWith('--lang=')) {
-			lang = a.split('=')[1] || lang;
-		} else if (!a.startsWith('-')) {
-			// positional arg: language code
-			lang = a;
-		}
-	}
-
+function buildLang(lang) {
 	// sanitize to two-letter lowercase code
 	lang = (lang || 'en').toLowerCase().slice(0, 2);
 
@@ -736,6 +750,11 @@ function main() {
 	const defsDir = path.join(__dirname, '..', 'defs');
 	const learnDir = path.join(__dirname, '..', 'lang', lang, 'learn');
 	const baseDtsPath = path.join(learnDir, `${lang}.d.ts`);
+
+	if (!fs.existsSync(learnDir)) {
+		console.error(`❌ Language directory not found: ${learnDir}`);
+		return;
+	}
 
 	// Find all markdown files and parse them once
 	const files = fs.readdirSync(learnDir);
@@ -745,17 +764,18 @@ function main() {
 	const sections = {};
 	for (const mdFile of markdownFiles) {
 		const parsed = parseMarkdownFile(mdFile);
-		if (parsed.sectionName) sections[parsed.sectionName] = parsed;
+		const key = path.basename(mdFile, '.md');
+		sections[key] = parsed;
 	}
 
 	if (!fs.existsSync(baseDtsPath)) {
-		console.error('❌ Base file en.d.ts not found!');
-		process.exit(1);
+		console.error(`❌ Base file ${lang}.d.ts not found!`);
+		return;
 	}
 
 	console.log(`📘 Building type definitions for language: ${lang}`);
 
-	let langSuffix = lang == 'en' ? '' : `_${lang}`;
+	let langSuffix = lang == 'en' ? '' : `-${lang}`;
 
 	// Build q5.d.ts with WebGPU examples
 	// let dir = lang == 'en' ? rootDir : defsDir;
@@ -763,7 +783,7 @@ function main() {
 	let file = path.join(dir, `q5${langSuffix}.d.ts`);
 	buildDtsFile(sections, baseDtsPath, file, true, 'webgpu');
 
-	// Build q5_c2d.d.ts with C2D examples
+	// Build q5-c2d.d.ts with C2D examples
 	file = path.join(defsDir, `q5-c2d${langSuffix}.d.ts`);
 	buildDtsFile(sections, baseDtsPath, file, true, 'c2d');
 
@@ -771,6 +791,33 @@ function main() {
 	if (lang === 'en') {
 		const destFile = path.join(rootDir, `q5.d.ts`);
 		fs.copyFileSync(file, destFile);
+	}
+}
+
+/**
+ * Main function
+ */
+function main() {
+	// support a language code argument (two-letter), default to 'en' & 'es'
+	// usage: node types.js [lang] or node types.js --lang=fr
+	const argv = process.argv.slice(2);
+	let langs = ['en', 'es'];
+
+	for (const a of argv) {
+		if (a === '-h' || a === '--help') {
+			console.log('Usage: types.js [lang]  OR  types.js --lang=<two-letter-code>\nDefault: en, es');
+			process.exit(0);
+		}
+		if (a.startsWith('--lang=')) {
+			langs = [a.split('=')[1]];
+		} else if (!a.startsWith('-')) {
+			// positional arg: language code
+			langs = [a];
+		}
+	}
+
+	for (const lang of langs) {
+		buildLang(lang);
 	}
 }
 

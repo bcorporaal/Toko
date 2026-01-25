@@ -21,14 +21,14 @@ declare global {
 	 * @param {number} [w] width or side lengths of the canvas
 	 * @param {number} [h] height of the canvas
 	 * @param {object} [opt] [options](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getContextAttributes)
-	 * @returns {HTMLCanvasElement} created canvas element
+	 * @returns {Promise<HTMLCanvasElement>} created canvas element
 	 * @example
 	 * // Canvas2D
 	 * createCanvas(200, 100);
 	 * background('silver');
 	 * circle(0, 0, 80);
 	 */
-	function createCanvas(w?: number, h?: number, options?: CanvasRenderingContext2DSettings): HTMLCanvasElement;
+	function Canvas(w?: number, h?: number, options?: CanvasRenderingContext2DSettings): Promise<HTMLCanvasElement>;
 
 	/** ⭐
 	 * The q5 draw function is run 60 times per second by default.
@@ -259,7 +259,9 @@ declare global {
 	// 🌆 image
 
 	/** 🌆
-	 * Loads an image from a URL and optionally runs a callback function.
+	 * Loads an image from a URL.
+	 * 
+	 * By default, assets are loaded in parallel before q5 runs `draw`. Use `await` to wait for an image to load.
 	 * @param {string} url url of the image to load
 	 * @returns {Q5.Image & PromiseLike<Q5.Image>} image
 	 * @example
@@ -488,6 +490,8 @@ declare global {
 	 * 
 	 * If you make changes to the canvas or image, you must call `loadPixels`
 	 * before using this function to get current color data.
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @param {number} x
 	 * @param {number} y
 	 * @param {number} [w] width of the area, default is 1
@@ -516,12 +520,14 @@ declare global {
 	function get(x: number, y: number, w?: number, h?: number): Q5.Image | number[];
 
 	/** 🌆
-	 * Sets a pixel's color in the image or canvas.
+	 * Sets a pixel's color in the image or canvas. Color mode must be RGB.
 	 * 
 	 * Or if a canvas or image is provided, it's drawn on top of the
 	 * destination image or canvas, ignoring its tint setting.
 	 * 
 	 * Run `updatePixels` to apply the changes.
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @param {number} x
 	 * @param {number} y
 	 * @param {any} val color, canvas, or image
@@ -539,14 +545,14 @@ declare global {
 	/** 🌆
 	 * Array of pixel color data from a canvas or image.
 	 * 
+	 * Empty by default, get the data by running `loadPixels`.
+	 * 
 	 * Each pixel is represented by four consecutive values in the array,
 	 * corresponding to its red, green, blue, and alpha channels.
 	 * 
 	 * The top left pixel's data is at the beginning of the array
 	 * and the bottom right pixel's data is at the end, going from
 	 * left to right and top to bottom.
-	 * 
-	 * Use `loadPixels` to load current pixel data from a canvas or image.
 	 */
 	var pixels: number[];
 
@@ -554,7 +560,9 @@ declare global {
 	 * Loads pixel data into `pixels` from the canvas or image.
 	 * 
 	 * The example below sets some pixels' green channel
-	 * to a random 0-255 value.
+	 * to a random value.
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @example
 	 * frameRate(5);
 	 * let icon = loadImage('/q5js_icon.png');
@@ -572,6 +580,8 @@ declare global {
 
 	/** 🌆
 	 * Applies changes in the `pixels` array to the canvas or image.
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @example
 	 * createCanvas(200);
 	 * 
@@ -591,6 +601,8 @@ declare global {
 	 * 
 	 * A CSS filter string can also be used.
 	 * https://developer.mozilla.org/docs/Web/CSS/filter
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @param {string} type filter type or a CSS filter string
 	 * @param {number} [value] optional value, depends on filter type
 	 * @example
@@ -665,17 +677,12 @@ declare global {
 	 */
 	function createGraphics(w: number, h: number, opt?: any): Q5;
 
-	namespace Q5 {
-		interface Image {
-			width: number;
-			height: number;
-		}
-	}
-
 	// 📘 text
 
 	/** 📘
-	 * Renders text to the screen. Text can be positioned with the x and y
+	 * Renders text on the canvas.
+	 * 
+	 * Text can be positioned with the x and y
 	 * parameters and can optionally be constrained.
 	 * @param {string} str string of text to display
 	 * @param {number} x x-coordinate of the text's position
@@ -715,10 +722,7 @@ declare global {
 	 * 
 	 * If no fonts are loaded, the default sans-serif font is used.
 	 * 
-	 * In q5 WebGPU, only fonts in [MSDF format](https://github.com/q5js/q5.js/wiki/q5-WebGPU-renderer#text-rendering)
-	 * with the file ending "-msdf.json" can be used to render text with
-	 * the `text` function. Fonts in other formats can be used with the
-	 * [`textImage`](https://q5js.org/learn/#textImage) function.
+	 * By default, assets are loaded in parallel before q5 runs `draw`. Use `await` to wait for a font to load.
 	 * @param {string} url URL of the font to load
 	 * @returns {FontFace & PromiseLike<FontFace>} font
 	 * @example
@@ -800,6 +804,8 @@ declare global {
 
 	/** 📘
 	 * Sets the current text style.
+	 * 
+	 * Not applicable to WebGPU when using MSDF fonts.
 	 * @param {'normal' | 'italic' | 'bold' | 'bolditalic'} style font style
 	 * @example
 	 * createCanvas(200);
@@ -1019,6 +1025,10 @@ declare global {
 	// 🖲 input
 
 	/**
+	 * q5's input handling is very basic.
+	 * 
+	 * For better input handling, including game controller support, consider using the [p5play](https://p5play.org/) addon with q5.
+	 * 
 	 * Note that input responses inside `draw` can be delayed by
 	 * up to one frame cycle: from the exact moment an input event occurs
 	 * to the next time a frame is drawn.
@@ -1372,14 +1382,14 @@ declare global {
 	 * Creates a new `Color` object, which is primarily useful for storing
 	 * a color that your sketch will reuse or modify later.
 	 * 
-	 * With the default RGB color mode, colors have `r`/`red`, `g`/`green`, `b`/`blue`, and `a`/`alpha` components. The default color
-	 * format is integer, so set components to values between 0 and 255.
+	 * With the default color mode, RGB, colors have `r`/`red`, `g`/`green`,
+	 * `b`/`blue`, and `a`/`alpha` components.
 	 * 
-	 * In q5 WebGPU, the default color mode is RGB in float format, so
-	 * set color components to values between 0 and 1.
-	 * 
-	 * The [`fill`](https://q5js.org/learn/#fill), [`stroke`](https://q5js.org/learn/#stroke), and [`background`](https://q5js.org/learn/#background) functions
-	 * accept the same wide range of color representations as this function.
+	 * The [`fill`](https://q5js.org/learn/#fill), [`stroke`](https://q5js.org/learn/#stroke), and [`background`](https://q5js.org/learn/#background)
+	 * functions accept the same wide range of color representations as this function.
+	 *
+	 * The default color format is "integer",
+	 * so set components to values between 0 and 255.
 	 * 
 	 * Here are some examples of valid use:
 	 * 
@@ -1432,11 +1442,9 @@ declare global {
 	 * Sets the color mode for the sketch, which changes how colors are
 	 * interpreted and displayed.
 	 * 
-	 * The default color mode is RGB in legacy integer format.
-	 * 
-	 * In WebGPU, the default is RGB in float format (best performance).
-	 * 
 	 * Color gamut is 'display-p3' by default, if the device supports HDR.
+	 *
+	 * The default color mode is RGB in legacy integer format.
 	 * @param {'rgb' | 'oklch' | 'hsl' | 'hsb'} mode color mode
 	 * @param {1 | 255} format color format (1 for float, 255 for integer)
 	 * @param {'srgb' | 'display-p3'} [gamut] color gamut
@@ -1963,13 +1971,6 @@ declare global {
 	 * 
 	 * #### webgpu
 	 * @example
-	 * await createCanvas(200, { alpha: true });
-	 * 
-	 * q5.draw = function () {
-	 * 	clear();
-	 * 	circle((frameCount % 200) - 100, 0, 80);
-	 * };
-	 * @example
 	 * createCanvas(200, 200, { alpha: true });
 	 * 
 	 * function draw() {
@@ -2079,11 +2080,7 @@ declare global {
 	/** 🦋
 	 * Applies a transformation matrix.
 	 * 
-	 * Accepts a 3x3 or 4x4 matrix as either an array or multiple arguments.
-	 * 
-	 * Note that in q5 WebGPU, the identity matrix (default)
-	 * has a negative y scale to flip the y-axis to match
-	 * the Canvas2D renderer.
+	 * Accepts a 3x3 matrix as either an array or multiple arguments.
 	 * @param {number} a
 	 * @param {number} b
 	 * @param {number} c
@@ -2832,15 +2829,15 @@ declare global {
 	// 🔊 sound
 
 	/**
-	 * q5.js includes low latency sound playback and basic mixing powered
-	 * by WebAudio.
+	 * q5 includes low latency sound playback and basic mixing capabilities
+	 * powered by WebAudio.
 	 * 
-	 * For audio filtering, synthesis, and analysis, consider using
-	 * [p5.sound](https://p5js.org/reference/p5.sound/).
+	 * For audio filtering, synthesis, and analysis, consider using the
+	 * [p5.sound](https://p5js.org/reference/p5.sound/) addon with q5.
 	 */
 
 	/** 🔊
-	 * Loads audio data from a file and returns a `Q5.Sound` object.
+	 * Loads audio data from a file and returns a `Sound` object.
 	 * 
 	 * Use functions like `play`, `pause`, and `stop` to
 	 * control playback. Note that sounds can only be played after the
@@ -2852,14 +2849,9 @@ declare global {
 	 * 
 	 * Use `loaded`, `paused`, and `ended` to check the sound's status.
 	 * 
-	 * The entire sound file must be loaded before playback can start,
-	 * to stream larger audio files use the `loadAudio` function instead.
-	 * 
-	 * For backwards compatibility with the p5.sound API, the functions
-	 * `setVolume`, `setLoop`, `setPan`, `isLoaded`, and `isPlaying`
-	 * are also implemented, but their use is deprecated.
+	 * The entire sound file must be loaded before playback can start, use `await` to wait for a sound to load. To stream larger audio files use the `loadAudio` function instead.
 	 * @param {string} url sound file
-	 * @returns {Sound & PromiseLike<Sound>} a new `Sound` object
+	 * @returns {Sound & PromiseLike<Sound>} sound
 	 * @example
 	 * createCanvas(200);
 	 * 
@@ -2949,6 +2941,9 @@ declare global {
 		 * 
 		 * If this function is run when the sound is paused,
 		 * all playback instances will be resumed.
+		 * 
+		 * Use `await` to wait for the sound to finish playing.
+		 * @returns {Promise<void>} a promise that resolves when the sound finishes playing
 		 */
 		play(): void;
 
@@ -3166,7 +3161,7 @@ declare global {
 	 * @example
 	 * createCanvas(200, 100);
 	 * 
-	 * let sel = createSelect('Select a color');
+	 * let sel = createSelect('Select an option');
 	 * sel.option('Red', '#f55').option('Green', '#5f5');
 	 * 
 	 * sel.addEventListener('change', () => {
@@ -3365,6 +3360,8 @@ declare global {
 	 * 
 	 * File type is determined by file extension. q5 supports loading
 	 * text, json, csv, font, audio, and image files.
+	 * 
+	 * By default, assets are loaded in parallel before q5 runs `draw`. Use `await` to wait for assets to load.
 	 * @param {...string} urls
 	 * @returns {Promise<any[]>} a promise that resolves with objects
 	 * @example
@@ -3409,45 +3406,50 @@ declare global {
 
 	/** 🛠
 	 * Loads a text file from the specified url.
+	 * 
+	 * Using `await` to get the loaded text as a string is recommended.
 	 * @param {string} url text file
-	 * @returns {object & PromiseLike<string>} an object containing the loaded text in the property `obj.text` or a promise
+	 * @returns {object & PromiseLike<string>} an object containing the loaded text in the property `obj.text` or use `await` to get the text string directly
 	 */
 	function loadText(url: string): object & PromiseLike<string>;
 
 	/** 🛠
 	 * Loads a JSON file from the specified url.
+	 * 
+	 * Using `await` to get the loaded JSON object or array is recommended.
 	 * @param {string} url JSON file
-	 * @returns {any & PromiseLike<any>} an object or array containing the loaded JSON or a promise
+	 * @returns {any & PromiseLike<any>} an object or array containing the loaded JSON
 	 */
 	function loadJSON(url: string): any & PromiseLike<any>;
 
 	/** 🛠
 	 * Loads a CSV file from the specified url.
+	 * 
+	 * Using `await` to get the loaded CSV as an array of objects is recommended.
 	 * @param {string} url CSV file
-	 * @returns {object[] & PromiseLike<object[]>} an array of objects containing the loaded CSV or a promise
+	 * @returns {object[] & PromiseLike<object[]>} an array of objects containing the loaded CSV
 	 */
 	function loadCSV(url: string): object[] & PromiseLike<object[]>;
 
 	/** 🛠
 	 * Loads an xml file from the specified url.
+	 * 
+	 * Using `await` to get the loaded XML Element is recommended.
 	 * @param {string} url xml file
-	 * @returns {Element & PromiseLike<Element>} an object containing the loaded XML in a property called `obj.DOM` or a promise
-	 * @example
-	 * async function setup() {
-	 * 	createCanvas(200);
-	 * 	background(200);
-	 * 	textSize(32);
-	 * 
-	 * 	let myXML = await loadXML('/assets/animals.xml');
-	 * 
-	 * 	let mammals = myXML.getElementsByTagName('mammal');
-	 * 	let y = 64;
-	 * 	for (let mammal of mammals) {
-	 * 		text(mammal.textContent, 20, (y += 32));
-	 * 	}
-	 * }
+	 * @returns {Element & PromiseLike<Element>} an object containing the loaded XML Element in a property called `obj.DOM` or use await to get the XML Element directly
 	 */
 	function loadXML(url: string): object & PromiseLike<Element>;
+
+	/** 🛠
+	 * Wait for any assets that started loading to finish loading. By default q5 runs this before looping draw (which is called preloading), but it can be used even after draw starts looping.
+	 * @returns {PromiseLike<any[]>} a promise that resolves with loaded objects
+	 */
+	function loadAll(): PromiseLike<any[]>;
+
+	/** 🛠
+	 * Disables the automatic preloading of assets before draw starts looping. This allows draw to start immediately, and assets can be lazy loaded or `loadAll()` can be used to wait for assets to finish loading later.
+	 */
+	function disablePreload(): void;
 
 	/** 🛠
 	 * nf is short for number format. It formats a number
@@ -3816,7 +3818,7 @@ declare global {
 		/** ⚙
 		 * Creates an [instance](https://github.com/q5js/q5.js/wiki/Instance-Mode) of Q5.
 		 * 
-		 * Used by the global `createCanvas` function.
+		 * Used by the global `Canvas` function.
 		 * @param {string | Function} [scope]
 		 * @param {HTMLElement} [parent] element that the canvas will be placed inside
 		 * @example
@@ -3825,6 +3827,21 @@ declare global {
 		 * q.circle(100, 50, 20);
 		 */
 		constructor(scope?: string | Function, parent?: HTMLElement);
+
+		/** ⚙
+		 * The current minor version of q5.
+		 * @returns {string} the q5 version
+		 */
+		static version: string;
+
+		/** ⚙
+		 * Set to a language code other than 'en' (English) to use q5 in an additional language.
+		 * 
+		 * Currently supported languages:
+		 * 
+		 * - 'es' (Spanish)
+		 */
+		static lang: string;
 
 		/** ⚙
 		 * Turn off q5's friendly error messages.
@@ -3844,7 +3861,7 @@ declare global {
 		/** ⚙
 		 * Sets the default canvas context attributes used for newly created
 		 * canvases and internal graphics. These options are overwritten by any
-		 * per-canvas options you pass to `createCanvas`.
+		 * per-canvas options you pass to `Canvas`.
 		 */
 		static canvasOptions: object;
 
@@ -3900,7 +3917,7 @@ declare global {
 		 * functions to be run at specific phases in the q5 lifecycle.
 		 * 
 		 * Inside the function, `this` refers to the Q5 instance.
-		 * @param {string} lifecycle init, presetup, postsetup, predraw, postdraw, or remove
+		 * @param {string} lifecycle 'init', 'presetup', 'postsetup', 'predraw', 'postdraw', or 'remove'
 		 * @param {Function} fn The function to be run at the specified lifecycle phase.
 		 */
 		static addHook(lifecycle: string, fn: Function): void;
@@ -3943,6 +3960,13 @@ declare global {
 			new (w: number, h: number, opt?: any): Q5.Image;
 			};
 
+	}
+
+	namespace Q5 {
+		interface Image {
+			width: number;
+			height: number;
+		}
 	}
 
 }

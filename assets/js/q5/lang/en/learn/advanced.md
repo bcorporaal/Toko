@@ -4,7 +4,7 @@
 
 Creates an [instance](https://github.com/q5js/q5.js/wiki/Instance-Mode) of Q5.
 
-Used by the global `createCanvas` function.
+Used by the global `Canvas` function.
 
 ```
 @param {string | Function} [scope]
@@ -19,6 +19,36 @@ Used by the global `createCanvas` function.
 let q = new Q5('namespace');
 q.createCanvas(200, 100);
 q.circle(100, 50, 20);
+```
+
+## Q5.version
+
+The current minor version of q5.
+
+```
+@returns {string} the q5 version
+```
+
+### webgpu
+
+```js
+await Canvas(200);
+background(0.8);
+textSize(64);
+textAlign(CENTER, CENTER);
+text('v' + Q5.version, 0, 0);
+```
+
+## Q5.lang
+
+Set to a language code other than 'en' (English) to use q5 in an additional language.
+
+Currently supported languages:
+
+- 'es' (Spanish)
+
+```
+@default 'en'
 ```
 
 ## Q5.disableFriendlyErrors
@@ -45,7 +75,7 @@ True if the device supports HDR (the display-p3 colorspace).
 
 Sets the default canvas context attributes used for newly created
 canvases and internal graphics. These options are overwritten by any
-per-canvas options you pass to `createCanvas`.
+per-canvas options you pass to `Canvas`.
 
 ```
 @default { alpha: false, colorSpace: 'display-p3' }
@@ -116,7 +146,7 @@ Creates a new Q5 instance that uses [q5's WebGPU renderer](https://github.com/q5
 
 ```js
 let q = await Q5.WebGPU('namespace');
-q.createCanvas(200, 100);
+q.Canvas(200, 100);
 
 q.draw = () => {
 	q.background(0.8);
@@ -132,16 +162,20 @@ functions to be run at specific phases in the q5 lifecycle.
 Inside the function, `this` refers to the Q5 instance.
 
 ```
-@param {string} lifecycle init, presetup, postsetup, predraw, postdraw, or remove
+@param {string} lifecycle 'init', 'presetup', 'postsetup', 'predraw', 'postdraw', or 'remove'
 @param {Function} fn The function to be run at the specified lifecycle phase.
 ```
 
+### webgpu
+
 ```js
-Q5.addHook('presetup', function () {
-	this.background('pink');
+Q5.addHook('predraw', function () {
+	this.background('cyan');
 });
 
-createCanvas(200);
+q5.draw = function () {
+	circle(mouseX, mouseY, 80);
+};
 ```
 
 ## Q5.registerAddon
@@ -152,16 +186,18 @@ p5.js v2 compatible way to register an addon with q5.
 @param {Function} addon A function that receives `Q5`, `Q5.prototype`, and a `lifecycles` object.
 ```
 
+### webgpu
+
 ```js
 // addon.js
 Q5.registerAddon((Q5, proto, lifecycles) => {
-	lifecycles.presetup = function () {
+	lifecycles.predraw = function () {
 		this.background('pink');
 	};
 });
 
 // sketch.js
-createCanvas(200);
+await Canvas(200);
 ```
 
 ## Q5.modules

@@ -168,11 +168,7 @@ function draw() {
 
 Applies a transformation matrix.
 
-Accepts a 3x3 or 4x4 matrix as either an array or multiple arguments.
-
-Note that in q5 WebGPU, the identity matrix (default)
-has a negative y scale to flip the y-axis to match
-the Canvas2D renderer.
+Accepts a 3x3 matrix as either an array or multiple arguments.
 
 ```
 @param {number} a
@@ -184,6 +180,10 @@ the Canvas2D renderer.
 ```
 
 ### webgpu
+
+Note that in q5 WebGPU, the identity matrix (default)
+has a negative y scale to flip the y-axis to match
+the Canvas2D renderer.
 
 ```js
 q5.draw = function () {
@@ -215,7 +215,7 @@ so that transformations don't carry over to the next frame.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 translate(50, 50);
@@ -245,7 +245,7 @@ Saves the current transformation matrix.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 pushMatrix();
@@ -278,7 +278,7 @@ Restores the previously saved transformation matrix.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 pushMatrix();
@@ -311,7 +311,7 @@ Saves the current drawing style settings and transformations.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 push();
 fill('blue');
@@ -343,7 +343,7 @@ Restores the previously saved drawing style settings and transformations.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 push();
 fill('blue');

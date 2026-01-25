@@ -304,10 +304,11 @@ circle(50, 50, 50);
 
 	</script>
 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
-	<script src="/learn/mini-editor.js"></script>
 	<script src="/home/theme.js"></script>
-	<script>
+	<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1/min/vs/loader.min.js"></script>
+	<script src="/learn/mini-editor.js"></script>
+	<script type="module">
+
 		document.getElementById('fullscreenIcon').addEventListener('click', () => {
 			if (document.fullscreenElement) document.exitFullscreen();
 			else document.documentElement.requestFullscreen();

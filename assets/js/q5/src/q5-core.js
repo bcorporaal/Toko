@@ -1,6 +1,6 @@
 /**
  * q5.js
- * @version 3.6
+ * @version 3.9
  * @author quinton-ashley
  * @contributors evanalulu, Tezumie, ormaq, Dukemz, LingDong-
  * @license LGPL-3.0
@@ -81,8 +81,12 @@ function Q5(scope, parent, renderer) {
 
 	$._loaders = [];
 	$.loadAll = () => {
-		let loaders = $._loaders;
-		if ($._g) loaders = loaders.concat($._g._loaders);
+		let loaders = [...$._loaders];
+		$._loaders = [];
+		if ($._g) {
+			loaders = loaders.concat($._g._loaders);
+			$._g._loaders = [];
+		}
 		return Promise.all(loaders);
 	};
 
@@ -169,7 +173,7 @@ function Q5(scope, parent, renderer) {
 	};
 	$.remove = async () => {
 		$.noLoop();
-		$.canvas.remove();
+		if ($.canvas.remove) $.canvas.remove();
 		await runHooks('remove');
 	};
 
@@ -271,29 +275,14 @@ function Q5(scope, parent, renderer) {
 
 	let t = globalScope || $;
 
-	let userFns = [
-		'preload',
-		'postProcess',
-		'mouseMoved',
-		'mousePressed',
-		'mouseReleased',
-		'mouseDragged',
-		'mouseClicked',
-		'doubleClicked',
-		'mouseWheel',
-		'keyPressed',
-		'keyReleased',
-		'keyTyped',
-		'touchStarted',
-		'touchMoved',
-		'touchEnded',
-		'windowResized'
-	];
+	let userFns = Q5._userFns.slice(0, 15);
 	// shim if undefined
 	for (let name of userFns) $[name] ??= () => {};
 
 	if ($._isGlobal) {
-		for (let name of ['setup', 'update', 'draw', 'drawFrame', ...userFns]) {
+		let allUserFns = Q5._userFns.slice(0, 19);
+
+		for (let name of allUserFns) {
 			if (Q5[name]) $[name] = Q5[name];
 			else {
 				Object.defineProperty(Q5, name, {
@@ -321,8 +310,10 @@ function Q5(scope, parent, renderer) {
 
 		readyResolve();
 
-		wrapWithFES('preload');
-		$.preload();
+		if (t.preload || $.preload) {
+			wrapWithFES('preload');
+			$.preload();
+		}
 
 		// wait for the user to define setup, update, or draw
 		await Promise.race([
@@ -392,6 +383,28 @@ Q5._friendlyError = (msg, func) => {
 };
 Q5._validateParameters = () => true;
 
+Q5._userFns = [
+	'postProcess',
+	'mouseMoved',
+	'mousePressed',
+	'mouseReleased',
+	'mouseDragged',
+	'mouseClicked',
+	'doubleClicked',
+	'mouseWheel',
+	'keyPressed',
+	'keyReleased',
+	'keyTyped',
+	'touchStarted',
+	'touchMoved',
+	'touchEnded',
+	'windowResized',
+	'preload',
+	'setup',
+	'update',
+	'draw'
+];
+
 Q5.hooks = {
 	init: [],
 	presetup: [],
@@ -424,7 +437,7 @@ Q5.prototype.registerMethod = (m, fn) => {
 Q5.preloadMethods = {};
 Q5.prototype.registerPreloadMethod = (n, fn) => (Q5.preloadMethods[n] = fn[n]);
 
-function createCanvas(w, h, opt) {
+function Canvas(w, h, opt) {
 	if (Q5._hasGlobal) return;
 
 	let useC2D = w == 'c2d' || h == 'c2d' || opt == 'c2d' || opt?.renderer == 'c2d' || !Q5._esm;
@@ -438,21 +451,29 @@ function createCanvas(w, h, opt) {
 	}
 }
 
-if (Q5._server) global.p5 ??= global.q5 = global.Q5 = Q5;
+function createCanvas(w, h, opt) {
+	return Canvas(w, h, opt);
+}
+
+if (Q5._server) {
+	global.q5 = global.Q5 = Q5;
+	global.p5 ??= Q5;
+}
 
 if (typeof window == 'object') {
-	window.p5 ??= window.q5 = window.Q5 = Q5;
-	window.createCanvas = createCanvas;
+	window.q5 = window.Q5 = Q5;
+	window.p5 ??= Q5;
+	window.createCanvas = window.Canvas = Canvas;
 	window.C2D = 'c2d';
 	window.WEBGPU = 'webgpu';
 } else global.window = 0;
 
-Q5.version = Q5.VERSION = '3.6';
+Q5.version = Q5.VERSION = '3.9';
 
 if (typeof document == 'object') {
 	document.addEventListener('DOMContentLoaded', () => {
 		if (!Q5._hasGlobal) {
-			if (Q5.setup || Q5.update || Q5.draw) {
+			if (Q5.update || Q5.draw) {
 				Q5.WebGPU();
 			} else {
 				new Q5('auto');

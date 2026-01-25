@@ -1,5 +1,9 @@
 # input
 
+q5's input handling is very basic.
+
+For better input handling, including game controller support, consider using the [p5play](https://p5play.org/) addon with q5.
+
 Note that input responses inside `draw` can be delayed by
 up to one frame cycle: from the exact moment an input event occurs
 to the next time a frame is drawn.
@@ -117,7 +121,7 @@ Define this function to respond to mouse down events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.mousePressed = function () {
@@ -145,7 +149,7 @@ Define this function to respond to mouse up events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.mouseReleased = function () {
@@ -176,7 +180,7 @@ when the user drags their finger on the screen.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.mouseMoved = function () {
@@ -207,7 +211,7 @@ while a mouse button is pressed.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.mouseDragged = function () {
@@ -235,7 +239,7 @@ Define this function to respond to mouse double click events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.doubleClicked = function () {
@@ -343,7 +347,7 @@ Define this function to respond to key down events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.keyPressed = function () {
@@ -371,7 +375,7 @@ Define this function to respond to key up events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.keyReleased = function () {
@@ -431,7 +435,7 @@ and scroll, which q5 disables on the canvas by default.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.touchStarted = function () {
@@ -463,7 +467,7 @@ and scroll, which q5 disables on the canvas by default.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.touchEnded = function () {
@@ -495,7 +499,7 @@ and scroll, which q5 disables on the canvas by default.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.touchMoved = function () {
@@ -567,7 +571,7 @@ specify the active point of the cursor.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 cursor('pointer');
 ```
 
@@ -585,7 +589,7 @@ Hides the cursor within the bounds of the canvas.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 noCursor();
 ```
 

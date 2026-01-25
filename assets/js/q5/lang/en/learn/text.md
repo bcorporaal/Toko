@@ -2,7 +2,9 @@
 
 ## text
 
-Renders text to the screen. Text can be positioned with the x and y
+Renders text on the canvas.
+
+Text can be positioned with the x and y
 parameters and can optionally be constrained.
 
 ```
@@ -16,7 +18,7 @@ parameters and can optionally be constrained.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 background('silver');
 
 textSize(32);
@@ -24,7 +26,7 @@ text('Hello, world!', -88, 10);
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 textSize(20);
 
@@ -73,10 +75,7 @@ The second example loads
 
 If no fonts are loaded, the default sans-serif font is used.
 
-In q5 WebGPU, only fonts in [MSDF format](https://github.com/q5js/q5.js/wiki/q5-WebGPU-renderer#text-rendering)
-with the file ending "-msdf.json" can be used to render text with
-the `text` function. Fonts in other formats can be used with the
-[`textImage`](https://q5js.org/learn/#textImage) function.
+By default, assets are loaded in parallel before q5 runs `draw`. Use `await` to wait for a font to load.
 
 ```
 @param {string} url URL of the font to load
@@ -85,20 +84,21 @@ the `text` function. Fonts in other formats can be used with the
 
 ### webgpu
 
+In q5 WebGPU, fonts in [MSDF format](https://github.com/q5js/q5.js/wiki/q5-WebGPU-renderer#text-rendering)
+with the file ending "-msdf.json" can be used for high performance text rendering. Make your own using the [MSDF font converter](https://msdf-bmfont.donmccurdy.com/).
+
 ```js
-await createCanvas(200, 56);
+await Canvas(200, 56);
 
-loadFont('/assets/Robotica.ttf');
+await loadFont('/assets/Robotica.ttf');
 
-q5.draw = function () {
-	fill('skyblue');
-	textSize(64);
-	textImage('Hello!', -98, 24);
-};
+fill('skyblue');
+textSize(64);
+textImage('Hello!', -98, 24);
 ```
 
 ```js
-await createCanvas(200, 74);
+await Canvas(200, 74);
 
 loadFont('fonts.googleapis.com/css2?family=Pacifico');
 
@@ -107,6 +107,16 @@ q5.draw = function () {
 	textSize(68);
 	textImage('Hello!', -98, 31);
 };
+```
+
+```js
+await Canvas(200, 74);
+
+await loadFont('sans-serif'); // msdf
+
+fill('white');
+textSize(68);
+textImage('Hello!', -98, 31);
 ```
 
 ### c2d
@@ -149,7 +159,7 @@ By default, the font is set to the [CSS font family](https://developer.mozilla.o
 ### webgpu
 
 ```js
-await createCanvas(200, 160);
+await Canvas(200, 160);
 background(0.8);
 
 textFont('serif');
@@ -161,7 +171,7 @@ q5.draw = function () {
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 textFont('monospace');
@@ -261,6 +271,8 @@ function draw() {
 
 Sets the current text style.
 
+Not applicable to WebGPU when using MSDF fonts.
+
 ```
 @param {'normal' | 'italic' | 'bold' | 'bolditalic'} style font style
 ```
@@ -268,7 +280,7 @@ Sets the current text style.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 textStyle(ITALIC);
@@ -301,7 +313,7 @@ Sets the horizontal and vertical alignment of text.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 textSize(32);
 
@@ -341,7 +353,7 @@ Sets the text weight.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 textSize(32);
 textAlign(CENTER, MIDDLE);
@@ -440,7 +452,7 @@ Calculates and returns the descent (the distance from the baseline to the bottom
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 textSize(64);
 
@@ -473,7 +485,7 @@ Creates an image from a string of text.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 textSize(96);
 
 let img = createTextImage('🐶');
@@ -522,7 +534,7 @@ a very high performance cost.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 textSize(96);
 textAlign(CENTER, CENTER);
@@ -531,13 +543,13 @@ textImage('🐶', 0, 0);
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 await load('/assets/Robotica.ttf');
 
 background(0.8);
 textSize(66);
-textImage('Hello!', -100, -100);
+textImage('Hello!', -100, 100);
 ```
 
 ### c2d
@@ -579,7 +591,7 @@ optionally adding padding with zeros.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 background(0.8);
 
 textSize(32);

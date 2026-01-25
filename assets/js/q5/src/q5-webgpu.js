@@ -302,7 +302,7 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 		sw = 1, // stroke weight
 		hsw = 0.5, // half of the stroke weight
 		qsw = 0.25, // quarter of the stroke weight
-		scaledHSW = 0.5;
+		hswScaled = 0.5;
 
 	$.fill = (r, g, b, a) => {
 		addColor(r, g, b, a);
@@ -325,17 +325,25 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 
 	$.strokeWeight = (v) => {
 		if (v === undefined) return sw;
-		if (!v) {
-			doStroke = false;
-			return;
-		}
+
+		if (!v) return (doStroke = false);
+		else doStroke = true;
+
 		v = Math.abs(v);
 		sw = v;
 		hsw = v / 2;
 		qsw = v / 4;
-		scaledHSW = hsw * _scale;
+		hswScaled = hsw * _scale;
 	};
 
+	// Advanced methods for high performance
+	// fill and stroke changes. Used by q5play!
+	$._getStrokeWeight = () => {
+		return [sw, hsw, qsw, hswScaled];
+	};
+	$._setStrokeWeight = (strokeData) => {
+		[sw, hsw, qsw, hswScaled] = strokeData;
+	};
 	$._getFillIdx = () => fillIdx;
 	$._setFillIdx = (v) => (fillIdx = v);
 	$._doFill = () => (doFill = true);
@@ -364,12 +372,6 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 	]);
 
 	transforms.set(matrices[0]);
-
-	$.resetMatrix = () => {
-		matrix = matrices[0].slice();
-		matrixIdx = 0;
-	};
-	$.resetMatrix();
 
 	$.translate = (x, y) => {
 		if (!x && !y) return;
@@ -424,7 +426,7 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 		y ??= x;
 
 		_scale = Math.max(Math.abs(x), Math.abs(y));
-		scaledHSW = sw * 0.5 * _scale;
+		hswScaled = hsw * _scale;
 
 		let m = matrix;
 
@@ -513,10 +515,13 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 		matrixDirty = false;
 	};
 
+	let scaleStack = [];
+
 	// push the current matrix index onto the stack
 	$.pushMatrix = () => {
 		if (matrixDirty) saveMatrix();
 		matricesIdxStack.push(matrixIdx);
+		scaleStack.push(_scale);
 	};
 
 	$.popMatrix = () => {
@@ -528,7 +533,17 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 		matrix = matrices[idx].slice();
 		matrixIdx = idx;
 		matrixDirty = false;
+		_scale = scaleStack.pop();
+		hswScaled = hsw * _scale;
 	};
+
+	$.resetMatrix = () => {
+		matrix = matrices[0].slice();
+		matrixIdx = 0;
+		_scale = 1;
+		hswScaled = hsw;
+	};
+	$.resetMatrix();
 
 	let styles = [];
 
@@ -538,11 +553,13 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 			strokeIdx,
 			sw,
 			hsw,
-			scaledHSW,
+			_scale,
+			hswScaled,
 			doFill,
 			doStroke,
 			fillSet,
 			strokeSet,
+			globalAlpha,
 			tintIdx,
 			_textSize,
 			_textAlign,
@@ -567,11 +584,13 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 			strokeIdx,
 			sw,
 			hsw,
-			scaledHSW,
+			_scale,
+			hswScaled,
 			doFill,
 			doStroke,
 			fillSet,
 			strokeSet,
+			globalAlpha,
 			tintIdx,
 			_textSize,
 			_textAlign,
@@ -1335,13 +1354,10 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 				let v1 = i * 4;
 				let v2 = (i + 1) * 4;
 				$.line(sv[v1], sv[v1 + 1], sv[v2], sv[v2 + 1]);
-
-				// addEllipse(sv[v1], sv[v1 + 1], qsw, qsw, 0, TAU, hsw, 0);
 			}
 			let v1 = (shapeVertCount - 1) * 4;
 			let v2 = 0;
 			if (close) $.line(sv[v1], sv[v1 + 1], sv[v2], sv[v2 + 1]);
-			// addEllipse(sv[v1], sv[v1 + 1], qsw, qsw, 0, TAU, hsw, 0);
 		}
 
 		// reset for the next shape
@@ -1631,6 +1647,8 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 			if (_rectMode == 'corner') {
 				x += hw;
 				y += hh;
+				hw = Math.abs(hw);
+				hh = Math.abs(hh);
 			} else if (_rectMode == 'radius') {
 				hw = w;
 				hh = h;
@@ -1994,7 +2012,7 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 		if (matrixDirty) saveMatrix();
 
 		// if the point stroke size is a single pixel (or smaller), use a rectangle
-		if (scaledHSW <= 0.5) {
+		if (hswScaled <= 0.5) {
 			addRect(x, y, hsw, hsw, 0, sw, 0);
 		} else {
 			// dimensions of the point needs to be set to half the stroke weight
@@ -2308,7 +2326,7 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 
 	$._makeDrawable = (g) => {
 		$._addTexture(g);
-		g._webgpuInst = $;
+		g._owner = $;
 	};
 
 	$.createImage = (w, h, opt) => {
@@ -2322,14 +2340,18 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 	let _createGraphics = $.createGraphics;
 
 	$.createGraphics = (w, h, opt = {}) => {
-		if (!Q5.experimental) {
-			throw new Error(
-				'createGraphics is disabled by default in q5 WebGPU. See issue https://github.com/q5js/q5.js/issues/104 for details.'
-			);
-		}
 		if (typeof opt == 'string') opt = { renderer: opt };
 		opt.renderer ??= 'c2d';
 		let g = _createGraphics(w, h, opt);
+
+		g.noLoop();
+
+		let _loop = g.loop;
+		g.loop = () => {
+			if (Q5.experimental) return _loop();
+			console.error('Looping graphics in q5 WebGPU is disabled. See issue https://github.com/q5js/q5.js/issues/104');
+		};
+
 		if (g.canvas.webgpu) {
 			$._addTexture(g, g._frameA);
 			$._addTexture(g, g._frameB);
@@ -2790,7 +2812,6 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 		let fontName = url.slice(url.lastIndexOf('/') + 1, url.lastIndexOf('-'));
 		let f = { family: fontName };
 		f.promise = createFont(url, fontName, () => {
-			delete f.promise;
 			delete f.then;
 			if (f._usedAwait) f = { family: fontName };
 			if (cb) cb(f);
@@ -2825,6 +2846,7 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 	};
 
 	$.textSize = (size) => {
+		if (!$._font) $._g.textSize(size);
 		if (size == undefined) return _textSize;
 		_textSize = size;
 		if (!leadingSet) {
@@ -2861,6 +2883,8 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 	};
 
 	$.textLeading = (lineHeight) => {
+		if (!$._font) return $._g.textLeading(lineHeight);
+		if (!lineHeight) return leading;
 		$._font.lineHeight = leading = lineHeight;
 		leadDiff = leading - _textSize;
 		leadPercent = leading / _textSize;
@@ -2870,6 +2894,10 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 	$.textAlign = (horiz, vert) => {
 		_textAlign = horiz;
 		if (vert) _textBaseline = vert;
+	};
+
+	$.textStyle = (style) => {
+		// stub
 	};
 
 	let charStack = [],
@@ -2949,6 +2977,8 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 			return $.textImage(img, x, y);
 		}
 
+		let hasNewline;
+
 		if (str.length > w) {
 			let wrapped = [];
 			let i = 0;
@@ -2964,21 +2994,10 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 				i = end + 1;
 			}
 			str = wrapped.join('\n');
+			hasNewline = true;
 		}
 
-		let spaces = 0, // whitespace char count, not literal spaces
-			hasNewline;
-		for (let i = 0; i < str.length; i++) {
-			let c = str[i];
-			switch (c) {
-				case '\n':
-					hasNewline = true;
-				case '\r':
-				case '\t':
-				case ' ':
-					spaces++;
-			}
-		}
+		hasNewline ??= str.includes('\n');
 
 		let charsData = [];
 
@@ -3001,7 +3020,7 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 			else if (tb == 'center') y -= _textSize * 0.5;
 			else if (tb == 'bottom') y -= leading;
 		} else {
-			// measure the text to get the line widths before setting
+			// measure the text to get the line height before setting
 			// the x position to properly align the text
 			measurements = measureText($._font, str);
 
@@ -3044,8 +3063,27 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 	};
 
 	$.textWidth = (str) => {
-		if (!$._font) return 0;
-		return measureText($._font, str).width;
+		if (!$._font) {
+			$._g.textSize(_textSize);
+			return $._g.textWidth(str);
+		}
+		return (measureText($._font, str).width * _textSize) / 42;
+	};
+
+	$.textAscent = (str) => {
+		if (!$._font) {
+			$._g.textSize(_textSize);
+			return $._g.textAscent(str);
+		}
+		return leading - leadDiff;
+	};
+
+	$.textDescent = (str) => {
+		if (!$._font) {
+			$._g.textSize(_textSize);
+			return $._g.textDescent(str);
+		}
+		return leadDiff;
 	};
 
 	$.createTextImage = (str, w, h) => {

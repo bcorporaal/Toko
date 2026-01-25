@@ -7,7 +7,7 @@ First time coding? Check out the [q5 Beginner's Brief](https://github.com/q5js/q
 On these Learn pages, you can experiment with editing the
 interactive mini examples. Have fun! 😎
 
-## createCanvas
+## Canvas
 
 Creates a canvas element, a section of the screen your program
 can draw on.
@@ -20,14 +20,14 @@ Note that in this example, the circle is located at position [0, 0], the origin 
 @param {number} [w] width or side lengths of the canvas
 @param {number} [h] height of the canvas
 @param {object} [opt] [options](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getContextAttributes)
-@returns {HTMLCanvasElement} created canvas element
+@returns {Promise<HTMLCanvasElement>} created canvas element
 ```
 
 ### webgpu
 
 ```js
 // WebGPU
-await createCanvas(200, 100);
+await Canvas(200, 100);
 background('silver');
 circle(0, 0, 80);
 ```

@@ -1,7 +1,7 @@
 declare global {
 	// ⭐️ core
 
-	function createCanvas(w?: number, h?: number, options?: CanvasRenderingContext2DSettings): HTMLCanvasElement;
+	function Canvas(w?: number, h?: number, options?: CanvasRenderingContext2DSettings): Promise<HTMLCanvasElement>;
 
 	function draw(): void;
 
@@ -519,6 +519,10 @@ declare global {
 
 	function loadXML(url: string): object & PromiseLike<Element>;
 
+	function loadAll(): PromiseLike<any[]>;
+
+	function disablePreload(): void;
+
 	function nf(num: number, digits: number): string;
 
 	function shuffle(arr: any[]): any[];
@@ -651,6 +655,10 @@ declare global {
 
 	class Q5 {
 		constructor(scope?: string | Function, parent?: HTMLElement);
+
+		static version: string;
+
+		static lang: string;
 
 		static disableFriendlyErrors: boolean;
 
