@@ -53,8 +53,16 @@
   //
   //  Div container where the tweakpane is placed
   //
-  const TWEAKPANE_CONTAINER = 'tweakpane-container';
+  const TWEAKPANE_CONTAINER_ID = 'tweakpane-container';
   const TWEAKPANE_HIDDEN_CLASS = 'tweakpane-hidden';
+
+  //
+  //  Layout element selectors and class names
+  //
+  const SKETCH_WRAPPER_CLASS = 'sketch-wrapper';
+  const SKETCH_CANVAS_ID = 'sketch-canvas';
+  const LABELS_CLASS = 'labels';
+  const FULLWINDOW_CLASS = 'fullwindow';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -643,18 +651,36 @@
       return;
     }
 
+    // Get references to layout elements for fullwindow class toggling
+    const sketchWrapper = document.querySelector('.' + SKETCH_WRAPPER_CLASS);
+    const tweakpaneContainer = document.getElementById(TWEAKPANE_CONTAINER_ID);
+    const sketchCanvas = document.getElementById(SKETCH_CANVAS_ID);
+    const labels = document.querySelector('.' + LABELS_CLASS);
+
     if (!inSize.fullWindow) {
       zoomFactor = Math.min(1, ((window.innerWidth - MARGIN) / inSize.width) * DISPLAY_FACTOR);
       zoomFactor = Math.min(zoomFactor, ((window.innerHeight - MARGIN) / inSize.height) * DISPLAY_FACTOR);
 
       newWidthString = Math.floor((inSize.width * zoomFactor) / DISPLAY_FACTOR) + 'px';
       newHeightString = Math.floor((inSize.height * zoomFactor) / DISPLAY_FACTOR) + 'px';
+
+      // Remove fullwindow classes for fixed canvas mode
+      sketchWrapper?.classList.remove(FULLWINDOW_CLASS);
+      tweakpaneContainer?.classList.remove(FULLWINDOW_CLASS);
+      sketchCanvas?.classList.remove(FULLWINDOW_CLASS);
+      labels?.classList.remove(FULLWINDOW_CLASS);
     } else {
       inSize.width = window.innerWidth;
       inSize.height = window.innerHeight;
 
       newWidthString = '100vw';
       newHeightString = '100vh';
+
+      // Add fullwindow classes for full-screen canvas mode
+      sketchWrapper?.classList.add(FULLWINDOW_CLASS);
+      tweakpaneContainer?.classList.add(FULLWINDOW_CLASS);
+      sketchCanvas?.classList.add(FULLWINDOW_CLASS);
+      labels?.classList.add(FULLWINDOW_CLASS);
     }
 
     resizeCanvas(inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
@@ -1426,7 +1452,7 @@
     // Create the main Tweakpane panel if enabled
     if (libraryState.options.useParameterPanel) {
       basePane = new Tweakpane.Pane({
-        container: document.getElementById(TWEAKPANE_CONTAINER),
+        container: document.getElementById(TWEAKPANE_CONTAINER_ID),
         title: 'Sketch options',
       });
     }
@@ -1563,7 +1589,7 @@
    * @returns {void}
    */
   function togglePaneVisibility (makeVisible = null) {
-    const panelElement = document.getElementById(TWEAKPANE_CONTAINER);
+    const panelElement = document.getElementById(TWEAKPANE_CONTAINER_ID);
     if (!panelElement) return;
 
     const isCurrentlyVisible = !panelElement.classList.contains(TWEAKPANE_HIDDEN_CLASS);

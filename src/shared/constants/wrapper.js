@@ -5,8 +5,16 @@ export const LIBRARY_NAME = 'TokoWrapper';
 //
 //  Div container where the tweakpane is placed
 //
-export const TWEAKPANE_CONTAINER = 'tweakpane-container';
+export const TWEAKPANE_CONTAINER_ID = 'tweakpane-container';
 export const TWEAKPANE_HIDDEN_CLASS = 'tweakpane-hidden';
+
+//
+//  Layout element selectors and class names
+//
+export const SKETCH_WRAPPER_CLASS = 'sketch-wrapper';
+export const SKETCH_CANVAS_ID = 'sketch-canvas';
+export const LABELS_CLASS = 'labels';
+export const FULLWINDOW_CLASS = 'fullwindow';
 
 //
 //  Set of standard sizes for the canvas and exports

@@ -9,6 +9,13 @@
 
 import { libraryState } from '../core/state';
 import { logError, logInfo } from '../util/logging';
+import {
+  TWEAKPANE_CONTAINER_ID,
+  SKETCH_WRAPPER_CLASS,
+  SKETCH_CANVAS_ID,
+  LABELS_CLASS,
+  FULLWINDOW_CLASS,
+} from '../../shared/constants/wrapper';
 
 /**
  * Set up the canvas with initial configuration
@@ -52,18 +59,36 @@ export function setCanvasSize (inSize) {
     return;
   }
 
+  // Get references to layout elements for fullwindow class toggling
+  const sketchWrapper = document.querySelector('.' + SKETCH_WRAPPER_CLASS);
+  const tweakpaneContainer = document.getElementById(TWEAKPANE_CONTAINER_ID);
+  const sketchCanvas = document.getElementById(SKETCH_CANVAS_ID);
+  const labels = document.querySelector('.' + LABELS_CLASS);
+
   if (!inSize.fullWindow) {
     zoomFactor = Math.min(1, ((window.innerWidth - MARGIN) / inSize.width) * DISPLAY_FACTOR);
     zoomFactor = Math.min(zoomFactor, ((window.innerHeight - MARGIN) / inSize.height) * DISPLAY_FACTOR);
 
     newWidthString = Math.floor((inSize.width * zoomFactor) / DISPLAY_FACTOR) + 'px';
     newHeightString = Math.floor((inSize.height * zoomFactor) / DISPLAY_FACTOR) + 'px';
+
+    // Remove fullwindow classes for fixed canvas mode
+    sketchWrapper?.classList.remove(FULLWINDOW_CLASS);
+    tweakpaneContainer?.classList.remove(FULLWINDOW_CLASS);
+    sketchCanvas?.classList.remove(FULLWINDOW_CLASS);
+    labels?.classList.remove(FULLWINDOW_CLASS);
   } else {
     inSize.width = window.innerWidth;
     inSize.height = window.innerHeight;
 
     newWidthString = '100vw';
     newHeightString = '100vh';
+
+    // Add fullwindow classes for full-screen canvas mode
+    sketchWrapper?.classList.add(FULLWINDOW_CLASS);
+    tweakpaneContainer?.classList.add(FULLWINDOW_CLASS);
+    sketchCanvas?.classList.add(FULLWINDOW_CLASS);
+    labels?.classList.add(FULLWINDOW_CLASS);
   }
 
   resizeCanvas(inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);

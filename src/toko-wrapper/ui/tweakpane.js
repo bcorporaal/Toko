@@ -14,7 +14,7 @@ import {
   CAPTURE_FRAMERATES,
   REFRESH_RECORD_BUTTON_LABEL,
   RECORD_BUTTON_LABEL,
-  TWEAKPANE_CONTAINER,
+  TWEAKPANE_CONTAINER_ID,
   TWEAKPANE_HIDDEN_CLASS,
 } from '../config/constants';
 import { setCanvasSize } from '../canvas/canvas';
@@ -47,7 +47,7 @@ export function setUpTweakpane () {
   // Create the main Tweakpane panel if enabled
   if (libraryState.options.useParameterPanel) {
     basePane = new Tweakpane.Pane({
-      container: document.getElementById(TWEAKPANE_CONTAINER),
+      container: document.getElementById(TWEAKPANE_CONTAINER_ID),
       title: 'Sketch options',
     });
   }
@@ -184,7 +184,7 @@ export function addPaneToggle () {
  * @returns {void}
  */
 export function togglePaneVisibility (makeVisible = null) {
-  const panelElement = document.getElementById(TWEAKPANE_CONTAINER);
+  const panelElement = document.getElementById(TWEAKPANE_CONTAINER_ID);
   if (!panelElement) return;
 
   const isCurrentlyVisible = !panelElement.classList.contains(TWEAKPANE_HIDDEN_CLASS);

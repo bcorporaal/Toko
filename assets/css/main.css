@@ -139,6 +139,39 @@ main {
   margin-right: calc(-1 * var(--tp-width));
 }
 
+/* Full window mode - tweakpane floats over full-screen canvas */
+.sketch-wrapper.fullwindow {
+  position: relative;
+}
+
+.sketch-tweakpane-container.fullwindow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: auto;
+  z-index: 100;
+}
+
+.sketch--flexible.fullwindow {
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  flex: none;
+  display: block;
+}
+
+.sketch--flexible.fullwindow .p5Canvas {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+}
+
+.labels.fullwindow {
+  display: none;
+}
+
 /* .sketch--full {
   width: 100vw;
   height: 100vh;
