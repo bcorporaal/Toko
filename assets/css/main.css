@@ -131,6 +131,12 @@ main {
   overflow-x: hidden;
   background-color: var(--tp-base-background-color);
   order: 2; /* Explicitly place on the right */
+  transition: margin-right 0.5s ease-in-out;
+}
+
+/* Hidden state - slides off to the right */
+.sketch-tweakpane-container.tweakpane-hidden {
+  margin-right: calc(-1 * var(--tp-width));
 }
 
 /* .sketch--full {

@@ -15,6 +15,7 @@ import {
   REFRESH_RECORD_BUTTON_LABEL,
   RECORD_BUTTON_LABEL,
   TWEAKPANE_CONTAINER,
+  TWEAKPANE_HIDDEN_CLASS,
 } from '../config/constants';
 import { setCanvasSize } from '../canvas/canvas';
 import { saveSketch, saveSketchAndSettings } from '../media/saveSketch';
@@ -186,12 +187,12 @@ export function togglePaneVisibility (makeVisible = null) {
   const panelElement = document.getElementById(TWEAKPANE_CONTAINER);
   if (!panelElement) return;
 
-  const isCurrentlyVisible = panelElement.style.display === 'block' || panelElement.style.display === '';
+  const isCurrentlyVisible = !panelElement.classList.contains(TWEAKPANE_HIDDEN_CLASS);
 
   if (makeVisible === true || (makeVisible === null && !isCurrentlyVisible)) {
-    panelElement.style.display = 'block';
+    panelElement.classList.remove(TWEAKPANE_HIDDEN_CLASS);
   } else if (makeVisible === false || (makeVisible === null && isCurrentlyVisible)) {
-    panelElement.style.display = 'none';
+    panelElement.classList.add(TWEAKPANE_HIDDEN_CLASS);
   }
 }
 

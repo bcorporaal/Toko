@@ -6,6 +6,7 @@ export const LIBRARY_NAME = 'TokoWrapper';
 //  Div container where the tweakpane is placed
 //
 export const TWEAKPANE_CONTAINER = 'tweakpane-container';
+export const TWEAKPANE_HIDDEN_CLASS = 'tweakpane-hidden';
 
 //
 //  Set of standard sizes for the canvas and exports
