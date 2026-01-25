@@ -8,9 +8,9 @@ export function setUpFPS () {
 }
 
 export function addFPSToggle () {
-  document.onkeydown = function (event) {
+  document.addEventListener('keydown', function (event) {
     if (event.key.toLowerCase() === 'f') {
       libraryState.toko.toggleFPS();
     }
-  };
+  });
 }

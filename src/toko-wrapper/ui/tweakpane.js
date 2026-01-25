@@ -14,6 +14,7 @@ import {
   CAPTURE_FRAMERATES,
   REFRESH_RECORD_BUTTON_LABEL,
   RECORD_BUTTON_LABEL,
+  TWEAKPANE_CONTAINER,
 } from '../config/constants';
 import { setCanvasSize } from '../canvas/canvas';
 import { saveSketch, saveSketchAndSettings } from '../media/saveSketch';
@@ -44,7 +45,10 @@ let basePane, basePaneTab;
 export function setUpTweakpane () {
   // Create the main Tweakpane panel if enabled
   if (libraryState.options.useParameterPanel) {
-    basePane = new Tweakpane.Pane({});
+    basePane = new Tweakpane.Pane({
+      container: document.getElementById(TWEAKPANE_CONTAINER),
+      title: 'Sketch options',
+    });
   }
 
   // Build array of tabs to add based on configuration
@@ -163,15 +167,14 @@ function initializePanelState () {
 
 /**
  * Adds keyboard shortcut (P key) to toggle panel visibility
- * Replaces any existing keydown handler on the document
  * @returns {void}
  */
 export function addPaneToggle () {
-  document.onkeydown = function (event) {
+  document.addEventListener('keydown', function (event) {
     if (event.key.toLowerCase() === 'p') {
       togglePaneVisibility();
     }
-  };
+  });
 }
 
 /**
@@ -180,7 +183,7 @@ export function addPaneToggle () {
  * @returns {void}
  */
 export function togglePaneVisibility (makeVisible = null) {
-  const panelElement = document.getElementsByClassName('tp-dfwv')[0];
+  const panelElement = document.getElementById(TWEAKPANE_CONTAINER);
   if (!panelElement) return;
 
   const isCurrentlyVisible = panelElement.style.display === 'block' || panelElement.style.display === '';

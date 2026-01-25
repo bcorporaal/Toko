@@ -51,6 +51,11 @@
   const LIBRARY_NAME = 'TokoWrapper';
 
   //
+  //  Div container where the tweakpane is placed
+  //
+  const TWEAKPANE_CONTAINER = 'tweakpane-container';
+
+  //
   //  Set of standard sizes for the canvas and exports
   //
   const SIZE_DEFAULT = {
@@ -1419,7 +1424,10 @@
   function setUpTweakpane () {
     // Create the main Tweakpane panel if enabled
     if (libraryState.options.useParameterPanel) {
-      basePane = new Tweakpane.Pane({});
+      basePane = new Tweakpane.Pane({
+        container: document.getElementById(TWEAKPANE_CONTAINER),
+        title: 'Sketch options',
+      });
     }
 
     // Build array of tabs to add based on configuration
@@ -1538,15 +1546,14 @@
 
   /**
    * Adds keyboard shortcut (P key) to toggle panel visibility
-   * Replaces any existing keydown handler on the document
    * @returns {void}
    */
   function addPaneToggle () {
-    document.onkeydown = function (event) {
+    document.addEventListener('keydown', function (event) {
       if (event.key.toLowerCase() === 'p') {
         togglePaneVisibility();
       }
-    };
+    });
   }
 
   /**
@@ -1555,7 +1562,7 @@
    * @returns {void}
    */
   function togglePaneVisibility (makeVisible = null) {
-    const panelElement = document.getElementsByClassName('tp-dfwv')[0];
+    const panelElement = document.getElementById(TWEAKPANE_CONTAINER);
     if (!panelElement) return;
 
     const isCurrentlyVisible = panelElement.style.display === 'block' || panelElement.style.display === '';
@@ -1970,11 +1977,11 @@
   }
 
   function addFPSToggle () {
-    document.onkeydown = function (event) {
+    document.addEventListener('keydown', function (event) {
       if (event.key.toLowerCase() === 'f') {
         libraryState.toko.toggleFPS();
       }
-    };
+    });
   }
 
   /**
