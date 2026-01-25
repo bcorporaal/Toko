@@ -6090,6 +6090,18 @@
   var COLOR_PALETTES = allPalettes;
 
   /**
+   * Constrain a value between a minimum and maximum
+   * Local implementation to avoid dependency on p5.js
+   * @param {number} value - The value to constrain
+   * @param {number} min - Minimum value
+   * @param {number} max - Maximum value
+   * @returns {number} Constrained value
+   */
+  function _constrain (value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+
+  /**
    * Initialize the color system and preprocess all palettes
    * This function must be called before using any color palette functions
    * @example
@@ -6486,14 +6498,14 @@
       if (constrainContrast) {
         hsl = chroma(contrastColors[0]).hsl();
         lightH = hsl[0];
-        lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
-        lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
+        lightS = _constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
+        lightL = _constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
         contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
 
         hsl = chroma(contrastColors[1]).hsl();
         darkH = hsl[0];
-        darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
-        darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
+        darkS = _constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
+        darkL = _constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
         contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
       }
     }
@@ -6504,15 +6516,15 @@
     if (!lightContrastSet) {
       hsl = chroma(sortedColorSet[0]).hsl();
       lightH = hsl[0];
-      lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
-      lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
+      lightS = _constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
+      lightL = _constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
       contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
     }
     if (!darkContrastSet) {
       hsl = chroma(sortedColorSet[n - 1]).hsl();
       darkH = hsl[0];
-      darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
-      darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
+      darkS = _constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
+      darkL = _constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
       contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
     }
 
@@ -6797,6 +6809,36 @@
     }
 
     return o;
+  }
+
+  /**
+   * Get all color palettes
+   * @returns {Array} Array of all palette objects with name, colors, type, etc.
+   * @example
+   * // Get all palettes
+   * const palettes = toko.getAllPalettes();
+   * palettes.forEach(p => console.log(p.name, p.colors));
+   */
+  function getAllPalettes () {
+    if (!libraryState.initColorDone) {
+      initColor();
+    }
+    return COLOR_PALETTES;
+  }
+
+  /**
+   * Get all collection types
+   * @returns {Array} Array of collection type strings (e.g., 'basic', 'cako', etc.)
+   * @example
+   * // Get all collection types
+   * const collections = toko.getCollections();
+   * // Returns: ['basic', 'cako', 'colourscafe', ...]
+   */
+  function getCollections () {
+    if (!libraryState.initColorDone) {
+      initColor();
+    }
+    return COLOR_COLLECTIONS;
   }
 
   /**
@@ -7869,6 +7911,8 @@
     findPaletteByName: findPaletteByName,
     formatForTweakpane: formatForTweakpane,
     generateFilename: generateFilename,
+    getAllPalettes: getAllPalettes,
+    getCollections: getCollections,
     getColorModeList: getColorModeList,
     getColorScale: getColorScale,
     getEasingFunction: getEasingFunction,
