@@ -1,6 +1,6 @@
 /**
- * Color palettes page rendering logic
- * Dynamically renders all Toko color palettes grouped by collection
+ * Color palettes page logic
+ * Renders all Toko color palettes grouped by collection
  */
 
 (function () {
@@ -134,7 +134,7 @@
 
     // Collection heading with total / primary count
     const heading = document.createElement('h2');
-    heading.textContent = collectionName + ' (' + totalCount + ' / ' + primaryCount + ')';
+    heading.textContent = collectionName + ' (' + totalCount + '/' + primaryCount + ')';
     section.appendChild(heading);
 
     // Palette grid
@@ -202,9 +202,9 @@
     if (totalCountEl) {
       const primaryTotal = allPalettes.filter(p => p.isPrimary).length;
       if (primaryOnly) {
-        totalCountEl.textContent = primaryTotal + ' primary* palettes in ' + collections.length + ' collections';
+        totalCountEl.textContent = primaryTotal + ' primary* palettes in ' + collections.length + ' collections.';
       } else {
-        totalCountEl.textContent = allPalettes.length + ' palettes (' + primaryTotal + ' primary*) in ' + collections.length + ' collections';
+        totalCountEl.textContent = allPalettes.length + ' palettes (' + primaryTotal + ' primary*) in ' + collections.length + ' collections.';
       }
     }
   }

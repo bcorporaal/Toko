@@ -252,11 +252,22 @@ main {
   border-bottom: 1px solid #343a40;
 }
 
+.sketchlist-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1em;
+}
+
+.sketchlist-title-row a {
+  font-size: var(--fs-base);
+}
+
 .sketchlist h1 {
   font-size: var(--fs-base);
   font-weight: 700;
   text-transform: uppercase;
-  padding-bottom: 0.75em;
+  margin: 0;
 }
 
 .sketchlist h2 {
@@ -310,11 +321,22 @@ body.colors-page {
   text-align: left;
 }
 
+.palette-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 2em;
+}
+
+.palette-title-row a {
+  font-size: var(--fs-base);
+}
+
 .palette-container h1 {
   font-size: var(--fs-base);
   font-weight: 700;
   text-transform: uppercase;
-  padding-bottom: 0.75em;
+  margin: 0;
 }
 
 .palette-container p {
@@ -330,7 +352,7 @@ body.colors-page {
 }
 
 .palette-header p {
-  margin-bottom: 0;
+  margin: 0;
 }
 
 .palette-toggle {
