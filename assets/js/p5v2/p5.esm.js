@@ -1,4 +1,4 @@
-/*! p5.js v2.1.1 November 10, 2025 */
+/*! p5.js v2.2.0 January 14, 2026 */
 /**
  * @module Constants
  * @submodule Constants
@@ -12,7 +12,7 @@ const _PI = Math.PI;
  * @property {String} VERSION
  * @final
  */
-const VERSION = '2.1.1';
+const VERSION = '2.2.0';
 
 // GRAPHICS RENDERER
 /**
@@ -72,6 +72,13 @@ const WEBGL = 'webgl';
  * @final
  */
 const WEBGL2 = 'webgl2';
+
+/**
+ * A constant used for creating a WebGPU rendering context
+ * @property {'webgpu'} WEBGPU
+ * @final
+ */
+const WEBGPU = 'webgpu';
 
 // ENVIRONMENT
 /**
@@ -1143,6 +1150,13 @@ const IMAGE = 'image';
 // WEBGL TEXTURE WRAP AND FILTERING
 // LINEAR already exists above
 /**
+ * @typedef {'linear_mipmap'} LINEAR_MIPMAP
+ * @property {LINEAR_MIPMAP} LINEAR_MIPMAP
+ * @final
+ * @private
+ */
+const LINEAR_MIPMAP = 'linear_mipmap';
+/**
  * @typedef {'nearest'} NEAREST
  * @property {NEAREST} NEAREST
  * @final
@@ -1361,6 +1375,7 @@ var constants = /*#__PURE__*/Object.freeze({
   LEFT_ARROW: LEFT_ARROW,
   LIGHTEST: LIGHTEST,
   LINEAR: LINEAR,
+  LINEAR_MIPMAP: LINEAR_MIPMAP,
   LINES: LINES,
   LINE_LOOP: LINE_LOOP,
   LINE_STRIP: LINE_STRIP,
@@ -1422,6 +1437,7 @@ var constants = /*#__PURE__*/Object.freeze({
   WAIT: WAIT,
   WEBGL: WEBGL,
   WEBGL2: WEBGL2,
+  WEBGPU: WEBGPU,
   WORD: WORD,
   _CTX_MIDDLE: _CTX_MIDDLE,
   _DEFAULT_FILL: _DEFAULT_FILL,
@@ -3787,6 +3803,8 @@ function structure(p5, fn){
         }
         await this._runLifecycleHook('postdraw');
       }
+      // Finish drawing
+      await this._renderer.finishDraw?.();
     }
   };
 
@@ -4306,10 +4324,11 @@ function environment$1(p5, fn, lifecycles){
       cursor = type;
     } else if (typeof type === 'string') {
       let coords = '';
-      if (x && y && (typeof x === 'number' && typeof y === 'number')) {
+      if (typeof x === 'number') { // fix for #8323
+        y = typeof y === 'number' ? y : 0;
         // Note that x and y values must be unit-less positive integers < 32
         // https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
-        coords = `${x} ${y}`;
+        coords = `${Math.max(x, 0)} ${Math.max(y, 0)}`;
       }
       if (
         type.substring(0, 7) === 'http://' ||
@@ -23387,7 +23406,7 @@ class Vector {
    * @static
    * @param  {p5.Vector} v1 first <a href="#/p5.Vector">p5.Vector</a>.
    * @param  {p5.Vector} v2 second <a href="#/p5.Vector">p5.Vector</a>.
-   * @return {Number}     cross product.
+   * @return {p5.Vector}     cross product.
    */
   static cross(v1, v2) {
     return v1.cross(v2);
@@ -24948,10 +24967,12 @@ class PrimitiveToPath2DConverter extends PrimitiveVisitor {
 class PrimitiveToVerticesConverter extends PrimitiveVisitor {
   contours = [];
   curveDetail;
+  pointsToLines;
 
-  constructor({ curveDetail = 1 } = {}) {
+  constructor({ curveDetail = 1, pointsToLines = true } = {}) {
     super();
     this.curveDetail = curveDetail;
+    this.pointsToLines = pointsToLines;
   }
 
   lastContour() {
@@ -25026,7 +25047,11 @@ class PrimitiveToVerticesConverter extends PrimitiveVisitor {
     }
   }
   visitPoint(point) {
-    this.contours.push(point.vertices.slice());
+    if (this.pointsToLines) {
+      this.contours.push(...point.vertices.map(v => [v, v]));
+    } else {
+      this.contours.push(point.vertices.slice());
+    }
   }
   visitLine(line) {
     this.contours.push(line.vertices.slice());
@@ -25601,7 +25626,7 @@ function customShapes(p5, fn) {
    * }
    * </code>
    * </div>
-   * 
+   *
    * @example
    * <div>
    * <code>
@@ -25611,44 +25636,44 @@ function customShapes(p5, fn) {
    * let vertexD;
    * let vertexE;
    * let vertexF;
-   * 
+   *
    * let markerRadius;
-   * 
+   *
    * let vectorAB;
    * let vectorFE;
-   * 
+   *
    * let endOfTangentB;
    * let endOfTangentE;
-   * 
+   *
    * function setup() {
    *   createCanvas(100, 100);
-   *   
+   *
    *   // Initialize variables
    *   // Adjusting vertices A and F affects the slopes at B and E
-   *   
+   *
    *   vertexA = createVector(35, 85);
    *   vertexB = createVector(25, 70);
    *   vertexC = createVector(30, 30);
    *   vertexD = createVector(70, 30);
    *   vertexE = createVector(75, 70);
    *   vertexF = createVector(65, 85);
-   *   
+   *
    *   markerRadius = 4;
-   *   
+   *
    *   vectorAB = p5.Vector.sub(vertexB, vertexA);
    *   vectorFE = p5.Vector.sub(vertexE, vertexF);
-   *   
+   *
    *   endOfTangentB = p5.Vector.add(vertexC, vectorAB);
    *   endOfTangentE = p5.Vector.add(vertexD, vectorFE);
-   *   
+   *
    *   splineProperty(`ends`, EXCLUDE);
-   *   
+   *
    *   // Draw figure
-   *   
+   *
    *   background(220);
-   *   
+   *
    *   noFill();
-   *   
+   *
    *   beginShape();
    *   splineVertex(vertexA.x, vertexA.y);
    *   splineVertex(vertexB.x, vertexB.y);
@@ -25657,15 +25682,15 @@ function customShapes(p5, fn) {
    *   splineVertex(vertexE.x, vertexE.y);
    *   splineVertex(vertexF.x, vertexF.y);
    *   endShape();
-   *   
+   *
    *   stroke('red');
    *   line(vertexA.x, vertexA.y, vertexC.x, vertexC.y);
    *   line(vertexB.x, vertexB.y, endOfTangentB.x, endOfTangentB.y);
-   *   
+   *
    *   stroke('blue');
    *   line(vertexD.x, vertexD.y, vertexF.x, vertexF.y);
    *   line(vertexE.x, vertexE.y, endOfTangentE.x, endOfTangentE.y);
-   *     
+   *
    *   fill('white');
    *   stroke('black');
    *   circle(vertexA.x, vertexA.y, markerRadius);
@@ -25674,7 +25699,7 @@ function customShapes(p5, fn) {
    *   circle(vertexD.x, vertexD.y, markerRadius);
    *   circle(vertexE.x, vertexE.y, markerRadius);
    *   circle(vertexF.x, vertexF.y, markerRadius);
-   *   
+   *
    *   fill('black');
    *   noStroke();
    *   text('A', vertexA.x - 15, vertexA.y + 5);
@@ -25683,7 +25708,7 @@ function customShapes(p5, fn) {
    *   text('D', vertexD.x - 5, vertexD.y - 5);
    *   text('E', vertexE.x + 5, vertexE.y + 5);
    *   text('F', vertexF.x + 5, vertexF.y + 5);
-   *   
+   *
    *   describe('On a gray background, a black spline passes through vertices A, B, C, D, E, and F, shown as white circles. A red line segment joining vertices A and C has the same slope as the red tangent segment at B. Similarly, the blue line segment joining vertices D and F has the same slope as the blue tangent at E.');
    * }
    * </code>
@@ -25847,7 +25872,7 @@ function customShapes(p5, fn) {
    * spline(25, 46, 93, 44, 93, 81, 35, 85);
    * ```
    * <img src="assets/anglurBulge.png"></img>
-   * 
+   *
    * In all cases, the splines in p5.js are <a href = "https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Cardinal_spline">cardinal splines</a>.
    * When tightness is 0, these splines are often known as
    * <a href="https://en.wikipedia.org/wiki/Cubic_Hermite_spline#Catmull%E2%80%93Rom_spline">Catmull-Rom splines</a>
@@ -25865,7 +25890,6 @@ function customShapes(p5, fn) {
    *
    * function setup() {
    *   createCanvas(100, 100);
-   *
    * }
    *
    * function draw() {
@@ -25963,9 +25987,9 @@ function customShapes(p5, fn) {
    * }
    * </code>
    * </div>
-   * 
+   *
    * @example
-   * 
+   *
    * <div>
    * <code>
    * let vertexA;
@@ -25974,44 +25998,44 @@ function customShapes(p5, fn) {
    * let vertexD;
    * let vertexE;
    * let vertexF;
-   * 
+   *
    * let markerRadius;
-   * 
+   *
    * let vectorAB;
    * let vectorFE;
-   * 
+   *
    * let endOfTangentB;
    * let endOfTangentE;
-   * 
+   *
    * function setup() {
    *   createCanvas(100, 100);
-   *   
+   *
    *   // Initialize variables
    *   // Adjusting vertices A and F affects the slopes at B and E
-   *   
+   *
    *   vertexA = createVector(35, 85);
    *   vertexB = createVector(25, 70);
    *   vertexC = createVector(30, 30);
    *   vertexD = createVector(70, 30);
    *   vertexE = createVector(75, 70);
    *   vertexF = createVector(65, 85);
-   *   
+   *
    *   markerRadius = 4;
-   *   
+   *
    *   vectorAB = p5.Vector.sub(vertexB, vertexA);
    *   vectorFE = p5.Vector.sub(vertexE, vertexF);
-   *   
+   *
    *   endOfTangentB = p5.Vector.add(vertexC, vectorAB);
    *   endOfTangentE = p5.Vector.add(vertexD, vectorFE);
-   *   
+   *
    *   splineProperty(`ends`, EXCLUDE);
-   *   
+   *
    *   // Draw figure
-   *   
+   *
    *   background(220);
-   *   
+   *
    *   noFill();
-   *   
+   *
    *   beginShape();
    *   splineVertex(vertexA.x, vertexA.y);
    *   splineVertex(vertexB.x, vertexB.y);
@@ -26020,15 +26044,15 @@ function customShapes(p5, fn) {
    *   splineVertex(vertexE.x, vertexE.y);
    *   splineVertex(vertexF.x, vertexF.y);
    *   endShape();
-   *   
+   *
    *   stroke('red');
    *   line(vertexA.x, vertexA.y, vertexC.x, vertexC.y);
    *   line(vertexB.x, vertexB.y, endOfTangentB.x, endOfTangentB.y);
-   *   
+   *
    *   stroke('blue');
    *   line(vertexD.x, vertexD.y, vertexF.x, vertexF.y);
    *   line(vertexE.x, vertexE.y, endOfTangentE.x, endOfTangentE.y);
-   *     
+   *
    *   fill('white');
    *   stroke('black');
    *   circle(vertexA.x, vertexA.y, markerRadius);
@@ -26037,7 +26061,7 @@ function customShapes(p5, fn) {
    *   circle(vertexD.x, vertexD.y, markerRadius);
    *   circle(vertexE.x, vertexE.y, markerRadius);
    *   circle(vertexF.x, vertexF.y, markerRadius);
-   *   
+   *
    *   fill('black');
    *   noStroke();
    *   text('A', vertexA.x - 15, vertexA.y + 5);
@@ -26046,12 +26070,12 @@ function customShapes(p5, fn) {
    *   text('D', vertexD.x - 5, vertexD.y - 5);
    *   text('E', vertexE.x + 5, vertexE.y + 5);
    *   text('F', vertexF.x + 5, vertexF.y + 5);
-   *   
+   *
    *   describe('On a gray background, a black spline passes through vertices A, B, C, D, E, and F, shown as white circles. A red line segment joining vertices A and C has the same slope as the red tangent segment at B. Similarly, the blue line segment joining vertices D and F has the same slope as the blue tangent at E.');
    * }
    * </code>
    * </div>
-   * 
+   *
    */
 
   /**
@@ -26064,18 +26088,114 @@ function customShapes(p5, fn) {
   };
 
   /**
-   * Get or set multiple spline properties at once.
+   * Sets multiple properties for spline curves at once.
    *
-   * Similar to <a href="#/p5/splineProperty">splineProperty()</a>:
-   * `splineProperty('tightness', t)` is the same as
-   * `splineProperties({'tightness': t})`
+   * `splineProperties()` accepts an object with key-value pairs to configure
+   * how spline curves are drawn. This is a convenient way to set multiple
+   * spline properties with a single function call, rather than calling
+   * <a href="#/p5/splineProperty">splineProperty()</a> multiple times.
+   *
+   * The properties object can include:
+   * - `tightness`: A number that controls how tightly the curve fits to the
+   *   vertex points. The default value is 0. Positive values make the curve
+   *   tighter (straighter), while negative values make it looser. Values
+   *   between -5 and 5 work best.
+   * - `ends`: Controls whether to draw the end segments of the spline. Set to
+   *   `EXCLUDE` to skip drawing the segments between the first and second
+   *   points and between the second-to-last and last points. This is useful
+   *   when you want to use the first and last points as control points only.
+   *
+   * `splineProperties()` affects curves drawn with
+   * <a href="#/p5/splineVertex">splineVertex()</a> within
+   * <a href="#/p5/beginShape">beginShape()</a> and
+   * <a href="#/p5/endShape">endShape()</a>, as well as curves drawn with
+   * <a href="#/p5/spline">spline()</a>. The properties remain active until
+   * changed by another call to `splineProperties()` or
+   * <a href="#/p5/splineProperty">splineProperty()</a>.
    *
    * @method splineProperties
-   * @param {Object} properties An object containing key-value pairs to set.
-   */
-  /**
+   * @param  {Object} values an object containing spline property key-value pairs
+   * @chainable
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background(220);
+   *
+   *   // Set spline tightness using splineProperties
+   *   splineProperties({
+   *     tightness: 0.5
+   *   });
+   *
+   *   // Draw a spline curve
+   *   noFill();
+   *   stroke(0);
+   *   strokeWeight(2);
+   *   
+   *   beginShape();
+   *   splineVertex(20, 80);
+   *   splineVertex(30, 30);
+   *   splineVertex(70, 30);
+   *   splineVertex(80, 80);
+   *   endShape();
+   *
+   *   // Show vertex points
+   *   fill(255, 0, 0);
+   *   noStroke();
+   *   circle(20, 80, 6);
+   *   circle(30, 30, 6);
+   *   circle(70, 30, 6);
+   *   circle(80, 80, 6);
+   *
+   *   describe('A smooth curved line with tightness 0.5 connecting four red points.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background(220);
+   *
+   *   // Exclude end segments - first and last points become control points
+   *   splineProperties({
+   *     tightness: 0,
+   *     ends: EXCLUDE
+   *   });
+   *
+   *   // Draw curve only between middle points
+   *   noFill();
+   *   stroke(0);
+   *   strokeWeight(2);
+   *   
+   *   beginShape();
+   *   splineVertex(10, 50);  // Control point (affects curve but not drawn to)
+   *   splineVertex(30, 20);  // Start of visible curve
+   *   splineVertex(70, 80);  // End of visible curve
+   *   splineVertex(90, 50);  // Control point (affects curve but not drawn to)
+   *   endShape();
+   *
+   *   // Show all points
+   *   fill(200, 0, 0);
+   *   noStroke();
+   *   circle(10, 50, 6);  // Control point
+   *   circle(90, 50, 6);  // Control point
+   *   
+   *   fill(0, 0, 255);
+   *   circle(30, 20, 6);  // Visible curve point
+   *   circle(70, 80, 6);  // Visible curve point
+   *
+   *   describe('A curved line between two blue points, with red control points at the ends.');
+   * }
+   * </code>
+   * </div>
+   *
    * @method splineProperties
-   * @returns {Object} The current spline properties.
+   * @return {Object}
    */
   fn.splineProperties = function(values) {
     return this._renderer.splineProperties(values);
@@ -26942,6 +27062,29 @@ class Renderer {
     return this;
   }
 
+  finishDraw() {
+    // Default no-op implementation
+    // Override in specific renderers as needed
+  }
+
+  ///////////////////////////////
+  //// TEXT SUPPORT METHODS
+  //////////////////////////////
+
+  _middleAlignOffset = function() {
+    const { textFont, textSize } = this.states;
+    const font = textFont?.font;
+    const ctx = this.textDrawingContext();
+    const metrics = ctx.measureText('X');
+    let sCapHeight = (font?.data || {})['OS/2']?.sCapHeight;
+    if (sCapHeight) {
+      const unitsPerEm = font.data.head.unitsPerEm;
+      sCapHeight *= textSize / unitsPerEm;
+    } else {
+      sCapHeight = metrics.fontBoundingBoxAscent;
+    }
+    return metrics.alphabeticBaseline + sCapHeight / 2;
+  };
 }
 function renderer(p5, fn){
   /**
@@ -29637,7 +29780,10 @@ function primitives(p5, fn){
    *   createCanvas(100, 100);
    *
    *   background(200);
-   *
+   *   
+   *   // Making point to 5 pixels
+   *   strokeWeight(5);
+   * 
    *   // Top-left.
    *   point(30, 20);
    *
@@ -29663,6 +29809,9 @@ function primitives(p5, fn){
    *   createCanvas(100, 100);
    *
    *   background(200);
+   * 
+   *   // Making point to 5 pixels.
+   *   strokeWeight(5);
    *
    *   // Top-left.
    *   point(30, 20);
@@ -29693,6 +29842,9 @@ function primitives(p5, fn){
    *   createCanvas(100, 100);
    *
    *   background(200);
+   * 
+   *   // Making point to 5 pixels.
+   *   strokeWeight(5);
    *
    *   // Top-left.
    *   let a = createVector(30, 20);
@@ -36817,7 +36969,7 @@ function image$1(p5, fn){
     } else if (args[0] instanceof Element) {
       htmlCanvas = args[0].elt;
       args.shift();
-    } else if (args[0] instanceof Framebuffer) {
+    } else if (args[0] instanceof Framebuffer$1) {
       const framebuffer = args[0];
       temporaryGraphics = this.createGraphics(framebuffer.width,
         framebuffer.height);
@@ -41945,7 +42097,7 @@ function pixels(p5, fn){
    */
   fn.loadPixels = function(...args) {
     // p5._validateParameters('loadPixels', args);
-    this._renderer.loadPixels();
+    return this._renderer.loadPixels();
   };
 
   /**
@@ -44869,6 +45021,9 @@ class Geometry {
   }
 
   reset() {
+    // Notify renderer that geometry is being reset (for buffer cleanup)
+    this.renderer?.onReset?.(this);
+
     this._hasFillTransparency = undefined;
     this._hasStrokeTransparency = undefined;
 
@@ -46083,6 +46238,7 @@ class Geometry {
     for (let i = 0; i < this.edges.length; i++) {
       const prevEdge = this.edges[i - 1];
       const currEdge = this.edges[i];
+      const isPoint = currEdge[0] === currEdge[1];
       const begin = this.vertices[currEdge[0]];
       const end = this.vertices[currEdge[1]];
       const prevColor = (this.vertexStrokeColors.length > 0 && prevEdge)
@@ -46103,10 +46259,12 @@ class Geometry {
           (currEdge[1] + 1) * 4
         )
         : [0, 0, 0, 0];
-      const dir = end
-        .copy()
-        .sub(begin)
-        .normalize();
+      const dir = isPoint
+        ? new Vector(0, 1, 0)
+        : end
+          .copy()
+          .sub(begin)
+          .normalize();
       const dirOK = dir.magSq() > 0;
       if (dirOK) {
         this._addSegment(begin, end, fromColor, toColor, dir);
@@ -46126,6 +46284,9 @@ class Geometry {
               this._addJoin(begin, lastValidDir, dir, fromColor);
             }
           }
+        } else if (isPoint) {
+          this._addCap(begin, dir.copy().mult(-1), fromColor);
+          this._addCap(begin, dir, fromColor);
         } else {
           // Start a new line
           if (dirOK && !connected.has(currEdge[0])) {
@@ -46147,7 +46308,7 @@ class Geometry {
               });
             }
           }
-          if (lastValidDir && !connected.has(prevEdge[1])) {
+          if (!isPoint && lastValidDir && !connected.has(prevEdge[1])) {
             const existingCap = potentialCaps.get(prevEdge[1]);
             if (existingCap) {
               this._addJoin(
@@ -47690,6 +47851,7 @@ class Camera {
    * </div>
    */
   perspective(fovy, aspect, near, far) {
+    const range = this._renderer.zClipRange();
     this.cameraType = arguments.length > 0 ? 'custom' : 'default';
     if (typeof fovy === 'undefined') {
       fovy = this.defaultCameraFOV;
@@ -47734,10 +47896,21 @@ class Camera {
     const f = 1.0 / Math.tan(this.cameraFOV / 2);
     const nf = 1.0 / (this.cameraNear - this.cameraFar);
 
+    let A, B;
+    if (range[0] === 0) {
+      // WebGPU clip space, z in [0, 1]
+      A = far / (near - far);
+      B = (far * near) / (near - far);
+    } else {
+      // WebGL clip space, z in [-1, 1]
+      A = (far + near) * nf;
+      B = (2 * far * near) * nf;
+    }
+
     this.projMatrix.set(f / aspect, 0, 0, 0,
       0, -f * this.yScale, 0, 0,
-      0, 0, (far + near) * nf, -1,
-      0, 0, (2 * far * near) * nf, 0);
+      0, 0, A, -1,
+      0, 0, B, 0);
 
     if (this._isActive()) {
       this._renderer.states.setValue('uPMatrix', this._renderer.states.uPMatrix.clone());
@@ -49090,8 +49263,7 @@ class Camera {
       );
       // If the camera is active, make uPMatrix reflect changes in projMatrix.
       if (this._isActive()) {
-        this._renderer.states.setValue('uPMatrix', this._renderer.states.uPMatrix.clone());
-        this._renderer.states.uPMatrix.mat4 = this.projMatrix.mat4.slice();
+        this._renderer.states.setValue('uPMatrix', this.projMatrix.clone());
       }
     }
 
@@ -49280,8 +49452,8 @@ class Camera {
     this.defaultCenterX = 0;
     this.defaultCenterY = 0;
     this.defaultCenterZ = 0;
-    this.defaultCameraNear = this.defaultEyeZ * 0.1;
-    this.defaultCameraFar = this.defaultEyeZ * 10;
+    this.defaultCameraNear = this.defaultEyeZ * this._renderer.defaultNearScale();
+    this.defaultCameraFar = this.defaultEyeZ * this._renderer.defaultFarScale();
   }
 
   //detect if user didn't set the camera
@@ -49343,6 +49515,8 @@ class Camera {
     _cam.cameraMatrix = this.cameraMatrix.copy();
     _cam.projMatrix = this.projMatrix.copy();
     _cam.yScale = this.yScale;
+
+    _cam.cameraType = this.cameraType;
 
     return _cam;
   }
@@ -49950,7 +50124,7 @@ function camera(p5, fn){
    */
   fn.linePerspective = function (enable) {
     // p5._validateParameters('linePerspective', arguments);
-    if (!(this._renderer instanceof RendererGL)) {
+    if (!(this._renderer instanceof Renderer3D)) {
       throw new Error('linePerspective() must be called in WebGL mode.');
     }
     return this._renderer.linePerspective(enable);
@@ -50443,16 +50617,19 @@ function camera(p5, fn){
    */
   p5.Camera = Camera;
 
-  RendererGL.prototype.camera = function(...args) {
+  Renderer3D.prototype.camera = function(...args) {
+    this.states.setValue('curCamera', this.states.curCamera.clone());
     this.states.curCamera.camera(...args);
   };
 
-  RendererGL.prototype.perspective = function(...args) {
+  Renderer3D.prototype.perspective = function(...args) {
+    this.states.setValue('curCamera', this.states.curCamera.clone());
     this.states.curCamera.perspective(...args);
   };
 
-  RendererGL.prototype.linePerspective = function(enable) {
+  Renderer3D.prototype.linePerspective = function(enable) {
     if (enable !== undefined) {
+      this.states.setValue('curCamera', this.states.curCamera.clone());
       // Set the line perspective if enable is provided
       this.states.curCamera.useLinePerspective = enable;
     } else {
@@ -50461,15 +50638,17 @@ function camera(p5, fn){
     }
   };
 
-  RendererGL.prototype.ortho = function(...args) {
+  Renderer3D.prototype.ortho = function(...args) {
+    this.states.setValue('curCamera', this.states.curCamera.clone());
     this.states.curCamera.ortho(...args);
   };
 
-  RendererGL.prototype.frustum = function(...args) {
+  Renderer3D.prototype.frustum = function(...args) {
+    this.states.setValue('curCamera', this.states.curCamera.clone());
     this.states.curCamera.frustum(...args);
   };
 
-  RendererGL.prototype.createCamera = function() {
+  Renderer3D.prototype.createCamera = function() {
     // compute default camera settings, then set a default camera
     const _cam = new Camera(this);
     _cam._computeCameraDefaultSettings();
@@ -50478,7 +50657,7 @@ function camera(p5, fn){
     return _cam;
   };
 
-  RendererGL.prototype.setCamera = function(cam) {
+  Renderer3D.prototype.setCamera = function(cam) {
     this.states.setValue('curCamera', cam);
 
     // set the projection matrix (which is not normally updated each frame)
@@ -51504,1667 +51683,6 @@ if(typeof p5 !== 'undefined'){
   camera(p5, p5.prototype);
 }
 
-class RenderBuffer {
-  constructor(size, src, dst, attr, renderer, map) {
-    this.size = size; // the number of FLOATs in each vertex
-    this.src = src; // the name of the model's source array
-    this.dst = dst; // the name of the geometry's buffer
-    this.attr = attr; // the name of the vertex attribute
-    this._renderer = renderer;
-    this.map = map; // optional, a transformation function to apply to src
-  }
-
-  /**
-   * Enables and binds the buffers used by shader when the appropriate data exists in geometry.
-   * Must always be done prior to drawing geometry in WebGL.
-   * @param {p5.Geometry} geometry Geometry that is going to be drawn
-   * @param {p5.Shader} shader Active shader
-   * @private
-   */
-  _prepareBuffer(geometry, shader) {
-    const attributes = shader.attributes;
-    const gl = this._renderer.GL;
-    const glBuffers = this._renderer._getOrMakeCachedBuffers(geometry);
-
-    // loop through each of the buffer definitions
-    const attr = attributes[this.attr];
-    if (!attr) {
-      return;
-    }
-    // check if the geometry has the appropriate source array
-    let buffer = glBuffers[this.dst];
-    const src = geometry[this.src];
-    if (src && src.length > 0) {
-      // check if we need to create the GL buffer
-      const createBuffer = !buffer;
-      if (createBuffer) {
-        // create and remember the buffer
-        glBuffers[this.dst] = buffer = gl.createBuffer();
-      }
-      // bind the buffer
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-
-      // check if we need to fill the buffer with data
-      if (createBuffer || geometry.dirtyFlags[this.src] !== false) {
-        const map = this.map;
-        // get the values from the geometry, possibly transformed
-        const values = map ? map(src) : src;
-        // fill the buffer with the values
-        this._renderer._bindBuffer(buffer, gl.ARRAY_BUFFER, values);
-        // mark the geometry's source array as clean
-        geometry.dirtyFlags[this.src] = false;
-      }
-      // enable the attribute
-      shader.enableAttrib(attr, this.size);
-    } else {
-      const loc = attr.location;
-      if (loc === -1 || !this._renderer.registerEnabled.has(loc)) {
-        return;
-      }
-      // Disable register corresponding to unused attribute
-      gl.disableVertexAttribArray(loc);
-      // Record register availability
-      this._renderer.registerEnabled.delete(loc);
-    }
-  }
-}
-
-function renderBuffer(p5, fn) {
-  p5.RenderBuffer = RenderBuffer;
-}
-
-if (typeof p5 !== 'undefined') {
-  renderBuffer(p5);
-}
-
-/**
- * This module defines the p5.Shader class
- * @module 3D
- * @submodule Material
- * @for p5
- * @requires core
- */
-
-
-class Shader {
-  constructor(renderer, vertSrc, fragSrc, options = {}) {
-    // TODO: adapt this to not take ids, but rather,
-    // to take the source for a vertex and fragment shader
-    // to enable custom shaders at some later date
-    this._renderer = renderer;
-    this._vertSrc = vertSrc;
-    this._fragSrc = fragSrc;
-    this._vertShader = -1;
-    this._fragShader = -1;
-    this._glProgram = 0;
-    this._loadedAttributes = false;
-    this.attributes = {};
-    this._loadedUniforms = false;
-    this.uniforms = {};
-    this._bound = false;
-    this.samplers = [];
-    this.hooks = {
-      // These should be passed in by `.modify()` instead of being manually
-      // passed in.
-
-      // Stores uniforms + default values.
-      uniforms: options.uniforms || {},
-
-      // Stores custom uniform + helper declarations as a string.
-      declarations: options.declarations,
-
-      // Stores helper functions to prepend to shaders.
-      helpers: options.helpers || {},
-
-      // Stores the hook implementations
-      vertex: options.vertex || {},
-      fragment: options.fragment || {},
-
-      // Stores whether or not the hook implementation has been modified
-      // from the default. This is supplied automatically by calling
-      // yourShader.modify(...).
-      modified: {
-        vertex: (options.modified && options.modified.vertex) || {},
-        fragment: (options.modified && options.modified.fragment) || {}
-      }
-    };
-  }
-
-  hookTypes(hookName) {
-    let fullSrc = this._vertSrc;
-    let body = this.hooks.vertex[hookName];
-    if (!body) {
-      body = this.hooks.fragment[hookName];
-      fullSrc = this._fragSrc;
-    }
-    if (!body) {
-      throw new Error(`Can't find hook ${hookName}!`);
-    }
-    const nameParts = hookName.split(/\s+/g);
-    const functionName = nameParts.pop();
-    const returnType = nameParts.pop();
-    const returnQualifiers = [...nameParts];
-
-    const parameterMatch = /\(([^\)]*)\)/.exec(body);
-    if (!parameterMatch) {
-      throw new Error(`Couldn't find function parameters in hook body:\n${body}`);
-    }
-
-    const structProperties = structName => {
-      const structDefMatch = new RegExp(`struct\\s+${structName}\\s*\{([^\}]*)\}`).exec(fullSrc);
-      if (!structDefMatch) return undefined;
-
-      const properties = [];
-      for (const defSrc of structDefMatch[1].split(';')) {
-        // E.g. `int var1, var2;` or `MyStruct prop;`
-        const parts = defSrc.trim().split(/\s+|,/g);
-        const typeName = parts.shift();
-        const names = [...parts];
-        const typeProperties = structProperties(typeName);
-        for (const name of names) {
-          properties.push({
-            name,
-            type: {
-              typeName,
-              qualifiers: [],
-              properties: typeProperties
-            }
-          });
-        }
-      }
-      return properties;
-    };
-
-    const parameters = parameterMatch[1].split(',').map(paramString => {
-      // e.g. `int prop` or `in sampler2D prop` or `const float prop`
-      const parts = paramString.trim().split(/\s+/g);
-      const name = parts.pop();
-      const typeName = parts.pop();
-      const qualifiers = [...parts];
-      const properties = structProperties(typeName);
-      return {
-        name,
-        type: {
-          typeName,
-          qualifiers,
-          properties
-        }
-      };
-    });
-
-    return {
-      name: functionName,
-      returnType: {
-        typeName: returnType,
-        qualifiers: returnQualifiers,
-        properties: structProperties(returnType)
-      },
-      parameters
-    };
-  }
-
-  shaderSrc(src, shaderType) {
-    const main = 'void main';
-    let [preMain, postMain] = src.split(main);
-
-    let hooks = '';
-    let defines = '';
-    for (const key in this.hooks.uniforms) {
-      hooks += `uniform ${key};\n`;
-    }
-    if (this.hooks.declarations) {
-      hooks += this.hooks.declarations + '\n';
-    }
-    if (this.hooks[shaderType].declarations) {
-      hooks += this.hooks[shaderType].declarations + '\n';
-    }
-    for (const hookDef in this.hooks.helpers) {
-      hooks += `${hookDef}${this.hooks.helpers[hookDef]}\n`;
-    }
-    for (const hookDef in this.hooks[shaderType]) {
-      if (hookDef === 'declarations') continue;
-      const [hookType, hookName] = hookDef.split(' ');
-
-      // Add a #define so that if the shader wants to use preprocessor directives to
-      // optimize away the extra function calls in main, it can do so
-      if (this.hooks.modified[shaderType][hookDef]) {
-        defines += '#define AUGMENTED_HOOK_' + hookName + '\n';
-      }
-
-      hooks +=
-        hookType + ' HOOK_' + hookName + this.hooks[shaderType][hookDef] + '\n';
-    }
-
-    // Allow shaders to specify the location of hook #define statements. Normally these
-    // go after function definitions, but one might want to have them defined earlier
-    // in order to only conditionally make uniforms.
-    if (preMain.indexOf('#define HOOK_DEFINES') !== -1) {
-      preMain = preMain.replace('#define HOOK_DEFINES', '\n' + defines + '\n');
-      defines = '';
-    }
-
-    return preMain + '\n' + defines + hooks + main + postMain;
-  }
-
-  /**
-   * Shaders are written in <a href="https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/GLSL_Shaders">GLSL</a>, but
-   * there are different versions of GLSL that it might be written in.
-   *
-   * Calling this method on a `p5.Shader` will return the GLSL version it uses, either `100 es` or `300 es`.
-   * WebGL 1 shaders will only use `100 es`, and WebGL 2 shaders may use either.
-   *
-   * @returns {String} The GLSL version used by the shader.
-   */
-  version() {
-    const match = /#version (.+)$/.exec(this.vertSrc());
-    if (match) {
-      return match[1];
-    } else {
-      return '100 es';
-    }
-  }
-
-  vertSrc() {
-    return this.shaderSrc(this._vertSrc, 'vertex');
-  }
-
-  fragSrc() {
-    return this.shaderSrc(this._fragSrc, 'fragment');
-  }
-
-  /**
-   * Logs the hooks available in this shader, and their current implementation.
-   *
-   * Each shader may let you override bits of its behavior. Each bit is called
-   * a *hook.* A hook is either for the *vertex* shader, if it affects the
-   * position of vertices, or in the *fragment* shader, if it affects the pixel
-   * color. This method logs those values to the console, letting you know what
-   * you are able to use in a call to
-   * <a href="#/p5.Shader/modify">`modify()`</a>.
-   *
-   * For example, this shader will produce the following output:
-   *
-   * ```js
-   * myShader = baseMaterialShader().modify({
-   *   declarations: 'uniform float time;',
-   *   'vec3 getWorldPosition': `(vec3 pos) {
-   *     pos.y += 20. * sin(time * 0.001 + pos.x * 0.05);
-   *     return pos;
-   *   }`
-   * });
-   * myShader.inspectHooks();
-   * ```
-   *
-   * ```
-   * ==== Vertex shader hooks: ====
-   * void beforeVertex() {}
-   * vec3 getLocalPosition(vec3 position) { return position; }
-   * [MODIFIED] vec3 getWorldPosition(vec3 pos) {
-   *       pos.y += 20. * sin(time * 0.001 + pos.x * 0.05);
-   *       return pos;
-   *     }
-   * vec3 getLocalNormal(vec3 normal) { return normal; }
-   * vec3 getWorldNormal(vec3 normal) { return normal; }
-   * vec2 getUV(vec2 uv) { return uv; }
-   * vec4 getVertexColor(vec4 color) { return color; }
-   * void afterVertex() {}
-   *
-   * ==== Fragment shader hooks: ====
-   * void beforeFragment() {}
-   * Inputs getPixelInputs(Inputs inputs) { return inputs; }
-   * vec4 combineColors(ColorComponents components) {
-   *                 vec4 color = vec4(0.);
-   *                 color.rgb += components.diffuse * components.baseColor;
-   *                 color.rgb += components.ambient * components.ambientColor;
-   *                 color.rgb += components.specular * components.specularColor;
-   *                 color.rgb += components.emissive;
-   *                 color.a = components.opacity;
-   *                 return color;
-   *               }
-   * vec4 getFinalColor(vec4 color) { return color; }
-   * void afterFragment() {}
-   * ```
-   *
-   * @beta
-   */
-  inspectHooks() {
-    console.log('==== Vertex shader hooks: ====');
-    for (const key in this.hooks.vertex) {
-      console.log(
-        (this.hooks.modified.vertex[key] ? '[MODIFIED] ' : '') +
-          key +
-          this.hooks.vertex[key]
-      );
-    }
-    console.log('');
-    console.log('==== Fragment shader hooks: ====');
-    for (const key in this.hooks.fragment) {
-      console.log(
-        (this.hooks.modified.fragment[key] ? '[MODIFIED] ' : '') +
-          key +
-          this.hooks.fragment[key]
-      );
-    }
-    console.log('');
-    console.log('==== Helper functions: ====');
-    for (const key in this.hooks.helpers) {
-      console.log(key + this.hooks.helpers[key]);
-    }
-  }
-
-  /**
-   * Returns a new shader, based on the original, but with custom snippets
-   * of shader code replacing default behaviour.
-   *
-   * Each shader may let you override bits of its behavior. Each bit is called
-   * a *hook.* For example, a hook can let you adjust positions of vertices, or
-   * the color of a pixel. You can inspect the different hooks available by calling
-   * <a href="#/p5.Shader/inspectHooks">`yourShader.inspectHooks()`</a>. You can
-   * also read the reference for the default material, normal material, color, line, and point shaders to
-   * see what hooks they have available.
-   *
-   * `modify()` can be passed a function as a parameter. Inside, you can override hooks
-   * by calling them as functions. Each hook will take in a callback that takes in inputs
-   * and is expected to return an output. For example, here is a function that changes the
-   * material color to red:
-   *
-   * ```js example
-   * let myShader;
-   *
-   * function setup() {
-   *   createCanvas(200, 200, WEBGL);
-   *   myShader = baseMaterialShader().modify(() => {
-   *     getPixelInputs((inputs) => {
-   *       inputs.color = [inputs.texCoord, 0, 1];
-   *       return inputs;
-   *     });
-   *   });
-   * }
-   *
-   * function draw() {
-   *   background(255);
-   *   noStroke();
-   *   shader(myShader); // Apply the custom shader
-   *   plane(width, height); // Draw a plane with the shader applied
-   * }
-   * ```
-   *
-   * In addition to calling hooks, you can create uniforms, which are special variables
-   * used to pass data from p5.js into the shader. They can be created by calling `uniform` + the
-   * type of the data, such as `uniformFloat` for a number of `uniformVector2` for a two-component vector.
-   * They take in a function that returns the data for the variable. You can then reference these
-   * variables in your hooks, and their values will update every time you apply
-   * the shader with the result of your function.
-   *
-   * ```js example
-   * let myShader;
-   *
-   * function setup() {
-   *   createCanvas(200, 200, WEBGL);
-   *   myShader = baseMaterialShader().modify(() => {
-   *     // Get the current time from p5.js
-   *     let t = uniformFloat(() => millis());
-   *
-   *     getPixelInputs((inputs) => {
-   *       inputs.color = [
-   *         inputs.texCoord,
-   *         sin(t * 0.01) / 2 + 0.5,
-   *         1,
-   *       ];
-   *       return inputs;
-   *     });
-   *   });
-   * }
-   *
-   * function draw() {
-   *   background(255);
-   *   noStroke(255);
-   *   shader(myShader); // Apply the custom shader
-   *   plane(width, height); // Draw a plane with the shader applied
-   * }
-   * ```
-   *
-   * p5.strands functions are special, since they get turned into a shader instead of being
-   * run like the rest of your code. They only have access to p5.js functions, and variables
-   * you declare inside the `modify` callback. If you need access to local variables, you
-   * can pass them into `modify` with an optional second parameter, `variables`. If you are
-   * using instance mode, you will need to pass your sketch object in this way.
-   *
-   * ```js example
-   * new p5((sketch) => {
-   *   let myShader;
-   *
-   *   sketch.setup = function() {
-   *     sketch.createCanvas(200, 200, sketch.WEBGL);
-   *     myShader = sketch.baseMaterialShader().modify(() => {
-   *       sketch.getPixelInputs((inputs) => {
-   *         inputs.color = [inputs.texCoord, 0, 1];
-   *         return inputs;
-   *       });
-   *     }, { sketch });
-   *   }
-   *
-   *   sketch.draw = function() {
-   *     sketch.background(255);
-   *     sketch.noStroke();
-   *     sketch.shader(myShader); // Apply the custom shader
-   *     sketch.plane(sketch.width, sketch.height); // Draw a plane with the shader applied
-   *   }
-   * });
-   * ```
-   *
-   * You can also write GLSL directly in `modify` if you need direct access. To do so,
-   * `modify()` takes one parameter, `hooks`, an object with the hooks you want
-   * to override. Each key of the `hooks` object is the name
-   * of a hook, and the value is a string with the GLSL code for your hook.
-   *
-   * If you supply functions that aren't existing hooks, they will get added at the start of
-   * the shader as helper functions so that you can use them in your hooks.
-   *
-   * To add new <a href="#/p5.Shader/setUniform">uniforms</a> to your shader, you can pass in a `uniforms` object containing
-   * the type and name of the uniform as the key, and a default value or function returning
-   * a default value as its value. These will be automatically set when the shader is set
-   * with `shader(yourShader)`.
-   *
-   * ```js example
-   * let myShader;
-   *
-   * function setup() {
-   *   createCanvas(200, 200, WEBGL);
-   *   myShader = baseMaterialShader().modify({
-   *     uniforms: {
-   *       'float time': () => millis() // Uniform for time
-   *     },
-   *     'Vertex getWorldInputs': `(Vertex inputs) {
-   *       inputs.position.y +=
-   *         20. * sin(time * 0.001 + inputs.position.x * 0.05);
-   *       return inputs;
-   *     }`
-   *   });
-   * }
-   *
-   * function draw() {
-   *   background(255);
-   *   shader(myShader); // Apply the custom shader
-   *   lights();         // Enable lighting
-   *   noStroke();       // Disable stroke
-   *   fill('red');      // Set fill color to red
-   *   sphere(50);       // Draw a sphere with the shader applied
-   * }
-   * ```
-   *
-   * You can also add a `declarations` key, where the value is a GLSL string declaring
-   * custom uniform variables, globals, and functions shared
-   * between hooks. To add declarations just in a vertex or fragment shader, add
-   * `vertexDeclarations` and `fragmentDeclarations` keys.
-   *
-   * ```js example
-   * let myShader;
-   *
-   * function setup() {
-   *   createCanvas(200, 200, WEBGL);
-   *   myShader = baseMaterialShader().modify({
-   *     // Manually specifying a uniform
-   *     declarations: 'uniform float time;',
-   *     'Vertex getWorldInputs': `(Vertex inputs) {
-   *       inputs.position.y +=
-   *         20. * sin(time * 0.001 + inputs.position.x * 0.05);
-   *       return inputs;
-   *     }`
-   *   });
-   * }
-   *
-   * function draw() {
-   *   background(255);
-   *   shader(myShader);
-   *   myShader.setUniform('time', millis());
-   *   lights();
-   *   noStroke();
-   *   fill('red');
-   *   sphere(50);
-   * }
-   * ```
-   *
-   * @beta
-   * @param {Function} callback A function with p5.strands code to modify the shader.
-   * @param {Object} [variables] An optional object with local variables p5.strands
-   * should have access to.
-   * @returns {p5.Shader}
-   */
-  /**
-   * @param {Object} [hooks] The hooks in the shader to replace.
-   * @returns {p5.Shader}
-   */
-  modify(hooks) {
-    // p5._validateParameters('p5.Shader.modify', arguments);
-    const newHooks = {
-      vertex: {},
-      fragment: {},
-      helpers: {}
-    };
-    for (const key in hooks) {
-      if (key === 'declarations') continue;
-      if (key === 'uniforms') continue;
-      if (key === 'vertexDeclarations') {
-        newHooks.vertex.declarations =
-          (newHooks.vertex.declarations || '') + '\n' + hooks[key];
-      } else if (key === 'fragmentDeclarations') {
-        newHooks.fragment.declarations =
-          (newHooks.fragment.declarations || '') + '\n' + hooks[key];
-      } else if (this.hooks.vertex[key]) {
-        newHooks.vertex[key] = hooks[key];
-      } else if (this.hooks.fragment[key]) {
-        newHooks.fragment[key] = hooks[key];
-      } else {
-        newHooks.helpers[key] = hooks[key];
-      }
-    }
-    const modifiedVertex = Object.assign({}, this.hooks.modified.vertex);
-    const modifiedFragment = Object.assign({}, this.hooks.modified.fragment);
-    for (const key in newHooks.vertex || {}) {
-      if (key === 'declarations') continue;
-      modifiedVertex[key] = true;
-    }
-    for (const key in newHooks.fragment || {}) {
-      if (key === 'declarations') continue;
-      modifiedFragment[key] = true;
-    }
-
-    return new Shader(this._renderer, this._vertSrc, this._fragSrc, {
-      declarations:
-        (this.hooks.declarations || '') + '\n' + (hooks.declarations || ''),
-      uniforms: Object.assign({}, this.hooks.uniforms, hooks.uniforms || {}),
-      fragment: Object.assign({}, this.hooks.fragment, newHooks.fragment || {}),
-      vertex: Object.assign({}, this.hooks.vertex, newHooks.vertex || {}),
-      helpers: Object.assign({}, this.hooks.helpers, newHooks.helpers || {}),
-      modified: {
-        vertex: modifiedVertex,
-        fragment: modifiedFragment
-      }
-    });
-  }
-
-  /**
-   * Creates, compiles, and links the shader based on its
-   * sources for the vertex and fragment shaders (provided
-   * to the constructor). Populates known attributes and
-   * uniforms from the shader.
-   * @chainable
-   * @private
-   */
-  init() {
-    if (this._glProgram === 0 /* or context is stale? */) {
-      const gl = this._renderer.GL;
-
-      // @todo: once custom shading is allowed,
-      // friendly error messages should be used here to share
-      // compiler and linker errors.
-
-      //set up the shader by
-      // 1. creating and getting a gl id for the shader program,
-      // 2. compliling its vertex & fragment sources,
-      // 3. linking the vertex and fragment shaders
-      this._vertShader = gl.createShader(gl.VERTEX_SHADER);
-      //load in our default vertex shader
-      gl.shaderSource(this._vertShader, this.vertSrc());
-      gl.compileShader(this._vertShader);
-      // if our vertex shader failed compilation?
-      if (!gl.getShaderParameter(this._vertShader, gl.COMPILE_STATUS)) {
-        const glError = gl.getShaderInfoLog(this._vertShader);
-        if (typeof IS_MINIFIED !== 'undefined') {
-          console.error(glError);
-        } else {
-          p5._friendlyError(
-            `Yikes! An error occurred compiling the vertex shader:${glError}`
-          );
-          throw glError;
-        }
-        return null;
-      }
-
-      this._fragShader = gl.createShader(gl.FRAGMENT_SHADER);
-      //load in our material frag shader
-      gl.shaderSource(this._fragShader, this.fragSrc());
-      gl.compileShader(this._fragShader);
-      // if our frag shader failed compilation?
-      if (!gl.getShaderParameter(this._fragShader, gl.COMPILE_STATUS)) {
-        const glError = gl.getShaderInfoLog(this._fragShader);
-        if (typeof IS_MINIFIED !== 'undefined') {
-          console.error(glError);
-        } else {
-          p5._friendlyError(
-            `Darn! An error occurred compiling the fragment shader:${glError}`
-          );
-          throw glError;
-        }
-        return null;
-      }
-
-      this._glProgram = gl.createProgram();
-      gl.attachShader(this._glProgram, this._vertShader);
-      gl.attachShader(this._glProgram, this._fragShader);
-      gl.linkProgram(this._glProgram);
-      if (!gl.getProgramParameter(this._glProgram, gl.LINK_STATUS)) {
-        p5._friendlyError(
-          `Snap! Error linking shader program: ${gl.getProgramInfoLog(
-            this._glProgram
-          )}`
-        );
-      }
-
-      this._loadAttributes();
-      this._loadUniforms();
-    }
-    return this;
-  }
-
-  /**
-   * @private
-   */
-  setDefaultUniforms() {
-    for (const key in this.hooks.uniforms) {
-      const [, name] = key.split(' ');
-      const initializer = this.hooks.uniforms[key];
-      let value;
-      if (initializer instanceof Function) {
-        value = initializer();
-      } else {
-        value = initializer;
-      }
-
-      if (value !== undefined && value !== null) {
-        this.setUniform(name, value);
-      }
-    }
-  }
-
-  /**
-   * Copies the shader from one drawing context to another.
-   *
-   * Each `p5.Shader` object must be compiled by calling
-   * <a href="#/p5/shader">shader()</a> before it can run. Compilation happens
-   * in a drawing context which is usually the main canvas or an instance of
-   * <a href="#/p5.Graphics">p5.Graphics</a>. A shader can only be used in the
-   * context where it was compiled. The `copyToContext()` method compiles the
-   * shader again and copies it to another drawing context where it can be
-   * reused.
-   *
-   * The parameter, `context`, is the drawing context where the shader will be
-   * used. The shader can be copied to an instance of
-   * <a href="#/p5.Graphics">p5.Graphics</a>, as in
-   * `myShader.copyToContext(pg)`. The shader can also be copied from a
-   * <a href="#/p5.Graphics">p5.Graphics</a> object to the main canvas using
-   * the `p5.instance` variable, as in `myShader.copyToContext(p5.instance)`.
-   *
-   * Note: A <a href="#/p5.Shader">p5.Shader</a> object created with
-   * <a href="#/p5/createShader">createShader()</a>,
-   * <a href="#/p5/createFilterShader">createFilterShader()</a>, or
-   * <a href="#/p5/loadShader">loadShader()</a>
-   * can be used directly with a <a href="#/p5.Framebuffer">p5.Framebuffer</a>
-   * object created with
-   * <a href="#/p5/createFramebuffer">createFramebuffer()</a>. Both objects
-   * have the same context as the main canvas.
-   *
-   * @param {p5|p5.Graphics} context WebGL context for the copied shader.
-   * @returns {p5.Shader} new shader compiled for the target context.
-   *
-   * @example
-   * <div>
-   * <code>
-   * // Note: A "uniform" is a global variable within a shader program.
-   *
-   * // Create a string with the vertex shader program.
-   * // The vertex shader is called for each vertex.
-   * let vertSrc = `
-   * precision highp float;
-   * uniform mat4 uModelViewMatrix;
-   * uniform mat4 uProjectionMatrix;
-   *
-   * attribute vec3 aPosition;
-   * attribute vec2 aTexCoord;
-   * varying vec2 vTexCoord;
-   *
-   * void main() {
-   *   vTexCoord = aTexCoord;
-   *   vec4 positionVec4 = vec4(aPosition, 1.0);
-   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
-   * }
-   * `;
-   *
-   * // Create a string with the fragment shader program.
-   * // The fragment shader is called for each pixel.
-   * let fragSrc = `
-   * precision mediump float;
-   * varying vec2 vTexCoord;
-   *
-   * void main() {
-   *   vec2 uv = vTexCoord;
-   *   vec3 color = vec3(uv.x, uv.y, min(uv.x + uv.y, 1.0));
-   *   gl_FragColor = vec4(color, 1.0);\
-   * }
-   * `;
-   *
-   * let pg;
-   *
-   * function setup() {
-   *   createCanvas(100, 100, WEBGL);
-   *
-   *   background(200);
-   *
-   *   // Create a p5.Shader object.
-   *   let original = createShader(vertSrc, fragSrc);
-   *
-   *   // Compile the p5.Shader object.
-   *   shader(original);
-   *
-   *   // Create a p5.Graphics object.
-   *   pg = createGraphics(50, 50, WEBGL);
-   *
-   *   // Copy the original shader to the p5.Graphics object.
-   *   let copied = original.copyToContext(pg);
-   *
-   *   // Apply the copied shader to the p5.Graphics object.
-   *   pg.shader(copied);
-   *
-   *   // Style the display surface.
-   *   pg.noStroke();
-   *
-   *   // Add a display surface for the shader.
-   *   pg.plane(50, 50);
-   *
-   *   describe('A square with purple-blue gradient on its surface drawn against a gray background.');
-   * }
-   *
-   * function draw() {
-   *   background(200);
-   *
-   *   // Draw the p5.Graphics object to the main canvas.
-   *   image(pg, -25, -25);
-   * }
-   * </code>
-   * </div>
-   *
-   * <div class='notest'>
-   * <code>
-   * // Note: A "uniform" is a global variable within a shader program.
-   *
-   * // Create a string with the vertex shader program.
-   * // The vertex shader is called for each vertex.
-   * let vertSrc = `
-   * precision highp float;
-   * uniform mat4 uModelViewMatrix;
-   * uniform mat4 uProjectionMatrix;
-   *
-   * attribute vec3 aPosition;
-   * attribute vec2 aTexCoord;
-   * varying vec2 vTexCoord;
-   *
-   * void main() {
-   *   vTexCoord = aTexCoord;
-   *   vec4 positionVec4 = vec4(aPosition, 1.0);
-   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
-   * }
-   * `;
-   *
-   * // Create a string with the fragment shader program.
-   * // The fragment shader is called for each pixel.
-   * let fragSrc = `
-   * precision mediump float;
-   *
-   * varying vec2 vTexCoord;
-   *
-   * void main() {
-   *   vec2 uv = vTexCoord;
-   *   vec3 color = vec3(uv.x, uv.y, min(uv.x + uv.y, 1.0));
-   *   gl_FragColor = vec4(color, 1.0);
-   * }
-   * `;
-   *
-   * let copied;
-   *
-   * function setup() {
-   *   createCanvas(100, 100, WEBGL);
-   *
-   *   // Create a p5.Graphics object.
-   *   let pg = createGraphics(25, 25, WEBGL);
-   *
-   *   // Create a p5.Shader object.
-   *   let original = pg.createShader(vertSrc, fragSrc);
-   *
-   *   // Compile the p5.Shader object.
-   *   pg.shader(original);
-   *
-   *   // Copy the original shader to the main canvas.
-   *   copied = original.copyToContext(p5.instance);
-   *
-   *   // Apply the copied shader to the main canvas.
-   *   shader(copied);
-   *
-   *   describe('A rotating cube with a purple-blue gradient on its surface drawn against a gray background.');
-   * }
-   *
-   * function draw() {
-   *   background(200);
-   *
-   *   // Rotate around the x-, y-, and z-axes.
-   *   rotateX(frameCount * 0.01);
-   *   rotateY(frameCount * 0.01);
-   *   rotateZ(frameCount * 0.01);
-   *
-   *   // Draw the box.
-   *   box(50);
-   * }
-   * </code>
-   * </div>
-   */
-  copyToContext(context) {
-    const shader = new Shader(
-      context._renderer,
-      this._vertSrc,
-      this._fragSrc
-    );
-    shader.ensureCompiledOnContext(context._renderer);
-    return shader;
-  }
-
-  /**
-   * @private
-   */
-  ensureCompiledOnContext(context) {
-    if (this._glProgram !== 0 && this._renderer !== context) {
-      throw new Error(
-        'The shader being run is attached to a different context. Do you need to copy it to this context first with .copyToContext()?'
-      );
-    } else if (this._glProgram === 0) {
-      this._renderer = context?._renderer?.filterRenderer?._renderer || context;
-      this.init();
-    }
-  }
-
-
-  /**
-   * Queries the active attributes for this shader and loads
-   * their names and locations into the attributes array.
-   * @private
-   */
-  _loadAttributes() {
-    if (this._loadedAttributes) {
-      return;
-    }
-
-    this.attributes = {};
-
-    const gl = this._renderer.GL;
-
-    const numAttributes = gl.getProgramParameter(
-      this._glProgram,
-      gl.ACTIVE_ATTRIBUTES
-    );
-    for (let i = 0; i < numAttributes; ++i) {
-      const attributeInfo = gl.getActiveAttrib(this._glProgram, i);
-      const name = attributeInfo.name;
-      const location = gl.getAttribLocation(this._glProgram, name);
-      const attribute = {};
-      attribute.name = name;
-      attribute.location = location;
-      attribute.index = i;
-      attribute.type = attributeInfo.type;
-      attribute.size = attributeInfo.size;
-      this.attributes[name] = attribute;
-    }
-
-    this._loadedAttributes = true;
-  }
-
-  /**
-   * Queries the active uniforms for this shader and loads
-   * their names and locations into the uniforms array.
-   * @private
-   */
-  _loadUniforms() {
-    if (this._loadedUniforms) {
-      return;
-    }
-
-    const gl = this._renderer.GL;
-
-    // Inspect shader and cache uniform info
-    const numUniforms = gl.getProgramParameter(
-      this._glProgram,
-      gl.ACTIVE_UNIFORMS
-    );
-
-    let samplerIndex = 0;
-    for (let i = 0; i < numUniforms; ++i) {
-      const uniformInfo = gl.getActiveUniform(this._glProgram, i);
-      const uniform = {};
-      uniform.location = gl.getUniformLocation(
-        this._glProgram,
-        uniformInfo.name
-      );
-      uniform.size = uniformInfo.size;
-      let uniformName = uniformInfo.name;
-      //uniforms that are arrays have their name returned as
-      //someUniform[0] which is a bit silly so we trim it
-      //off here. The size property tells us that its an array
-      //so we dont lose any information by doing this
-      if (uniformInfo.size > 1) {
-        uniformName = uniformName.substring(0, uniformName.indexOf('[0]'));
-      }
-      uniform.name = uniformName;
-      uniform.type = uniformInfo.type;
-      uniform._cachedData = undefined;
-      if (uniform.type === gl.SAMPLER_2D) {
-        uniform.samplerIndex = samplerIndex;
-        samplerIndex++;
-        this.samplers.push(uniform);
-      }
-
-      uniform.isArray =
-        uniformInfo.size > 1 ||
-        uniform.type === gl.FLOAT_MAT3 ||
-        uniform.type === gl.FLOAT_MAT4 ||
-        uniform.type === gl.FLOAT_VEC2 ||
-        uniform.type === gl.FLOAT_VEC3 ||
-        uniform.type === gl.FLOAT_VEC4 ||
-        uniform.type === gl.INT_VEC2 ||
-        uniform.type === gl.INT_VEC4 ||
-        uniform.type === gl.INT_VEC3;
-
-      this.uniforms[uniformName] = uniform;
-    }
-    this._loadedUniforms = true;
-  }
-
-  compile() {
-    // TODO
-  }
-
-  /**
-   * initializes (if needed) and binds the shader program.
-   * @private
-   */
-  bindShader() {
-    this.init();
-    if (!this._bound) {
-      this.useProgram();
-      this._bound = true;
-    }
-  }
-
-  /**
-   * @chainable
-   * @private
-   */
-  unbindShader() {
-    if (this._bound) {
-      this.unbindTextures();
-      this._bound = false;
-    }
-    return this;
-  }
-
-  bindTextures() {
-    const gl = this._renderer.GL;
-
-    const empty = this._renderer._getEmptyTexture();
-
-    for (const uniform of this.samplers) {
-      let tex = uniform.texture;
-      if (
-        tex === undefined ||
-        (
-          false
-        )
-      ) {
-        // user hasn't yet supplied a texture for this slot.
-        // (or there may not be one--maybe just lighting),
-        // so we supply a default texture instead.
-        uniform.texture = tex = empty;
-      }
-      gl.activeTexture(gl.TEXTURE0 + uniform.samplerIndex);
-      tex.bindTexture();
-      tex.update();
-      gl.uniform1i(uniform.location, uniform.samplerIndex);
-    }
-  }
-
-  updateTextures() {
-    for (const uniform of this.samplers) {
-      const tex = uniform.texture;
-      if (tex) {
-        tex.update();
-      }
-    }
-  }
-
-  unbindTextures() {
-    const gl = this._renderer.GL;
-    const empty = this._renderer._getEmptyTexture();
-    for (const uniform of this.samplers) {
-      if (uniform.texture?.isFramebufferTexture) {
-        gl.activeTexture(gl.TEXTURE0 + uniform.samplerIndex);
-        empty.bindTexture();
-        gl.uniform1i(uniform.location, uniform.samplerIndex);
-      }
-    }
-  }
-
-  /**
-   * @chainable
-   * @private
-   */
-  useProgram() {
-    const gl = this._renderer.GL;
-    if (this._renderer._curShader !== this) {
-      gl.useProgram(this._glProgram);
-      this._renderer._curShader = this;
-    }
-    return this;
-  }
-
-  /**
-   * Sets the shader’s uniform (global) variables.
-   *
-   * Shader programs run on the computer’s graphics processing unit (GPU).
-   * They live in part of the computer’s memory that’s completely separate
-   * from the sketch that runs them. Uniforms are global variables within a
-   * shader program. They provide a way to pass values from a sketch running
-   * on the CPU to a shader program running on the GPU.
-   *
-   * The first parameter, `uniformName`, is a string with the uniform’s name.
-   * For the shader above, `uniformName` would be `'r'`.
-   *
-   * The second parameter, `data`, is the value that should be used to set the
-   * uniform. For example, calling `myShader.setUniform('r', 0.5)` would set
-   * the `r` uniform in the shader above to `0.5`. data should match the
-   * uniform’s type. Numbers, strings, booleans, arrays, and many types of
-   * images can all be passed to a shader with `setUniform()`.
-   *
-   * @chainable
-   * @param {String} uniformName name of the uniform. Must match the name
-   *                             used in the vertex and fragment shaders.
-   * @param {Boolean|Number|Number[]|p5.Image|p5.Graphics|p5.MediaElement|p5.Texture}
-   * data value to assign to the uniform. Must match the uniform’s data type.
-   *
-   * @example
-   * <div>
-   * <code>
-   * // Note: A "uniform" is a global variable within a shader program.
-   *
-   * // Create a string with the vertex shader program.
-   * // The vertex shader is called for each vertex.
-   * let vertSrc = `
-   * precision highp float;
-   * uniform mat4 uModelViewMatrix;
-   * uniform mat4 uProjectionMatrix;
-   *
-   * attribute vec3 aPosition;
-   * attribute vec2 aTexCoord;
-   * varying vec2 vTexCoord;
-   *
-   * void main() {
-   *   vTexCoord = aTexCoord;
-   *   vec4 positionVec4 = vec4(aPosition, 1.0);
-   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
-   * }
-   * `;
-   *
-   * // Create a string with the fragment shader program.
-   * // The fragment shader is called for each pixel.
-   * let fragSrc = `
-   * precision mediump float;
-   *
-   * uniform float r;
-   *
-   * void main() {
-   *   gl_FragColor = vec4(r, 1.0, 1.0, 1.0);
-   * }
-   * `;
-   *
-   * function setup() {
-   *   createCanvas(100, 100, WEBGL);
-   *
-   *   // Create a p5.Shader object.
-   *   let myShader = createShader(vertSrc, fragSrc);
-   *
-   *   // Apply the p5.Shader object.
-   *   shader(myShader);
-   *
-   *   // Set the r uniform to 0.5.
-   *   myShader.setUniform('r', 0.5);
-   *
-   *   // Style the drawing surface.
-   *   noStroke();
-   *
-   *   // Add a plane as a drawing surface for the shader.
-   *   plane(100, 100);
-   *
-   *   describe('A cyan square.');
-   * }
-   * </code>
-   * </div>
-   *
-   * <div>
-   * <code>
-   * // Note: A "uniform" is a global variable within a shader program.
-   *
-   * // Create a string with the vertex shader program.
-   * // The vertex shader is called for each vertex.
-   * let vertSrc = `
-   * precision highp float;
-   * uniform mat4 uModelViewMatrix;
-   * uniform mat4 uProjectionMatrix;
-   *
-   * attribute vec3 aPosition;
-   * attribute vec2 aTexCoord;
-   * varying vec2 vTexCoord;
-   *
-   * void main() {
-   *   vTexCoord = aTexCoord;
-   *   vec4 positionVec4 = vec4(aPosition, 1.0);
-   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
-   * }
-   * `;
-   *
-   * // Create a string with the fragment shader program.
-   * // The fragment shader is called for each pixel.
-   * let fragSrc = `
-   * precision mediump float;
-   *
-   * uniform float r;
-   *
-   * void main() {
-   *   gl_FragColor = vec4(r, 1.0, 1.0, 1.0);
-   * }
-   * `;
-   *
-   * let myShader;
-   *
-   * function setup() {
-   *   createCanvas(100, 100, WEBGL);
-   *
-   *   // Create a p5.Shader object.
-   *   myShader = createShader(vertSrc, fragSrc);
-   *
-   *   // Compile and apply the p5.Shader object.
-   *   shader(myShader);
-   *
-   *   describe('A square oscillates color between cyan and white.');
-   * }
-   *
-   * function draw() {
-   *   background(200);
-   *
-   *   // Style the drawing surface.
-   *   noStroke();
-   *
-   *   // Update the r uniform.
-   *   let nextR = 0.5 * (sin(frameCount * 0.01) + 1);
-   *   myShader.setUniform('r', nextR);
-   *
-   *   // Add a plane as a drawing surface.
-   *   plane(100, 100);
-   * }
-   * </code>
-   * </div>
-   *
-   * <div>
-   * <code>
-   * // Note: A "uniform" is a global variable within a shader program.
-   *
-   * // Create a string with the vertex shader program.
-   * // The vertex shader is called for each vertex.
-   * let vertSrc = `
-   * precision highp float;
-   * uniform mat4 uModelViewMatrix;
-   * uniform mat4 uProjectionMatrix;
-   *
-   * attribute vec3 aPosition;
-   * attribute vec2 aTexCoord;
-   * varying vec2 vTexCoord;
-   *
-   * void main() {
-   *   vTexCoord = aTexCoord;
-   *   vec4 positionVec4 = vec4(aPosition, 1.0);
-   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
-   * }
-   * `;
-   *
-   * // Create a string with the fragment shader program.
-   * // The fragment shader is called for each pixel.
-   * let fragSrc = `
-   * precision highp float;
-   * uniform vec2 p;
-   * uniform float r;
-   * const int numIterations = 500;
-   * varying vec2 vTexCoord;
-   *
-   * void main() {
-   *   vec2 c = p + gl_FragCoord.xy * r;
-   *   vec2 z = c;
-   *   float n = 0.0;
-   *
-   *   for (int i = numIterations; i > 0; i--) {
-   *     if (z.x * z.x + z.y * z.y > 4.0) {
-   *       n = float(i) / float(numIterations);
-   *       break;
-   *     }
-   *
-   *     z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
-   *   }
-   *
-   *   gl_FragColor = vec4(
-   *     0.5 - cos(n * 17.0) / 2.0,
-   *     0.5 - cos(n * 13.0) / 2.0,
-   *     0.5 - cos(n * 23.0) / 2.0,
-   *     1.0
-   *   );
-   * }
-   * `;
-   *
-   * let mandelbrot;
-   *
-   * function setup() {
-   *   createCanvas(100, 100, WEBGL);
-   *
-   *   // Create a p5.Shader object.
-   *   mandelbrot = createShader(vertSrc, fragSrc);
-   *
-   *   // Compile and apply the p5.Shader object.
-   *   shader(mandelbrot);
-   *
-   *   // Set the shader uniform p to an array.
-   *   // p is the center point of the Mandelbrot image.
-   *   mandelbrot.setUniform('p', [-0.74364388703, 0.13182590421]);
-   *
-   *   describe('A fractal image zooms in and out of focus.');
-   * }
-   *
-   * function draw() {
-   *   // Set the shader uniform r to a value that oscillates
-   *   // between 0 and 0.005.
-   *   // r is the size of the image in Mandelbrot-space.
-   *   let radius = 0.005 * (sin(frameCount * 0.01) + 1);
-   *   mandelbrot.setUniform('r', radius);
-   *
-   *   // Style the drawing surface.
-   *   noStroke();
-   *
-   *   // Add a plane as a drawing surface.
-   *   plane(100, 100);
-   * }
-   * </code>
-   * </div>
-   */
-  setUniform(uniformName, data) {
-    this.init();
-
-    const uniform = this.uniforms[uniformName];
-    if (!uniform) {
-      return;
-    }
-    const gl = this._renderer.GL;
-
-    if (uniform.isArray) {
-      if (
-        uniform._cachedData &&
-        this._renderer._arraysEqual(uniform._cachedData, data)
-      ) {
-        return;
-      } else {
-        uniform._cachedData = data.slice(0);
-      }
-    } else if (uniform._cachedData && uniform._cachedData === data) {
-      return;
-    } else {
-      if (Array.isArray(data)) {
-        uniform._cachedData = data.slice(0);
-      } else {
-        uniform._cachedData = data;
-      }
-    }
-
-    const location = uniform.location;
-
-    this.useProgram();
-
-    switch (uniform.type) {
-      case gl.BOOL:
-        if (data === true) {
-          gl.uniform1i(location, 1);
-        } else {
-          gl.uniform1i(location, 0);
-        }
-        break;
-      case gl.INT:
-        if (uniform.size > 1) {
-          data.length && gl.uniform1iv(location, data);
-        } else {
-          gl.uniform1i(location, data);
-        }
-        break;
-      case gl.FLOAT:
-        if (uniform.size > 1) {
-          data.length && gl.uniform1fv(location, data);
-        } else {
-          gl.uniform1f(location, data);
-        }
-        break;
-      case gl.FLOAT_MAT3:
-        gl.uniformMatrix3fv(location, false, data);
-        break;
-      case gl.FLOAT_MAT4:
-        gl.uniformMatrix4fv(location, false, data);
-        break;
-      case gl.FLOAT_VEC2:
-        if (uniform.size > 1) {
-          data.length && gl.uniform2fv(location, data);
-        } else {
-          gl.uniform2f(location, data[0], data[1]);
-        }
-        break;
-      case gl.FLOAT_VEC3:
-        if (uniform.size > 1) {
-          data.length && gl.uniform3fv(location, data);
-        } else {
-          gl.uniform3f(location, data[0], data[1], data[2]);
-        }
-        break;
-      case gl.FLOAT_VEC4:
-        if (uniform.size > 1) {
-          data.length && gl.uniform4fv(location, data);
-        } else {
-          gl.uniform4f(location, data[0], data[1], data[2], data[3]);
-        }
-        break;
-      case gl.INT_VEC2:
-        if (uniform.size > 1) {
-          data.length && gl.uniform2iv(location, data);
-        } else {
-          gl.uniform2i(location, data[0], data[1]);
-        }
-        break;
-      case gl.INT_VEC3:
-        if (uniform.size > 1) {
-          data.length && gl.uniform3iv(location, data);
-        } else {
-          gl.uniform3i(location, data[0], data[1], data[2]);
-        }
-        break;
-      case gl.INT_VEC4:
-        if (uniform.size > 1) {
-          data.length && gl.uniform4iv(location, data);
-        } else {
-          gl.uniform4i(location, data[0], data[1], data[2], data[3]);
-        }
-        break;
-      case gl.SAMPLER_2D:
-        if (typeof data == 'number') {
-          if (
-            data < gl.TEXTURE0 ||
-            data > gl.TEXTURE31 ||
-            data !== Math.ceil(data)
-          ) {
-            console.log(
-              '🌸 p5.js says: ' +
-                "You're trying to use a number as the data for a texture." +
-                'Please use a texture.'
-            );
-            return this;
-          }
-          gl.activeTexture(data);
-          gl.uniform1i(location, data);
-        } else {
-          gl.activeTexture(gl.TEXTURE0 + uniform.samplerIndex);
-          uniform.texture =
-            data instanceof Texture ? data : this._renderer.getTexture(data);
-          gl.uniform1i(location, uniform.samplerIndex);
-          if (uniform.texture.src.gifProperties) {
-            uniform.texture.src._animateGif(this._renderer._pInst);
-          }
-        }
-        break;
-      case gl.SAMPLER_CUBE:
-      case gl.SAMPLER_3D:
-      case gl.SAMPLER_2D_SHADOW:
-      case gl.SAMPLER_2D_ARRAY:
-      case gl.SAMPLER_2D_ARRAY_SHADOW:
-      case gl.SAMPLER_CUBE_SHADOW:
-      case gl.INT_SAMPLER_2D:
-      case gl.INT_SAMPLER_3D:
-      case gl.INT_SAMPLER_CUBE:
-      case gl.INT_SAMPLER_2D_ARRAY:
-      case gl.UNSIGNED_INT_SAMPLER_2D:
-      case gl.UNSIGNED_INT_SAMPLER_3D:
-      case gl.UNSIGNED_INT_SAMPLER_CUBE:
-      case gl.UNSIGNED_INT_SAMPLER_2D_ARRAY:
-        if (typeof data !== 'number') {
-          break;
-        }
-        if (
-          data < gl.TEXTURE0 ||
-          data > gl.TEXTURE31 ||
-          data !== Math.ceil(data)
-        ) {
-          console.log(
-            '🌸 p5.js says: ' +
-              "You're trying to use a number as the data for a texture." +
-              'Please use a texture.'
-          );
-          break;
-        }
-        gl.activeTexture(data);
-        gl.uniform1i(location, data);
-        break;
-      //@todo complete all types
-    }
-    return this;
-  }
-
-  /**
-   * @chainable
-   * @private
-   */
-  enableAttrib(attr, size, type, normalized, stride, offset) {
-    if (attr) {
-      if (
-        typeof IS_MINIFIED === 'undefined' &&
-        this.attributes[attr.name] !== attr
-      ) {
-        console.warn(
-          `The attribute "${attr.name}"passed to enableAttrib does not belong to this shader.`
-        );
-      }
-      const loc = attr.location;
-      if (loc !== -1) {
-        const gl = this._renderer.GL;
-        // Enable register even if it is disabled
-        if (!this._renderer.registerEnabled.has(loc)) {
-          gl.enableVertexAttribArray(loc);
-          // Record register availability
-          this._renderer.registerEnabled.add(loc);
-        }
-        this._renderer.GL.vertexAttribPointer(
-          loc,
-          size,
-          type || gl.FLOAT,
-          normalized || false,
-          stride || 0,
-          offset || 0
-        );
-      }
-    }
-    return this;
-  }
-
-  /**
-   * Once all buffers have been bound, this checks to see if there are any
-   * remaining active attributes, likely left over from previous renders,
-   * and disables them so that they don't affect rendering.
-   * @private
-   */
-  disableRemainingAttributes() {
-    for (const location of this._renderer.registerEnabled.values()) {
-      if (
-        !Object.keys(this.attributes).some(
-          key => this.attributes[key].location === location
-        )
-      ) {
-        this._renderer.GL.disableVertexAttribArray(location);
-        this._renderer.registerEnabled.delete(location);
-      }
-    }
-  }
-}
-function shader(p5, fn){
-  /**
-   * A class to describe a shader program.
-   *
-   * Each `p5.Shader` object contains a shader program that runs on the graphics
-   * processing unit (GPU). Shaders can process many pixels or vertices at the
-   * same time, making them fast for many graphics tasks. They’re written in a
-   * language called
-   * <a href="https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/GLSL_Shaders" target="_blank">GLSL</a>
-   * and run along with the rest of the code in a sketch.
-   *
-   * A shader program consists of two files, a vertex shader and a fragment
-   * shader. The vertex shader affects where 3D geometry is drawn on the screen
-   * and the fragment shader affects color. Once the `p5.Shader` object is
-   * created, it can be used with the <a href="#/p5/shader">shader()</a>
-   * function, as in `shader(myShader)`.
-   *
-   * A shader can optionally describe *hooks,* which are functions in GLSL that
-   * users may choose to provide to customize the behavior of the shader. For the
-   * vertex or the fragment shader, users can pass in an object where each key is
-   * the type and name of a hook function, and each value is a string with the
-   * parameter list and default implementation of the hook. For example, to let users
-   * optionally run code at the start of the vertex shader, the options object could
-   * include:
-   *
-   * ```js
-   * {
-   *   vertex: {
-   *     'void beforeVertex': '() {}'
-   *   }
-   * }
-   * ```
-   *
-   * Then, in your vertex shader source, you can run a hook by calling a function
-   * with the same name prefixed by `HOOK_`:
-   *
-   * ```glsl
-   * void main() {
-   *   HOOK_beforeVertex();
-   *   // Add the rest ofy our shader code here!
-   * }
-   * ```
-   *
-   * Note: <a href="#/p5/createShader">createShader()</a>,
-   * <a href="#/p5/createFilterShader">createFilterShader()</a>, and
-   * <a href="#/p5/loadShader">loadShader()</a> are the recommended ways to
-   * create an instance of this class.
-   *
-   * @class p5.Shader
-   * @constructor
-   * @param {p5.RendererGL} renderer WebGL context for this shader.
-   * @param {String} vertSrc source code for the vertex shader program.
-   * @param {String} fragSrc source code for the fragment shader program.
-   * @param {Object} [options] An optional object describing how this shader can
-   * be augmented with hooks. It can include:
-   *  - `vertex`: An object describing the available vertex shader hooks.
-   *  - `fragment`: An object describing the available frament shader hooks.
-   *
-   * @example
-   * <div>
-   * <code>
-   * // Note: A "uniform" is a global variable within a shader program.
-   *
-   * // Create a string with the vertex shader program.
-   * // The vertex shader is called for each vertex.
-   * let vertSrc = `
-   * precision highp float;
-   * uniform mat4 uModelViewMatrix;
-   * uniform mat4 uProjectionMatrix;
-   *
-   * attribute vec3 aPosition;
-   * attribute vec2 aTexCoord;
-   * varying vec2 vTexCoord;
-   *
-   * void main() {
-   *   vTexCoord = aTexCoord;
-   *   vec4 positionVec4 = vec4(aPosition, 1.0);
-   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
-   * }
-   * `;
-   *
-   * // Create a string with the fragment shader program.
-   * // The fragment shader is called for each pixel.
-   * let fragSrc = `
-   * precision highp float;
-   *
-   * void main() {
-   *   // Set each pixel's RGBA value to yellow.
-   *   gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
-   * }
-   * `;
-   *
-   * function setup() {
-   *   createCanvas(100, 100, WEBGL);
-   *
-   *   // Create a p5.Shader object.
-   *   let myShader = createShader(vertSrc, fragSrc);
-   *
-   *   // Apply the p5.Shader object.
-   *   shader(myShader);
-   *
-   *   // Style the drawing surface.
-   *   noStroke();
-   *
-   *   // Add a plane as a drawing surface.
-   *   plane(100, 100);
-   *
-   *   describe('A yellow square.');
-   * }
-   * </code>
-   * </div>
-   *
-   * <div>
-   * <code>
-   * // Note: A "uniform" is a global variable within a shader program.
-   *
-   * let mandelbrot;
-   *
-   * async function setup() {
-   *   mandelbrot = await loadShader('assets/shader.vert', 'assets/shader.frag');
-   *   createCanvas(100, 100, WEBGL);
-   *
-   *   // Use the p5.Shader object.
-   *   shader(mandelbrot);
-   *
-   *   // Set the shader uniform p to an array.
-   *   mandelbrot.setUniform('p', [-0.74364388703, 0.13182590421]);
-   *
-   *   describe('A fractal image zooms in and out of focus.');
-   * }
-   *
-   * function draw() {
-   *   // Set the shader uniform r to a value that oscillates between 0 and 2.
-   *   mandelbrot.setUniform('r', sin(frameCount * 0.01) + 1);
-   *
-   *   // Add a quad as a display surface for the shader.
-   *   quad(-1, -1, 1, -1, 1, 1, -1, 1);
-   * }
-   * </code>
-   * </div>
-   */
-  p5.Shader = Shader;
-}
-
-if(typeof p5 !== 'undefined'){
-  shader(p5);
-}
-
 var libtess_min = {exports: {}};
 
 /*
@@ -53231,6 +51749,41 @@ var n;function t(a,b){return a.b===b.b&&a.a===b.a}function u(a,b){return a.b<b.b
 
 var libtess_minExports = libtess_min.exports;
 var libtess = /*@__PURE__*/getDefaultExportFromCjs(libtess_minExports);
+
+class RenderBuffer {
+  constructor(size, src, dst, attr, renderer, map) {
+    this.size = size; // the number of FLOATs in each vertex
+    this.src = src; // the name of the model's source array
+    this.dst = dst; // the name of the geometry's buffer
+    this.attr = attr; // the name of the vertex attribute
+    this._renderer = renderer;
+    this.map = map; // optional, a transformation function to apply to src
+  }
+
+  default(cb) {
+    this.default = cb;
+    return this;
+  }
+
+  /**
+   * Enables and binds the buffers used by shader when the appropriate data exists in geometry.
+   * Must always be done prior to drawing geometry in WebGL.
+   * @param {p5.Geometry} geometry Geometry that is going to be drawn
+   * @param {p5.Shader} shader Active shader
+   * @private
+   */
+  _prepareBuffer(geometry, shader) {
+    this._renderer._prepareBuffer(this, geometry, shader);
+  }
+}
+
+function renderBuffer(p5, fn) {
+  p5.RenderBuffer = RenderBuffer;
+}
+
+if (typeof p5 !== 'undefined') {
+  renderBuffer(p5);
+}
 
 const INITIAL_BUFFER_STRIDES = {
   vertices: 1,
@@ -53773,56 +52326,31 @@ class GeometryBufferCache {
       throw new Error('The p5.Geometry you passed in has no gid property!');
     }
 
-    if (this.isCached(geometry.gid)) return this.getCached(geometry);
+    if (this.isCached(gid)) return this.getCached(geometry);
 
-    const gl = this.renderer.GL;
-
-    //initialize the gl buffers for our geom groups
+    // Cache maintenance
     this.freeBuffers(gid);
-
     if (Object.keys(this.cache).length > 1000) {
       const key = Object.keys(this.cache)[0];
       this.freeBuffers(key);
     }
 
-    //create a new entry in our cache
-    const buffers = {};
+    const buffers = { geometry };
     this.cache[gid] = buffers;
 
-    buffers.geometry = geometry;
+    const indices = geometry.faces.length ? geometry.faces.flat() : null;
 
-    let indexBuffer = buffers.indexBuffer;
-
-    if (geometry.faces.length) {
-      // allocate space for faces
-      if (!indexBuffer) indexBuffer = buffers.indexBuffer = gl.createBuffer();
-      const vals = geometry.faces.flat();
-
+    // Determine index buffer type
+    let indexType = null;
+    if (indices) {
       // If any face references a vertex with an index greater than the maximum
       // un-singed 16 bit integer, then we need to use a Uint32Array instead of a
       // Uint16Array
-      const hasVertexIndicesOverMaxUInt16 = vals.some(v => v > 65535);
-      let type = hasVertexIndicesOverMaxUInt16 ? Uint32Array : Uint16Array;
-      this.renderer._bindBuffer(
-        indexBuffer,
-        gl.ELEMENT_ARRAY_BUFFER,
-        vals,
-        type
-      );
-
-      // If we're using a Uint32Array for our indexBuffer we will need to pass a
-      // different enum value to WebGL draw triangles. This happens in
-      // the _drawElements function.
-      buffers.indexBufferType = hasVertexIndicesOverMaxUInt16
-        ? gl.UNSIGNED_INT
-        : gl.UNSIGNED_SHORT;
-    } else {
-      // the index buffer is unused, remove it
-      if (indexBuffer) {
-        gl.deleteBuffer(indexBuffer);
-        buffers.indexBuffer = null;
-      }
+      const hasVertexIndicesOverMaxUInt16 = indices.some(i => i > 65535);
+      indexType = hasVertexIndicesOverMaxUInt16 ? Uint32Array : Uint16Array;
     }
+
+    this.renderer._ensureGeometryBuffers(buffers, indices, indexType);
 
     return buffers;
   }
@@ -53835,24 +52363,7 @@ class GeometryBufferCache {
 
     delete this.cache[gid];
 
-    const gl = this.renderer.GL;
-    if (buffers.indexBuffer) {
-      gl.deleteBuffer(buffers.indexBuffer);
-    }
-
-    function freeBuffers(defs) {
-      for (const def of defs) {
-        if (buffers[def.dst]) {
-          gl.deleteBuffer(buffers[def.dst]);
-          buffers[def.dst] = null;
-        }
-      }
-    }
-
-    // free all the buffers
-    freeBuffers(this.renderer.buffers.stroke);
-    freeBuffers(this.renderer.buffers.fill);
-    freeBuffers(this.renderer.buffers.user);
+    this.renderer._freeBuffers(buffers);
   }
 }
 
@@ -53862,143 +52373,2727 @@ const filterParamDefaults = {
   [THRESHOLD]: 0.5
 };
 
-var filterBaseVert = "precision highp int;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\n\nIN vec3 aPosition;\nIN vec2 aTexCoord;\nOUT vec2 vTexCoord;\n\nvoid main() {\n  // transferring texcoords for the frag shader\n  vTexCoord = aTexCoord;\n\n  // copy position with a fourth coordinate for projection (1.0 is normal)\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n\n  // project to 3D space\n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n}\n";
+/**
+ * @module Typography
+ * @requires core
+ */
 
-var lightingShader = "#define PI 3.141592\n\nprecision highp float;\nprecision highp int;\n\nuniform mat4 uViewMatrix;\n\nuniform bool uUseLighting;\n\nuniform int uAmbientLightCount;\nuniform vec3 uAmbientColor[5];\nuniform mat3 uCameraRotation;\nuniform int uDirectionalLightCount;\nuniform vec3 uLightingDirection[5];\nuniform vec3 uDirectionalDiffuseColors[5];\nuniform vec3 uDirectionalSpecularColors[5];\n\nuniform int uPointLightCount;\nuniform vec3 uPointLightLocation[5];\nuniform vec3 uPointLightDiffuseColors[5];\t\nuniform vec3 uPointLightSpecularColors[5];\n\nuniform int uSpotLightCount;\nuniform float uSpotLightAngle[5];\nuniform float uSpotLightConc[5];\nuniform vec3 uSpotLightDiffuseColors[5];\nuniform vec3 uSpotLightSpecularColors[5];\nuniform vec3 uSpotLightLocation[5];\nuniform vec3 uSpotLightDirection[5];\n\nuniform bool uSpecular;\nuniform float uShininess;\nuniform float uMetallic;\n\nuniform float uConstantAttenuation;\nuniform float uLinearAttenuation;\nuniform float uQuadraticAttenuation;\n\n// setting from  _setImageLightUniforms()\n// boolean to initiate the calculateImageDiffuse and calculateImageSpecular\nuniform bool uUseImageLight;\n// texture for use in calculateImageDiffuse\nuniform sampler2D environmentMapDiffused;\n// texture for use in calculateImageSpecular\nuniform sampler2D environmentMapSpecular;\n\nconst float specularFactor = 2.0;\nconst float diffuseFactor = 0.73;\n\nstruct LightResult {\n  float specular;\n  float diffuse;\n};\n\nfloat _phongSpecular(\n  vec3 lightDirection,\n  vec3 viewDirection,\n  vec3 surfaceNormal,\n  float shininess) {\n\n  vec3 R = reflect(lightDirection, surfaceNormal);\n  return pow(max(0.0, dot(R, viewDirection)), shininess);\n}\n\nfloat _lambertDiffuse(vec3 lightDirection, vec3 surfaceNormal) {\n  return max(0.0, dot(-lightDirection, surfaceNormal));\n}\n\nLightResult _light(vec3 viewDirection, vec3 normal, vec3 lightVector, float shininess, float metallic) {\n\n  vec3 lightDir = normalize(lightVector);\n\n  //compute our diffuse & specular terms\n  LightResult lr;\n  float specularIntensity = mix(1.0, 0.4, metallic);\n  float diffuseIntensity = mix(1.0, 0.1, metallic);\n  if (uSpecular)\n    lr.specular = (_phongSpecular(lightDir, viewDirection, normal, shininess)) * specularIntensity;\n    lr.diffuse = _lambertDiffuse(lightDir, normal) * diffuseIntensity;\n  return lr;\n}\n\n// converts the range of \"value\" from [min1 to max1] to [min2 to max2]\nfloat map(float value, float min1, float max1, float min2, float max2) {\n  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);\n}\n\nvec2 mapTextureToNormal( vec3 v ){\n  // x = r sin(phi) cos(theta)   \n  // y = r cos(phi)  \n  // z = r sin(phi) sin(theta)\n  float phi = acos( v.y );\n  // if phi is 0, then there are no x, z components\n  float theta = 0.0;\n  // else \n  theta = acos(v.x / sin(phi));\n  float sinTheta = v.z / sin(phi);\n  if (sinTheta < 0.0) {\n    // Turn it into -theta, but in the 0-2PI range\n    theta = 2.0 * PI - theta;\n  }\n  theta = theta / (2.0 * 3.14159);\n  phi = phi / 3.14159 ;\n  \n  vec2 angles = vec2( fract(theta + 0.25), 1.0 - phi );\n  return angles;\n}\n\n\nvec3 calculateImageDiffuse(vec3 vNormal, vec3 vViewPosition, float metallic){\n  // make 2 seperate builds \n  vec3 worldCameraPosition =  vec3(0.0, 0.0, 0.0);  // hardcoded world camera position\n  vec3 worldNormal = normalize(vNormal * uCameraRotation);\n  vec2 newTexCoor = mapTextureToNormal( worldNormal );\n  vec4 texture = TEXTURE( environmentMapDiffused, newTexCoor );\n  // this is to make the darker sections more dark\n  // png and jpg usually flatten the brightness so it is to reverse that\n  return mix(smoothstep(vec3(0.0), vec3(1.0), texture.xyz), vec3(0.0), metallic);\n}\n\nvec3 calculateImageSpecular(vec3 vNormal, vec3 vViewPosition, float shininess, float metallic){\n  vec3 worldCameraPosition =  vec3(0.0, 0.0, 0.0);\n  vec3 worldNormal = normalize(vNormal);\n  vec3 lightDirection = normalize( vViewPosition - worldCameraPosition );\n  vec3 R = reflect(lightDirection, worldNormal) * uCameraRotation;\n  vec2 newTexCoor = mapTextureToNormal( R );\n#ifdef WEBGL2\n  // In p5js the range of shininess is >= 1,\n  // Therefore roughness range will be ([0,1]*8)*20 or [0, 160]\n  // The factor of 8 is because currently the getSpecularTexture\n  // only calculated 8 different levels of roughness\n  // The factor of 20 is just to spread up this range so that,\n  // [1, max] of shininess is converted to [0,160] of roughness\n  float roughness = 20. / shininess;\n  vec4 outColor = textureLod(environmentMapSpecular, newTexCoor, roughness * 8.);\n#else\n  vec4 outColor = TEXTURE(environmentMapSpecular, newTexCoor);\n#endif\n  // this is to make the darker sections more dark\n  // png and jpg usually flatten the brightness so it is to reverse that\n  return mix(\n    pow(outColor.xyz, vec3(10)),\n    pow(outColor.xyz, vec3(1.2)),\n    metallic \n  );\n}\n\nvoid totalLight(\n  vec3 modelPosition,\n  vec3 normal,\n  float shininess,\n  float metallic,\n  out vec3 totalDiffuse,\n  out vec3 totalSpecular\n) {\n\n  totalSpecular = vec3(0.0);\n\n  if (!uUseLighting) {\n    totalDiffuse = vec3(1.0);\n    return;\n  }\n\n  totalDiffuse = vec3(0.0);\n\n  vec3 viewDirection = normalize(-modelPosition);\n\n  for (int j = 0; j < 5; j++) {\n    if (j < uDirectionalLightCount) {\n      vec3 lightVector = (uViewMatrix * vec4(uLightingDirection[j], 0.0)).xyz;\n      vec3 lightColor = uDirectionalDiffuseColors[j];\n      vec3 specularColor = uDirectionalSpecularColors[j];\n      LightResult result = _light(viewDirection, normal, lightVector, shininess, metallic);\n      totalDiffuse += result.diffuse * lightColor;\n      totalSpecular += result.specular * lightColor * specularColor;\n    }\n\n    if (j < uPointLightCount) {\n      vec3 lightPosition = (uViewMatrix * vec4(uPointLightLocation[j], 1.0)).xyz;\n      vec3 lightVector = modelPosition - lightPosition;\n      //calculate attenuation\n      float lightDistance = length(lightVector);\n      float lightFalloff = 1.0 / (uConstantAttenuation + lightDistance * uLinearAttenuation + (lightDistance * lightDistance) * uQuadraticAttenuation);\n      vec3 lightColor = lightFalloff * uPointLightDiffuseColors[j];\n      vec3 specularColor = lightFalloff * uPointLightSpecularColors[j];\n\n      LightResult result = _light(viewDirection, normal, lightVector, shininess, metallic);\n      totalDiffuse += result.diffuse * lightColor;\n      totalSpecular += result.specular * lightColor * specularColor;\n    }\n\n    if(j < uSpotLightCount) {\n      vec3 lightPosition = (uViewMatrix * vec4(uSpotLightLocation[j], 1.0)).xyz;\n      vec3 lightVector = modelPosition - lightPosition;\n    \n      float lightDistance = length(lightVector);\n      float lightFalloff = 1.0 / (uConstantAttenuation + lightDistance * uLinearAttenuation + (lightDistance * lightDistance) * uQuadraticAttenuation);\n\n      vec3 lightDirection = (uViewMatrix * vec4(uSpotLightDirection[j], 0.0)).xyz;\n      float spotDot = dot(normalize(lightVector), normalize(lightDirection));\n      float spotFalloff;\n      if(spotDot < uSpotLightAngle[j]) {\n        spotFalloff = 0.0;\n      }\n      else {\n        spotFalloff = pow(spotDot, uSpotLightConc[j]);\n      }\n      lightFalloff *= spotFalloff;\n\n      vec3 lightColor = uSpotLightDiffuseColors[j];\n      vec3 specularColor = uSpotLightSpecularColors[j];\n     \n      LightResult result = _light(viewDirection, normal, lightVector, shininess, metallic);\n      \n      totalDiffuse += result.diffuse * lightColor * lightFalloff;\n      totalSpecular += result.specular * lightColor * specularColor * lightFalloff;\n    }\n  }\n\n  if( uUseImageLight ){\n    totalDiffuse += calculateImageDiffuse(normal, modelPosition, metallic);\n    totalSpecular += calculateImageSpecular(normal, modelPosition, shininess, metallic);\n  }\n\n  totalDiffuse *= diffuseFactor;\n  totalSpecular *= specularFactor;\n}\n";
 
-var webgl2CompatibilityShader = "#ifdef WEBGL2\n\n#define IN in\n#define OUT out\n\n#ifdef FRAGMENT_SHADER\nout vec4 outColor;\n#define OUT_COLOR outColor\n#endif\n#define TEXTURE texture\n\n#else\n\n#ifdef FRAGMENT_SHADER\n#define IN varying\n#else\n#define IN attribute\n#endif\n#define OUT varying\n#define TEXTURE texture2D\n\n#ifdef FRAGMENT_SHADER\n#define OUT_COLOR gl_FragColor\n#endif\n\n#endif\n\n#ifdef FRAGMENT_SHADER\nvec4 getTexture(in sampler2D content, vec2 coord) {\n  vec4 color = TEXTURE(content, coord);\n  color.rgb /= color.a;\n  return color;\n}\n#endif\n";
+const DefaultFill = '#000000';
 
-var normalVert = "IN vec3 aPosition;\nIN vec3 aNormal;\nIN vec2 aTexCoord;\nIN vec4 aVertexColor;\n\n#define HOOK_DEFINES\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\nuniform mat4 uModelMatrix;\nuniform mat4 uViewMatrix;\nuniform mat3 uModelNormalMatrix;\nuniform mat3 uCameraNormalMatrix;\n#else\nuniform mat4 uModelViewMatrix;\nuniform mat3 uNormalMatrix;\n#endif\nuniform mat4 uProjectionMatrix;\n\nuniform vec4 uMaterialColor;\nuniform bool uUseVertexColor;\n\nOUT vec3 vVertexNormal;\nOUT highp vec2 vVertTexCoord;\nOUT vec4 vColor;\n\nstruct Vertex {\n  vec3 position;\n  vec3 normal;\n  vec2 texCoord;\n  vec4 color;\n};\n\nvoid main(void) {\n  HOOK_beforeVertex();\n\n  Vertex inputs;\n  inputs.position = aPosition;\n  inputs.normal = aNormal;\n  inputs.texCoord = aTexCoord;\n  inputs.color = (uUseVertexColor && aVertexColor.x >= 0.0) ? aVertexColor : uMaterialColor;\n#ifdef AUGMENTED_HOOK_getObjectInputs\n  inputs = HOOK_getObjectInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  inputs.position = (uModelMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uModelNormalMatrix * inputs.normal;\n  inputs = HOOK_getWorldInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  // Already multiplied by the model matrix, just apply view\n  inputs.position = (uViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uCameraNormalMatrix * inputs.normal;\n#else\n  // Apply both at once\n  inputs.position = (uModelViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uNormalMatrix * inputs.normal;\n#endif\n#ifdef AUGMENTED_HOOK_getCameraInputs\n  inputs = HOOK_getCameraInputs(inputs);\n#endif\n\n  // Pass varyings to fragment shader\n  vVertTexCoord = inputs.texCoord;\n  vVertexNormal = normalize(inputs.normal);\n  vColor = inputs.color;\n\n  gl_Position = uProjectionMatrix * vec4(inputs.position, 1.);\n\n  HOOK_afterVertex();\n}\n";
-
-var normalFrag = "IN vec3 vVertexNormal;\nvoid main(void) {\n  HOOK_beforeFragment();\n  OUT_COLOR = HOOK_getFinalColor(vec4(vVertexNormal, 1.0));\n  HOOK_afterFragment();\n}\n";
-
-var basicFrag = "IN vec4 vColor;\nvoid main(void) {\n  HOOK_beforeFragment();\n  OUT_COLOR = HOOK_getFinalColor(vec4(vColor.rgb, 1.) * vColor.a);\n  HOOK_afterFragment();\n}\n";
-
-var sphereMappingFrag = "#define PI 3.141592\n\nprecision highp float;\n  \nuniform sampler2D uEnvMap;\nuniform mat3 uNewNormalMatrix;\nuniform float uFovY;\nuniform float uAspect;\n\nvarying vec2 vTexCoord;\n  \nvoid main() {\n    float uFovX = uFovY * uAspect; \n    float angleY = mix(uFovY/2.0,  -uFovY/2.0, vTexCoord.y);\n    float angleX = mix(uFovX/2.0, -uFovX/2.0, vTexCoord.x);\n    vec3 rotatedNormal = vec3( angleX, angleY, 1.0 );\n    rotatedNormal = uNewNormalMatrix * normalize(rotatedNormal);\n    float temp = rotatedNormal.z;\n    rotatedNormal.z = rotatedNormal.x;\n    rotatedNormal.x = -temp;\n    vec2 suv;\n    suv.y = 0.5 + 0.5 * (-rotatedNormal.y);\n    suv.x = atan(rotatedNormal.z, rotatedNormal.x) / (2.0 * PI) + 0.5;\n    vec4 newTexColor = texture2D(uEnvMap, suv.xy);\n    gl_FragColor = newTexColor;\n}\n";
-
-var lightVert = "// include lighting.glgl\n\nIN vec3 aPosition;\nIN vec3 aNormal;\nIN vec2 aTexCoord;\nIN vec4 aVertexColor;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform mat3 uNormalMatrix;\n\nuniform bool uUseVertexColor;\nuniform vec4 uMaterialColor;\n\nOUT highp vec2 vVertTexCoord;\nOUT vec3 vDiffuseColor;\nOUT vec3 vSpecularColor;\nOUT vec4 vColor;\n\nvoid main(void) {\n\n  vec4 viewModelPosition = uModelViewMatrix * vec4(aPosition, 1.0);\n  gl_Position = uProjectionMatrix * viewModelPosition;\n\n  vec3 vertexNormal = normalize(uNormalMatrix * aNormal);\n  vVertTexCoord = aTexCoord;\n\n  totalLight(viewModelPosition.xyz, vertexNormal, vDiffuseColor, vSpecularColor);\n\n  for (int i = 0; i < 8; i++) {\n    if (i < uAmbientLightCount) {\n      vDiffuseColor += uAmbientColor[i];\n    }\n  }\n  \n  vColor = ((uUseVertexColor && aVertexColor.x >= 0.0) ? aVertexColor : uMaterialColor);\n}\n";
-
-var lightTextureFrag = "uniform vec4 uTint;\nuniform sampler2D uSampler;\nuniform bool isTexture;\nuniform bool uEmissive;\n\nIN highp vec2 vVertTexCoord;\nIN vec3 vDiffuseColor;\nIN vec3 vSpecularColor;\nIN vec4 vColor;\n\nvoid main(void) {\n  if(uEmissive && !isTexture) {\n    OUT_COLOR = vColor;\n  }\n  else {\n    vec4 baseColor = isTexture\n      // Textures come in with premultiplied alpha. To apply tint and still have\n      // premultiplied alpha output, we need to multiply the RGB channels by the\n      // tint RGB, and all channels by the tint alpha.\n      ? TEXTURE(uSampler, vVertTexCoord) * vec4(uTint.rgb/255., 1.) * (uTint.a/255.)\n      // Colors come in with unmultiplied alpha, so we need to multiply the RGB\n      // channels by alpha to convert it to premultiplied alpha.\n      : vec4(vColor.rgb * vColor.a, vColor.a);\n    OUT_COLOR = vec4(baseColor.rgb * vDiffuseColor + vSpecularColor, baseColor.a);\n  }\n}\n";
-
-var phongVert = "precision highp int;\n\n#define HOOK_DEFINES\n\nIN vec3 aPosition;\nIN vec3 aNormal;\nIN vec2 aTexCoord;\nIN vec4 aVertexColor;\n\nuniform vec3 uAmbientColor[5];\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\nuniform mat4 uModelMatrix;\nuniform mat4 uViewMatrix;\nuniform mat3 uModelNormalMatrix;\nuniform mat3 uCameraNormalMatrix;\n#else\nuniform mat4 uModelViewMatrix;\nuniform mat3 uNormalMatrix;\n#endif\nuniform mat4 uProjectionMatrix;\nuniform int uAmbientLightCount;\n\nuniform bool uUseVertexColor;\nuniform vec4 uMaterialColor;\n\nOUT vec3 vNormal;\nOUT vec2 vTexCoord;\nOUT vec3 vViewPosition;\nOUT vec3 vAmbientColor;\nOUT vec4 vColor;\n\nstruct Vertex {\n  vec3 position;\n  vec3 normal;\n  vec2 texCoord;\n  vec4 color;\n};\n\nvoid main(void) {\n  HOOK_beforeVertex();\n\n  Vertex inputs;\n  inputs.position = aPosition;\n  inputs.normal = aNormal;\n  inputs.texCoord = aTexCoord;\n  inputs.color = (uUseVertexColor && aVertexColor.x >= 0.0) ? aVertexColor : uMaterialColor;\n#ifdef AUGMENTED_HOOK_getObjectInputs\n  inputs = HOOK_getObjectInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  inputs.position = (uModelMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uModelNormalMatrix * inputs.normal;\n  inputs = HOOK_getWorldInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  // Already multiplied by the model matrix, just apply view\n  inputs.position = (uViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uCameraNormalMatrix * inputs.normal;\n#else\n  // Apply both at once\n  inputs.position = (uModelViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uNormalMatrix * inputs.normal;\n#endif\n#ifdef AUGMENTED_HOOK_getCameraInputs\n  inputs = HOOK_getCameraInputs(inputs);\n#endif\n\n  // Pass varyings to fragment shader\n  vViewPosition = inputs.position;\n  vTexCoord = inputs.texCoord;\n  vNormal = inputs.normal;\n  vColor = inputs.color;\n\n  // TODO: this should be a uniform\n  vAmbientColor = vec3(0.0);\n  for (int i = 0; i < 5; i++) {\n    if (i < uAmbientLightCount) {\n      vAmbientColor += uAmbientColor[i];\n    }\n  }\n\n  gl_Position = uProjectionMatrix * vec4(inputs.position, 1.);\n  HOOK_afterVertex();\n}\n";
-
-var phongFrag = "// include lighting.glsl\nprecision highp int;\n\nuniform bool uHasSetAmbient;\nuniform vec4 uSpecularMatColor;\nuniform vec4 uAmbientMatColor;\nuniform vec4 uEmissiveMatColor;\n\nuniform vec4 uTint;\nuniform sampler2D uSampler;\nuniform bool isTexture;\n\nIN vec3 vNormal;\nIN vec2 vTexCoord;\nIN vec3 vViewPosition;\nIN vec3 vAmbientColor;\nIN vec4 vColor;\n\nstruct ColorComponents {\n  vec3 baseColor;\n  float opacity;\n  vec3 ambientColor;\n  vec3 specularColor;\n  vec3 diffuse;\n  vec3 ambient;\n  vec3 specular;\n  vec3 emissive;\n};\n\nstruct Inputs {\n  vec3 normal;\n  vec2 texCoord;\n  vec3 ambientLight;\n  vec3 ambientMaterial;\n  vec3 specularMaterial;\n  vec3 emissiveMaterial;\n  vec4 color;\n  float shininess;\n  float metalness;\n};\n\nvoid main(void) {\n  HOOK_beforeFragment();\n\n  Inputs inputs;\n  inputs.normal = normalize(vNormal);\n  inputs.texCoord = vTexCoord;\n  inputs.ambientLight = vAmbientColor;\n  inputs.color = isTexture\n      ? TEXTURE(uSampler, vTexCoord) * (vec4(uTint.rgb/255., 1.) * uTint.a/255.)\n      : vColor;\n  if (isTexture && inputs.color.a > 0.0) {\n    // Textures come in with premultiplied alpha. Temporarily unpremultiply it\n    // so hooks users don't have to think about premultiplied alpha.\n    inputs.color.rgb /= inputs.color.a;\n  }\n  inputs.shininess = uShininess;\n  inputs.metalness = uMetallic;\n  inputs.ambientMaterial = uHasSetAmbient ? uAmbientMatColor.rgb : inputs.color.rgb;\n  inputs.specularMaterial = uSpecularMatColor.rgb;\n  inputs.emissiveMaterial = uEmissiveMatColor.rgb;\n  inputs = HOOK_getPixelInputs(inputs);\n\n  vec3 diffuse;\n  vec3 specular;\n  totalLight(vViewPosition, inputs.normal, inputs.shininess, inputs.metalness, diffuse, specular);\n\n  // Calculating final color as result of all lights (plus emissive term).\n\n  vec2 texCoord = inputs.texCoord;\n  vec4 baseColor = inputs.color;\n  ColorComponents c;\n  c.opacity = baseColor.a;\n  c.baseColor = baseColor.rgb;\n  c.ambientColor = inputs.ambientMaterial;\n  c.specularColor = inputs.specularMaterial;\n  c.diffuse = diffuse;\n  c.ambient = inputs.ambientLight;\n  c.specular = specular;\n  c.emissive = inputs.emissiveMaterial;\n  OUT_COLOR = HOOK_getFinalColor(HOOK_combineColors(c));\n  OUT_COLOR.rgb *= OUT_COLOR.a; // Premultiply alpha before rendering\n  HOOK_afterFragment();\n}\n";
-
-var fontVert = "IN vec3 aPosition;\nIN vec2 aTexCoord;\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\n\nuniform vec4 uGlyphRect;\nuniform float uGlyphOffset;\n\nOUT vec2 vTexCoord;\nOUT float w;\n\nvoid main() {\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n\n  // scale by the size of the glyph's rectangle\n  positionVec4.xy *= uGlyphRect.zw - uGlyphRect.xy;\n\n  // Expand glyph bounding boxes by 1px on each side to give a bit of room\n  // for antialiasing\n  vec3 newOrigin = (uModelViewMatrix * vec4(0., 0., 0., 1.)).xyz;\n  vec3 newDX = (uModelViewMatrix * vec4(1., 0., 0., 1.)).xyz;\n  vec3 newDY = (uModelViewMatrix * vec4(0., 1., 0., 1.)).xyz;\n  vec2 pixelScale = vec2(\n    1. / length(newOrigin - newDX),\n    1. / length(newOrigin - newDY)\n  );\n  vec2 offset = pixelScale * normalize(aTexCoord - vec2(0.5, 0.5));\n  vec2 textureOffset = offset * (1. / vec2(\n    uGlyphRect.z - uGlyphRect.x,\n    uGlyphRect.w - uGlyphRect.y\n  ));\n\n  // move to the corner of the glyph\n  positionVec4.xy += uGlyphRect.xy;\n\n  // move to the letter's line offset\n  positionVec4.x += uGlyphOffset;\n\n  positionVec4.xy += offset;\n  \n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n  vTexCoord = aTexCoord + textureOffset;\n  w = gl_Position.w;\n}\n";
-
-var fontFrag = "#ifndef WEBGL2\n#extension GL_OES_standard_derivatives : enable\n#endif\n\n#if 0\n  // simulate integer math using floats\n\t#define int float\n\t#define ivec2 vec2\n\t#define INT(x) float(x)\n\n\tint ifloor(float v) { return floor(v); }\n\tivec2 ifloor(vec2 v) { return floor(v); }\n\n#else\n  // use native integer math\n\tprecision highp int;\n\t#define INT(x) x\n\n\tint ifloor(float v) { return int(v); }\n\tint ifloor(int v) { return v; }\n\tivec2 ifloor(vec2 v) { return ivec2(v); }\n\n#endif\n\nuniform sampler2D uSamplerStrokes;\nuniform sampler2D uSamplerRowStrokes;\nuniform sampler2D uSamplerRows;\nuniform sampler2D uSamplerColStrokes;\nuniform sampler2D uSamplerCols;\n\nuniform ivec2 uStrokeImageSize;\nuniform ivec2 uCellsImageSize;\nuniform ivec2 uGridImageSize;\n\nuniform ivec2 uGridOffset;\nuniform ivec2 uGridSize;\nuniform vec4 uMaterialColor;\n\nIN vec2 vTexCoord;\n\n// some helper functions\nint ROUND(float v) { return ifloor(v + 0.5); }\nivec2 ROUND(vec2 v) { return ifloor(v + 0.5); }\nfloat saturate(float v) { return clamp(v, 0.0, 1.0); }\nvec2 saturate(vec2 v) { return clamp(v, 0.0, 1.0); }\n\nint mul(float v1, int v2) {\n  return ifloor(v1 * float(v2));\n}\n\nivec2 mul(vec2 v1, ivec2 v2) {\n  return ifloor(v1 * vec2(v2) + 0.5);\n}\n\n// unpack a 16-bit integer from a float vec2\nint getInt16(vec2 v) {\n  ivec2 iv = ROUND(v * 255.0);\n  return iv.x * INT(128) + iv.y;\n}\n\nvec2 pixelScale;\nvec2 coverage = vec2(0.0);\nvec2 weight = vec2(0.5);\nconst float minDistance = 1.0/8192.0;\nconst float hardness = 1.05; // amount of antialias\n\n// the maximum number of curves in a glyph\nconst int N = INT(250);\n\n// retrieves an indexed pixel from a sampler\nvec4 getTexel(sampler2D sampler, int pos, ivec2 size) {\n  int width = size.x;\n  int y = ifloor(pos / width);\n  int x = pos - y * width;  // pos % width\n\n  return TEXTURE(sampler, (vec2(x, y) + 0.5) / vec2(size));\n}\n\nvoid calulateCrossings(vec2 p0, vec2 p1, vec2 p2, out vec2 C1, out vec2 C2) {\n\n  // get the coefficients of the quadratic in t\n  vec2 a = p0 - p1 * 2.0 + p2;\n  vec2 b = p0 - p1;\n  vec2 c = p0 - vTexCoord;\n\n  // found out which values of 't' it crosses the axes\n  vec2 surd = sqrt(max(vec2(0.0), b * b - a * c));\n  vec2 t1 = ((b - surd) / a).yx;\n  vec2 t2 = ((b + surd) / a).yx;\n\n  // approximate straight lines to avoid rounding errors\n  if (abs(a.y) < 0.001)\n    t1.x = t2.x = c.y / (2.0 * b.y);\n\n  if (abs(a.x) < 0.001)\n    t1.y = t2.y = c.x / (2.0 * b.x);\n\n  // plug into quadratic formula to find the corrdinates of the crossings\n  C1 = ((a * t1 - b * 2.0) * t1 + c) * pixelScale;\n  C2 = ((a * t2 - b * 2.0) * t2 + c) * pixelScale;\n}\n\nvoid coverageX(vec2 p0, vec2 p1, vec2 p2) {\n\n  vec2 C1, C2;\n  calulateCrossings(p0, p1, p2, C1, C2);\n\n  // determine on which side of the x-axis the points lie\n  bool y0 = p0.y > vTexCoord.y;\n  bool y1 = p1.y > vTexCoord.y;\n  bool y2 = p2.y > vTexCoord.y;\n\n  // could web be under the curve (after t1)?\n  if (y1 ? !y2 : y0) {\n    // add the coverage for t1\n    coverage.x += saturate(C1.x + 0.5);\n    // calculate the anti-aliasing for t1\n    weight.x = min(weight.x, abs(C1.x));\n  }\n\n  // are we outside the curve (after t2)?\n  if (y1 ? !y0 : y2) {\n    // subtract the coverage for t2\n    coverage.x -= saturate(C2.x + 0.5);\n    // calculate the anti-aliasing for t2\n    weight.x = min(weight.x, abs(C2.x));\n  }\n}\n\n// this is essentially the same as coverageX, but with the axes swapped\nvoid coverageY(vec2 p0, vec2 p1, vec2 p2) {\n\n  vec2 C1, C2;\n  calulateCrossings(p0, p1, p2, C1, C2);\n\n  bool x0 = p0.x > vTexCoord.x;\n  bool x1 = p1.x > vTexCoord.x;\n  bool x2 = p2.x > vTexCoord.x;\n\n  if (x1 ? !x2 : x0) {\n    coverage.y -= saturate(C1.y + 0.5);\n    weight.y = min(weight.y, abs(C1.y));\n  }\n\n  if (x1 ? !x0 : x2) {\n    coverage.y += saturate(C2.y + 0.5);\n    weight.y = min(weight.y, abs(C2.y));\n  }\n}\n\nvoid main() {\n\n  // calculate the pixel scale based on screen-coordinates\n  pixelScale = hardness / fwidth(vTexCoord);\n\n  // which grid cell is this pixel in?\n  ivec2 gridCoord = ifloor(vTexCoord * vec2(uGridSize));\n\n  // intersect curves in this row\n  {\n    // the index into the row info bitmap\n    int rowIndex = gridCoord.y + uGridOffset.y;\n    // fetch the info texel\n    vec4 rowInfo = getTexel(uSamplerRows, rowIndex, uGridImageSize);\n    // unpack the rowInfo\n    int rowStrokeIndex = getInt16(rowInfo.xy);\n    int rowStrokeCount = getInt16(rowInfo.zw);\n\n    for (int iRowStroke = INT(0); iRowStroke < N; iRowStroke++) {\n      if (iRowStroke >= rowStrokeCount)\n        break;\n\n      // each stroke is made up of 3 points: the start and control point\n      // and the start of the next curve.\n      // fetch the indices of this pair of strokes:\n      vec4 strokeIndices = getTexel(uSamplerRowStrokes, rowStrokeIndex++, uCellsImageSize);\n\n      // unpack the stroke index\n      int strokePos = getInt16(strokeIndices.xy);\n\n      // fetch the two strokes\n      vec4 stroke0 = getTexel(uSamplerStrokes, strokePos + INT(0), uStrokeImageSize);\n      vec4 stroke1 = getTexel(uSamplerStrokes, strokePos + INT(1), uStrokeImageSize);\n\n      // calculate the coverage\n      coverageX(stroke0.xy, stroke0.zw, stroke1.xy);\n    }\n  }\n\n  // intersect curves in this column\n  {\n    int colIndex = gridCoord.x + uGridOffset.x;\n    vec4 colInfo = getTexel(uSamplerCols, colIndex, uGridImageSize);\n    int colStrokeIndex = getInt16(colInfo.xy);\n    int colStrokeCount = getInt16(colInfo.zw);\n    \n    for (int iColStroke = INT(0); iColStroke < N; iColStroke++) {\n      if (iColStroke >= colStrokeCount)\n        break;\n\n      vec4 strokeIndices = getTexel(uSamplerColStrokes, colStrokeIndex++, uCellsImageSize);\n\n      int strokePos = getInt16(strokeIndices.xy);\n      vec4 stroke0 = getTexel(uSamplerStrokes, strokePos + INT(0), uStrokeImageSize);\n      vec4 stroke1 = getTexel(uSamplerStrokes, strokePos + INT(1), uStrokeImageSize);\n      coverageY(stroke0.xy, stroke0.zw, stroke1.xy);\n    }\n  }\n\n  weight = saturate(1.0 - weight * 2.0);\n  float distance = max(weight.x + weight.y, minDistance); // manhattan approx.\n  float antialias = abs(dot(coverage, weight) / distance);\n  float cover = min(abs(coverage.x), abs(coverage.y));\n  OUT_COLOR = vec4(uMaterialColor.rgb, 1.) * uMaterialColor.a;\n  OUT_COLOR *= saturate(max(antialias, cover));\n}\n";
-
-var lineVert = "/*\n  Part of the Processing project - http://processing.org\n  Copyright (c) 2012-15 The Processing Foundation\n  Copyright (c) 2004-12 Ben Fry and Casey Reas\n  Copyright (c) 2001-04 Massachusetts Institute of Technology\n  This library is free software; you can redistribute it and/or\n  modify it under the terms of the GNU Lesser General Public\n  License as published by the Free Software Foundation, version 2.1.\n  This library is distributed in the hope that it will be useful,\n  but WITHOUT ANY WARRANTY; without even the implied warranty of\n  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n  Lesser General Public License for more details.\n  You should have received a copy of the GNU Lesser General\n  Public License along with this library; if not, write to the\n  Free Software Foundation, Inc., 59 Temple Place, Suite 330,\n  Boston, MA  02111-1307  USA\n*/\n\n#define PROCESSING_LINE_SHADER\n\n#define HOOK_DEFINES\n\nprecision highp int;\nprecision highp float;\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\nuniform mat4 uModelMatrix;\nuniform mat4 uViewMatrix;\n#else\nuniform mat4 uModelViewMatrix;\n#endif\n\nuniform mat4 uProjectionMatrix;\nuniform float uStrokeWeight;\n\nuniform bool uUseLineColor;\nuniform bool uSimpleLines;\nuniform vec4 uMaterialColor;\n\nuniform vec4 uViewport;\nuniform int uPerspective;\nuniform int uStrokeJoin;\n\nIN vec3 aPosition;\nIN vec3 aTangentIn;\nIN vec3 aTangentOut;\nIN float aSide;\nIN vec4 aVertexColor;\n\nOUT vec4 vColor;\nOUT vec2 vTangent;\nOUT vec2 vCenter;\nOUT vec2 vPosition;\nOUT float vMaxDist;\nOUT float vCap;\nOUT float vJoin;\nOUT float vStrokeWeight;\n\nvec2 lineIntersection(vec2 aPoint, vec2 aDir, vec2 bPoint, vec2 bDir) {\n  // Rotate and translate so a starts at the origin and goes out to the right\n  bPoint -= aPoint;\n  vec2 rotatedBFrom = vec2(\n    bPoint.x*aDir.x + bPoint.y*aDir.y,\n    bPoint.y*aDir.x - bPoint.x*aDir.y\n  );\n  vec2 bTo = bPoint + bDir;\n  vec2 rotatedBTo = vec2(\n    bTo.x*aDir.x + bTo.y*aDir.y,\n    bTo.y*aDir.x - bTo.x*aDir.y\n  );\n  float intersectionDistance =\n    rotatedBTo.x + (rotatedBFrom.x - rotatedBTo.x) * rotatedBTo.y /\n    (rotatedBTo.y - rotatedBFrom.y);\n  return aPoint + aDir * intersectionDistance;\n}\n\nstruct StrokeVertex {\n  vec3 position;\n  vec3 tangentIn;\n  vec3 tangentOut;\n  vec4 color;\n  float weight;\n};\n\nvoid main() {\n  HOOK_beforeVertex();\n\n  if (!uSimpleLines) {\n      // Caps have one of either the in or out tangent set to 0\n      vCap = (aTangentIn == vec3(0.)) != (aTangentOut == vec3(0.)) ? 1. : 0.;\n\n      // Joins have two unique, defined tangents\n      vJoin = (\n          aTangentIn != vec3(0.) &&\n          aTangentOut != vec3(0.) &&\n          aTangentIn != aTangentOut\n      ) ? 1. : 0.;\n  }\n\n  StrokeVertex inputs;\n  inputs.position = aPosition.xyz;\n  inputs.color = uUseLineColor ? aVertexColor : uMaterialColor;\n  inputs.weight = uStrokeWeight;\n  inputs.tangentIn = aTangentIn;\n  inputs.tangentOut = aTangentOut;\n\n#ifdef AUGMENTED_HOOK_getObjectInputs\n  inputs = HOOK_getObjectInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  inputs.position = (uModelMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.tangentIn = (uModelMatrix * vec4(aTangentIn, 0.)).xyz;\n  inputs.tangentOut = (uModelMatrix * vec4(aTangentOut, 0.)).xyz;\n  inputs = HOOK_getWorldInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  // Already multiplied by the model matrix, just apply view\n  inputs.position = (uViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.tangentIn = (uViewMatrix * vec4(aTangentIn, 0.)).xyz;\n  inputs.tangentOut = (uViewMatrix * vec4(aTangentOut, 0.)).xyz;\n#else\n  // Apply both at once\n  inputs.position = (uModelViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.tangentIn = (uModelViewMatrix * vec4(aTangentIn, 0.)).xyz;\n  inputs.tangentOut = (uModelViewMatrix * vec4(aTangentOut, 0.)).xyz;\n#endif\n#ifdef AUGMENTED_HOOK_getCameraInputs\n  inputs = hook_getCameraInputs(inputs);\n#endif\n\n  vec4 posp = vec4(inputs.position, 1.);\n  vec4 posqIn = vec4(inputs.position + inputs.tangentIn, 1.);\n  vec4 posqOut = vec4(inputs.position + inputs.tangentOut, 1.);\n  vStrokeWeight = inputs.weight;\n\n  float facingCamera = pow(\n    // The word space tangent's z value is 0 if it's facing the camera\n    abs(normalize(posqIn-posp).z),\n\n    // Using pow() here to ramp `facingCamera` up from 0 to 1 really quickly\n    // so most lines get scaled and don't get clipped\n    0.25\n  );\n\n  // Moving vertices slightly toward the camera\n  // to avoid depth-fighting with the fill triangles.\n  // A mix of scaling and offsetting is used based on distance\n  // Discussion here:\n  // https://github.com/processing/p5.js/issues/7200 \n\n  // using a scale <1 moves the lines towards nearby camera\n  // in order to prevent popping effects due to half of\n  // the line disappearing behind the geometry faces.\n  float zDistance = -posp.z; \n  float distanceFactor = smoothstep(0.0, 800.0, zDistance); \n  \n  // Discussed here:\n  // http://www.opengl.org/discussion_boards/ubbthreads.php?ubb=showflat&Number=252848  \n  float scale = mix(1., 0.995, facingCamera);\n  float dynamicScale = mix(scale, 1.0, distanceFactor); // Closer = more scale, farther = less\n\n  posp.xyz = posp.xyz * dynamicScale;\n  posqIn.xyz = posqIn.xyz * dynamicScale;\n  posqOut.xyz = posqOut.xyz * dynamicScale;\n\n  // Moving vertices slightly toward camera when far away \n  // https://github.com/processing/p5.js/issues/6956 \n  float zOffset = mix(0., -1., facingCamera);\n  float dynamicZAdjustment = mix(0.0, zOffset, distanceFactor); // Closer = less zAdjustment, farther = more\n\n  posp.z -= dynamicZAdjustment;\n  posqIn.z -= dynamicZAdjustment;\n  posqOut.z -= dynamicZAdjustment;\n  \n  vec4 p = uProjectionMatrix * posp;\n  vec4 qIn = uProjectionMatrix * posqIn;\n  vec4 qOut = uProjectionMatrix * posqOut;\n\n  // formula to convert from clip space (range -1..1) to screen space (range 0..[width or height])\n  // screen_p = (p.xy/p.w + <1,1>) * 0.5 * uViewport.zw\n\n  // prevent division by W by transforming the tangent formula (div by 0 causes\n  // the line to disappear, see https://github.com/processing/processing/issues/5183)\n  // t = screen_q - screen_p\n  //\n  // tangent is normalized and we don't care which aDirection it points to (+-)\n  // t = +- normalize( screen_q - screen_p )\n  // t = +- normalize( (q.xy/q.w+<1,1>)*0.5*uViewport.zw - (p.xy/p.w+<1,1>)*0.5*uViewport.zw )\n  //\n  // extract common factor, <1,1> - <1,1> cancels out\n  // t = +- normalize( (q.xy/q.w - p.xy/p.w) * 0.5 * uViewport.zw )\n  //\n  // convert to common divisor\n  // t = +- normalize( ((q.xy*p.w - p.xy*q.w) / (p.w*q.w)) * 0.5 * uViewport.zw )\n  //\n  // remove the common scalar divisor/factor, not needed due to normalize and +-\n  // (keep uViewport - can't remove because it has different components for x and y\n  //  and corrects for aspect ratio, see https://github.com/processing/processing/issues/5181)\n  // t = +- normalize( (q.xy*p.w - p.xy*q.w) * uViewport.zw )\n\n  vec2 tangentIn = normalize((qIn.xy*p.w - p.xy*qIn.w) * uViewport.zw);\n  vec2 tangentOut = normalize((qOut.xy*p.w - p.xy*qOut.w) * uViewport.zw);\n\n  vec2 curPerspScale;\n  if(uPerspective == 1) {\n    // Perspective ---\n    // convert from world to clip by multiplying with projection scaling factor\n    // to get the right thickness (see https://github.com/processing/processing/issues/5182)\n\n    // The y value of the projection matrix may be flipped if rendering to a Framebuffer.\n    // Multiplying again by its sign here negates the flip to get just the scale.\n    curPerspScale = (uProjectionMatrix * vec4(1, sign(uProjectionMatrix[1][1]), 0, 0)).xy;\n  } else {\n    // No Perspective ---\n    // multiply by W (to cancel out division by W later in the pipeline) and\n    // convert from screen to clip (derived from clip to screen above)\n    curPerspScale = p.w / (0.5 * uViewport.zw);\n  }\n\n  vec2 offset;\n  if (vJoin == 1. && !uSimpleLines) {\n    vTangent = normalize(tangentIn + tangentOut);\n    vec2 normalIn = vec2(-tangentIn.y, tangentIn.x);\n    vec2 normalOut = vec2(-tangentOut.y, tangentOut.x);\n    float side = sign(aSide);\n    float sideEnum = abs(aSide);\n\n    // We generate vertices for joins on either side of the centerline, but\n    // the \"elbow\" side is the only one needing a join. By not setting the\n    // offset for the other side, all its vertices will end up in the same\n    // spot and not render, effectively discarding it.\n    if (sign(dot(tangentOut, vec2(-tangentIn.y, tangentIn.x))) != side) {\n      // Side enums:\n      //   1: the side going into the join\n      //   2: the middle of the join\n      //   3: the side going out of the join\n      if (sideEnum == 2.) {\n        // Calculate the position + tangent on either side of the join, and\n        // find where the lines intersect to find the elbow of the join\n        vec2 c = (posp.xy/posp.w + vec2(1.,1.)) * 0.5 * uViewport.zw;\n        vec2 intersection = lineIntersection(\n          c + (side * normalIn * inputs.weight / 2.),\n          tangentIn,\n          c + (side * normalOut * inputs.weight / 2.),\n          tangentOut\n        );\n        offset = (intersection - c);\n\n        // When lines are thick and the angle of the join approaches 180, the\n        // elbow might be really far from the center. We'll apply a limit to\n        // the magnitude to avoid lines going across the whole screen when this\n        // happens.\n        float mag = length(offset);\n        float maxMag = 3. * inputs.weight;\n        if (mag > maxMag) {\n          offset *= maxMag / mag;\n        }\n      } else if (sideEnum == 1.) {\n        offset = side * normalIn * inputs.weight / 2.;\n      } else if (sideEnum == 3.) {\n        offset = side * normalOut * inputs.weight / 2.;\n      }\n    }\n    if (uStrokeJoin == STROKE_JOIN_BEVEL) {\n      vec2 avgNormal = vec2(-vTangent.y, vTangent.x);\n      vMaxDist = abs(dot(avgNormal, normalIn * inputs.weight / 2.));\n    } else {\n      vMaxDist = inputs.weight / 2.;\n    }\n  } else {\n    vec2 tangent = aTangentIn == vec3(0.) ? tangentOut : tangentIn;\n    vTangent = tangent;\n    vec2 normal = vec2(-tangent.y, tangent.x);\n\n    float normalOffset = sign(aSide);\n    // Caps will have side values of -2 or 2 on the edge of the cap that\n    // extends out from the line\n    float tangentOffset = abs(aSide) - 1.;\n    offset = (normal * normalOffset + tangent * tangentOffset) *\n      inputs.weight * 0.5;\n    vMaxDist = inputs.weight / 2.;\n  }\n\n  vCenter = p.xy;\n  vPosition = vCenter + offset;\n  vColor = inputs.color;\n\n  gl_Position.xy = p.xy + offset.xy * curPerspScale;\n  gl_Position.zw = p.zw;\n  \n  HOOK_afterVertex();\n}\n";
-
-var lineFrag = "precision highp int;\nprecision highp float;\n\nuniform vec4 uMaterialColor;\nuniform int uStrokeCap;\nuniform int uStrokeJoin;\n\nIN vec4 vColor;\nIN vec2 vTangent;\nIN vec2 vCenter;\nIN vec2 vPosition;\nIN float vStrokeWeight;\nIN float vMaxDist;\nIN float vCap;\nIN float vJoin;\n\nfloat distSquared(vec2 a, vec2 b) {\n  vec2 aToB = b - a;\n  return dot(aToB, aToB);\n}\n\nstruct Inputs {\n  vec4 color;\n  vec2 tangent;\n  vec2 center;\n  vec2 position;\n  float strokeWeight;\n};\n\nvoid main() {\n  HOOK_beforeFragment();\n\n  Inputs inputs;\n  inputs.color = vColor;\n  inputs.tangent = vTangent;\n  inputs.center = vCenter;\n  inputs.position = vPosition;\n  inputs.strokeWeight = vStrokeWeight;\n  inputs = HOOK_getPixelInputs(inputs);\n\n  if (vCap > 0.) {\n    if (\n      uStrokeCap == STROKE_CAP_ROUND &&\n      HOOK_shouldDiscard(distSquared(inputs.position, inputs.center) > inputs.strokeWeight * inputs.strokeWeight * 0.25)\n    ) {\n      discard;\n    } else if (\n      uStrokeCap == STROKE_CAP_SQUARE &&\n      HOOK_shouldDiscard(dot(inputs.position - inputs.center, inputs.tangent) > 0.)\n    ) {\n      discard;\n    // Use full area for PROJECT\n    } else if (HOOK_shouldDiscard(false)) {\n      discard;\n    }\n  } else if (vJoin > 0.) {\n    if (\n      uStrokeJoin == STROKE_JOIN_ROUND &&\n      HOOK_shouldDiscard(distSquared(inputs.position, inputs.center) > inputs.strokeWeight * inputs.strokeWeight * 0.25)\n    ) {\n      discard;\n    } else if (uStrokeJoin == STROKE_JOIN_BEVEL) {\n      vec2 normal = vec2(-inputs.tangent.y, inputs.tangent.x);\n      if (HOOK_shouldDiscard(abs(dot(inputs.position - inputs.center, normal)) > vMaxDist)) {\n        discard;\n      }\n    // Use full area for MITER\n    } else if (HOOK_shouldDiscard(false)) {\n      discard;\n    }\n  }\n  OUT_COLOR = HOOK_getFinalColor(vec4(inputs.color.rgb, 1.) * inputs.color.a);\n  HOOK_afterFragment();\n}\n";
-
-var pointVert = "IN vec3 aPosition;\nuniform float uPointSize;\nOUT float vStrokeWeight;\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\n\nvoid main() {\n  HOOK_beforeVertex();\n  vec4 viewModelPosition = vec4(HOOK_getWorldPosition(\n    (uModelViewMatrix * vec4(HOOK_getLocalPosition(aPosition), 1.0)).xyz\n  ), 1.);\n  gl_Position = uProjectionMatrix * viewModelPosition;  \n\n  float pointSize = HOOK_getPointSize(uPointSize);\n\n\tgl_PointSize = pointSize;\n\tvStrokeWeight = pointSize;\n  HOOK_afterVertex();\n}\n";
-
-var pointFrag = "precision mediump int;\nuniform vec4 uMaterialColor;\nIN float vStrokeWeight;\n\nvoid main(){\n  HOOK_beforeFragment();\n  float mask = 0.0;\n\n  // make a circular mask using the gl_PointCoord (goes from 0 - 1 on a point)\n  // might be able to get a nicer edge on big strokeweights with smoothstep but slightly less performant\n\n  mask = step(0.98, length(gl_PointCoord * 2.0 - 1.0));\n\n  // if strokeWeight is 1 or less lets just draw a square\n  // this prevents weird artifacting from carving circles when our points are really small\n  // if strokeWeight is larger than 1, we just use it as is\n\n  mask = mix(0.0, mask, clamp(floor(vStrokeWeight - 0.5),0.0,1.0));\n\n  // throw away the borders of the mask\n  // otherwise we get weird alpha blending issues\n\n  if(HOOK_shouldDiscard(mask > 0.98)){\n    discard;\n  }\n\n  OUT_COLOR = HOOK_getFinalColor(vec4(uMaterialColor.rgb, 1.) * uMaterialColor.a);\n  HOOK_afterFragment();\n}\n";
-
-var imageLightVert = "precision highp float;\nattribute vec3 aPosition;\nattribute vec3 aNormal;\nattribute vec2 aTexCoord;\n\nvarying vec3 localPos;\nvarying vec3 vWorldNormal;\nvarying vec3 vWorldPosition;\nvarying vec2 vTexCoord;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform mat3 uNormalMatrix;\n\nvoid main() {\n  // Multiply the position by the matrix.\n  vec4 viewModelPosition = uModelViewMatrix * vec4(aPosition, 1.0);\n  gl_Position = uProjectionMatrix * viewModelPosition;  \n  \n  // orient the normals and pass to the fragment shader\n  vWorldNormal = uNormalMatrix * aNormal;\n  \n  // send the view position to the fragment shader\n  vWorldPosition = (uModelViewMatrix * vec4(aPosition, 1.0)).xyz;\n  \n  localPos = vWorldPosition;\n  vTexCoord = aTexCoord;\n}\n\n\n/*\nin the vertex shader we'll compute the world position and world oriented normal of the vertices and pass those to the fragment shader as varyings.\n*/\n";
-
-var imageLightDiffusedFrag = "precision highp float;\nvarying vec3 localPos;\n\n// the HDR cubemap converted (can be from an equirectangular environment map.)\nuniform sampler2D environmentMap;\nvarying vec2 vTexCoord;\n\nconst float PI = 3.14159265359;\n\nvec2 nTOE( vec3 v ){\n  // x = r sin(phi) cos(theta)   \n  // y = r cos(phi)  \n  // z = r sin(phi) sin(theta)\n  float phi = acos( v.y );\n  // if phi is 0, then there are no x, z components\n  float theta = 0.0;\n  // else \n  theta = acos(v.x / sin(phi));\n  float sinTheta = v.z / sin(phi);\n  if (sinTheta < 0.0) {\n    // Turn it into -theta, but in the 0-2PI range\n    theta = 2.0 * PI - theta;\n  }\n  theta = theta / (2.0 * 3.14159);\n  phi = phi / 3.14159 ;\n  \n  vec2 angles = vec2( phi, theta );\n  return angles;\n}\n\nfloat random(vec2 p) {\n  vec3 p3  = fract(vec3(p.xyx) * .1031);\n  p3 += dot(p3, p3.yzx + 33.33);\n  return fract((p3.x + p3.y) * p3.z);\n}\n\nvoid main()\n{   \t \n\t// the sample direction equals the hemisphere's orientation\n  float phi = vTexCoord.x * 2.0 * PI;\n  float theta = vTexCoord.y * PI;\n  float x = sin(theta) * cos(phi);\n  float y = sin(theta) * sin(phi);\n  float z = cos(theta);\n  vec3 normal = vec3( x, y, z);\n\n\t// Discretely sampling the hemisphere given the integral's\n  // spherical coordinates translates to the following fragment code:\n\tvec3 irradiance = vec3(0.0);  \n\tvec3 up\t= vec3(0.0, 1.0, 0.0);\n\tvec3 right = normalize(cross(up, normal));\n\tup = normalize(cross(normal, right));\n\n\t//  We specify a fixed sampleDelta delta value to traverse\n  // the hemisphere; decreasing or increasing the sample delta\n  // will increase or decrease the accuracy respectively.\n\tconst float sampleDelta = 0.100;\n\tfloat nrSamples = 0.0;\n  float randomOffset = random(gl_FragCoord.xy) * sampleDelta;\n\tfor(float rawPhi = 0.0; rawPhi < 2.0 * PI; rawPhi += sampleDelta)\n\t{\n    float phi = rawPhi + randomOffset;\n    for(float rawTheta = 0.0; rawTheta < ( 0.5 ) * PI; rawTheta += sampleDelta)\n    {\n      float theta = rawTheta + randomOffset;\n      // spherical to cartesian (in tangent space) // tangent space to world // add each sample result to irradiance\n      float x = sin(theta) * cos(phi);\n      float y = sin(theta) * sin(phi);\n      float z = cos(theta);\n      vec3 tangentSample = vec3( x, y, z);\n      \n      vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;\n        irradiance += (texture2D(environmentMap, nTOE(sampleVec)).xyz) * cos(theta) * sin(theta);\n      nrSamples++;\n    }\n\t}\n\t// divide by the total number of samples taken, giving us the average sampled irradiance.\n\tirradiance = PI * irradiance * (1.0 / float(nrSamples )) ;\n  \n \n\tgl_FragColor = vec4(irradiance, 1.0);\n}";
-
-var imageLightSpecularFrag = "precision highp float;\r\nvarying vec3 localPos;\r\nvarying vec2 vTexCoord;\r\n\r\n// our texture\r\nuniform sampler2D environmentMap;\r\nuniform float roughness;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nfloat VanDerCorput(int bits);\r\nvec2 HammersleyNoBitOps(int i, int N);\r\nvec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness);\r\n\r\n\r\nvec2 nTOE( vec3 v ){\r\n  // x = r sin(phi) cos(theta)   \r\n  // y = r cos(phi)  \r\n  // z = r sin(phi) sin(theta)\r\n  float phi = acos( v.y );\r\n  // if phi is 0, then there are no x, z components\r\n  float theta = 0.0;\r\n  // else \r\n  theta = acos(v.x / sin(phi));\r\n  float sinTheta = v.z / sin(phi);\r\n  if (sinTheta < 0.0) {\r\n    // Turn it into -theta, but in the 0-2PI range\r\n    theta = 2.0 * PI - theta;\r\n  }\r\n  theta = theta / (2.0 * 3.14159);\r\n  phi = phi / 3.14159 ;\r\n  \r\n  vec2 angles = vec2( phi, theta );\r\n  return angles;\r\n}\r\n\r\n\r\nvoid main(){\r\n  const int SAMPLE_COUNT = 400; // 4096\r\n  int lowRoughnessLimit = int(pow(2.0,(roughness+0.1)*20.0));\r\n  float totalWeight = 0.0;\r\n  vec3 prefilteredColor = vec3(0.0);\r\n  float phi = vTexCoord.x * 2.0 * PI;\r\n  float theta = vTexCoord.y * PI;\r\n  float x = sin(theta) * cos(phi);\r\n  float y = sin(theta) * sin(phi);\r\n  float z = cos(theta);\r\n  vec3 N = vec3(x,y,z);\r\n  vec3 V = N;\r\n  for (int i = 0; i < SAMPLE_COUNT; ++i)\r\n  {\r\n    // break at smaller sample numbers for low roughness levels\r\n    if(i == lowRoughnessLimit)\r\n    {\r\n      break;\r\n    }\r\n    vec2 Xi = HammersleyNoBitOps(i, SAMPLE_COUNT);\r\n    vec3 H = ImportanceSampleGGX(Xi, N, roughness);\r\n    vec3 L = normalize(2.0 * dot(V, H) * H - V);\r\n\r\n    float NdotL = max(dot(N, L), 0.0);\r\n    if (NdotL > 0.0)\r\n    {\r\n      prefilteredColor += texture2D(environmentMap, nTOE(L)).xyz * NdotL;\r\n      totalWeight += NdotL;\r\n    }\r\n  }\r\n  prefilteredColor = prefilteredColor / totalWeight;\r\n\r\n  gl_FragColor = vec4(prefilteredColor, 1.0);\r\n}\r\n\r\nvec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness){\r\n  float a = roughness * roughness;\r\n\r\n  float phi = 2.0 * PI * Xi.x;\r\n  float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));\r\n  float sinTheta = sqrt(1.0 - cosTheta * cosTheta);\r\n  // from spherical coordinates to cartesian coordinates\r\n  vec3 H;\r\n  H.x = cos(phi) * sinTheta;\r\n  H.y = sin(phi) * sinTheta;\r\n  H.z = cosTheta;\r\n\r\n  // from tangent-space vector to world-space sample vector\r\n  vec3 up = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\r\n  vec3 tangent = normalize(cross(up, N));\r\n  vec3 bitangent = cross(N, tangent);\r\n\r\n  vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;\r\n  return normalize(sampleVec);\r\n}\r\n\r\n\r\nfloat VanDerCorput(int n, int base)\r\n{\r\n#ifdef WEBGL2\r\n\r\n    uint bits = uint(n);\r\n    bits = (bits << 16u) | (bits >> 16u);\r\n    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);\r\n    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);\r\n    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);\r\n    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);\r\n    return float(bits) * 2.3283064365386963e-10; // / 0x100000000\r\n\r\n#else\r\n\r\n  float invBase = 1.0 / float(base);\r\n  float denom = 1.0;\r\n  float result = 0.0;\r\n\r\n\r\n  for (int i = 0; i < 32; ++i)\r\n  {\r\n        if (n > 0)\r\n        {\r\n        denom = mod(float(n), 2.0);\r\n        result += denom * invBase;\r\n        invBase = invBase / 2.0;\r\n        n = int(float(n) / 2.0);\r\n        }\r\n  }\r\n\r\n\r\n  return result;\r\n\r\n#endif\r\n}\r\n\r\nvec2 HammersleyNoBitOps(int i, int N)\r\n{\r\n  return vec2(float(i) / float(N), VanDerCorput(i, 2));\r\n}\r\n";
-
-var filterBaseFrag = "precision highp float;\n\nuniform sampler2D tex0;\nuniform vec2 canvasSize;\nuniform vec2 texelSize;\n\nIN vec2 vTexCoord;\n\nstruct FilterInputs {\n  vec2 texCoord;\n  vec2 canvasSize;\n  vec2 texelSize;\n};\n\nvoid main(void) {\n  FilterInputs inputs;\n  inputs.texCoord = vTexCoord;\n  inputs.canvasSize = canvasSize;\n  inputs.texelSize = texelSize;\n  OUT_COLOR = HOOK_getColor(inputs, tex0);\n  OUT_COLOR.rgb *= outColor.a;\n}\n";
-
-var filterGrayFrag = "precision highp float;\n\nvarying vec2 vTexCoord;\n\nuniform sampler2D tex0;\n\nfloat luma(vec3 color) {\n  // weighted grayscale with luminance values\n  return dot(color, vec3(0.2126, 0.7152, 0.0722));\n}\n\nvoid main() {\n  vec4 tex = texture2D(tex0, vTexCoord);\n  float gray = luma(tex.rgb);\n  gl_FragColor = vec4(gray, gray, gray, tex.a);\n}\n";
-
-var filterErodeFrag = "// Reduces the bright areas in an image\n\nprecision highp float;\n\nvarying vec2 vTexCoord;\n\nuniform sampler2D tex0;\nuniform vec2 texelSize;\n\nfloat luma(vec3 color) {\n  // weighted grayscale with luminance values\n  // weights 77, 151, 28 taken from src/image/filters.js\n  return dot(color, vec3(0.300781, 0.589844, 0.109375));\n}\n\nvoid main() {\n  vec4 color = texture2D(tex0, vTexCoord);\n  float lum = luma(color.rgb);\n\n  // set current color as the darkest neighbor color\n\n  vec4 neighbors[4];\n  neighbors[0] = texture2D(tex0, vTexCoord + vec2( texelSize.x, 0.0));\n  neighbors[1] = texture2D(tex0, vTexCoord + vec2(-texelSize.x, 0.0));\n  neighbors[2] = texture2D(tex0, vTexCoord + vec2(0.0,  texelSize.y));\n  neighbors[3] = texture2D(tex0, vTexCoord + vec2(0.0, -texelSize.y));\n\n  for (int i = 0; i < 4; i++) {\n    vec4 neighborColor = neighbors[i];\n    float neighborLum = luma(neighborColor.rgb);\n\n    if (neighborLum < lum) {\n      color = neighborColor;\n      lum = neighborLum;\n    }\n  }\n\n  gl_FragColor = color;\n}\n";
-
-var filterDilateFrag = "// Increase the bright areas in an image\n\nprecision highp float;\n\nvarying vec2 vTexCoord;\n\nuniform sampler2D tex0;\nuniform vec2 texelSize;\n\nfloat luma(vec3 color) {\n  // weighted grayscale with luminance values\n  // weights 77, 151, 28 taken from src/image/filters.js\n  return dot(color, vec3(0.300781, 0.589844, 0.109375));\n}\n\nvoid main() {\n  vec4 color = texture2D(tex0, vTexCoord);\n  float lum = luma(color.rgb);\n\n  // set current color as the brightest neighbor color\n\n  vec4 neighbors[4];\n  neighbors[0] = texture2D(tex0, vTexCoord + vec2( texelSize.x, 0.0));\n  neighbors[1] = texture2D(tex0, vTexCoord + vec2(-texelSize.x, 0.0));\n  neighbors[2] = texture2D(tex0, vTexCoord + vec2(0.0,  texelSize.y));\n  neighbors[3] = texture2D(tex0, vTexCoord + vec2(0.0, -texelSize.y));\n\n  for (int i = 0; i < 4; i++) {\n    vec4 neighborColor = neighbors[i];\n    float neighborLum = luma(neighborColor.rgb);\n\n    if (neighborLum > lum) {\n      color = neighborColor;\n      lum = neighborLum;\n    }\n  }\n\n  gl_FragColor = color;\n}\n";
-
-var filterBlurFrag = "precision highp float;\n\n// Two-pass blur filter, unweighted kernel.\n// See also a similar blur at Adam Ferriss' repo of shader examples:\n// https://github.com/aferriss/p5jsShaderExamples/blob/gh-pages/4_image-effects/4-9_single-pass-blur/effect.frag\n\n\nuniform sampler2D tex0;\nvarying vec2 vTexCoord;\nuniform vec2 direction;\nuniform vec2 canvasSize;\nuniform float radius;\n\nfloat random(vec2 p) {\n  vec3 p3  = fract(vec3(p.xyx) * .1031);\n  p3 += dot(p3, p3.yzx + 33.33);\n  return fract((p3.x + p3.y) * p3.z);\n}\n\n// This isn't a real Gaussian weight, it's a quadratic weight. It's what the\n// CPU mode's blur uses though, so we also use it here to match.\nfloat quadWeight(float x, float e) {\n  return pow(e-abs(x), 2.);\n}\n\nvoid main(){\n  vec2 uv = vTexCoord;\n\n  // A reasonable maximum number of samples\n  const float maxSamples = 64.0;\n\n  float numSamples = floor(7. * radius);\n  if (fract(numSamples / 2.) == 0.) {\n    numSamples++;\n  }\n  vec4 avg = vec4(0.0);\n  float total = 0.0;\n\n  // Calculate the spacing to avoid skewing if numSamples > maxSamples\n  float spacing = 1.0;\n  if (numSamples > maxSamples) {\n    spacing = numSamples / maxSamples;\n    numSamples = maxSamples;\n  }\n\n  float randomOffset = (spacing - 1.0) * mix(-0.5, 0.5, random(gl_FragCoord.xy));\n  for (float i = 0.0; i < maxSamples; i++) {\n    if (i >= numSamples) break;\n\n    float sample = i * spacing - (numSamples - 1.0) * 0.5 * spacing + randomOffset;\n    vec2 sampleCoord = uv + vec2(sample, sample) / canvasSize * direction;\n    float weight = quadWeight(sample, (numSamples - 1.0) * 0.5 * spacing);\n\n    avg += weight * texture2D(tex0, sampleCoord);\n    total += weight;\n  }\n\n  avg /= total;\n  gl_FragColor = avg;\n}\n";
-
-var filterPosterizeFrag = "// Limit color space for a stylized cartoon / poster effect\n\nprecision highp float;\n\nvarying vec2 vTexCoord;\n\nuniform sampler2D tex0;\nuniform float filterParameter;\n\nvec3 quantize(vec3 color, float n) {\n  // restrict values to N options/bins\n  // and floor each channel to nearest value\n  //\n  // eg. when N = 5, values = 0.0, 0.25, 0.50, 0.75, 1.0\n  // then quantize (0.1, 0.7, 0.9) -> (0.0, 0.5, 1.0)\n\n  color = color * n;\n  color = floor(color);\n  color = color / (n - 1.0);\n  return color;\n}\n\nvoid main() {\n  vec4 color = texture2D(tex0, vTexCoord);\n\n  vec3 restrictedColor = quantize(color.rgb / color.a, filterParameter);\n\n  gl_FragColor = vec4(restrictedColor.rgb * color.a, color.a);\n}\n";
-
-var filterOpaqueFrag = "// Set alpha channel to entirely opaque\n\nprecision highp float;\n\nvarying vec2 vTexCoord;\n\nuniform sampler2D tex0;\n\nvoid main() {\n  vec4 color = texture2D(tex0, vTexCoord);\n  gl_FragColor = vec4(color.rgb / color.a, 1.0);\n}\n";
-
-var filterInvertFrag = "// Set each pixel to inverse value\n// Note that original INVERT does not change the opacity, so this follows suit\n\nprecision highp float;\n\nvarying vec2 vTexCoord;\n\nuniform sampler2D tex0;\n\nvoid main() {\nvec4 color = texture2D(tex0, vTexCoord);\nvec3 origColor = color.rgb / color.a;\nvec3 invertedColor = vec3(1.0) - origColor;\ngl_FragColor = vec4(invertedColor * color.a, color.a);\n}\n";
-
-var filterThresholdFrag = "// Convert pixels to either white or black, \n// depending on if their luma is above or below filterParameter\n\nprecision highp float;\n\nvarying vec2 vTexCoord;\n\nuniform sampler2D tex0;\nuniform float filterParameter;\n\nfloat luma(vec3 color) {\n  // weighted grayscale with luminance values\n  return dot(color, vec3(0.2126, 0.7152, 0.0722));\n}\n\nvoid main() {\n  vec4 color = texture2D(tex0, vTexCoord);\n  float gray = luma(color.rgb / color.a);\n  // floor() used to match src/image/filters.js\n  float threshold = floor(filterParameter * 255.0) / 255.0;\n  float blackOrWhite = step(threshold, gray);\n  gl_FragColor = vec4(vec3(blackOrWhite) * color.a, color.a);\n}\n";
-
-var filterShaderVert = "uniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\n\nattribute vec3 aPosition;\n// texcoords only come from p5 to vertex shader\n// so pass texcoords on to the fragment shader in a varying variable\nattribute vec2 aTexCoord;\nvarying vec2 vTexCoord;\n\nvoid main() {\n  // transferring texcoords for the frag shader\n  vTexCoord = aTexCoord;\n\n  // copy position with a fourth coordinate for projection (1.0 is normal)\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n\n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n}\n";
-
-const STROKE_CAP_ENUM = {};
-const STROKE_JOIN_ENUM = {};
-let lineDefs = '';
-const defineStrokeCapEnum = function (key, val) {
-  lineDefs += `#define STROKE_CAP_${key} ${val}\n`;
-  STROKE_CAP_ENUM[constants[key]] = val;
-};
-const defineStrokeJoinEnum = function (key, val) {
-  lineDefs += `#define STROKE_JOIN_${key} ${val}\n`;
-  STROKE_JOIN_ENUM[constants[key]] = val;
+const textCoreConstants = {
+  IDEOGRAPHIC: 'ideographic',
+  _CTX_MIDDLE: 'middle',
+  _TEXT_BOUNDS: '_textBoundsSingle',
+  _FONT_BOUNDS: '_fontBoundsSingle',
+  HANGING: 'hanging',
+  START: 'start',
+  END: 'end'
 };
 
-// Define constants in line shaders for each type of cap/join, and also record
-// the values in JS objects
-defineStrokeCapEnum('ROUND', 0);
-defineStrokeCapEnum('PROJECT', 1);
-defineStrokeCapEnum('SQUARE', 2);
-defineStrokeJoinEnum('ROUND', 0);
-defineStrokeJoinEnum('MITER', 1);
-defineStrokeJoinEnum('BEVEL', 2);
+function textCore(p5, fn) {
+  const LeadingScale = 1.275;
+  const LinebreakRe = /\r?\n/g;
+  const CommaDelimRe = /,\s+/;
+  const QuotedRe = /^".*"$/;
+  const SpecialCharRe = /[^\x00-\x7F]/; // Non-ascii
+  const TabsRe = /\t/g;
 
-const defaultShaders = {
-  normalVert,
-  normalFrag,
-  basicFrag,
-  sphereMappingFrag,
-  lightVert: lightingShader + lightVert,
-  lightTextureFrag,
-  phongVert,
-  phongFrag: lightingShader + phongFrag,
-  fontVert,
-  fontFrag,
-  lineVert: lineDefs + lineVert,
-  lineFrag: lineDefs + lineFrag,
-  pointVert,
-  pointFrag,
-  imageLightVert,
-  imageLightDiffusedFrag,
-  imageLightSpecularFrag,
-  filterBaseVert,
-  filterBaseFrag
-};
-let sphereMapping = defaultShaders.sphereMappingFrag;
-for (const key in defaultShaders) {
-  defaultShaders[key] = webgl2CompatibilityShader + defaultShaders[key];
+  const FontVariationSettings = 'fontVariationSettings';
+  const VariableAxes = ['wght', 'wdth', 'ital', 'slnt', 'opsz'];
+  const VariableAxesRe = new RegExp(`(?:${VariableAxes.join('|')})`);
+
+  const textFunctions = [
+    'text',
+    'textAlign',
+    'textAscent',
+    'textDescent',
+    'textLeading',
+    'textMode',
+    'textFont',
+    'textSize',
+    'textStyle',
+    'textWidth',
+    'textWrap',
+    'textBounds',
+    'textDirection',
+    'textProperty',
+    'textProperties',
+    'fontBounds',
+    'fontWidth',
+    'fontAscent',
+    'fontDescent',
+    'textWeight'
+  ];
+
+  /**
+   * Draws text to the canvas.
+   *
+   * The first parameter, `str`, is the text to be drawn. The second and third
+   * parameters, `x` and `y`, set the coordinates of the text's bottom-left
+   * corner. See <a href="#/p5/textAlign">textAlign()</a> for other ways to
+   * align text.
+   *
+   * The fourth and fifth parameters, `maxWidth` and `maxHeight`, are optional.
+   * They set the dimensions of the invisible rectangle containing the text. By
+   * default, they set its  maximum width and height. See
+   * <a href="#/p5/rectMode">rectMode()</a> for other ways to define the
+   * rectangular text box. Text will wrap to fit within the text box. Text
+   * outside of the box won't be drawn.
+   *
+   * Text can be styled a few ways. Call the <a href="#/p5/fill">fill()</a>
+   * function to set the text's fill color. Call
+   * <a href="#/p5/stroke">stroke()</a> and
+   * <a href="#/p5/strokeWeight">strokeWeight()</a> to set the text's outline.
+   * Call <a href="#/p5/textSize">textSize()</a> and
+   * <a href="#/p5/textFont">textFont()</a> to set the text's size and font,
+   * respectively.
+   *
+   * Note: `WEBGL` mode only supports fonts loaded with
+   * <a href="#/p5/loadFont">loadFont()</a>. Calling
+   * <a href="#/p5/stroke">stroke()</a> has no effect in `WEBGL` mode.
+   *
+   * @method text
+   * @param {String|Object|Array|Number|Boolean} str text to be displayed.
+   * @param {Number} x          x-coordinate of the text box.
+   * @param {Number} y          y-coordinate of the text box.
+   * @param {Number} [maxWidth] maximum width of the text box. See
+   *                            <a href="#/p5/rectMode">rectMode()</a> for
+   *                            other options.
+   * @param {Number} [maxHeight] maximum height of the text box. See
+   *                            <a href="#/p5/rectMode">rectMode()</a> for
+   *                            other options.
+   *
+   * @for p5
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background(200);
+   *   text('hi', 50, 50);
+   *
+   *   describe('The text "hi" written in black in the middle of a gray square.');
+   * }
+   * </code>
+   * </div>
+   *
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background('skyblue');
+   *   textSize(100);
+   *   text('🌈', 0, 100);
+   *
+   *   describe('A rainbow in a blue sky.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   textSize(32);
+   *   fill(255);
+   *   stroke(0);
+   *   strokeWeight(4);
+   *   text('hi', 50, 50);
+   *
+   *   describe('The text "hi" written in white with a black outline.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background('black');
+   *   textSize(22);
+   *   fill('yellow');
+   *   text('rainbows', 6, 20);
+   *   fill('cornflowerblue');
+   *   text('rainbows', 6, 45);
+   *   fill('tomato');
+   *   text('rainbows', 6, 70);
+   *   fill('limegreen');
+   *   text('rainbows', 6, 95);
+   *
+   *   describe('The text "rainbows" written on several lines, each in a different color.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background(200);
+   *   let s = 'The quick brown fox jumps over the lazy dog.';
+   *   text(s, 10, 10, 70, 80);
+   *
+   *   describe('The sample text "The quick brown fox..." written in black across several lines.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background(200);
+   *   rectMode(CENTER);
+   *   let s = 'The quick brown fox jumps over the lazy dog.';
+   *   text(s, 50, 50, 70, 80);
+   *
+   *   describe('The sample text "The quick brown fox..." written in black across several lines.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div modernizr='webgl'>
+   * <code>
+   * let font;
+   *
+   * async function setup() {
+   *   createCanvas(100, 100, WEBGL);
+   *   font = await loadFont('assets/inconsolata.otf');
+   *   textFont(font);
+   *   textSize(32);
+   *   textAlign(CENTER, CENTER);
+   * }
+   *
+   * function draw() {
+   *   background(200);
+   *   rotateY(frameCount / 30);
+   *   text('p5*js', 0, 0);
+   *
+   *   describe('The text "p5*js" written in white and spinning in 3D.');
+   * }
+   * </code>
+   * </div>
+   */
+
+  /**
+   * Sets the way text is aligned when <a href="#/p5/text">text()</a> is called.
+   *
+   * By default, calling `text('hi', 10, 20)` places the bottom-left corner of
+   * the text's bounding box at (10, 20).
+   *
+   * The first parameter, `horizAlign`, changes the way
+   * <a href="#/p5/text">text()</a> interprets x-coordinates. By default, the
+   * x-coordinate sets the left edge of the bounding box. `textAlign()` accepts
+   * the following values for `horizAlign`: `LEFT`, `CENTER`, or `RIGHT`.
+   *
+   * The second parameter, `vertAlign`, is optional. It changes the way
+   * <a href="#/p5/text">text()</a> interprets y-coordinates. By default, the
+   * y-coordinate sets the bottom edge of the bounding box. `textAlign()`
+   * accepts the following values for `vertAlign`: `TOP`, `BOTTOM`, `CENTER`,
+   * or `BASELINE`.
+   *
+   * Calling `textAlign()` without arguments returns the current alignment settings.
+   *
+   * @method textAlign
+   * @for p5
+   * @param {LEFT|CENTER|RIGHT} [horizAlign] horizontal alignment
+   * @param {TOP|BOTTOM|CENTER|BASELINE} [vertAlign] vertical alignment
+   * @returns {Object} If no arguments are provided, returns an object with current horizontal and vertical alignment
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Draw a vertical line.
+   *   strokeWeight(0.5);
+   *   line(50, 0, 50, 100);
+   *
+   *   // Top line.
+   *   textSize(16);
+   *   textAlign(RIGHT);
+   *   text('ABCD', 50, 30);
+   *
+   *   // Middle line.
+   *   textAlign(CENTER);
+   *   text('EFGH', 50, 50);
+   *
+   *   // Bottom line.
+   *   textAlign(LEFT);
+   *   text('IJKL', 50, 70);
+   *
+   *   describe('The letters ABCD displayed at top-left, EFGH at center, and IJKL at bottom-right. A vertical line divides the canvas in half.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   strokeWeight(0.5);
+   *
+   *   // First line.
+   *   line(0, 12, width, 12);
+   *   textAlign(CENTER, TOP);
+   *   text('TOP', 50, 12);
+   *
+   *   // Second line.
+   *   line(0, 37, width, 37);
+   *   textAlign(CENTER, CENTER);
+   *   text('CENTER', 50, 37);
+   *
+   *   // Third line.
+   *   line(0, 62, width, 62);
+   *   textAlign(CENTER, BASELINE);
+   *   text('BASELINE', 50, 62);
+   *
+   *   // Fourth line.
+   *   line(0, 97, width, 97);
+   *   textAlign(CENTER, BOTTOM);
+   *   text('BOTTOM', 50, 97);
+   *
+   *   describe('The words "TOP", "CENTER", "BASELINE", and "BOTTOM" each drawn relative to a horizontal line. Their positions demonstrate different vertical alignments.');
+   * }
+   * </code>
+   * </div>
+   */
+
+  /**
+   * Returns the ascent of the text.
+   *
+   * The `textAscent()` function calculates the distance from the baseline to the
+   * highest point of the current font. This value represents the ascent, which is essential
+   * for determining the overall height of the text along with `textDescent()`. If
+   * a text string is provided as an argument, the ascent is calculated based on that specific
+   * string; otherwise, the ascent of the current font is returned.
+   *
+   * @method textAscent
+   * @for p5
+   *
+   * @param {String} [txt] - (Optional) The text string for which to calculate the ascent.
+   *                         If omitted, the function returns the ascent for the current font.
+   * @returns {Number} The ascent value in pixels.
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(400, 300);
+   *   background(220);
+   *
+   *   textSize(48);
+   *   textAlign(LEFT, BASELINE);
+   *   textFont('Georgia');
+   *
+   *   let s = "Hello, p5.js!";
+   *   let x = 50, y = 150;
+   *
+   *   fill(0);
+   *   text(s, x, y);
+   *
+   *   // Get the ascent of the current font
+   *   let asc = textAscent();
+   *
+   *   // Draw a red line at the baseline and a blue line at the ascent position
+   *   stroke('red');
+   *   line(x, y, x + 200, y); // Baseline
+   *   stroke('blue');
+   *   line(x, y - asc, x + 200, y - asc); // Ascent (top of text)
+   *
+   *   noStroke();
+   *   fill(0);
+   *   textSize(16);
+   *   text("textAscent: " + asc.toFixed(2) + " pixels", x, y - asc - 10);
+   * }
+   * </code>
+   * </div>
+   *
+   *
+   * @example
+   * <div>
+   * <code>
+   * let font;
+   *
+   * async function setup()  {
+   *   font = await loadFont('assets/inconsolata.otf');
+   *
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Style the text.
+   *   textFont(font);
+   *
+   *   // Different for each font.
+   *   let fontScale = 0.8;
+   *
+   *   let baseY = 75;
+   *   strokeWeight(0.5);
+   *
+   *   // Draw small text.
+   *   textSize(24);
+   *   text('dp', 0, baseY);
+   *
+   *   // Draw baseline and ascent.
+   *   let a = textAscent() * fontScale;
+   *   line(0, baseY, 23, baseY);
+   *   line(23, baseY - a, 23, baseY);
+   *
+   *   // Draw large text.
+   *   textSize(48);
+   *   text('dp', 45, baseY);
+   *
+   *   // Draw baseline and ascent.
+   *   a = textAscent() * fontScale;
+   *   line(45, baseY, 91, baseY);
+   *   line(91, baseY - a, 91, baseY);
+   *
+   *   describe('The letters "dp" written twice in different sizes. Each version has a horizontal baseline. A vertical line extends upward from each baseline to the top of the "d".');
+   * }
+   * </code>
+   * </div>
+   */
+
+
+  /**
+   * Returns the descent of the text.
+   *
+   * The `textDescent()` function calculates the distance from the baseline to the
+   * lowest point of the current font. This value represents the descent, which, when combined
+   * with the ascent (from `textAscent()`), determines the overall vertical span of the text.
+   * If a text string is provided as an argument, the descent is calculated based on that specific string;
+   * otherwise, the descent of the current font is returned.
+   *
+   * @method textDescent
+   * @for p5
+   *
+   * @param {String} [txt] - (Optional) The text string for which to calculate the descent.
+   *                         If omitted, the function returns the descent for the current font.
+   * @returns {Number} The descent value in pixels.
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(400, 300);
+   *   background(220);
+   *
+   *   textSize(48);
+   *   textAlign(LEFT, BASELINE);
+   *   textFont('Georgia');
+   *
+   *   let s = "Hello, p5.js!";
+   *   let x = 50, y = 150;
+   *
+   *   fill(0);
+   *   text(s, x, y);
+   *
+   *   // Get the descent of the current font
+   *   let desc = textDescent();
+   *
+   *   // Draw a red line at the baseline and a blue line at the bottom of the text
+   *   stroke('red');
+   *   line(x, y, x + 200, y); // Baseline
+   *   stroke('blue');
+   *   line(x, y + desc, x + 200, y + desc); // Descent (bottom of text)
+   *
+   *   noStroke();
+   *   fill(0);
+   *   textSize(16);
+   *   text("textDescent: " + desc.toFixed(2) + " pixels", x, y + desc + 20);
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * let font;
+   *
+   * async function setup()  {
+   *   font = await loadFont('assets/inconsolata.otf');
+   *
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Style the font.
+   *   textFont(font);
+   *
+   *   // Different for each font.
+   *   let fontScale = 0.9;
+   *
+   *   let baseY = 75;
+   *   strokeWeight(0.5);
+   *
+   *   // Draw small text.
+   *   textSize(24);
+   *   text('dp', 0, baseY);
+   *
+   *   // Draw baseline and descent.
+   *   let d = textDescent() * fontScale;
+   *   line(0, baseY, 23, baseY);
+   *   line(23, baseY, 23, baseY + d);
+   *
+   *   // Draw large text.
+   *   textSize(48);
+   *   text('dp', 45, baseY);
+   *
+   *   // Draw baseline and descent.
+   *   d = textDescent() * fontScale;
+   *   line(45, baseY, 91, baseY);
+   *   line(91, baseY, 91, baseY + d);
+   *
+   *   describe('The letters "dp" written twice in different sizes. Each version has a horizontal baseline. A vertical line extends downward from each baseline to the bottom of the "p".');
+   * }
+   * </code>
+   * </div>
+   */
+
+  /**
+   * Sets the spacing between lines of text when
+   * <a href="#/p5/text">text()</a> is called.
+   *
+   * Note: Spacing is measured in pixels.
+   *
+   * Calling `textLeading()` without an argument returns the current spacing.
+   *
+   * @method textLeading
+   * @for p5
+   * @param {Number} [leading] The new text leading to apply, in pixels
+   * @returns {Number} If no arguments are provided, the current text leading
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // "\n" starts a new line of text.
+   *   let lines = 'one\ntwo';
+   *
+   *   // Left.
+   *   text(lines, 10, 25);
+   *
+   *   // Right.
+   *   textLeading(30);
+   *   text(lines, 70, 25);
+   *
+   *   describe('The words "one" and "two" written on separate lines twice. The words on the left have less vertical spacing than the words on the right.');
+   * }
+   * </code>
+   * </div>
+   */
+
+  /**
+   * Sets the font used by the <a href="#/p5/text">text()</a> function.
+   *
+   * The first parameter, `font`, sets the font. `textFont()` recognizes either
+   * a <a href="#/p5.Font">p5.Font</a> object or a string with the name of a
+   * system font. For example, `'Courier New'`.
+   *
+   * The second parameter, `size`, is optional. It sets the font size in pixels.
+   * This has the same effect as calling <a href="#/p5/textSize">textSize()</a>.
+   *
+   * Calling `textFont()` without arguments returns the current font.
+   *
+   * Note: `WEBGL` mode only supports fonts loaded with
+   * <a href="#/p5/loadFont">loadFont()</a>.
+   *
+   * @method textFont
+   * @param {p5.Font|String|Object} [font] The font to apply
+   * @param {Number} [size] An optional text size to apply.
+   * @returns {String|p5.Font} If no arguments are provided, returns the current font
+   * @for p5
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background(200);
+   *   textFont('Courier New');
+   *   textSize(24);
+   *   text('hi', 35, 55);
+   *
+   *   describe('The text "hi" written in a black, monospace font on a gray background.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background('black');
+   *   fill('palegreen');
+   *   textFont('Courier New', 10);
+   *   text('You turn to the left and see a door. Do you enter?', 5, 5, 90, 90);
+   *   text('>', 5, 70);
+   *
+   *   describe('A text prompt from a game is written in a green, monospace font on a black background.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *   background(200);
+   *   textFont('Verdana');
+   *   let currentFont = textFont();
+   *   text(currentFont, 25, 50);
+   *
+   *   describe('The text "Verdana" written in a black, sans-serif font on a gray background.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * let fontRegular;
+   * let fontItalic;
+   * let fontBold;
+   *
+   * async function setup() {
+   *   createCanvas(100, 100);
+   *   fontRegular = await loadFont('assets/Regular.otf');
+   *   fontItalic = await loadFont('assets/Italic.ttf');
+   *   fontBold = await loadFont('assets/Bold.ttf');
+   *
+   *   background(200);
+   *   textFont(fontRegular);
+   *   text('I am Normal', 10, 30);
+   *   textFont(fontItalic);
+   *   text('I am Italic', 10, 50);
+   *   textFont(fontBold);
+   *   text('I am Bold', 10, 70);
+   *
+   *   describe('The statements "I am Normal", "I am Italic", and "I am Bold" written in black on separate lines. The statements have normal, italic, and bold fonts, respectively.');
+   * }
+   * </code>
+   * </div>
+   */
+
+  /**
+   * Sets or gets the current text size.
+   *
+   * The `textSize()` function is used to specify the size of the text
+   * that will be rendered on the canvas. When called with an argument, it sets the
+   * text size to the specified value (which can be a number representing pixels or a
+   * CSS-style string, e.g., '32px', '2em'). When called without an argument, it
+   * returns the current text size in pixels.
+   *
+   * @method textSize
+   * @for p5
+   *
+   * @param {Number} size - The size to set for the text.
+   * @returns {Number} If no arguments are provided, the current text size in pixels.
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(600, 200);
+   *   background(240);
+   *
+   *   // Set the text size to 48 pixels
+   *   textSize(48);
+   *   textAlign(CENTER, CENTER);
+   *   textFont("Georgia");
+   *
+   *   // Draw text using the current text size
+   *   fill(0);
+   *   text("Hello, p5.js!", width / 2, height / 2);
+   *
+   *   // Retrieve and display the current text size
+   *   let currentSize = textSize();
+   *   fill(50);
+   *   textSize(16);
+   *   text("Current text size: " + currentSize, width / 2, height - 20);
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Top.
+   *   textSize(12);
+   *   text('Font Size 12', 10, 30);
+   *
+   *   // Middle.
+   *   textSize(14);
+   *   text('Font Size 14', 10, 60);
+   *
+   *   // Bottom.
+   *   textSize(16);
+   *   text('Font Size 16', 10, 90);
+   *
+   *   describe('The text "Font Size 12" drawn small, "Font Size 14" drawn medium, and "Font Size 16" drawn large.');
+   * }
+   * </code>
+   * </div>
+   */
+  /**
+   * @method textSize
+   * @for p5
+   * @returns {Number} The current text size in pixels.
+   */
+
+  /**
+   * Sets the style for system fonts when
+   * <a href="#/p5/text">text()</a> is called.
+   *
+   * The parameter, `style`, can be either `NORMAL`, `ITALIC`, `BOLD`, or
+   * `BOLDITALIC`.
+   *
+   * `textStyle()` may be overridden by CSS styling. This function doesn't
+   * affect fonts loaded with <a href="#/p5/loadFont">loadFont()</a>.
+   *
+   * @method textStyle
+   * @for p5
+   * @param {NORMAL|ITALIC|BOLD|BOLDITALIC} style The style to use
+   * @returns {NORMAL|ITALIC|BOLD|BOLDITALIC} If no arguments are provided, the current style
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Style the text.
+   *   textSize(12);
+   *   textAlign(CENTER);
+   *
+   *   // First row.
+   *   textStyle(NORMAL);
+   *   text('Normal', 50, 15);
+   *
+   *   // Second row.
+   *   textStyle(ITALIC);
+   *   text('Italic', 50, 40);
+   *
+   *   // Third row.
+   *   textStyle(BOLD);
+   *   text('Bold', 50, 65);
+   *
+   *   // Fourth row.
+   *   textStyle(BOLDITALIC);
+   *   text('Bold Italic', 50, 90);
+   *
+   *   describe('The words "Normal" displayed normally, "Italic" in italic, "Bold" in bold, and "Bold Italic" in bold italics.');
+   * }
+   * </code>
+   * </div>
+   */
+  /**
+   * @method textStyle
+   * @for p5
+   * @returns {NORMAL|BOLD|ITALIC|BOLDITALIC}
+   */
+
+
+  /**
+   * Calculates the width of the given text string in pixels.
+   *
+   * The `textWidth()` function processes the provided text string to determine its tight bounding box
+   * based on the current text properties such as font, textSize, and textStyle. Internally, it splits
+   * the text into individual lines (if line breaks are present) and computes the bounding box for each
+   * line using the renderer’s measurement functions. The final width is determined as the maximum width
+   * among all these lines.
+   *
+   * For example, if the text contains multiple lines due to wrapping or explicit line breaks, textWidth()
+   * will return the width of the longest line.
+   *
+   * **Note:** In p5.js 2.0+, leading and trailing spaces are ignored.
+   * `textWidth("  Hello  ")` returns the same width as `textWidth("Hello")`.
+   *
+   * @method textWidth
+   * @for p5
+   * @param {String} text The text to measure
+   * @returns {Number} The width of the text
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(200, 200);
+   *   background(220);
+   *
+   *   // Set text size and alignment
+   *   textSize(48);
+   *   textAlign(LEFT, TOP);
+   *
+   *   let myText = "Hello";
+   *
+   *   // Calculate the width of the text
+   *   let tw = textWidth(myText);
+   *
+   *   // Draw the text on the canvas
+   *   fill(0);
+   *   text(myText, 50, 50);
+   *
+   *   // Display the text width below
+   *   noStroke();
+   *   fill(0);
+   *   textSize(20);
+   *   text("Text width: " + tw, 10, 150);
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Style the text.
+   *   textSize(28);
+   *   strokeWeight(0.5);
+   *
+   *   // Calculate the text width.
+   *   let s = 'yoyo';
+   *   let w = textWidth(s);
+   *
+   *   // Display the text.
+   *   text(s, 22, 55);
+   *
+   *   // Underline the text.
+   *   line(22, 55, 22 + w, 55);
+   *
+   *   describe('The word "yoyo" underlined.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(200, 160);
+   *   background(235);
+   *   noLoop();
+   *
+   *   textSize(18);
+   *   textAlign(LEFT, TOP);
+   *
+   *   const x = 12, h = 24;
+   *   const s1 = 'Hello';
+   *   const s2 = 'Hello  ';      // 2 trailing spaces
+   *   const s3 = 'Hello     ';   // many trailing spaces
+   *
+   *   // draw text
+   *   fill(0);
+   *   text(s1, x, 12);
+   *   text(s2, x, 56);
+   *   text(s3, x, 100);
+   *
+   *   // measure and draw tight boxes (all same width)
+   *   noFill(); stroke(255, 0, 0);
+   *   const w1 = textWidth(s1);
+   *   const w2 = textWidth(s2);
+   *   const w3 = textWidth(s3);
+   *   rect(x, 10,  w1, h);
+   *   rect(x, 54, w2, h);
+   *   rect(x, 98, w3, h);
+   *
+   *   // small captions show the actual strings (spaces as ·)
+   *   textSize(10); noStroke(); fill(30);
+   *   text('"' + s1.replace(/ /g, '·') + '"  w=' + w1.toFixed(1), x, 10 + h + 2);
+   *   text('"' + s2.replace(/ /g, '·') + '"  w=' + w2.toFixed(1), x, 54 + h + 2);
+   *   text('"' + s3.replace(/ /g, '·') + '"  w=' + w3.toFixed(1), x, 98 + h + 2);
+   *
+   *   describe('Three lines: Hello with 0, 2, and many trailing spaces. Red boxes use textWidth and are identical. Captions show spaces as dots.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Style the text.
+   *   textSize(28);
+   *   strokeWeight(0.5);
+   *
+   *   // Calculate the text width.
+   *   // "\n" starts a new line.
+   *   let s = 'yo\nyo';
+   *   let w = textWidth(s);
+   *
+   *   // Display the text.
+   *   text(s, 22, 55);
+   *
+   *   // Underline the text.
+   *   line(22, 55, 22 + w, 55);
+   *
+   *   describe('The word "yo" written twice, one copy beneath the other. The words are divided by a horizontal line.');
+   * }
+   * </code>
+   * </div>
+   */
+
+  /**
+   * Sets the style for wrapping text when
+   * <a href="#/p5/text">text()</a> is called.
+   *
+   * The parameter, `style`, can be one of the following values:
+   *
+   * `WORD` starts new lines of text at spaces. If a string of text doesn't
+   * have spaces, it may overflow the text box and the canvas. This is the
+   * default style.
+   *
+   * `CHAR` starts new lines as needed to stay within the text box.
+   *
+   * `textWrap()` only works when the maximum width is set for a text box. For
+   * example, calling `text('Have a wonderful day', 0, 10, 100)` sets the
+   * maximum width to 100 pixels.
+   *
+   * Calling `textWrap()` without an argument returns the current style.
+   *
+   * @method textWrap
+   * @for p5
+   *
+   * @param {WORD|CHAR} style The wrapping style to use
+   * @returns {CHAR|WORD} If no arguments are provided, the current wrapping style
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Style the text.
+   *   textSize(20);
+   *   textWrap(WORD);
+   *
+   *   // Display the text.
+   *   text('Have a wonderful day', 0, 10, 100);
+   *
+   *   describe('The text "Have a wonderful day" written across three lines.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Style the text.
+   *   textSize(20);
+   *   textWrap(CHAR);
+   *
+   *   // Display the text.
+   *   text('Have a wonderful day', 0, 10, 100);
+   *
+   *   describe('The text "Have a wonderful day" written across two lines.');
+   * }
+   * </code>
+   * </div>
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100);
+   *
+   *   background(200);
+   *
+   *   // Style the text.
+   *   textSize(20);
+   *   textWrap(CHAR);
+   *
+   *   // Display the text.
+   *   text('祝你有美好的一天', 0, 10, 100);
+   *
+   *   describe('The text "祝你有美好的一天" written across two lines.');
+   * }
+   * </code>
+   * </div>
+   */
+  /**
+   * @method textWrap
+   * @for p5
+   * @returns {CHAR|WORD} The current wrapping style
+   */
+
+
+  /**
+   * Computes the tight bounding box for a block of text.
+   *
+   * The `textBounds()` function calculates the precise pixel boundaries that enclose
+   * the rendered text based on the current text properties (such as font, textSize, textStyle, and
+   * alignment). If the text spans multiple lines (due to line breaks or wrapping), the function
+   * measures each line individually and then aggregates these measurements into a single bounding box.
+   * The resulting object contains the x and y coordinates along with the width (w) and height (h)
+   * of the text block.
+   *
+   * @method textBounds
+   * @for p5
+   *
+   * @param {String} str - The text string to measure.
+   * @param {Number} x - The x-coordinate where the text is drawn.
+   * @param {Number} y - The y-coordinate where the text is drawn.
+   * @param {Number} [width] - (Optional) The maximum width available for the text block.
+   *                           When specified, the text may be wrapped to fit within this width.
+   * @param {Number} [height] - (Optional) The maximum height available for the text block.
+   *                            Any lines exceeding this height will be truncated.
+   * @returns {Object} An object with properties `x`, `y`, `w`, and `h` that represent the tight
+   *                   bounding box of the rendered text.
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(300, 200);
+   *   background(220);
+   *
+   *   // Set up text properties for clarity
+   *   textSize(32);
+   *   textAlign(LEFT, TOP);
+   *
+   *   let txt = "Hello, World!";
+   *   // Compute the bounding box for the text starting at (50, 50)
+   *   let bounds = textBounds(txt, 50, 50);
+   *
+   *   // Draw the text
+   *   fill(0);
+   *   text(txt, 50, 50);
+   *
+   *   // Draw the computed bounding box in red to visualize the measured area
+   *   noFill();
+   *   stroke('red');
+   *   rect(bounds.x, bounds.y, bounds.w, bounds.h);
+   * }
+   * </code>
+   * </div>
+   */
+
+
+  /**
+   * Sets or gets the text drawing direction.
+   *
+   * The <code>textDirection()</code> function allows you to specify the direction in which text is
+   * rendered on the canvas. When provided with a <code>direction</code> parameter (such as "ltr" for
+   * left-to-right, "rtl" for right-to-left, or "inherit"), it updates the renderer's state with that
+   * value and applies the new setting. When called without any arguments, it returns the current text
+   * direction. This function is particularly useful for rendering text in languages with different
+   * writing directions.
+   *
+   * @method textDirection
+   * @for p5
+   *
+   * @param {String} direction - The text direction to set ("ltr", "rtl", or "inherit").
+   * @returns {String} If no arguments are provided, the current text direction, either "ltr", "rtl", or "inherit"
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(300, 300);
+   *   background(240);
+   *
+   *   textSize(32);
+   *   textFont("Georgia");
+   *   textAlign(LEFT, TOP);
+   *
+   *   // Set text direction to right-to-left and draw Arabic text.
+   *   textDirection("rtl");
+   *   fill(0);
+   *   text("مرحبًا!", 50, 50);
+   *
+   *   // Set text direction to left-to-right and draw English text.
+   *   textDirection("ltr");
+   *   text("Hello, p5.js!", 50, 150);
+   *
+   *   // Display the current text direction.
+   *   textSize(16);
+   *   fill(50);
+   *   textAlign(LEFT, TOP);
+   *   text("Current textDirection: " + textDirection(), 50, 250);
+   * }
+   * </code>
+   * </div>
+   */
+  /**
+   * @method textDirection
+   * @for p5
+   * @returns {String} The current text direction, either "ltr", "rtl", or "inherit"
+   */
+
+  /**
+   * Sets or gets a single text property for the renderer.
+   *
+   * The `textProperty()` function allows you to set or retrieve a single text-related property,
+   * such as `textAlign`, `textBaseline`, `fontStyle`, or any other property
+   * that may be part of the renderer's state, its drawing context, or the canvas style.
+   *
+   * When called with a `prop` and a `value`, the function sets the property by checking
+   * for its existence in the renderer's state, the drawing context, or the canvas style. If the property is
+   * successfully modified, the function applies the updated text properties. If called with only the
+   * `prop` parameter, the function returns the current value of that property.
+   *
+   * @method textProperty
+   * @for p5
+   *
+   * @param {String} prop - The name of the text property to set or get.
+   * @param value - The value to set for the specified text property. If omitted, the current
+   *                      value of the property is returned
+   * @returns If no arguments are provided, the current value of the specified text property
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(300, 300);
+   *   background(240);
+   *
+   *   // Set the text alignment to CENTER and the baseline to TOP using textProperty.
+   *   textProperty("textAlign", CENTER);
+   *   textProperty("textBaseline", TOP);
+   *
+   *   // Set additional text properties and draw the text.
+   *   textSize(32);
+   *   textFont("Georgia");
+   *   fill(0);
+   *   text("Hello, World!", width / 2, 50);
+   *
+   *   // Retrieve and display the current text properties.
+   *   let currentAlign = textProperty("textAlign");
+   *   let currentBaseline = textProperty("textBaseline");
+   *
+   *   textSize(16);
+   *   textAlign(LEFT, TOP);
+   *   fill(50);
+   *   text("Current textAlign: " + currentAlign, 50, 150);
+   *   text("Current textBaseline: " + currentBaseline, 50, 170);
+   * }
+   * </code>
+   * </div>
+   */
+  /**
+   * @method textProperty
+   * @for p5
+   * @param {String} prop - The name of the text property to set or get.
+   * @returns The current value of the specified text property
+   */
+
+  /**
+   * Gets or sets text properties in batch, similar to calling `textProperty()`
+   * multiple times.
+   *
+   * If an object is passed in, `textProperty(key, value)` will be called for you
+   * on every key/value pair in the object.
+   *
+   * If no arguments are passed in, an object will be returned with all the current
+   * properties.
+   *
+   * @method textProperties
+   * @for p5
+   * @param {Object} properties An object whose keys are properties to set, and whose
+   *                            values are what they should be set to.
+   */
+  /**
+   * @method textProperties
+   * @for p5
+   * @returns {Object} An object with all the possible properties and their current values.
+   */
+
+  /**
+   * Computes a generic (non-tight) bounding box for a block of text.
+   *
+   * The `fontBounds()` function calculates the bounding box for the text based on the
+   * font's intrinsic metrics (such as `fontBoundingBoxAscent` and
+   * `fontBoundingBoxDescent`). Unlike `textBounds()`, which measures the exact
+   * pixel boundaries of the rendered text, `fontBounds()` provides a looser measurement
+   * derived from the font’s default spacing. This measurement is useful for layout purposes where
+   * a consistent approximation of the text's dimensions is desired.
+   *
+   * @method fontBounds
+   * @for p5
+   *
+   * @param {String} str - The text string to measure.
+   * @param {Number} x - The x-coordinate where the text is drawn.
+   * @param {Number} y - The y-coordinate where the text is drawn.
+   * @param {Number} [width] - (Optional) The maximum width available for the text block.
+   *                           When specified, the text may be wrapped to fit within this width.
+   * @param {Number} [height] - (Optional) The maximum height available for the text block.
+   *                            Any lines exceeding this height will be truncated.
+   * @returns {Object} An object with properties `x`, `y`, `w`, and `h` representing the loose
+   *                   bounding box of the text based on the font's intrinsic metrics.
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(300, 200);
+   *   background(240);
+   *
+   *   textSize(32);
+   *   textAlign(LEFT, TOP);
+   *   textFont('Georgia');
+   *
+   *   let txt = "Hello, World!";
+   *   // Compute the bounding box based on the font's intrinsic metrics
+   *   let bounds = fontBounds(txt, 50, 50);
+   *
+   *   fill(0);
+   *   text(txt, 50, 50);
+   *
+   *   noFill();
+   *   stroke('green');
+   *   rect(bounds.x, bounds.y, bounds.w, bounds.h);
+   *
+   *   noStroke();
+   *   fill(50);
+   *   textSize(15);
+   *   text("Font Bounds: x=" + bounds.x.toFixed(1) + ", y=" + bounds.y.toFixed(1) +
+   *        ", w=" + bounds.w.toFixed(1) + ", h=" + bounds.h.toFixed(1), 8, 100);
+   * }
+   * </code>
+   * </div>
+   */
+
+
+  /**
+   * Returns the loose width of a text string based on the current font.
+   *
+   * The `fontWidth()` function measures the width of the provided text string using
+   * the font's default measurement (i.e., the width property from the text metrics returned by
+   * the browser). Unlike `textWidth()`, which calculates the tight pixel boundaries
+   * of the text glyphs, `fontWidth()` uses the font's intrinsic spacing, which may include
+   * additional space for character spacing and kerning. This makes it useful for scenarios where
+   * an approximate width is sufficient for layout and positioning.
+   *
+   * @method fontWidth
+   * @for p5
+   *
+   * @param {String} theText - The text string to measure.
+   * @returns {Number} The loose width of the text in pixels.
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(300, 200);
+   *   background(240);
+   *
+   *   textSize(32);
+   *   textAlign(LEFT, TOP);
+   *   textFont('Georgia');
+   *
+   *   let s = "Hello, World!";
+   *   let fw = fontWidth(s);
+   *
+   *   fill(0);
+   *   text(s, 50, 50);
+   *
+   *   stroke('blue');
+   *   line(50, 90, 50 + fw, 90);
+   *
+   *   noStroke();
+   *   fill(50);
+   *   textSize(16);
+   *   text("Font width: " + fw.toFixed(2) + " pixels", 50, 100);
+   * }
+   * </code>
+   * </div>
+   */
+
+
+  /**
+   * Returns the loose ascent of the text based on the font's intrinsic metrics.
+   *
+   * The `fontAscent()` function calculates the ascent of the text using the font's
+   * intrinsic metrics (e.g., `fontBoundingBoxAscent`). This value represents the space
+   * above the baseline that the font inherently occupies, and is useful for layout purposes when
+   * an approximate vertical measurement is required.
+   *
+   * @method fontAscent
+   * @for p5
+   *
+   * @returns {Number} The loose ascent value in pixels.
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(300, 300);
+   *   background(220);
+   *
+   *   textSize(35);
+   *   textAlign(LEFT, BASELINE);
+   *   textFont('Georgia');
+   *
+   *   let s = "Hello, p5.js!";
+   *   let x = 50, y = 150;
+   *
+   *   fill(0);
+   *   text(s, x, y);
+   *
+   *   // Get the font descent of the current font
+   *   let fasc = fontAscent();
+   *
+   *   // Draw a red line at the baseline and a blue line at the ascent position
+   *   stroke('red');
+   *   line(x, y, x + 200, y); // Baseline
+   *   stroke('blue');
+   *   line(x, y - fasc, x + 200, y - fasc); // Font ascent position
+   *
+   *   noStroke();
+   *   fill(0);
+   *   textSize(16);
+   *   text("fontAscent: " + fasc.toFixed(2) + " pixels", x, y + fdesc + 20);
+   * }
+   * </code>
+   * </div>
+   */
+
+  /**
+   * Returns the loose descent of the text based on the font's intrinsic metrics.
+   *
+   * The `fontDescent()` function calculates the descent of the text using the font's
+   * intrinsic metrics (e.g., `fontBoundingBoxDescent`). This value represents the space
+   * below the baseline that the font inherently occupies, and is useful for layout purposes when
+   * an approximate vertical measurement is required.
+   *
+   * @method fontDescent
+   * @for p5
+   *
+   * @returns {Number} The loose descent value in pixels.
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(300, 300);
+   *   background(220);
+   *
+   *   textSize(48);
+   *   textAlign(LEFT, BASELINE);
+   *   textFont('Georgia');
+   *
+   *   let s = "Hello, p5.js!";
+   *   let x = 50, y = 150;
+   *
+   *   fill(0);
+   *   text(s, x, y);
+   *
+   *   // Get the font descent of the current font
+   *   let fdesc = fontDescent();
+   *
+   *   // Draw a red line at the baseline and a blue line at the descent position
+   *   stroke('red');
+   *   line(x, y, x + 200, y); // Baseline
+   *   stroke('blue');
+   *   line(x, y + fdesc, x + 200, y + fdesc); // Font descent position
+   *
+   *   noStroke();
+   *   fill(0);
+   *   textSize(16);
+   *   text("fontDescent: " + fdesc.toFixed(2) + " pixels", x, y + fdesc + 20);
+   * }
+   * </code>
+   * </div>
+   */
+
+  /**
+   *
+   * Sets or gets the current font weight.
+   *
+   * The <code>textWeight()</code> function is used to specify the weight (thickness) of the text.
+   * When a numeric value is provided, it sets the font weight to that value and updates the
+   * rendering properties accordingly (including the "font-variation-settings" on the canvas style).
+   * When called without an argument, it returns the current font weight setting.
+   *
+   * @method textWeight
+   * @for p5
+   *
+   * @param {Number} weight - The numeric weight value to set for the text.
+   * @returns {Number} If no arguments are provided, the current font weight
+   *
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(300, 200);
+   *   background(240);
+   *
+   *   // Set text alignment, size, and font
+   *   textAlign(LEFT, TOP);
+   *   textSize(20);
+   *   textFont("Georgia");
+   *
+   *   // Draw text with a normal weight (lighter appearance)
+   *   push();
+   *   textWeight(400);  // Set font weight to 400
+   *   fill(0);
+   *   text("Normal", 50, 50);
+   *   let normalWeight = textWeight();  // Should return 400
+   *   pop();
+   *
+   *   // Draw text with a bold weight (heavier appearance)
+   *   push();
+   *   textWeight(900);  // Set font weight to 900
+   *   fill(0);
+   *   text("Bold", 50, 100);
+   *   let boldWeight = textWeight();  // Should return 900
+   *   pop();
+   *
+   *   // Display the current font weight values on the canvas
+   *   textSize(16);
+   *   fill(50);
+   *   text("Normal Weight: " + normalWeight, 150, 52);
+   *   text("Bold Weight: " + boldWeight, 150, 100);
+   * }
+   * </code>
+   * </div>
+   *
+   * <div>
+   * <code>
+   * let font;
+   *
+   * async function setup() {
+   *   createCanvas(100, 100);
+   *   font = await loadFont(
+   *     'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap'
+   *   );
+   * }
+   *
+   * function draw() {
+   *   background(255);
+   *   textFont(font);
+   *   textAlign(LEFT, TOP);
+   *   textSize(35);
+   *   textWeight(sin(millis() * 0.002) * 200 + 400);
+   *   text('p5*js', 0, 10);
+   *   describe('The text p5*js pulsing its weight over time');
+   * }
+   * </code>
+   * </div>
+   */
+  /**
+   * @method textWeight
+   * @for p5
+   * @returns {Number} The current font weight
+   */
+
+  // attach each text func to p5, delegating to the renderer
+  textFunctions.forEach(func => {
+    fn[func] = function (...args) {
+      if (!(func in Renderer.prototype)) {
+        throw Error(`Renderer2D.prototype.${func} is not defined.`);
+      }
+      return this._renderer[func](...args);
+    };
+    // attach also to p5.Graphics.prototype
+    p5.Graphics.prototype[func] = function (...args) {
+      return this._renderer[func](...args);
+    };
+  });
+
+  const RendererTextProps = {
+    textAlign: { default: fn.LEFT, type: 'Context2d' },
+    textBaseline: { default: fn.BASELINE, type: 'Context2d' },
+    textFont: { default: { family: 'sans-serif' } },
+    textLeading: { default: 15 },
+    textSize: { default: 12 },
+    textWrap: { default: fn.WORD },
+    fontStretch: { default: fn.NORMAL, isShorthand: true },  // font-stretch: { default:  normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded }
+    fontWeight: { default: fn.NORMAL, isShorthand: true },   // font-stretch: { default:  normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded }
+    lineHeight: { default: fn.NORMAL, isShorthand: true },   // line-height: { default:  normal | number | length | percentage }
+    fontVariant: { default: fn.NORMAL, isShorthand: true },  // font-variant: { default:  normal | small-caps }
+    fontStyle: { default: fn.NORMAL, isShorthand: true },    // font-style: { default:  normal | italic | oblique } [was 'textStyle' in v1]
+    direction: { default: 'inherit' } // direction: { default: inherit | ltr | rtl }
+  };
+
+  // note: font must be first here otherwise it may reset other properties
+  const ContextTextProps = ['font', 'direction', 'fontKerning', 'fontStretch', 'fontVariantCaps', 'letterSpacing', 'textAlign', 'textBaseline', 'textRendering', 'wordSpacing'];
+
+  // shorthand font properties that can be set with context2d.font
+  const ShorthandFontProps = Object.keys(RendererTextProps)
+    .filter(p => RendererTextProps[p].isShorthand);
+
+  // allowable values for font-stretch property for context2d.font
+  const FontStretchKeys = ['ultra-condensed', 'extra-condensed', 'condensed', 'semi-condensed', 'normal', 'semi-expanded', 'expanded', 'extra-expanded', 'ultra-expanded'];
+
+  let contextQueue, cachedDiv; // lazy
+
+  ////////////////////////////// start API ///////////////////////////////
+
+  Renderer.prototype.text = function (str, x, y, width, height) {
+
+    let setBaseline = this.textDrawingContext().textBaseline; // store baseline
+
+    // adjust {x,y,w,h} properties based on rectMode
+    ({ x, y, width, height } = this._handleRectMode(x, y, width, height));
+
+    // parse the lines according to width, height & linebreaks
+    let lines = this._processLines(str, width, height);
+
+    // add the adjusted positions [x,y] to each line
+    lines = this._positionLines(x, y, width, height, lines);
+
+    // render each line at the adjusted position
+    lines.forEach(line => this._renderText(line.text, line.x, line.y));
+
+    this.textDrawingContext().textBaseline = setBaseline; // restore baseline
+  };
+
+  /**
+   * Computes the precise (tight) bounding box for a block of text
+   * @param {String} str - the text to measure
+   * @param {Number} x - the x-coordinate of the text
+   * @param {Number} y - the y-coordinate of the text
+   * @param {Number} width - the max width of the text block
+   * @param {Number} height - the max height of the text block
+   * @returns - a bounding box object for the text block: {x,y,w,h}
+   * @private
+   */
+  Renderer.prototype.textBounds = function (str, x, y, width, height) {
+    // delegate to _textBoundsSingle for measuring
+    return this._computeBounds(
+      textCoreConstants._TEXT_BOUNDS,
+      str,
+      x, y,
+      width, height
+    ).bounds;
+  };
+
+  /**
+   * Computes a generic (non-tight) bounding box for a block of text
+   * @param {String} str - the text to measure
+   * @param {Number} x - the x-coordinate of the text
+   * @param {Number} y - the y-coordinate of the text
+   * @param {Number} width - the max width of the text block
+   * @param {Number} height - the max height of the text block
+   * @returns - a bounding box object for the text block: {x,y,w,h}
+   * @private
+   */
+  Renderer.prototype.fontBounds = function (str, x, y, width, height) {
+    // delegate to _fontBoundsSingle for measuring
+    return this._computeBounds(
+      textCoreConstants._FONT_BOUNDS,
+      str,
+      x, y,
+      width, height
+    ).bounds;
+  };
+
+  /**
+   * Get the width of a text string in pixels (tight bounds)
+   * @param {String} theText
+   * @returns - the width of the text in pixels
+   * @private
+   */
+  Renderer.prototype.textWidth = function (theText) {
+    let lines = this._processLines(theText);
+    // return the max width of the lines (using tight bounds)
+    return Math.max(...lines.map(l => this._textWidthSingle(l)));
+  };
+
+  /**
+   * Get the width of a text string in pixels (loose bounds)
+   * @param {String} theText
+   * @returns - the width of the text in pixels
+   * @private
+   */
+  Renderer.prototype.fontWidth = function (theText) {
+    // return the max width of the lines (using loose bounds)
+    let lines = this._processLines(theText);
+    return Math.max(...lines.map(l => this._fontWidthSingle(l)));
+  };
+
+  /**
+   * @param {*} txt - optional text to measure, if provided will be
+   * used to compute the ascent, otherwise the font's ascent will be used
+   * @returns - the ascent of the text
+   * @private
+   */
+  Renderer.prototype.textAscent = function (txt = '') {
+    if (!txt.length) return this.fontAscent();
+    return this.textDrawingContext().measureText(txt).actualBoundingBoxAscent;
+  };
+
+  /**
+   * @returns - returns the ascent for the current font
+   * @private
+   */
+  Renderer.prototype.fontAscent = function () {
+    return this.textDrawingContext().measureText('_').fontBoundingBoxAscent;
+  };
+
+  /**
+   * @param {*} txt - optional text to measure, if provided will
+   * be used to compute the descent, otherwise the font's descent will be used
+   * @returns - the descent of the text
+   * @private
+   */
+  Renderer.prototype.textDescent = function (txt = '') {
+    if (!txt.length) return this.fontDescent();
+    return this.textDrawingContext().measureText(txt).actualBoundingBoxDescent;
+  };
+
+  Renderer.prototype.fontDescent = function () {
+    return this.textDrawingContext().measureText('_').fontBoundingBoxDescent;
+  };
+
+
+  // setters/getters for text properties //////////////////////////
+
+  Renderer.prototype.textAlign = function (h, v) {
+
+    // the setter
+    if (typeof h !== 'undefined') {
+      this.states.setValue('textAlign', h);
+      if (typeof v !== 'undefined') {
+        if (v === fn.CENTER) {
+          v = textCoreConstants._CTX_MIDDLE;
+        }
+        this.states.setValue('textBaseline', v);
+      }
+      return this._applyTextProperties();
+    }
+    // the getter
+    return {
+      horizontal: this.states.textAlign,
+      vertical: this.states.textBaseline
+    };
+  };
+
+  Renderer.prototype._currentTextFont = function () {
+    return this.states.textFont.font || this.states.textFont.family;
+  };
+
+  /**
+   * Set the font and [size] and [options] for rendering text
+   * @param {p5.Font | string} font - the font to use for rendering text
+   * @param {Number} size - the size of the text, can be a number or a css-style string
+   * @param {Object} options - additional options for rendering text, see FontProps
+   * @private
+   */
+  Renderer.prototype.textFont = function (font, size, options) {
+
+    if (arguments.length === 0) {
+      return this._currentTextFont();
+    }
+
+    let family = font;
+
+    // do we have a custon loaded font ?
+    if (font instanceof p5.Font) {
+      family = font.face.family;
+    }
+    else if (font.data instanceof Uint8Array) {
+      family = font.name.fontFamily;
+      if (font.name?.fontSubfamily) {
+        family += '-' + font.name.fontSubfamily;
+      }
+    }
+    else if (typeof font === 'string') {
+      // direct set the font-string if it contains size
+      if (typeof size === 'undefined' && /[.0-9]+(%|em|p[xt])/.test(family)) {
+        //console.log('direct set font-string: ', family);
+        ({ family, size } = this._directSetFontString(family));
+      }
+    }
+
+    if (typeof family !== 'string') throw Error('null font in textFont()');
+
+    // handle two-arg case: textFont(font, options)
+    if (arguments.length === 2 && typeof size === 'object') {
+      options = size;
+      size = undefined;
+    }
+
+    // update font properties in this.states
+    this.states.setValue('textFont', { font, family, size });
+
+    // convert/update the size in this.states
+    if (typeof size !== 'undefined') {
+      this._setTextSize(size);
+    }
+
+    // apply any options to this.states
+    if (typeof options === 'object') {
+      this.textProperties(options);
+    }
+
+    return this._applyTextProperties();
+  };
+
+  Renderer.prototype._directSetFontString = function (font, debug = 0) {
+    if (debug) console.log('_directSetFontString"' + font + '"');
+
+    let defaults = ShorthandFontProps.reduce((props, p) => {
+      props[p] = RendererTextProps[p].default;
+      return props;
+    }, {});
+
+    let el = this._cachedDiv(defaults);
+    el.style.font = font;
+    let style = getComputedStyle(el);
+    ShorthandFontProps.forEach(prop => {
+      this.states[prop] = style[prop];
+      if (debug) console.log('  this.states.' + prop + '="' + style[prop] + '"');
+    });
+
+    return { family: style.fontFamily, size: style.fontSize };
+  };
+
+  Renderer.prototype.textLeading = function (leading) {
+    // the setter
+    if (typeof leading === 'number') {
+      this.states.setValue('leadingSet', true);
+      this.states.setValue('textLeading', leading);
+      return this._applyTextProperties();
+    }
+    // the getter
+    return this.states.textLeading;
+  };
+
+  Renderer.prototype.textWeight = function (weight) {
+    // the setter
+    if (typeof weight === 'number') {
+      this.states.setValue('fontWeight', weight);
+      this._applyTextProperties();
+
+      // Safari works without weight set in the canvas style attribute, and actually
+      // has buggy behavior if it is present, using the wrong weight when drawing
+      // multiple times with different weights
+      if (!p5.prototype._isSafari()) {
+        this._setCanvasStyleProperty('font-variation-settings', `"wght" ${weight}`);
+      }
+      return;
+    }
+    // the getter
+    return this.states.fontWeight;
+  };
+
+  /**
+   * @param {*} size - the size of the text, can be a number or a css-style string
+   * @private
+   */
+  Renderer.prototype.textSize = function (size) {
+
+    // the setter
+    if (typeof size !== 'undefined') {
+      this._setTextSize(size);
+      return this._applyTextProperties();
+    }
+    // the getter
+    return this.states.textSize;
+  };
+
+  Renderer.prototype.textStyle = function (style) {
+
+    // the setter
+    if (typeof style !== 'undefined') {
+      this.states.setValue('fontStyle', style);
+      return this._applyTextProperties();
+    }
+    // the getter
+    return this.states.fontStyle;
+  };
+
+  Renderer.prototype.textWrap = function (wrapStyle) {
+
+    if (wrapStyle === fn.WORD || wrapStyle === fn.CHAR) {
+      this.states.setValue('textWrap', wrapStyle);
+      // no need to apply text properties here as not a context property
+      return this._pInst;
+    }
+    return this.states.textWrap;
+  };
+
+  Renderer.prototype.textDirection = function (direction) {
+
+    if (typeof direction !== 'undefined') {
+      this.states.setValue('direction', direction);
+      return this._applyTextProperties();
+    }
+    return this.states.direction;
+  };
+
+  /**
+   * Sets/gets a single text property for the renderer (eg. fontStyle, fontStretch, etc.)
+   * The property to be set can be a mapped or unmapped property on `this.states` or a property
+   * on `this.textDrawingContext()` or on `this.canvas.style`
+   * The property to get can exist in `this.states` or `this.textDrawingContext()` or `this.canvas.style`
+   * @private
+   */
+  Renderer.prototype.textProperty = function (prop, value, opts) {
+
+    let modified = false, debug = opts?.debug || false;
+
+    // getter: return option from this.states or this.textDrawingContext()
+    if (typeof value === 'undefined') {
+      let props = this.textProperties();
+      if (prop in props) return props[prop];
+      throw Error('Unknown text option "' + prop + '"'); // FES?
+    }
+
+    // set the option in this.states if it exists
+    if (prop in this.states && this.states[prop] !== value) {
+      this.states[prop] = value;
+      modified = true;
+      if (debug) {
+        console.log('this.states.' + prop + '="' + options[prop] + '"');
+      }
+    }
+    // does it exist in CanvasRenderingContext2D ?
+    else if (prop in this.textDrawingContext()) {
+      this._setContextProperty(prop, value, debug);
+      modified = true;
+    }
+    // does it exist in the canvas.style ?
+    else if (prop in this.textCanvas().style) {
+      this._setCanvasStyleProperty(prop, value, debug);
+      modified = true;
+    }
+    else {
+      console.warn('Ignoring unknown text option: "' + prop + '"\n'); // FES?
+    }
+
+    return modified ? this._applyTextProperties() : this._pInst;
+  };
+
+  /**
+   * Batch set/get text properties for the renderer.
+   * The properties can be either on `states` or `drawingContext`
+   * @private
+   */
+  Renderer.prototype.textProperties = function (properties) {
+
+    // setter
+    if (typeof properties !== 'undefined') {
+      Object.keys(properties).forEach(opt => {
+        this.textProperty(opt, properties[opt]);
+      });
+      return this._pInst;
+    }
+
+    // getter: get props from drawingContext
+    let context = this.textDrawingContext();
+    properties = ContextTextProps.reduce((props, p) => {
+      props[p] = context[p];
+      return props;
+    }, {});
+
+    // add renderer props
+    Object.keys(RendererTextProps).forEach(p => {
+      if (RendererTextProps[p]?.type === 'Context2d') {
+        properties[p] = context[p];
+      }
+      else { // a renderer.states property
+        if (p === 'textFont') {
+          // avoid circular ref. inside textFont
+          let current = this._currentTextFont();
+          if (typeof current === 'object' && '_pInst' in current) {
+            current = Object.assign({}, current);
+            delete current._pInst;
+          }
+          properties[p] = current;
+        }
+        else {
+          properties[p] = this.states[p];
+        }
+      }
+    });
+
+    return properties;
+  };
+
+  Renderer.prototype.textMode = function () { /* no-op for processing api */ };
+
+  /////////////////////////////// end API ////////////////////////////////
+
+  Renderer.prototype._currentTextFont = function () {
+    return this.states.textFont.font || this.states.textFont.family;
+  };
+
+  /*
+    Compute the bounds for a block of text based on the specified
+    measure function, either _textBoundsSingle or _fontBoundsSingle
+   * @private
+  */
+  Renderer.prototype._computeBounds = function (
+    type,
+    str,
+    x, y,
+    width, height,
+    opts
+  ) {
+
+    let context = this.textDrawingContext();
+    let setBaseline = context.textBaseline;
+    let { textLeading, textAlign } = this.states;
+
+    // adjust width, height based on current rectMode
+    ({ width, height } = this._rectModeAdjust(x, y, width, height));
+
+    // parse the lines according to the width & linebreaks
+    let lines = this._processLines(str, width, height);
+
+    // get the adjusted positions [x,y] for each line
+    let boxes = lines.map((line, i) => this[type].bind(this)
+    (line, x, y + i * textLeading));
+
+    if (lines.length > 1 && typeof width !== 'undefined') { // fix for #7984
+      // adjust the bounding boxes for horizontal text alignment in 2d
+      // the WebGL mode version does additional alignment adjustments
+      boxes.forEach(bb => bb.x += p5.Renderer2D.prototype._xAlignOffset.call(this, textAlign, width));
+    }
+
+    // adjust the bounding boxes for vertical text alignment in 2d
+    // the WebGL mode version does additional alignment adjustments
+    p5.Renderer2D.prototype._yAlignOffset.call(this, boxes, height || 0); // fix for #7984
+
+    // get the bounds for the text block
+    let bounds = boxes[0];
+    if (lines.length > 1) {
+
+      // get the bounds for the multi-line text block
+      bounds = this._aggregateBounds(boxes);
+
+      // align the multi-line bounds
+      if (!opts?.ignoreRectMode) {
+        this._rectModeAlign(bounds, width || 0, height || 0);
+      }
+    }
+
+    context.textBaseline = setBaseline; // restore baseline
+
+    return { bounds, lines };
+  };
+
+  /*
+    Adjust width, height of bounds based on current rectMode
+   * @private
+  */
+  Renderer.prototype._rectModeAdjust = function (x, y, width, height) {
+
+    if (typeof width !== 'undefined') {
+      switch (this.states.rectMode) {
+        case fn.CENTER:
+          break;
+        case fn.CORNERS:
+          width -= x;
+          height -= y;
+          break;
+        case fn.RADIUS:
+          width *= 2;
+          height *= 2;
+          break;
+      }
+    }
+    return { x, y, width, height };
+  };
+
+  /*
+    Attempts to set a property directly on the canvas.style object
+   * @private
+  */
+  Renderer.prototype._setCanvasStyleProperty = function (opt, val, debug) {
+
+    let value = val.toString(); // ensure its a string
+
+    if (debug) console.log('canvas.style.' + opt + '="' + value + '"');
+
+    // handle variable fonts options
+    if (opt === FontVariationSettings) {
+      this._handleFontVariationSettings(value);
+    }
+
+    // lets try to set it on the canvas style
+    this.textCanvas().style[opt] = value;
+
+    // check if the value was set successfully
+    if (this.textCanvas().style[opt] !== value) ;
+  };
+
+  /*
+    Parses the fontVariationSettings string and sets the font properties, only font-weight
+    working consistently across browsers at present
+   * @private
+  */
+  Renderer.prototype._handleFontVariationSettings = function (
+    value, debug = false
+  ) {
+    // check if the value is a string or an object
+    if (typeof value === 'object') {
+      value = Object.keys(value).map(k => k + ' ' + value[k]).join(', ');
+    }
+    let values = value.split(CommaDelimRe);
+    values.forEach(v => {
+      v = v.replace(/["']/g, ''); // remove quotes
+      let matches = VariableAxesRe.exec(v);
+      //console.log('matches: ', matches);
+      if (matches && matches.length) {
+        let axis = matches[0];
+        // get the value to 3 digits of precision with no trailing zeros
+        let val = parseFloat(parseFloat(v.replace(axis, '').trim()).toFixed(3));
+        switch (axis) {
+          case 'wght':
+            if (debug) console.log('setting font-weight=' + val);
+            // manually set the font-weight via the font string
+            if (this.states.fontWeight !== val) this.textWeight(val);
+            return val;
+          case 'wdth':
+            break;
+          case 'ital':
+            if (debug) console.log('setting font-style=' + (val ? 'italic' : 'normal'));
+            break;
+          case 'slnt':
+            if (debug) console.log('setting font-style=' + (val ? 'oblique' : 'normal'));
+            break;
+          case 'opsz':
+            if (debug) console.log('setting font-optical-size=' + val);
+            break;
+        }
+      }
+    });
+  };
+
+
+
+
+  /*
+    For properties not directly managed by the renderer in this.states
+      we check if it has a mapping to a property in this.states
+    Otherwise, add the property to the context-queue for later application
+  */
+  Renderer.prototype._setContextProperty = function (prop, val, debug = false) {
+
+    // check if the value is actually different, else short-circuit
+    if (this.textDrawingContext()[prop] === val) {
+      return this._pInst;
+    }
+
+    // otherwise, we will set the property directly on the `this.textDrawingContext()`
+    // by adding [property, value] to context-queue for later application
+    (contextQueue ??= []).push([prop, val]);
+
+    if (debug) console.log('queued context2d.' + prop + '="' + val + '"');
+  };
+
+  /*
+     Adjust parameters (x,y,w,h) based on current rectMode
+  */
+  Renderer.prototype._handleRectMode = function (x, y, width, height) {
+
+    let rectMode = this.states.rectMode;
+
+    if (typeof width !== 'undefined') {
+      switch (rectMode) {
+        case fn.RADIUS:
+          width *= 2;
+          x -= width / 2;
+          if (typeof height !== 'undefined') {
+            height *= 2;
+            y -= height / 2;
+          }
+          break;
+        case fn.CENTER:
+          x -= width / 2;
+          if (typeof height !== 'undefined') {
+            y -= height / 2;
+          }
+          break;
+        case fn.CORNERS:
+          width -= x;
+          if (typeof height !== 'undefined') {
+            height -= y;
+          }
+          break;
+      }
+    }
+    return { x, y, width, height };
+  };
+
+  /*
+    Get the computed font-size in pixels for a given size string
+    @param {String} size - the font-size string to compute
+    @returns {number} - the computed font-size in pixels
+   * @private
+   */
+  Renderer.prototype._fontSizePx = function (
+    theSize,
+    { family } = this.states.textFont
+  ) {
+    const isNumString = num => !isNaN(num) && num.trim() !== '';
+
+    // check for a number in a string, eg '12'
+    if (isNumString(theSize)) {
+      return parseFloat(theSize);
+    }
+    let ele = this._cachedDiv({ fontSize: theSize });
+    ele.style.fontSize = theSize;
+    ele.style.fontFamily = family;
+    let fontSizeStr = getComputedStyle(ele).fontSize;
+    let fontSize = parseFloat(fontSizeStr);
+    if (typeof fontSize !== 'number') {
+      throw Error('textSize: invalid font-size');
+    }
+    return fontSize;
+  };
+
+  Renderer.prototype._cachedDiv = function (props) {
+    if (typeof cachedDiv === 'undefined') {
+      let ele = document.createElement('div');
+      ele.ariaHidden = 'true';
+      ele.style.display = 'none';
+      Object.entries(props).forEach(([prop, val]) => {
+        ele.style[prop] = val;
+      });
+      this.textCanvas().appendChild(ele);
+      cachedDiv = ele;
+    }
+    return cachedDiv;
+  };
+
+
+  /*
+    Aggregate the bounding boxes of multiple lines of text
+    @param {Array} bboxes - the bounding boxes to aggregate
+    @returns {object} - the aggregated bounding box
+   * @private
+  */
+  Renderer.prototype._aggregateBounds = function (bboxes) {
+    // loop over the bounding boxes to get the min/max x/y values
+    let minX = Math.min(...bboxes.map(b => b.x));
+    let minY = Math.min(...bboxes.map(b => b.y));
+    let maxY = Math.max(...bboxes.map(b => b.y + b.h));
+    let maxX = Math.max(...bboxes.map(b => b.x + b.w));
+    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+  };
+
+  // Renderer.prototype._aggregateBounds = function (tx, ty, bboxes) {
+  //   let x = Math.min(...bboxes.map(b => b.x));
+  //   let y = Math.min(...bboxes.map(b => b.y));
+  //   // the width is the max of the x-offset + the box width
+  //   let w = Math.max(...bboxes.map(b => (b.x - tx) + b.w));
+  //   let h = bboxes[bboxes.length - 1].y - bboxes[0].y + bboxes[bboxes.length - 1].h;
+
+
+  //   return { x, y, w, h };
+  // };
+
+  /*
+    Process the text string to handle line-breaks and text wrapping
+    @param {String} str - the text to process
+    @param {Number} width - the width to wrap the text to
+    @returns {array} - the processed lines of text
+   * @private
+  */
+  Renderer.prototype._processLines = function (str, width, height) {
+
+    if (typeof width !== 'undefined') { // only for text with bounds
+      let drawingContext = this.textDrawingContext();
+      if (drawingContext.textBaseline === fn.BASELINE) {
+        this.drawingContext.textBaseline = fn.TOP;
+      }
+    }
+
+    let lines = this._splitOnBreaks(str.toString());
+    let hasLineBreaks = lines.length > 1;
+    let hasWidth = typeof width !== 'undefined';
+    let exceedsWidth = hasWidth &&
+      lines.some(l => this._textWidthSingle(l) > width);
+    let { textLeading: leading, textWrap } = this.states;
+
+    //if (!hasLineBreaks && !exceedsWidth) return lines; // a single-line
+    if (hasLineBreaks || exceedsWidth) {
+      if (hasWidth) lines = this._lineate(textWrap, lines, width);
+    }
+
+    // handle height truncation
+    if (hasWidth && typeof height !== 'undefined') {
+
+      if (typeof leading === 'undefined') {
+        throw Error('leading is required if height is specified');
+      }
+
+      // truncate lines that exceed the height
+      for (let i = 0; i < lines.length; i++) {
+        let lh = leading * (i + 1);
+        if (lh > height) {
+          //console.log('TRUNCATING: ', i, '-', lines.length, '"' + lines.slice(i) + '"');
+          lines = lines.slice(0, i);
+          break;
+        }
+      }
+    }
+
+    return lines;
+  };
+
+  /*
+    Get the x-offset for text given the width and textAlign property
+  */
+  Renderer.prototype._xAlignOffset = function (textAlign, width) {
+    switch (textAlign) {
+      case fn.LEFT:
+        return 0;
+      case fn.CENTER:
+        return width / 2;
+      case fn.RIGHT:
+        return width;
+      case textCoreConstants.START:
+        return 0;
+      case textCoreConstants.END:
+        throw new Error('textBounds: END not yet supported for textAlign');
+      default:
+        return 0;
+    }
+  };
+
+  /*
+    Align the bounding box based on the current rectMode setting
+  */
+  Renderer.prototype._rectModeAlign = function (bb, width, height) {
+    if (typeof width !== 'undefined') {
+
+      switch (this.states.rectMode) {
+        case fn.CENTER:
+          bb.x -= (width - bb.w) / 2;
+          bb.y -= (height - bb.h) / 2;
+          break;
+        case fn.CORNERS:
+          bb.w += bb.x;
+          bb.h += bb.y;
+          break;
+        case fn.RADIUS:
+          bb.x -= (width - bb.w) / 2;
+          bb.y -= (height - bb.h) / 2;
+          bb.w /= 2;
+          bb.h /= 2;
+          break;
+      }
+      return bb;
+    }
+  };
+
+  Renderer.prototype._rectModeAlignRevert = function (bb, width, height) {
+    if (typeof width !== 'undefined') {
+
+      switch (this.states.rectMode) {
+        case fn.CENTER:
+          bb.x += (width - bb.w) / 2;
+          bb.y += (height - bb.h) / 2;
+          break;
+        case fn.CORNERS:
+          bb.w -= bb.x;
+          bb.h -= bb.y;
+          break;
+        case fn.RADIUS:
+          bb.x += (width - bb.w) / 2;
+          bb.y += (height - bb.h) / 2;
+          bb.w *= 2;
+          bb.h *= 2;
+          break;
+      }
+      return bb;
+    }
+  };
+
+  /*
+    Get the (tight) width of a single line of text
+  */
+  Renderer.prototype._textWidthSingle = function (s) {
+    let metrics = this.textDrawingContext().measureText(s);
+    let abl = metrics.actualBoundingBoxLeft;
+    let abr = metrics.actualBoundingBoxRight;
+    return abr + abl;
+  };
+
+  /*
+    Get the (loose) width of a single line of text as specified by the font
+  */
+  Renderer.prototype._fontWidthSingle = function (s) {
+    return this.textDrawingContext().measureText(s).width;
+  };
+
+  /*
+    Get the (tight) bounds of a single line of text based on its actual bounding box
+  */
+  Renderer.prototype._textBoundsSingle = function (s, x = 0, y = 0) {
+
+    let metrics = this.textDrawingContext().measureText(s);
+    let asc = metrics.actualBoundingBoxAscent;
+    let desc = metrics.actualBoundingBoxDescent;
+    let abl = metrics.actualBoundingBoxLeft;
+    let abr = metrics.actualBoundingBoxRight;
+    return { x: x - abl, y: y - asc, w: abr + abl, h: asc + desc };
+  };
+
+  /*
+    Get the (loose) bounds of a single line of text based on its font's bounding box
+  */
+  Renderer.prototype._fontBoundsSingle = function (s, x = 0, y = 0) {
+
+    let metrics = this.textDrawingContext().measureText(s);
+    let asc = metrics.fontBoundingBoxAscent;
+    let desc = metrics.fontBoundingBoxDescent;
+    x -= this._xAlignOffset(this.states.textAlign, metrics.width);
+    return { x, y: y - asc, w: metrics.width, h: asc + desc };  };
+
+  /*
+    Set the textSize property in `this.states` if it has changed
+    @param {number | string} theSize - the font-size to set
+    @returns {boolean} - true if the size was changed, false otherwise
+   */
+  Renderer.prototype._setTextSize = function (theSize) {
+
+    if (typeof theSize === 'string') {
+      // parse the size string via computed style, eg '2em'
+      theSize = this._fontSizePx(theSize);
+    }
+
+    // should be a number now
+    if (typeof theSize === 'number') {
+
+      // set it in `this.states` if its been changed
+      if (this.states.textSize !== theSize) {
+        this.states.setValue('textSize', theSize);
+
+        // handle leading here, if not set otherwise
+        if (!this.states.leadingSet) {
+          this.states.setValue('textLeading', this.states.textSize * LeadingScale);
+        }
+        return true; // size was changed
+      }
+    }
+    else {
+      console.warn('textSize: invalid size: ' + theSize);
+    }
+
+    return false;
+  };
+
+  /*
+    Split the lines of text based on the width and the textWrap property
+    @param {Array} lines - the lines of text to split
+    @param {Number} maxWidth - the maximum width of the lines
+    @param {Object} opts - additional options for splitting the lines
+    @returns {array} - the split lines of text
+   * @private
+  */
+  Renderer.prototype._lineate = function (
+    textWrap,
+    lines,
+    maxWidth = Infinity,
+    opts = {}
+  ) {
+
+    let splitter = opts.splitChar ?? (textWrap === fn.WORD ? ' ' : '');
+    let line, testLine, testWidth, words, newLines = [];
+
+    for (let lidx = 0; lidx < lines.length; lidx++) {
+      line = '';
+      words = lines[lidx].split(splitter);
+      for (let widx = 0; widx < words.length; widx++) {
+        testLine = `${line + words[widx]}` + splitter;
+        testWidth = this._textWidthSingle(testLine);
+        if (line.length > 0 && testWidth > maxWidth) {
+          newLines.push(line.trim());
+          line = `${words[widx]}` + splitter;
+        } else {
+          line = testLine;
+        }
+      }
+      newLines.push(line.trim());
+    }
+    return newLines;
+  };
+
+  /*
+    Split the text into lines based on line-breaks and tabs
+  */
+  Renderer.prototype._splitOnBreaks = function (s) {
+    if (!s || s.length === 0) return [''];
+    return s.replace(TabsRe, '  ').split(LinebreakRe);
+  };
+
+  /*
+    Parse the font-family string to handle complex names, fallbacks, etc.
+  */
+  Renderer.prototype._parseFontFamily = function (familyStr) {
+
+    let parts = familyStr.split(CommaDelimRe);
+    let family = parts.map(part => {
+      part = part.trim();
+      if ((part.indexOf(' ') > -1 || SpecialCharRe.test(part)) && !QuotedRe.test(part)) {
+        part = `"${part}"`; // quote font names with spaces
+      }
+      return part;
+    }).join(', ');
+
+    return family;
+  };
+
+  Renderer.prototype._applyFontString = function () {
+    /*
+      Create the font-string according to the CSS font-string specification:
+      If font is specified as a shorthand for several font-related properties, then:
+      - it must include values for: <font-size> and <font-family>
+      - it may optionally include values for:
+          [<font-style>, <font-variant>, <font-weight>, <font-stretch>, <line-height>]
+      Format:
+      - font-style, font-variant and font-weight must precede font-size
+      - font-variant may only specify the values defined in CSS 2.1, that is 'normal' and 'small-caps'.
+      - font-stretch may only be a single keyword value.
+      - line-height must immediately follow font-size, preceded by "/", eg 16px/3.
+      - font-family must be the last value specified.
+    */
+    let {
+      textFont,
+      textSize,
+      lineHeight,
+      fontStyle,
+      fontWeight,
+      fontVariant
+    } = this.states;
+    let drawingContext = this.textDrawingContext();
+
+    let family = this._parseFontFamily(textFont.family);
+    let style = fontStyle !== fn.NORMAL ? `${fontStyle} ` : '';
+    let weight = fontWeight !== fn.NORMAL ? `${fontWeight} ` : '';
+    let variant = fontVariant !== fn.NORMAL ? `${fontVariant} ` : '';
+    let fsize = `${textSize}px` + (lineHeight !== fn.NORMAL ? `/${lineHeight} ` : ' ');
+    let fontString = `${style}${variant}${weight}${fsize}${family}`.trim();
+    //console.log('fontString="' + fontString + '"');
+
+    // set the font string on the context
+    drawingContext.font = fontString;
+
+    // verify that it was set successfully
+    if (drawingContext.font !== fontString) {
+      let expected = fontString;
+      let actual = drawingContext.font;
+      if (expected !== actual) {
+        //console.warn(`Unable to set font property on context2d. It may not be supported.`);
+        //console.log('Expected "' + expected + '" but got: "' + actual + '"'); // TMP
+        return false;
+      }
+    }
+    return true;
+  };
+
+  /*
+    Apply the text properties in `this.states` to the `this.textDrawingContext()`
+    Then apply any properties in the context-queue
+   */
+  Renderer.prototype._applyTextProperties = function (debug = false) {
+
+    this._applyFontString();
+
+    // set these after the font so they're not overridden
+    let context = this.textDrawingContext();
+    context.direction = this.states.direction;
+    context.textAlign = this.states.textAlign;
+    context.textBaseline = this.states.textBaseline;
+
+    // set manually as (still) not fully supported as part of font-string
+    let stretch = this.states.fontStretch;
+    if (FontStretchKeys.includes(stretch) && context.fontStretch !== stretch) {
+      context.fontStretch = stretch;
+    }
+
+    // apply each property in queue after the font so they're not overridden
+    while (contextQueue?.length) {
+
+      let [prop, val] = contextQueue.shift();
+      if (debug) console.log('apply context property "' + prop + '" = "' + val + '"');
+      context[prop] = val;
+
+      // check if the value was set successfully
+      if (context[prop] !== val) {
+        console.warn(`Unable to set '${prop}' property on context2d. It may not be supported.`); // FES?
+        console.log('Expected "' + val + '" but got: "' + context[prop] + '"');
+      }
+    }
+
+    return this._pInst;
+  };
 }
 
-const filterShaderFrags = {
-  [GRAY]: filterGrayFrag,
-  [ERODE]: filterErodeFrag,
-  [DILATE]: filterDilateFrag,
-  [BLUR]: filterBlurFrag,
-  [POSTERIZE]: filterPosterizeFrag,
-  [OPAQUE]: filterOpaqueFrag,
-  [INVERT]: filterInvertFrag,
-  [THRESHOLD]: filterThresholdFrag
-};
+if (typeof p5 !== 'undefined') {
+  textCore(p5, p5.prototype);
+}
 
-/**
- * 3D graphics class
- * @private
- * @class p5.RendererGL
- * @extends p5.Renderer
- * @todo extend class to include public method for offscreen
- * rendering (FBO).
+/*
+ * Creates p5.strands filter shaders for cross-platform compatibility.
+ *
+ * NOTE: These work a little differently than p5.js web editor shaders work!
+ * Firstly, it uses instance mode, so we have to explicitly pass in context
+ * variables in an argument to your callback and as a second argument to `modify`.
+ * Secondly, always manually specify uniform names, as variable names will change
+ * in minified builds.
  */
-class RendererGL extends Renderer {
-  constructor(pInst, w, h, isMainCanvas, elt, attr) {
+function makeFilterShader(renderer, operation, p5) {
+  switch (operation) {
+    case GRAY:
+      return renderer.baseFilterShader().modify(({ p5 }) => {
+        p5.getColor((inputs, canvasContent) => {
+          const tex = p5.getTexture(canvasContent, inputs.texCoord);
+          // weighted grayscale with luminance values
+          const gray = p5.dot(tex.rgb, p5.vec3(0.2126, 0.7152, 0.0722));
+          return p5.vec4(gray, gray, gray, tex.a);
+        });
+      }, { p5 });
+
+    case INVERT:
+      return renderer.baseFilterShader().modify(({ p5 }) => {
+        p5.getColor((inputs, canvasContent) => {
+          const color = p5.getTexture(canvasContent, inputs.texCoord);
+          const invertedColor = p5.vec3(1.0) - color.rgb;
+          return p5.vec4(invertedColor, color.a);
+        });
+      }, { p5 });
+
+    case THRESHOLD:
+      return renderer.baseFilterShader().modify(({ p5 }) => {
+        const filterParameter = p5.uniformFloat('filterParameter');
+        p5.getColor((inputs, canvasContent) => {
+          const color = p5.getTexture(canvasContent, inputs.texCoord);
+          // weighted grayscale with luminance values
+          const gray = p5.dot(color.rgb, p5.vec3(0.2126, 0.7152, 0.0722));
+          const threshold = p5.floor(filterParameter * 255.0) / 255;
+          const blackOrWhite = p5.step(threshold, gray);
+          return p5.vec4(p5.vec3(blackOrWhite), color.a);
+        });
+      }, { p5 });
+
+    case POSTERIZE:
+      return renderer.baseFilterShader().modify(({ p5 }) => {
+        const filterParameter = p5.uniformFloat('filterParameter');
+        const quantize = (color, n) => {
+          // restrict values to N options/bins
+          // and floor each channel to nearest value
+          //
+          // eg. when N = 5, values = 0.0, 0.25, 0.50, 0.75, 1.0
+          // then quantize (0.1, 0.7, 0.9) -> (0.0, 0.5, 1.0)
+
+          color = color * n;
+          color = p5.floor(color);
+          color = color / (n - 1.0);
+          return color;
+        };
+        p5.getColor((inputs, canvasContent) => {
+          const color = p5.getTexture(canvasContent, inputs.texCoord);
+          const restrictedColor = quantize(color.rgb, filterParameter);
+          return p5.vec4(restrictedColor, color.a);
+        });
+      }, { p5 });
+
+    case BLUR:
+      return renderer.baseFilterShader().modify(({ p5 }) => {
+        const radius = p5.uniformFloat('radius');
+        const direction = p5.uniformVec2('direction');
+
+        // This isn't a real Gaussian weight, it's a quadratic weight
+        const quadWeight = (x, e) => {
+          return p5.pow(e - p5.abs(x), 2.0);
+        };
+
+        const random = (p) => {
+          let p3 = p5.fract(p.xyx * .1031);
+          p3 += p5.dot(p3, p3.yzx + 33.33);
+          return p5.fract((p3.x + p3.y) * p3.z);
+        };
+
+        p5.getColor((inputs, canvasContent) => {
+          const uv = inputs.texCoord;
+
+          // A reasonable maximum number of samples
+          const maxSamples = 64.0;
+
+          let numSamples = p5.floor(radius * 7.0);
+          if (p5.mod(numSamples, 2) == 0.0) {
+            numSamples++;
+          }
+
+          let avg = p5.vec4(0.0);
+          let total = 0.0;
+
+          // Calculate the spacing to avoid skewing if numSamples > maxSamples
+          let spacing = 1.0;
+          if (numSamples > maxSamples) {
+            spacing = numSamples / maxSamples;
+            numSamples = maxSamples;
+          }
+
+          const randomOffset = (spacing - 1.0) * p5.mix(-0.5, 0.5, random(uv * inputs.canvasSize));
+          for (let i = 0; i < numSamples; i++) {
+            const sample = i * spacing - (numSamples - 1.0) * 0.5 * spacing + randomOffset;
+            const sampleCoord = uv + p5.vec2(sample, sample) / inputs.canvasSize * direction;
+            const weight = quadWeight(sample, (numSamples - 1.0) * 0.5 * spacing);
+
+            const texSample = p5.getTexture(canvasContent, sampleCoord);
+            avg += weight * texSample * p5.vec4(
+              texSample.a, texSample.a, texSample.a, 1
+            );
+            total += weight;
+          }
+
+          const blended = avg / total;
+          return p5.vec4(
+            blended.r / blended.a,
+            blended.g / blended.a,
+            blended.b / blended.a,
+            blended.a
+          );
+        });
+      }, { p5 });
+
+    case ERODE:
+      return renderer.baseFilterShader().modify(({ p5 }) => {
+        const luma = (color) => {
+          return p5.dot(color.rgb, p5.vec3(0.2126, 0.7152, 0.0722));
+        };
+
+        p5.getColor((inputs, canvasContent) => {
+          const uv = inputs.texCoord;
+          let minColor = p5.getTexture(canvasContent, uv);
+          let minLuma = luma(minColor);
+
+          for (let x = -1; x <= 1; x++) {
+            for (let y = -1; y <= 1; y++) {
+              if (x != 0 || y != 0) {
+                const offset = p5.vec2(x, y) * inputs.texelSize;
+                const neighborColor = p5.getTexture(canvasContent, uv + offset);
+                const neighborLuma = luma(neighborColor);
+
+                if (neighborLuma < minLuma) {
+                  minLuma = neighborLuma;
+                  minColor = neighborColor;
+                }
+              }
+            }
+          }
+
+          return minColor;
+        });
+      }, { p5 });
+
+    case DILATE:
+      return renderer.baseFilterShader().modify(({ p5 }) => {
+        const luma = (color) => {
+          return p5.dot(color.rgb, p5.vec3(0.2126, 0.7152, 0.0722));
+        };
+
+        p5.getColor((inputs, canvasContent) => {
+          const uv = inputs.texCoord;
+          let maxColor = p5.getTexture(canvasContent, uv);
+          let maxLuma = luma(maxColor);
+
+          for (let x = -1; x <= 1; x++) {
+            for (let y = -1; y <= 1; y++) {
+              if (x != 0 || y != 0) {
+                const offset = p5.vec2(x, y) * inputs.texelSize;
+                const neighborColor = p5.getTexture(canvasContent, uv + offset);
+                const neighborLuma = luma(neighborColor);
+
+                if (neighborLuma > maxLuma) {
+                  maxLuma = neighborLuma;
+                  maxColor = neighborColor;
+                }
+              }
+            }
+          }
+
+          return maxColor;
+        });
+      }, { p5 });
+
+    case OPAQUE:
+      return renderer.baseFilterShader().modify(({ p5 }) => {
+        p5.getColor((inputs, canvasContent) => {
+          const color = p5.getTexture(canvasContent, inputs.texCoord);
+          return p5.vec4(color.rgb, 1.0);
+        });
+      }, { p5 });
+
+    default:
+      throw new Error(`Unknown filter: ${operation}`);
+  }
+}
+
+function getStrokeDefs(shaderConstant) {
+  const STROKE_CAP_ENUM = {};
+  const STROKE_JOIN_ENUM = {};
+  let lineDefs = "";
+  const defineStrokeCapEnum = function (key, val) {
+    lineDefs += shaderConstant(`STROKE_CAP_${key}`, `${val}`, 'u32');
+    STROKE_CAP_ENUM[constants[key]] = val;
+  };
+  const defineStrokeJoinEnum = function (key, val) {
+    lineDefs += shaderConstant(`STROKE_JOIN_${key}`, `${val}`, 'u32');
+    STROKE_JOIN_ENUM[constants[key]] = val;
+  };
+
+  // Define constants in line shaders for each type of cap/join, and also record
+  // the values in JS objects
+  defineStrokeCapEnum("ROUND", 0);
+  defineStrokeCapEnum("PROJECT", 1);
+  defineStrokeCapEnum("SQUARE", 2);
+  defineStrokeJoinEnum("ROUND", 0);
+  defineStrokeJoinEnum("MITER", 1);
+  defineStrokeJoinEnum("BEVEL", 2);
+
+  return { STROKE_CAP_ENUM, STROKE_JOIN_ENUM, lineDefs };
+}
+
+const { STROKE_CAP_ENUM, STROKE_JOIN_ENUM } = getStrokeDefs(()=>"");
+
+class Renderer3D extends Renderer {
+  constructor(pInst, w, h, isMainCanvas, elt) {
     super(pInst, w, h, isMainCanvas);
 
     // Create new canvas
-    this.canvas = this.elt = elt || document.createElement('canvas');
-    this._setAttributeDefaults(pInst);
-    this._initContext();
-    // This redundant property is useful in reminding you that you are
-    // interacting with WebGLRenderingContext, still worth considering future removal
-    this.GL = this.drawingContext;
+    this.canvas = this.elt = elt || document.createElement("canvas");
+    this.contextReady = this.setupContext();
 
     if (this._isMainCanvas) {
       // for pixel method sharing with pimage
@@ -54006,10 +55101,10 @@ class RendererGL extends Renderer {
       this._pInst.canvas = this.canvas;
     } else {
       // hide if offscreen buffer by default
-      this.canvas.style.display = 'none';
+      this.canvas.style.display = "none";
     }
-    this.elt.id = 'defaultCanvas0';
-    this.elt.classList.add('p5Canvas');
+    this.elt.id = "defaultCanvas0";
+    this.elt.classList.add("p5Canvas");
 
     // Set and return p5.Element
     this.wrappedElt = new Element(this.elt, this._pInst);
@@ -54037,11 +55132,7 @@ class RendererGL extends Renderer {
     this.elt.height = h * this._pixelDensity;
     this.elt.style.width = `${w}px`;
     this.elt.style.height = `${h}px`;
-    this._origViewport = {
-      width: this.GL.drawingBufferWidth,
-      height: this.GL.drawingBufferHeight
-    };
-    this.viewport(this._origViewport.width, this._origViewport.height);
+    this._updateViewport();
 
     // Attach canvas element to DOM
     if (this._pInst._userNode) {
@@ -54049,12 +55140,12 @@ class RendererGL extends Renderer {
       this._pInst._userNode.appendChild(this.elt);
     } else {
       //create main element
-      if (document.getElementsByTagName('main').length === 0) {
-        let m = document.createElement('main');
+      if (document.getElementsByTagName("main").length === 0) {
+        let m = document.createElement("main");
         document.body.appendChild(m);
       }
       //append canvas to main
-      document.getElementsByTagName('main')[0].appendChild(this.elt);
+      document.getElementsByTagName("main")[0].appendChild(this.elt);
     }
 
     this.isP3D = true; //lets us know we're in 3d mode
@@ -54067,7 +55158,10 @@ class RendererGL extends Renderer {
     this.states.uViewMatrix = new Matrix(4);
     this.states.uPMatrix = new Matrix(4);
 
-    this.states.curCamera = new Camera(this);
+    this.mainCamera = new Camera(this);
+    if (!this.states.curCamera) {
+      this.states.curCamera = this.mainCamera;
+    }
     this.states.uPMatrix.set(this.states.curCamera.projMatrix);
     this.states.uViewMatrix.set(this.states.curCamera.cameraMatrix);
 
@@ -54138,14 +55232,8 @@ class RendererGL extends Renderer {
     this.specularTextures = new Map();
 
     this.preEraseBlend = undefined;
-    this._cachedBlendMode = undefined;
     this._cachedFillStyle = [1, 1, 1, 1];
     this._cachedStrokeStyle = [0, 0, 0, 1];
-    if (this.webglVersion === WEBGL2) {
-      this.blendExt = this.GL;
-    } else {
-      this.blendExt = this.GL.getExtension('EXT_blend_minmax');
-    }
     this._isBlending = false;
 
     this._useLineColor = false;
@@ -54154,8 +55242,8 @@ class RendererGL extends Renderer {
     this.registerEnabled = new Set();
 
     // Camera
-    this.states.curCamera._computeCameraDefaultSettings();
-    this.states.curCamera._setDefaultCamera();
+    this.mainCamera._computeCameraDefaultSettings();
+    this.mainCamera._setDefaultCamera();
 
     // FilterCamera
     this.filterCamera = new Camera(this);
@@ -54183,101 +55271,15 @@ class RendererGL extends Renderer {
     this._defaultImmediateModeShader = undefined;
     this._defaultNormalShader = undefined;
     this._defaultColorShader = undefined;
-    this._defaultPointShader = undefined;
 
     this.states.userFillShader = undefined;
     this.states.userStrokeShader = undefined;
-    this.states.userPointShader = undefined;
     this.states.userImageShader = undefined;
 
     this.states.curveDetail = 1 / 4;
 
     // Used by beginShape/endShape functions to construct a p5.Geometry
     this.shapeBuilder = new ShapeBuilder(this);
-
-    this.buffers = {
-      fill: [
-        new RenderBuffer(
-          3,
-          'vertices',
-          'vertexBuffer',
-          'aPosition',
-          this,
-          this._vToNArray
-        ),
-        new RenderBuffer(
-          3,
-          'vertexNormals',
-          'normalBuffer',
-          'aNormal',
-          this,
-          this._vToNArray
-        ),
-        new RenderBuffer(
-          4,
-          'vertexColors',
-          'colorBuffer',
-          'aVertexColor',
-          this
-        ),
-        new RenderBuffer(
-          3,
-          'vertexAmbients',
-          'ambientBuffer',
-          'aAmbientColor',
-          this
-        ),
-        new RenderBuffer(2, 'uvs', 'uvBuffer', 'aTexCoord', this, arr =>
-          arr.flat()
-        )
-      ],
-      stroke: [
-        new RenderBuffer(
-          4,
-          'lineVertexColors',
-          'lineColorBuffer',
-          'aVertexColor',
-          this
-        ),
-        new RenderBuffer(
-          3,
-          'lineVertices',
-          'lineVerticesBuffer',
-          'aPosition',
-          this
-        ),
-        new RenderBuffer(
-          3,
-          'lineTangentsIn',
-          'lineTangentsInBuffer',
-          'aTangentIn',
-          this
-        ),
-        new RenderBuffer(
-          3,
-          'lineTangentsOut',
-          'lineTangentsOutBuffer',
-          'aTangentOut',
-          this
-        ),
-        new RenderBuffer(1, 'lineSides', 'lineSidesBuffer', 'aSide', this)
-      ],
-      text: [
-        new RenderBuffer(
-          3,
-          'vertices',
-          'vertexBuffer',
-          'aPosition',
-          this,
-          this._vToNArray
-        ),
-        new RenderBuffer(2, 'uvs', 'uvBuffer', 'aTexCoord', this, arr =>
-          arr.flat()
-        )
-      ],
-      point: this.GL.createBuffer(),
-      user: []
-    };
 
     this.geometryBufferCache = new GeometryBufferCache(this);
 
@@ -54305,32 +55307,166 @@ class RendererGL extends Renderer {
 
     this.scratchMat3 = new Matrix(3);
 
-    this._userEnabledStencil = false;
-    // Store original methods for internal use
-    this._internalEnable = this.drawingContext.enable;
-    this._internalDisable = this.drawingContext.disable;
-
-    // Override WebGL enable function
-    this.drawingContext.enable = key => {
-      if (key === this.drawingContext.STENCIL_TEST) {
-        if (!this._clipping) {
-          this._userEnabledStencil = true;
-        }
-      }
-      return this._internalEnable.call(this.drawingContext, key);
-    };
-
-    // Override WebGL disable function
-    this.drawingContext.disable = key => {
-      if (key === this.drawingContext.STENCIL_TEST) {
-        this._userEnabledStencil = false;
-      }
-      return this._internalDisable.call(this.drawingContext, key);
-    };
-
     // Whether or not to remove degenerate faces from geometry. This is usually
     // set to false for performance.
     this._validateFaces = false;
+
+    this.buffers = {
+      fill: [
+        new RenderBuffer(
+          3,
+          "vertices",
+          "vertexBuffer",
+          "aPosition",
+          this,
+          this._vToNArray
+        ),
+        new RenderBuffer(
+          3,
+          "vertexNormals",
+          "normalBuffer",
+          "aNormal",
+          this,
+          this._vToNArray
+        ),
+        new RenderBuffer(
+          4,
+          "vertexColors",
+          "colorBuffer",
+          "aVertexColor",
+          this
+        ).default((geometry) => geometry.vertices.flatMap(() => [-1, -1, -1, -1])),
+        new RenderBuffer(
+          3,
+          "vertexAmbients",
+          "ambientBuffer",
+          "aAmbientColor",
+          this
+        ),
+        new RenderBuffer(2, "uvs", "uvBuffer", "aTexCoord", this, (arr) =>
+          arr.flat()
+        ),
+      ],
+      stroke: [
+        new RenderBuffer(
+          4,
+          "lineVertexColors",
+          "lineColorBuffer",
+          "aVertexColor",
+          this
+        ).default((geometry) => geometry.lineVertices.flatMap(() => [-1, -1, -1, -1])),
+        new RenderBuffer(
+          3,
+          "lineVertices",
+          "lineVerticesBuffer",
+          "aPosition",
+          this
+        ),
+        new RenderBuffer(
+          3,
+          "lineTangentsIn",
+          "lineTangentsInBuffer",
+          "aTangentIn",
+          this
+        ),
+        new RenderBuffer(
+          3,
+          "lineTangentsOut",
+          "lineTangentsOutBuffer",
+          "aTangentOut",
+          this
+        ),
+        new RenderBuffer(1, "lineSides", "lineSidesBuffer", "aSide", this),
+      ],
+      text: [
+        new RenderBuffer(
+          3,
+          "vertices",
+          "vertexBuffer",
+          "aPosition",
+          this,
+          this._vToNArray
+        ),
+        new RenderBuffer(2, "uvs", "uvBuffer", "aTexCoord", this, (arr) =>
+          arr.flat()
+        ),
+      ],
+      user: [],
+    };
+  }
+
+  //This is helper function to reset the context anytime the attributes
+  //are changed with setAttributes()
+
+  async _resetContext(options, callback, ctor = Renderer3D) {
+    const w = this.width;
+    const h = this.height;
+    const defaultId = this.canvas.id;
+    const isPGraphics = this._pInst instanceof Graphics;
+
+    // Preserve existing position and styles before recreation
+    const prevStyle = {
+      position: this.canvas.style.position,
+      top: this.canvas.style.top,
+      left: this.canvas.style.left,
+    };
+
+    if (isPGraphics) {
+      // Handle PGraphics: remove and recreate the canvas
+      const pg = this._pInst;
+      pg.canvas.parentNode.removeChild(pg.canvas);
+      pg.canvas = document.createElement("canvas");
+      const node = pg._pInst._userNode || document.body;
+      node.appendChild(pg.canvas);
+      Element.call(pg, pg.canvas, pg._pInst);
+      // Restore previous width and height
+      pg.width = w;
+      pg.height = h;
+    } else {
+      // Handle main canvas: remove and recreate it
+      let c = this.canvas;
+      if (c) {
+        c.parentNode.removeChild(c);
+      }
+      c = document.createElement("canvas");
+      c.id = defaultId;
+      // Attach the new canvas to the correct parent node
+      if (this._pInst._userNode) {
+        this._pInst._userNode.appendChild(c);
+      } else {
+        document.body.appendChild(c);
+      }
+      this._pInst.canvas = c;
+      this.canvas = c;
+
+      // Restore the saved position
+      this.canvas.style.position = prevStyle.position;
+      this.canvas.style.top = prevStyle.top;
+      this.canvas.style.left = prevStyle.left;
+    }
+
+    const renderer = new ctor(
+      this._pInst,
+      w,
+      h,
+      !isPGraphics,
+      this._pInst.canvas
+    );
+    this._pInst._renderer = renderer;
+
+    renderer._applyDefaults();
+
+    if (renderer.contextReady) {
+      await renderer.contextReady;
+    }
+
+    if (typeof callback === "function") {
+      //setTimeout with 0 forces the task to the back of the queue, this ensures that
+      //we finish switching out the renderer
+      setTimeout(() => {
+        callback.apply(window._renderer, options);
+      }, 0);
+    }
   }
 
   remove() {
@@ -54359,7 +55495,7 @@ class RendererGL extends Renderer {
   beginGeometry() {
     if (this.geometryBuilder) {
       throw new Error(
-        'It looks like `beginGeometry()` is being called while another p5.Geometry is already being build.'
+        "It looks like `beginGeometry()` is being called while another p5.Geometry is already being build."
       );
     }
     this.geometryBuilder = new GeometryBuilder(this);
@@ -54379,7 +55515,7 @@ class RendererGL extends Renderer {
   endGeometry() {
     if (!this.geometryBuilder) {
       throw new Error(
-        'Make sure you call beginGeometry() before endGeometry()!'
+        "Make sure you call beginGeometry() before endGeometry()!"
       );
     }
     const geometry = this.geometryBuilder.finish();
@@ -54428,13 +55564,13 @@ class RendererGL extends Renderer {
     if (d === undefined) {
       return this.states.curveDetail;
     } else {
-      this.states.setValue('curveDetail', d);
+      this.states.setValue("curveDetail", d);
     }
   }
 
   drawShape(shape) {
     const visitor = new PrimitiveToVerticesConverter({
-      curveDetail: this.states.curveDetail
+      curveDetail: this.states.curveDetail,
     });
     shape.accept(visitor);
     this.shapeBuilder.constructFromContours(shape, visitor.contours);
@@ -54446,17 +55582,10 @@ class RendererGL extends Renderer {
         { validateFaces: this._validateFaces }
       );
     } else if (this.states.fillColor || this.states.strokeColor) {
-      if (this.shapeBuilder.shapeMode === POINTS) {
-        this._drawPoints(
-          this.shapeBuilder.geometry.vertices,
-          this.buffers.point
-        );
-      } else {
-        this._drawGeometry(this.shapeBuilder.geometry, {
-          mode: this.shapeBuilder.shapeMode,
-          count: this.drawShapeCount
-        });
-      }
+      this._drawGeometry(this.shapeBuilder.geometry, {
+        mode: this.shapeBuilder.shapeMode,
+        count: this.drawShapeCount
+      });
     }
     this.drawShapeCount = 1;
   }
@@ -54472,9 +55601,9 @@ class RendererGL extends Renderer {
 
   normal(xorv, y, z) {
     if (xorv instanceof Vector) {
-      this.states.setValue('_currentNormal', xorv);
+      this.states.setValue("_currentNormal", xorv);
     } else {
-      this.states.setValue('_currentNormal', new Vector(xorv, y, z));
+      this.states.setValue("_currentNormal", new Vector(xorv, y, z));
     }
     this.updateShapeVertexProperties();
   }
@@ -54492,6 +55621,10 @@ class RendererGL extends Renderer {
         this._drawGeometry(model, { count });
       }
     }
+  }
+
+  _getOrMakeCachedBuffers(geometry) {
+    return this.geometryBufferCache.ensureCached(geometry);
   }
 
   //////////////////////////////////////////////
@@ -54527,30 +55660,15 @@ class RendererGL extends Renderer {
     this.buffers.user = [];
   }
 
-  _drawGeometryScaled(model, scaleX, scaleY, scaleZ) {
-    let originalModelMatrix = this.states.uModelMatrix;
-    this.states.setValue('uModelMatrix', this.states.uModelMatrix.clone());
-    try {
-      this.states.uModelMatrix.scale(scaleX, scaleY, scaleZ);
-
-      if (this.geometryBuilder) {
-        this.geometryBuilder.addRetained(model);
-      } else {
-        this._drawGeometry(model);
-      }
-    } finally {
-      this.states.setValue('uModelMatrix', originalModelMatrix);
-    }
-  }
-
   _drawFills(geometry, { count, mode } = {}) {
-    this._useVertexColor = geometry.vertexColors.length > 0;
+    this._useVertexColor = geometry.vertexColors.length > 0 &&
+      !geometry.vertexColors.isDefault;
 
     const shader =
       !this._drawingFilter && this.states.userFillShader
         ? this.states.userFillShader
         : this._getFillShader();
-    shader.bindShader();
+    shader.bindShader('fill');
     this._setGlobalUniforms(shader);
     this._setFillUniforms(shader);
     shader.bindTextures();
@@ -54559,7 +55677,7 @@ class RendererGL extends Renderer {
       buff._prepareBuffer(geometry, shader);
     }
     this._prepareUserAttributes(geometry, shader);
-    shader.disableRemainingAttributes();
+    this._disableRemainingAttributes(shader);
 
     this._applyColorBlend(
       this.states.curFillColor,
@@ -54572,12 +55690,11 @@ class RendererGL extends Renderer {
   }
 
   _drawStrokes(geometry, { count } = {}) {
-    const gl = this.GL;
 
     this._useLineColor = geometry.vertexStrokeColors.length > 0;
 
     const shader = this._getStrokeShader();
-    shader.bindShader();
+    shader.bindShader('stroke');
     this._setGlobalUniforms(shader);
     this._setStrokeUniforms(shader);
     shader.bindTextures();
@@ -54586,61 +55703,21 @@ class RendererGL extends Renderer {
       buff._prepareBuffer(geometry, shader);
     }
     this._prepareUserAttributes(geometry, shader);
-    shader.disableRemainingAttributes();
+    this._disableRemainingAttributes(shader);
 
     this._applyColorBlend(
       this.states.curStrokeColor,
       geometry.hasStrokeTransparency()
     );
 
-    if (count === 1) {
-      gl.drawArrays(gl.TRIANGLES, 0, geometry.lineVertices.length / 3);
-    } else {
-      try {
-        gl.drawArraysInstanced(
-          gl.TRIANGLES,
-          0,
-          geometry.lineVertices.length / 3,
-          count
-        );
-      } catch (e) {
-        console.log(
-          '🌸 p5.js says: Instancing is only supported in WebGL2 mode'
-        );
-      }
-    }
+    this._drawBuffers(geometry, {count});
 
     shader.unbindShader();
   }
 
-  _drawPoints(vertices, vertexBuffer) {
-    const gl = this.GL;
-    const pointShader = this._getPointShader();
-    pointShader.bindShader();
-    this._setGlobalUniforms(pointShader);
-    this._setPointUniforms(pointShader);
-    pointShader.bindTextures();
-
-    this._bindBuffer(
-      vertexBuffer,
-      gl.ARRAY_BUFFER,
-      this._vToNArray(vertices),
-      Float32Array,
-      gl.STATIC_DRAW
-    );
-
-    pointShader.enableAttrib(pointShader.attributes.aPosition, 3);
-
-    this._applyColorBlend(this.states.curStrokeColor);
-
-    gl.drawArrays(gl.Points, 0, vertices.length);
-
-    pointShader.unbindShader();
-  }
-
   _prepareUserAttributes(geometry, shader) {
     for (const buff of this.buffers.user) {
-      if (!this._pInst.constructor.disableFriendlyErrors) {
+      if (!this._pInst.constructor.disableFriendleErrors) {
         // Check for the right data size
         const prop = geometry.userVertexProperties[buff.attr];
         if (prop) {
@@ -54648,12 +55725,12 @@ class RendererGL extends Renderer {
           if (adjustedLength > geometry.vertices.length) {
             this._pInst.constructor._friendlyError(
               `One of the geometries has a custom vertex property '${prop.getName()}' with more values than vertices. This is probably caused by directly using the Geometry.vertexProperty() method.`,
-              'vertexProperty()'
+              "vertexProperty()"
             );
           } else if (adjustedLength < geometry.vertices.length) {
             this._pInst.constructor._friendlyError(
               `One of the geometries has a custom vertex property '${prop.getName()}' with fewer values than vertices. This is probably caused by directly using the Geometry.vertexProperty() method.`,
-              'vertexProperty()'
+              "vertexProperty()"
             );
           }
         }
@@ -54662,275 +55739,81 @@ class RendererGL extends Renderer {
     }
   }
 
-  _drawBuffers(geometry, { mode = this.GL.TRIANGLES, count }) {
-    const gl = this.GL;
-    const glBuffers = this.geometryBufferCache.getCached(geometry);
+  _drawGeometryScaled(model, scaleX, scaleY, scaleZ) {
+    let originalModelMatrix = this.states.uModelMatrix;
+    this.states.setValue("uModelMatrix", this.states.uModelMatrix.clone());
+    try {
+      this.states.uModelMatrix.scale(scaleX, scaleY, scaleZ);
 
-    if (!glBuffers) return;
-
-    if (glBuffers.indexBuffer) {
-      this._bindBuffer(glBuffers.indexBuffer, gl.ELEMENT_ARRAY_BUFFER);
-
-      // If this model is using a Uint32Array we need to ensure the
-      // OES_element_index_uint WebGL extension is enabled.
-      if (
-        this._pInst.webglVersion !== WEBGL2 &&
-        glBuffers.indexBufferType === gl.UNSIGNED_INT
-      ) {
-        if (!gl.getExtension('OES_element_index_uint')) {
-          throw new Error(
-            'Unable to render a 3d model with > 65535 triangles. Your web browser does not support the WebGL Extension OES_element_index_uint.'
-          );
-        }
-      }
-
-      if (count === 1) {
-        gl.drawElements(
-          gl.TRIANGLES,
-          geometry.faces.length * 3,
-          glBuffers.indexBufferType,
-          0
-        );
+      if (this.geometryBuilder) {
+        this.geometryBuilder.addRetained(model);
       } else {
-        try {
-          gl.drawElementsInstanced(
-            gl.TRIANGLES,
-            geometry.faces.length * 3,
-            glBuffers.indexBufferType,
-            0,
-            count
-          );
-        } catch (e) {
-          console.log(
-            '🌸 p5.js says: Instancing is only supported in WebGL2 mode'
-          );
-        }
+        this._drawGeometry(model);
       }
-    } else {
-      if (count === 1) {
-        gl.drawArrays(mode, 0, geometry.vertices.length);
-      } else {
-        try {
-          gl.drawArraysInstanced(mode, 0, geometry.vertices.length, count);
-        } catch (e) {
-          console.log(
-            '🌸 p5.js says: Instancing is only supported in WebGL2 mode'
-          );
-        }
-      }
-    }
-  }
-
-  _getOrMakeCachedBuffers(geometry) {
-    return this.geometryBufferCache.ensureCached(geometry);
-  }
-
-  //////////////////////////////////////////////
-  // Setting
-  //////////////////////////////////////////////
-
-  _setAttributeDefaults(pInst) {
-    // See issue #3850, safer to enable AA in Safari
-    const applyAA = navigator.userAgent.toLowerCase().includes('safari');
-    const defaults = {
-      alpha: true,
-      depth: true,
-      stencil: true,
-      antialias: applyAA,
-      premultipliedAlpha: true,
-      preserveDrawingBuffer: true,
-      perPixelLighting: true,
-      version: 2
-    };
-    if (pInst._glAttributes === null) {
-      pInst._glAttributes = defaults;
-    } else {
-      pInst._glAttributes = Object.assign(defaults, pInst._glAttributes);
-    }
-    return;
-  }
-
-  _initContext() {
-    if (this._pInst._glAttributes?.version !== 1) {
-      // Unless WebGL1 is explicitly asked for, try to create a WebGL2 context
-      this.drawingContext = this.canvas.getContext(
-        'webgl2',
-        this._pInst._glAttributes
-      );
-    }
-    this.webglVersion = this.drawingContext
-      ? WEBGL2
-      : WEBGL;
-    // If this is the main canvas, make sure the global `webglVersion` is set
-    this._pInst.webglVersion = this.webglVersion;
-    if (!this.drawingContext) {
-      // If we were unable to create a WebGL2 context (either because it was
-      // disabled via `setAttributes({ version: 1 })` or because the device
-      // doesn't support it), fall back to a WebGL1 context
-      this.drawingContext =
-        this.canvas.getContext('webgl', this._pInst._glAttributes) ||
-        this.canvas.getContext('experimental-webgl', this._pInst._glAttributes);
-    }
-    if (this.drawingContext === null) {
-      throw new Error('Error creating webgl context');
-    } else {
-      const gl = this.drawingContext;
-      gl.enable(gl.DEPTH_TEST);
-      gl.depthFunc(gl.LEQUAL);
-      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-      // Make sure all images are loaded into the canvas premultiplied so that
-      // they match the way we render colors. This will make framebuffer textures
-      // be encoded the same way as textures from everything else.
-      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-      this._viewport = this.drawingContext.getParameter(
-        this.drawingContext.VIEWPORT
-      );
-    }
-  }
-
-  _getMaxTextureSize() {
-    const gl = this.drawingContext;
-    return gl.getParameter(gl.MAX_TEXTURE_SIZE);
-  }
-
-  _adjustDimensions(width, height) {
-    if (!this._maxTextureSize) {
-      this._maxTextureSize = this._getMaxTextureSize();
-    }
-    let maxTextureSize = this._maxTextureSize;
-
-    let maxAllowedPixelDimensions = Math.floor(
-      maxTextureSize / this._pixelDensity
-    );
-    let adjustedWidth = Math.min(width, maxAllowedPixelDimensions);
-    let adjustedHeight = Math.min(height, maxAllowedPixelDimensions);
-
-    if (adjustedWidth !== width || adjustedHeight !== height) {
-      console.warn(
-        'Warning: The requested width/height exceeds hardware limits. ' +
-          `Adjusting dimensions to width: ${adjustedWidth}, height: ${adjustedHeight}.`
-      );
-    }
-
-    return { adjustedWidth, adjustedHeight };
-  }
-
-  //This is helper function to reset the context anytime the attributes
-  //are changed with setAttributes()
-
-  _resetContext(options, callback) {
-    const w = this.width;
-    const h = this.height;
-    const defaultId = this.canvas.id;
-    const isPGraphics = this._pInst instanceof Graphics;
-
-    // Preserve existing position and styles before recreation
-    const prevStyle = {
-      position: this.canvas.style.position,
-      top: this.canvas.style.top,
-      left: this.canvas.style.left
-    };
-
-    if (isPGraphics) {
-      // Handle PGraphics: remove and recreate the canvas
-      const pg = this._pInst;
-      pg.canvas.parentNode.removeChild(pg.canvas);
-      pg.canvas = document.createElement('canvas');
-      const node = pg._pInst._userNode || document.body;
-      node.appendChild(pg.canvas);
-      Element.call(pg, pg.canvas, pg._pInst);
-      // Restore previous width and height
-      pg.width = w;
-      pg.height = h;
-    } else {
-      // Handle main canvas: remove and recreate it
-      let c = this.canvas;
-      if (c) {
-        c.parentNode.removeChild(c);
-      }
-      c = document.createElement('canvas');
-      c.id = defaultId;
-      // Attach the new canvas to the correct parent node
-      if (this._pInst._userNode) {
-        this._pInst._userNode.appendChild(c);
-      } else {
-        document.body.appendChild(c);
-      }
-      this._pInst.canvas = c;
-      this.canvas = c;
-
-      // Restore the saved position
-      this.canvas.style.position = prevStyle.position;
-      this.canvas.style.top = prevStyle.top;
-      this.canvas.style.left = prevStyle.left;
-    }
-
-    const renderer = new RendererGL(
-      this._pInst,
-      w,
-      h,
-      !isPGraphics,
-      this._pInst.canvas
-    );
-    this._pInst._renderer = renderer;
-
-    renderer._applyDefaults();
-
-    if (typeof callback === 'function') {
-      //setTimeout with 0 forces the task to the back of the queue, this ensures that
-      //we finish switching out the renderer
-      setTimeout(() => {
-        callback.apply(window._renderer, options);
-      }, 0);
+    } finally {
+      this.states.setValue("uModelMatrix", originalModelMatrix);
     }
   }
 
   _update() {
     // reset model view and apply initial camera transform
     // (containing only look at info; no projection).
-    this.states.setValue('uModelMatrix', this.states.uModelMatrix.clone());
+    this.states.setValue("uModelMatrix", this.states.uModelMatrix.clone());
     this.states.uModelMatrix.reset();
-    this.states.setValue('uViewMatrix', this.states.uViewMatrix.clone());
+    this.states.setValue("uViewMatrix", this.states.uViewMatrix.clone());
     this.states.uViewMatrix.set(this.states.curCamera.cameraMatrix);
 
     // reset light data for new frame.
 
-    this.states.setValue('ambientLightColors', []);
-    this.states.setValue('specularColors', [1, 1, 1]);
+    this.states.setValue("ambientLightColors", []);
+    this.states.setValue("specularColors", [1, 1, 1]);
 
-    this.states.setValue('directionalLightDirections', []);
-    this.states.setValue('directionalLightDiffuseColors', []);
-    this.states.setValue('directionalLightSpecularColors', []);
+    this.states.setValue("directionalLightDirections", []);
+    this.states.setValue("directionalLightDiffuseColors", []);
+    this.states.setValue("directionalLightSpecularColors", []);
 
-    this.states.setValue('pointLightPositions', []);
-    this.states.setValue('pointLightDiffuseColors', []);
-    this.states.setValue('pointLightSpecularColors', []);
+    this.states.setValue("pointLightPositions", []);
+    this.states.setValue("pointLightDiffuseColors", []);
+    this.states.setValue("pointLightSpecularColors", []);
 
-    this.states.setValue('spotLightPositions', []);
-    this.states.setValue('spotLightDirections', []);
-    this.states.setValue('spotLightDiffuseColors', []);
-    this.states.setValue('spotLightSpecularColors', []);
-    this.states.setValue('spotLightAngle', []);
-    this.states.setValue('spotLightConc', []);
+    this.states.setValue("spotLightPositions", []);
+    this.states.setValue("spotLightDirections", []);
+    this.states.setValue("spotLightDiffuseColors", []);
+    this.states.setValue("spotLightSpecularColors", []);
+    this.states.setValue("spotLightAngle", []);
+    this.states.setValue("spotLightConc", []);
 
-    this.states.setValue('enableLighting', false);
+    this.states.setValue("enableLighting", false);
 
     //reset tint value for new frame
-    this.states.setValue('tint', [255, 255, 255, 255]);
+    this.states.setValue("tint", [255, 255, 255, 255]);
 
     //Clear depth every frame
-    this.GL.clearStencil(0);
-    this.GL.clear(this.GL.DEPTH_BUFFER_BIT | this.GL.STENCIL_BUFFER_BIT);
-    if (!this._userEnabledStencil) {
-      this._internalDisable.call(this.GL, this.GL.STENCIL_TEST);
-    }
-
+    this._resetBuffersBeforeDraw();
   }
 
-  /**
-   * [background description]
-   */
   background(...args) {
+    const a0 = args[0];
+
+    const isImageLike =
+      a0 != null &&
+      typeof a0 === 'object' &&
+      typeof a0.width === 'number' &&
+      typeof a0.height === 'number' &&
+      (a0.canvas != null || a0.elt != null);
+
+    // WEBGL / 3D: support background(image-like)
+    if (isImageLike) {
+      this._pInst.clear();
+      this._pInst.push();
+      this._pInst.resetMatrix();
+      this._pInst.imageMode(CENTER);
+      this._pInst.image(a0, 0, 0, this._pInst.width, this._pInst.height);
+      this._pInst.pop();
+      return;
+    }
+
+    // Default: background(color)
     const _col = this._pInst.color(...args);
     this.clear(..._col._getRGBA());
   }
@@ -55060,13 +55943,13 @@ class RendererGL extends Renderer {
       ...super.getCommonVertexProperties(),
       stroke: this.states.strokeColor,
       fill: this.states.fillColor,
-      normal: this.states._currentNormal
+      normal: this.states._currentNormal,
     };
   }
 
   getSupportedIndividualVertexProperties() {
     return {
-      textureCoordinates: true
+      textureCoordinates: true,
     };
   }
 
@@ -55079,13 +55962,13 @@ class RendererGL extends Renderer {
   }
   getFilterLayer() {
     if (!this.filterLayer) {
-      this.filterLayer = new Framebuffer(this);
+      this.filterLayer = new Framebuffer$1(this);
     }
     return this.filterLayer;
   }
   getFilterLayerTemp() {
     if (!this.filterLayerTemp) {
-      this.filterLayerTemp = new Framebuffer(this);
+      this.filterLayerTemp = new Framebuffer$1(this);
     }
     return this.filterLayerTemp;
   }
@@ -55119,11 +56002,7 @@ class RendererGL extends Renderer {
       // Need to store multiple in case user calls different filters,
       // eg. filter(BLUR) then filter(GRAY)
       if (!(operation in this.defaultFilterShaders)) {
-        this.defaultFilterShaders[operation] = new Shader(
-          fbo.renderer,
-          filterShaderVert,
-          filterShaderFrags[operation]
-        );
+        this.defaultFilterShaders[operation] = this._makeFilterShader(fbo.renderer, operation);
       }
       this.states.setValue(
         'filterShader',
@@ -55146,7 +56025,7 @@ class RendererGL extends Renderer {
 
     let texelSize = [
       1 / (target.width * target.pixelDensity()),
-      1 / (target.height * target.pixelDensity())
+      1 / (target.height * target.pixelDensity()),
     ];
 
     // apply blur shader with multiple passes.
@@ -55165,7 +56044,7 @@ class RendererGL extends Renderer {
       this.states.filterShader.setUniform('texelSize', texelSize);
       this.states.filterShader.setUniform('canvasSize', [
         target.width,
-        target.height
+        target.height,
       ]);
       this.states.filterShader.setUniform(
         'radius',
@@ -55204,7 +56083,7 @@ class RendererGL extends Renderer {
         this.states.filterShader.setUniform('texelSize', texelSize);
         this.states.filterShader.setUniform('canvasSize', [
           target.width,
-          target.height
+          target.height,
         ]);
         // filterParameter uniform only used for POSTERIZE, and THRESHOLD
         // but shouldn't hurt to always set
@@ -55304,6 +56183,10 @@ class RendererGL extends Renderer {
     }
   }
 
+  _applyBlendMode() {
+    // By default, a noop
+  }
+
   drawTarget() {
     return this.activeFramebuffers[this.activeFramebuffers.length - 1] || this;
   }
@@ -55313,22 +56196,7 @@ class RendererGL extends Renderer {
 
     this.drawTarget()._isClipApplied = true;
 
-    const gl = this.GL;
-    gl.clearStencil(0);
-    gl.clear(gl.STENCIL_BUFFER_BIT);
-    this._internalEnable.call(gl, gl.STENCIL_TEST);
-    this._stencilTestOn = true;
-    gl.stencilFunc(
-      gl.ALWAYS, // the test
-      1, // reference value
-      0xff // mask
-    );
-    gl.stencilOp(
-      gl.KEEP, // what to do if the stencil test fails
-      gl.KEEP, // what to do if the depth test fails
-      gl.REPLACE // what to do if both tests pass
-    );
-    gl.disable(gl.DEPTH_TEST);
+    this._applyClip();
 
     this.push();
     this.resetShader();
@@ -55339,18 +56207,7 @@ class RendererGL extends Renderer {
   endClip() {
     this.pop();
 
-    const gl = this.GL;
-    gl.stencilOp(
-      gl.KEEP, // what to do if the stencil test fails
-      gl.KEEP, // what to do if the depth test fails
-      gl.KEEP // what to do if both tests pass
-    );
-    gl.stencilFunc(
-      this._clipInvert ? gl.EQUAL : gl.NOTEQUAL, // the test
-      0, // reference value
-      0xff // mask
-    );
-    gl.enable(gl.DEPTH_TEST);
+    this._unapplyClip();
 
     // Mark the depth at which the clip has been applied so that we can clear it
     // when we pop past this depth
@@ -55360,84 +56217,11 @@ class RendererGL extends Renderer {
   }
 
   _clearClip() {
-    this.GL.clearStencil(1);
-    this.GL.clear(this.GL.STENCIL_BUFFER_BIT);
+    this._clearClipBuffer();
     if (this._clipDepths.length > 0) {
       this._clipDepths.pop();
     }
     this.drawTarget()._isClipApplied = false;
-  }
-
-  // x,y are canvas-relative (pre-scaled by _pixelDensity)
-  _getPixel(x, y) {
-    const gl = this.GL;
-    return readPixelWebGL(
-      gl,
-      null,
-      x,
-      y,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      this._pInst.height * this._pInst.pixelDensity()
-    );
-  }
-
-  /**
-   * Loads the pixels data for this canvas into the pixels[] attribute.
-   * Note that updatePixels() and set() do not work.
-   * Any pixel manipulation must be done directly to the pixels[] array.
-   *
-   * @private
-   */
-  loadPixels() {
-    //@todo_FES
-    if (this._pInst._glAttributes.preserveDrawingBuffer !== true) {
-      console.log(
-        'loadPixels only works in WebGL when preserveDrawingBuffer ' +
-          'is true.'
-      );
-      return;
-    }
-
-    const pd = this._pixelDensity;
-    const gl = this.GL;
-
-    this.pixels = readPixelsWebGL(
-      this.pixels,
-      gl,
-      null,
-      0,
-      0,
-      this.width * pd,
-      this.height * pd,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      this.height * pd
-    );
-  }
-
-  updatePixels() {
-    const fbo = this._getTempFramebuffer();
-    fbo.pixels = this.pixels;
-    fbo.updatePixels();
-    this.push();
-    this.resetMatrix();
-    this.clear();
-    this.states.setValue('imageMode', CORNER);
-    this.image(
-      fbo,
-      0,
-      0,
-      fbo.width,
-      fbo.height,
-      -fbo.width / 2,
-      -fbo.height / 2,
-      fbo.width,
-      fbo.height
-    );
-    this.pop();
-    this.GL.clearDepth(1);
-    this.GL.clear(this.GL.DEPTH_BUFFER_BIT);
   }
 
   /**
@@ -55448,11 +56232,11 @@ class RendererGL extends Renderer {
    */
   _getTempFramebuffer() {
     if (!this._tempFramebuffer) {
-      this._tempFramebuffer = new Framebuffer(this, {
+      this._tempFramebuffer = new Framebuffer$1(this, {
         format: UNSIGNED_BYTE,
         useDepth: this._pInst._glAttributes.depth,
         depthFormat: UNSIGNED_INT,
-        antialias: this._pInst._glAttributes.antialias
+        antialias: this._pInst._glAttributes.antialias,
       });
     }
     return this._tempFramebuffer;
@@ -55464,11 +56248,6 @@ class RendererGL extends Renderer {
 
   geometryInHash(gid) {
     return this.geometryBufferCache.isCached(gid);
-  }
-
-  viewport(w, h) {
-    this._viewport = [0, 0, w, h];
-    this.GL.viewport(0, 0, w, h);
   }
 
   /**
@@ -55484,7 +56263,7 @@ class RendererGL extends Renderer {
     const props = {};
     for (const key in this.drawingContext) {
       const val = this.drawingContext[key];
-      if (typeof val !== 'object' && typeof val !== 'function') {
+      if (typeof val !== "object" && typeof val !== "function") {
         props[key] = val;
       }
     }
@@ -55500,26 +56279,26 @@ class RendererGL extends Renderer {
     this.canvas.height = h * this._pixelDensity;
     this.canvas.style.width = `${w}px`;
     this.canvas.style.height = `${h}px`;
-    this._origViewport = {
-      width: this.GL.drawingBufferWidth,
-      height: this.GL.drawingBufferHeight
-    };
-    this.viewport(this._origViewport.width, this._origViewport.height);
+    this._updateViewport();
+    this._updateSize();
 
-    this.states.curCamera._resize();
+    this.mainCamera._resize();
+    if (this.states.curCamera !== this.mainCamera) {
+      this.states.curCamera._resize();
+    }
 
     //resize pixels buffer
-    if (typeof this.pixels !== 'undefined') {
-      this.pixels = new Uint8Array(
-        this.GL.drawingBufferWidth * this.GL.drawingBufferHeight * 4
-      );
+    if (typeof this.pixels !== "undefined") {
+      this._createPixelsArray();
     }
 
     for (const framebuffer of this.framebuffers) {
       // Notify framebuffers of the resize so that any auto-sized framebuffers
       // can also update their size
+      this.flushDraw?.();
       framebuffer._canvasSizeChanged();
     }
+    this.flushDraw?.();
 
     // reset canvas properties
     for (const savedKey in props) {
@@ -55531,52 +56310,8 @@ class RendererGL extends Renderer {
     }
   }
 
-  /**
-   * clears color and depth buffers
-   * with r,g,b,a
-   * @private
-   * @param {Number} r normalized red val.
-   * @param {Number} g normalized green val.
-   * @param {Number} b normalized blue val.
-   * @param {Number} a normalized alpha val.
-   */
-  clear(...args) {
-    const _r = args[0] || 0;
-    const _g = args[1] || 0;
-    const _b = args[2] || 0;
-    let _a = args[3] || 0;
-
-    const activeFramebuffer = this.activeFramebuffer();
-    if (
-      activeFramebuffer &&
-      activeFramebuffer.format === UNSIGNED_BYTE &&
-      !activeFramebuffer.antialias &&
-      _a === 0
-    ) {
-      // Drivers on Intel Macs check for 0,0,0,0 exactly when drawing to a
-      // framebuffer and ignore the command if it's the only drawing command to
-      // the framebuffer. To work around it, we can set the alpha to a value so
-      // low that it still rounds down to 0, but that circumvents the buggy
-      // check in the driver.
-      _a = 1e-10;
-    }
-
-    this.GL.clearColor(_r * _a, _g * _a, _b * _a, _a);
-    this.GL.clearDepth(1);
-    this.GL.clear(this.GL.COLOR_BUFFER_BIT | this.GL.DEPTH_BUFFER_BIT);
-  }
-
-  /**
-   * Resets all depth information so that nothing previously drawn will
-   * occlude anything subsequently drawn.
-   */
-  clearDepth(depth = 1) {
-    this.GL.clearDepth(depth);
-    this.GL.clear(this.GL.DEPTH_BUFFER_BIT);
-  }
-
   applyMatrix(a, b, c, d, e, f) {
-    this.states.setValue('uModelMatrix', this.states.uModelMatrix.clone());
+    this.states.setValue("uModelMatrix", this.states.uModelMatrix.clone());
     if (arguments.length === 16) {
       // this.states.uModelMatrix.apply(arguments);
       Matrix.prototype.apply.apply(this.states.uModelMatrix, arguments);
@@ -55597,7 +56332,7 @@ class RendererGL extends Renderer {
         e,
         f,
         0,
-        1
+        1,
       ]);
     }
   }
@@ -55617,7 +56352,7 @@ class RendererGL extends Renderer {
       y = x.y;
       x = x.x;
     }
-    this.states.setValue('uModelMatrix', this.states.uModelMatrix.clone());
+    this.states.setValue("uModelMatrix", this.states.uModelMatrix.clone());
     this.states.uModelMatrix.translate([x, y, z]);
     return this;
   }
@@ -55631,16 +56366,16 @@ class RendererGL extends Renderer {
    * @chainable
    */
   scale(x, y, z) {
-    this.states.setValue('uModelMatrix', this.states.uModelMatrix.clone());
+    this.states.setValue("uModelMatrix", this.states.uModelMatrix.clone());
     this.states.uModelMatrix.scale(x, y, z);
     return this;
   }
 
   rotate(rad, axis) {
-    if (typeof axis === 'undefined') {
+    if (typeof axis === "undefined") {
       return this.rotateZ(rad);
     }
-    this.states.setValue('uModelMatrix', this.states.uModelMatrix.clone());
+    this.states.setValue("uModelMatrix", this.states.uModelMatrix.clone());
     Matrix.prototype.rotate4x4.apply(this.states.uModelMatrix, arguments);
     return this;
   }
@@ -55666,34 +56401,15 @@ class RendererGL extends Renderer {
       this._pushPopDepth === this._clipDepths[this._clipDepths.length - 1]
     ) {
       this._clearClip();
-      if (!this._userEnabledStencil) {
-        this._internalDisable.call(this.GL, this.GL.STENCIL_TEST);
-      }
-
-    // Reset saved state
-    // this._userEnabledStencil = this._savedStencilTestState;
     }
     super.pop(...args);
     this._applyStencilTestIfClipping();
   }
-  _applyStencilTestIfClipping() {
-    const drawTarget = this.drawTarget();
-    if (drawTarget._isClipApplied !== this._stencilTestOn) {
-      if (drawTarget._isClipApplied) {
-        this._internalEnable.call(this.GL, this.GL.STENCIL_TEST);
-        this._stencilTestOn = true;
-      } else {
-        if (!this._userEnabledStencil) {
-          this._internalDisable.call(this.GL, this.GL.STENCIL_TEST);
-        }
-        this._stencilTestOn = false;
-      }
-    }
-  }
+
   resetMatrix() {
-    this.states.setValue('uModelMatrix', this.states.uModelMatrix.clone());
+    this.states.setValue("uModelMatrix", this.states.uModelMatrix.clone());
     this.states.uModelMatrix.reset();
-    this.states.setValue('uViewMatrix', this.states.uViewMatrix.clone());
+    this.states.setValue("uViewMatrix", this.states.uViewMatrix.clone());
     this.states.uViewMatrix.set(this.states.curCamera.cameraMatrix);
     return this;
   }
@@ -55702,12 +56418,6 @@ class RendererGL extends Renderer {
   // SHADER
   //////////////////////////////////////////////
 
-  /*
-   * shaders are created and cached on a per-renderer basis,
-   * on the grounds that each renderer will have its own gl context
-   * and the shader must be valid in that context.
-   */
-
   _getStrokeShader() {
     // select the stroke shader to use
     const stroke = this.states.userStrokeShader;
@@ -55715,19 +56425,6 @@ class RendererGL extends Renderer {
       return stroke;
     }
     return this._getLineShader();
-  }
-
-  _getSphereMapping(img) {
-    if (!this.sphereMapping) {
-      this.sphereMapping = this._pInst.createFilterShader(sphereMapping);
-    }
-    this.scratchMat3.inverseTranspose4x4(this.states.uViewMatrix);
-    this.scratchMat3.invert(this.scratchMat3); // uNMMatrix is 3x3
-    this.sphereMapping.setUniform('uFovY', this.states.curCamera.cameraFOV);
-    this.sphereMapping.setUniform('uAspect', this.states.curCamera.aspectRatio);
-    this.sphereMapping.setUniform('uNewNormalMatrix', this.scratchMat3.mat3);
-    this.sphereMapping.setUniform('uEnvMap', img);
-    return this.sphereMapping;
   }
 
   /*
@@ -55761,280 +56458,219 @@ class RendererGL extends Renderer {
     return this._getColorShader();
   }
 
-  _getPointShader() {
-    // select the point shader to use
-    const point = this.states.userPointShader;
-    if (!point || !point.isPointShader()) {
-      return this._getPointShader();
-    }
-    return point;
-  }
-
   baseMaterialShader() {
-    if (!this._pInst._glAttributes.perPixelLighting) {
-      throw new Error(
-        'The material shader does not support hooks without perPixelLighting. Try turning it back on.'
-      );
-    }
     return this._getLightShader();
-  }
-
-  _getLightShader() {
-    if (!this._defaultLightShader) {
-      if (this._pInst._glAttributes.perPixelLighting) {
-        this._defaultLightShader = new Shader(
-          this,
-          this._webGL2CompatibilityPrefix('vert', 'highp') +
-            defaultShaders.phongVert,
-          this._webGL2CompatibilityPrefix('frag', 'highp') +
-            defaultShaders.phongFrag,
-          {
-            vertex: {
-              'void beforeVertex': '() {}',
-              'Vertex getObjectInputs': '(Vertex inputs) { return inputs; }',
-              'Vertex getWorldInputs': '(Vertex inputs) { return inputs; }',
-              'Vertex getCameraInputs': '(Vertex inputs) { return inputs; }',
-              'void afterVertex': '() {}'
-            },
-            fragment: {
-              'void beforeFragment': '() {}',
-              'Inputs getPixelInputs': '(Inputs inputs) { return inputs; }',
-              'vec4 combineColors': `(ColorComponents components) {
-                vec4 color = vec4(0.);
-                color.rgb += components.diffuse * components.baseColor;
-                color.rgb += components.ambient * components.ambientColor;
-                color.rgb += components.specular * components.specularColor;
-                color.rgb += components.emissive;
-                color.a = components.opacity;
-                return color;
-              }`,
-              'vec4 getFinalColor': '(vec4 color) { return color; }',
-              'void afterFragment': '() {}'
-            }
-          }
-        );
-      } else {
-        this._defaultLightShader = new Shader(
-          this,
-          this._webGL2CompatibilityPrefix('vert', 'highp') +
-            defaultShaders.lightVert,
-          this._webGL2CompatibilityPrefix('frag', 'highp') +
-            defaultShaders.lightTextureFrag
-        );
-      }
-    }
-
-    return this._defaultLightShader;
   }
 
   baseNormalShader() {
     return this._getNormalShader();
   }
 
-  _getNormalShader() {
-    if (!this._defaultNormalShader) {
-      this._defaultNormalShader = new Shader(
-        this,
-        this._webGL2CompatibilityPrefix('vert', 'mediump') +
-          defaultShaders.normalVert,
-        this._webGL2CompatibilityPrefix('frag', 'mediump') +
-          defaultShaders.normalFrag,
-        {
-          vertex: {
-            'void beforeVertex': '() {}',
-            'Vertex getObjectInputs': '(Vertex inputs) { return inputs; }',
-            'Vertex getWorldInputs': '(Vertex inputs) { return inputs; }',
-            'Vertex getCameraInputs': '(Vertex inputs) { return inputs; }',
-            'void afterVertex': '() {}'
-          },
-          fragment: {
-            'void beforeFragment': '() {}',
-            'vec4 getFinalColor': '(vec4 color) { return color; }',
-            'void afterFragment': '() {}'
-          }
-        }
-      );
-    }
-
-    return this._defaultNormalShader;
-  }
-
   baseColorShader() {
     return this._getColorShader();
-  }
-
-  _getColorShader() {
-    if (!this._defaultColorShader) {
-      this._defaultColorShader = new Shader(
-        this,
-        this._webGL2CompatibilityPrefix('vert', 'mediump') +
-          defaultShaders.normalVert,
-        this._webGL2CompatibilityPrefix('frag', 'mediump') +
-          defaultShaders.basicFrag,
-        {
-          vertex: {
-            'void beforeVertex': '() {}',
-            'Vertex getObjectInputs': '(Vertex inputs) { return inputs; }',
-            'Vertex getWorldInputs': '(Vertex inputs) { return inputs; }',
-            'Vertex getCameraInputs': '(Vertex inputs) { return inputs; }',
-            'void afterVertex': '() {}'
-          },
-          fragment: {
-            'void beforeFragment': '() {}',
-            'vec4 getFinalColor': '(vec4 color) { return color; }',
-            'void afterFragment': '() {}'
-          }
-        }
-      );
-    }
-
-    return this._defaultColorShader;
-  }
-
-  /**
-   * TODO(dave): un-private this when there is a way to actually override the
-   * shader used for points
-   *
-   * Get the shader used when drawing points with <a href="#/p5/point">`point()`</a>.
-   *
-   * You can call <a href="#/p5.Shader/modify">`pointShader().modify()`</a>
-   * and change any of the following hooks:
-   * - `void beforeVertex`: Called at the start of the vertex shader.
-   * - `vec3 getLocalPosition`: Update the position of vertices before transforms are applied. It takes in `vec3 position` and must return a modified version.
-   * - `vec3 getWorldPosition`: Update the position of vertices after transforms are applied. It takes in `vec3 position` and pust return a modified version.
-   * - `float getPointSize`: Update the size of the point. It takes in `float size` and must return a modified version.
-   * - `void afterVertex`: Called at the end of the vertex shader.
-   * - `void beforeFragment`: Called at the start of the fragment shader.
-   * - `bool shouldDiscard`: Points are drawn inside a square, with the corners discarded in the fragment shader to create a circle. Use this to change this logic. It takes in a `bool willDiscard` and must return a modified version.
-   * - `vec4 getFinalColor`: Update the final color after mixing. It takes in a `vec4 color` and must return a modified version.
-   * - `void afterFragment`: Called at the end of the fragment shader.
-   *
-   * Call `pointShader().inspectHooks()` to see all the possible hooks and
-   * their default implementations.
-   *
-   * @returns {p5.Shader} The `point()` shader
-   * @private()
-   */
-  pointShader() {
-    return this._getPointShader();
-  }
-
-  _getPointShader() {
-    if (!this._defaultPointShader) {
-      this._defaultPointShader = new Shader(
-        this,
-        this._webGL2CompatibilityPrefix('vert', 'mediump') +
-          defaultShaders.pointVert,
-        this._webGL2CompatibilityPrefix('frag', 'mediump') +
-          defaultShaders.pointFrag,
-        {
-          vertex: {
-            'void beforeVertex': '() {}',
-            'vec3 getLocalPosition': '(vec3 position) { return position; }',
-            'vec3 getWorldPosition': '(vec3 position) { return position; }',
-            'float getPointSize': '(float size) { return size; }',
-            'void afterVertex': '() {}'
-          },
-          fragment: {
-            'void beforeFragment': '() {}',
-            'vec4 getFinalColor': '(vec4 color) { return color; }',
-            'bool shouldDiscard': '(bool outside) { return outside; }',
-            'void afterFragment': '() {}'
-          }
-        }
-      );
-    }
-    return this._defaultPointShader;
   }
 
   baseStrokeShader() {
     return this._getLineShader();
   }
 
-  _getLineShader() {
-    if (!this._defaultLineShader) {
-      this._defaultLineShader = new Shader(
-        this,
-        this._webGL2CompatibilityPrefix('vert', 'mediump') +
-          defaultShaders.lineVert,
-        this._webGL2CompatibilityPrefix('frag', 'mediump') +
-          defaultShaders.lineFrag,
-        {
-          vertex: {
-            'void beforeVertex': '() {}',
-            'StrokeVertex getObjectInputs':
-              '(StrokeVertex inputs) { return inputs; }',
-            'StrokeVertex getWorldInputs':
-              '(StrokeVertex inputs) { return inputs; }',
-            'StrokeVertex getCameraInputs':
-              '(StrokeVertex inputs) { return inputs; }',
-            'void afterVertex': '() {}'
-          },
-          fragment: {
-            'void beforeFragment': '() {}',
-            'Inputs getPixelInputs': '(Inputs inputs) { return inputs; }',
-            'vec4 getFinalColor': '(vec4 color) { return color; }',
-            'bool shouldDiscard': '(bool outside) { return outside; }',
-            'void afterFragment': '() {}'
-          }
-        }
+  /**
+   * @private
+   * @returns {p5.Framebuffer|null} The currently active framebuffer, or null if
+   * the main canvas is the current draw target.
+   */
+  activeFramebuffer() {
+    return this.activeFramebuffers[this.activeFramebuffers.length - 1] || null;
+  }
+
+  createFramebuffer(options) {
+    return new Framebuffer$1(this, options);
+  }
+
+  _setGlobalUniforms(shader) {
+    const modelMatrix = this.states.uModelMatrix;
+    const viewMatrix = this.states.uViewMatrix;
+    const projectionMatrix = this.states.uPMatrix;
+    const modelViewMatrix = modelMatrix.copy().mult(viewMatrix);
+
+    shader.setUniform(
+      "uPerspective",
+      this.states.curCamera.useLinePerspective ? 1 : 0
+    );
+    shader.setUniform("uViewMatrix", viewMatrix.mat4);
+    shader.setUniform("uProjectionMatrix", projectionMatrix.mat4);
+    shader.setUniform("uModelMatrix", modelMatrix.mat4);
+    shader.setUniform("uModelViewMatrix", modelViewMatrix.mat4);
+    if (shader.uniforms.uModelViewProjectionMatrix) {
+      const modelViewProjectionMatrix = modelViewMatrix.copy();
+      modelViewProjectionMatrix.mult(projectionMatrix);
+      shader.setUniform(
+        "uModelViewProjectionMatrix",
+        modelViewProjectionMatrix.mat4
+      );
+    }
+    if (shader.uniforms.uNormalMatrix) {
+      this.scratchMat3.inverseTranspose4x4(modelViewMatrix);
+      shader.setUniform("uNormalMatrix", this.scratchMat3.mat3);
+    }
+    if (shader.uniforms.uModelNormalMatrix) {
+      this.scratchMat3.inverseTranspose4x4(this.states.uModelMatrix);
+      shader.setUniform("uModelNormalMatrix", this.scratchMat3.mat3);
+    }
+    if (shader.uniforms.uCameraNormalMatrix) {
+      this.scratchMat3.inverseTranspose4x4(this.states.uViewMatrix);
+      shader.setUniform("uCameraNormalMatrix", this.scratchMat3.mat3);
+    }
+    if (shader.uniforms.uCameraRotation) {
+      this.scratchMat3.inverseTranspose4x4(this.states.uViewMatrix);
+      shader.setUniform("uCameraRotation", this.scratchMat3.mat3);
+    }
+    shader.setUniform("uViewport", this._viewport);
+  }
+
+  _setStrokeUniforms(strokeShader) {
+    // set the uniform values
+    strokeShader.setUniform("uSimpleLines", this._simpleLines);
+    strokeShader.setUniform("uUseLineColor", this._useLineColor);
+    strokeShader.setUniform("uMaterialColor", this.states.curStrokeColor);
+    strokeShader.setUniform("uStrokeWeight", this.states.strokeWeight);
+    strokeShader.setUniform("uStrokeCap", STROKE_CAP_ENUM[this.curStrokeCap]);
+    strokeShader.setUniform(
+      "uStrokeJoin",
+      STROKE_JOIN_ENUM[this.curStrokeJoin]
+    );
+  }
+
+  _setFillUniforms(fillShader) {
+    this.mixedSpecularColor = [...this.states.curSpecularColor];
+    const empty = this._getEmptyTexture();
+
+    if (this.states._useMetalness > 0) {
+      this.mixedSpecularColor = this.mixedSpecularColor.map(
+        (mixedSpecularColor, index) =>
+          this.states.curFillColor[index] * this.states._useMetalness +
+          mixedSpecularColor * (1 - this.states._useMetalness)
       );
     }
 
-    return this._defaultLineShader;
-  }
+    // TODO: optimize
+    fillShader.setUniform("uUseVertexColor", this._useVertexColor);
+    fillShader.setUniform("uMaterialColor", this.states.curFillColor);
+    fillShader.setUniform("isTexture", !!this.states._tex);
+    // We need to explicitly set uSampler back to an empty texture here.
+    // In general, we record the last set texture so we can re-apply it
+    // the next time a shader is used. However, the texture() function
+    // works differently and is global p5 state. If the p5 state has
+    // been cleared, we also need to clear the value in uSampler to match.
+    fillShader.setUniform("uSampler", this.states._tex || empty);
+    fillShader.setUniform("uTint", this.states.tint);
 
-  _getFontShader() {
-    if (!this._defaultFontShader) {
-      if (this.webglVersion === WEBGL) {
-        this.GL.getExtension('OES_standard_derivatives');
+    fillShader.setUniform("uHasSetAmbient", this.states._hasSetAmbient);
+    fillShader.setUniform("uAmbientMatColor", this.states.curAmbientColor);
+    fillShader.setUniform("uSpecularMatColor", this.mixedSpecularColor);
+    fillShader.setUniform("uEmissiveMatColor", this.states.curEmissiveColor);
+    fillShader.setUniform("uSpecular", this.states._useSpecularMaterial);
+    fillShader.setUniform("uEmissive", this.states._useEmissiveMaterial);
+    fillShader.setUniform("uShininess", this.states._useShininess);
+    fillShader.setUniform("uMetallic", this.states._useMetalness);
+
+    this._setImageLightUniforms(fillShader);
+
+    fillShader.setUniform("uUseLighting", this.states.enableLighting);
+
+    const pointLightCount = this.states.pointLightDiffuseColors.length / 3;
+    fillShader.setUniform("uPointLightCount", pointLightCount);
+    fillShader.setUniform(
+      "uPointLightLocation",
+      this.states.pointLightPositions
+    );
+    fillShader.setUniform(
+      "uPointLightDiffuseColors",
+      this.states.pointLightDiffuseColors
+    );
+    fillShader.setUniform(
+      "uPointLightSpecularColors",
+      this.states.pointLightSpecularColors
+    );
+
+    const directionalLightCount =
+      this.states.directionalLightDiffuseColors.length / 3;
+    fillShader.setUniform("uDirectionalLightCount", directionalLightCount);
+    fillShader.setUniform(
+      "uLightingDirection",
+      this.states.directionalLightDirections
+    );
+    fillShader.setUniform(
+      "uDirectionalDiffuseColors",
+      this.states.directionalLightDiffuseColors
+    );
+    fillShader.setUniform(
+      "uDirectionalSpecularColors",
+      this.states.directionalLightSpecularColors
+    );
+
+    // TODO: sum these here...
+    let mixedAmbientLight = [0, 0, 0];
+    for (let i = 0; i < this.states.ambientLightColors.length; i += 3) {
+      for (let off = 0; off < 3; off++) {
+        if (this.states._useMetalness > 0) {
+          mixedAmbientLight[off] += Math.max(
+            0,
+            this.states.ambientLightColors[i + off] - this.states._useMetalness
+          );
+        } else {
+          mixedAmbientLight[off] += this.states.ambientLightColors[i + off];
+        }
       }
-      this._defaultFontShader = new Shader(
-        this,
-        this._webGL2CompatibilityPrefix('vert', 'highp') +
-          defaultShaders.fontVert,
-        this._webGL2CompatibilityPrefix('frag', 'highp') +
-          defaultShaders.fontFrag
-      );
     }
-    return this._defaultFontShader;
+    fillShader.setUniform("uAmbientColor", mixedAmbientLight);
+
+    const spotLightCount = this.states.spotLightDiffuseColors.length / 3;
+    fillShader.setUniform("uSpotLightCount", spotLightCount);
+    fillShader.setUniform("uSpotLightAngle", this.states.spotLightAngle);
+    fillShader.setUniform("uSpotLightConc", this.states.spotLightConc);
+    fillShader.setUniform(
+      "uSpotLightDiffuseColors",
+      this.states.spotLightDiffuseColors
+    );
+    fillShader.setUniform(
+      "uSpotLightSpecularColors",
+      this.states.spotLightSpecularColors
+    );
+    fillShader.setUniform("uSpotLightLocation", this.states.spotLightPositions);
+    fillShader.setUniform(
+      "uSpotLightDirection",
+      this.states.spotLightDirections
+    );
+
+    fillShader.setUniform(
+      "uConstantAttenuation",
+      this.states.constantAttenuation
+    );
+    fillShader.setUniform("uLinearAttenuation", this.states.linearAttenuation);
+    fillShader.setUniform(
+      "uQuadraticAttenuation",
+      this.states.quadraticAttenuation
+    );
   }
 
-  baseFilterShader() {
-    if (!this._baseFilterShader) {
-      this._baseFilterShader = new Shader(
-        this,
-        this._webGL2CompatibilityPrefix('vert', 'highp') +
-          defaultShaders.filterBaseVert,
-        this._webGL2CompatibilityPrefix('frag', 'highp') +
-          defaultShaders.filterBaseFrag,
-        {
-          vertex: {},
-          fragment: {
-            'vec4 getColor': `(FilterInputs inputs, in sampler2D canvasContent) {
-                return getTexture(canvasContent, inputs.texCoord);
-              }`
-          }
-        }
-      );
-    }
-    return this._baseFilterShader;
-  }
+  // getting called from _setFillUniforms
+  _setImageLightUniforms(shader) {
+    //set uniform values
+    shader.setUniform("uUseImageLight", this.states.activeImageLight != null);
+    // true
+    if (this.states.activeImageLight) {
+      // this.states.activeImageLight has image as a key
+      // look up the texture from the diffusedTexture map
+      let diffusedLight = this.getDiffusedTexture(this.states.activeImageLight);
+      shader.setUniform("environmentMapDiffused", diffusedLight);
+      let specularLight = this.getSpecularTexture(this.states.activeImageLight);
 
-  _webGL2CompatibilityPrefix(shaderType, floatPrecision) {
-    let code = '';
-    if (this.webglVersion === WEBGL2) {
-      code += '#version 300 es\n#define WEBGL2\n';
+      shader.setUniform("environmentMapSpecular", specularLight);
+    } else {
+      shader.setUniform("environmentMapDiffused", this._getEmptyTexture());
+      shader.setUniform("environmentMapSpecular", this._getEmptyTexture());
     }
-    if (shaderType === 'vert') {
-      code += '#define VERTEX_SHADER\n';
-    } else if (shaderType === 'frag') {
-      code += '#define FRAGMENT_SHADER\n';
-    }
-    if (floatPrecision) {
-      code += `precision ${floatPrecision} float;\n`;
-    }
-    return code;
   }
 
   /**
@@ -56055,7 +56691,7 @@ class RendererGL extends Renderer {
 
   getTexture(input) {
     let src = input;
-    if (src instanceof Framebuffer) {
+    if (src instanceof Framebuffer$1) {
       src = src.color;
     }
 
@@ -56068,326 +56704,20 @@ class RendererGL extends Renderer {
     this.textures.set(src, tex);
     return tex;
   }
-  /*
-   *  used in imageLight,
-   *  To create a blurry image from the input non blurry img, if it doesn't already exist
-   *  Add it to the diffusedTexture map,
-   *  Returns the blurry image
-   *  maps a Image used by imageLight() to a p5.Framebuffer
-   */
-  getDiffusedTexture(input) {
-    // if one already exists for a given input image
-    if (this.diffusedTextures.get(input) != null) {
-      return this.diffusedTextures.get(input);
+
+  //////////////////////////////////////////////
+  // Buffers
+  //////////////////////////////////////////////
+
+  _normalizeBufferData(values, type = Float32Array) {
+    if (!values) return null;
+    if (values instanceof DataArray) {
+      return values.dataArray();
     }
-    // if not, only then create one
-    let newFramebuffer;
-    // hardcoded to 200px, because it's going to be blurry and smooth
-    let smallWidth = 200;
-    let width = smallWidth;
-    let height = Math.floor(smallWidth * (input.height / input.width));
-    newFramebuffer = new Framebuffer(this, {
-      width,
-      height,
-      density: 1
-    });
-    // create framebuffer is like making a new sketch, all functions on main
-    // sketch it would be available on framebuffer
-    if (!this.diffusedShader) {
-      this.diffusedShader = this._pInst.createShader(
-        defaultShaders.imageLightVert,
-        defaultShaders.imageLightDiffusedFrag
-      );
+    if (values instanceof type) {
+      return values;
     }
-    newFramebuffer.draw(() => {
-      this.shader(this.diffusedShader);
-      this.diffusedShader.setUniform('environmentMap', input);
-      this.states.setValue('strokeColor', null);
-      this.noLights();
-      this.plane(width, height);
-    });
-    this.diffusedTextures.set(input, newFramebuffer);
-    return newFramebuffer;
-  }
-
-  /*
-   *  used in imageLight,
-   *  To create a texture from the input non blurry image, if it doesn't already exist
-   *  Creating 8 different levels of textures according to different
-   *  sizes and atoring them in `levels` array
-   *  Creating a new Mipmap texture with that `levels` array
-   *  Storing the texture for input image in map called `specularTextures`
-   *  maps the input Image to a p5.MipmapTexture
-   */
-  getSpecularTexture(input) {
-    // check if already exits (there are tex of diff resolution so which one to check)
-    // currently doing the whole array
-    if (this.specularTextures.get(input) != null) {
-      return this.specularTextures.get(input);
-    }
-    // Hardcoded size
-    const size = 512;
-    let tex;
-    const levels = [];
-    const framebuffer = new Framebuffer(this, {
-      width: size,
-      height: size,
-      density: 1
-    });
-    let count = Math.log(size) / Math.log(2);
-    if (!this.specularShader) {
-      this.specularShader = this._pInst.createShader(
-        defaultShaders.imageLightVert,
-        defaultShaders.imageLightSpecularFrag
-      );
-    }
-    // currently only 8 levels
-    // This loop calculates 8 framebuffers of varying size of canvas
-    // and corresponding different roughness levels.
-    // Roughness increases with the decrease in canvas size,
-    // because rougher surfaces have less detailed/more blurry reflections.
-    for (let w = size; w >= 1; w /= 2) {
-      framebuffer.resize(w, w);
-      let currCount = Math.log(w) / Math.log(2);
-      let roughness = 1 - currCount / count;
-      framebuffer.draw(() => {
-        this.shader(this.specularShader);
-        this.clear();
-        this.specularShader.setUniform('environmentMap', input);
-        this.specularShader.setUniform('roughness', roughness);
-        this.states.setValue('strokeColor', null);
-        this.noLights();
-        this.plane(w, w);
-      });
-      levels.push(framebuffer.get().drawingContext.getImageData(0, 0, w, w));
-    }
-    // Free the Framebuffer
-    framebuffer.remove();
-    tex = new MipmapTexture(this, levels, {});
-    this.specularTextures.set(input, tex);
-    return tex;
-  }
-
-  /**
-   * @private
-   * @returns {p5.Framebuffer|null} The currently active framebuffer, or null if
-   * the main canvas is the current draw target.
-   */
-  activeFramebuffer() {
-    return this.activeFramebuffers[this.activeFramebuffers.length - 1] || null;
-  }
-
-  createFramebuffer(options) {
-    return new Framebuffer(this, options);
-  }
-
-  _setGlobalUniforms(shader) {
-    const modelMatrix = this.states.uModelMatrix;
-    const viewMatrix = this.states.uViewMatrix;
-    const projectionMatrix = this.states.uPMatrix;
-    const modelViewMatrix = modelMatrix.copy().mult(viewMatrix);
-
-    shader.setUniform(
-      'uPerspective',
-      this.states.curCamera.useLinePerspective ? 1 : 0
-    );
-    shader.setUniform('uViewMatrix', viewMatrix.mat4);
-    shader.setUniform('uProjectionMatrix', projectionMatrix.mat4);
-    shader.setUniform('uModelMatrix', modelMatrix.mat4);
-    shader.setUniform('uModelViewMatrix', modelViewMatrix.mat4);
-    if (shader.uniforms.uModelViewProjectionMatrix) {
-      const modelViewProjectionMatrix = modelViewMatrix.copy();
-      modelViewProjectionMatrix.mult(projectionMatrix);
-      shader.setUniform(
-        'uModelViewProjectionMatrix',
-        modelViewProjectionMatrix.mat4
-      );
-    }
-    if (shader.uniforms.uNormalMatrix) {
-      this.scratchMat3.inverseTranspose4x4(modelViewMatrix);
-      shader.setUniform('uNormalMatrix', this.scratchMat3.mat3);
-    }
-    if (shader.uniforms.uModelNormalMatrix) {
-      this.scratchMat3.inverseTranspose4x4(this.states.uModelMatrix);
-      shader.setUniform('uModelNormalMatrix', this.scratchMat3.mat3);
-    }
-    if (shader.uniforms.uCameraNormalMatrix) {
-      this.scratchMat3.inverseTranspose4x4(this.states.uViewMatrix);
-      shader.setUniform('uCameraNormalMatrix', this.scratchMat3.mat3);
-    }
-    if (shader.uniforms.uCameraRotation) {
-      this.scratchMat3.inverseTranspose4x4(this.states.uViewMatrix);
-      shader.setUniform('uCameraRotation', this.scratchMat3.mat3);
-    }
-    shader.setUniform('uViewport', this._viewport);
-  }
-
-  _setStrokeUniforms(strokeShader) {
-    // set the uniform values
-    strokeShader.setUniform('uSimpleLines', this._simpleLines);
-    strokeShader.setUniform('uUseLineColor', this._useLineColor);
-    strokeShader.setUniform('uMaterialColor', this.states.curStrokeColor);
-    strokeShader.setUniform('uStrokeWeight', this.states.strokeWeight);
-    strokeShader.setUniform('uStrokeCap', STROKE_CAP_ENUM[this.curStrokeCap]);
-    strokeShader.setUniform(
-      'uStrokeJoin',
-      STROKE_JOIN_ENUM[this.curStrokeJoin]
-    );
-  }
-
-  _setFillUniforms(fillShader) {
-    this.mixedSpecularColor = [...this.states.curSpecularColor];
-    const empty = this._getEmptyTexture();
-
-    if (this.states._useMetalness > 0) {
-      this.mixedSpecularColor = this.mixedSpecularColor.map(
-        (mixedSpecularColor, index) =>
-          this.states.curFillColor[index] * this.states._useMetalness +
-          mixedSpecularColor * (1 - this.states._useMetalness)
-      );
-    }
-
-    // TODO: optimize
-    fillShader.setUniform('uUseVertexColor', this._useVertexColor);
-    fillShader.setUniform('uMaterialColor', this.states.curFillColor);
-    fillShader.setUniform('isTexture', !!this.states._tex);
-    // We need to explicitly set uSampler back to an empty texture here.
-    // In general, we record the last set texture so we can re-apply it
-    // the next time a shader is used. However, the texture() function
-    // works differently and is global p5 state. If the p5 state has
-    // been cleared, we also need to clear the value in uSampler to match.
-    fillShader.setUniform('uSampler', this.states._tex || empty);
-    fillShader.setUniform('uTint', this.states.tint);
-
-    fillShader.setUniform('uHasSetAmbient', this.states._hasSetAmbient);
-    fillShader.setUniform('uAmbientMatColor', this.states.curAmbientColor);
-    fillShader.setUniform('uSpecularMatColor', this.mixedSpecularColor);
-    fillShader.setUniform('uEmissiveMatColor', this.states.curEmissiveColor);
-    fillShader.setUniform('uSpecular', this.states._useSpecularMaterial);
-    fillShader.setUniform('uEmissive', this.states._useEmissiveMaterial);
-    fillShader.setUniform('uShininess', this.states._useShininess);
-    fillShader.setUniform('uMetallic', this.states._useMetalness);
-
-    this._setImageLightUniforms(fillShader);
-
-    fillShader.setUniform('uUseLighting', this.states.enableLighting);
-
-    const pointLightCount = this.states.pointLightDiffuseColors.length / 3;
-    fillShader.setUniform('uPointLightCount', pointLightCount);
-    fillShader.setUniform(
-      'uPointLightLocation',
-      this.states.pointLightPositions
-    );
-    fillShader.setUniform(
-      'uPointLightDiffuseColors',
-      this.states.pointLightDiffuseColors
-    );
-    fillShader.setUniform(
-      'uPointLightSpecularColors',
-      this.states.pointLightSpecularColors
-    );
-
-    const directionalLightCount =
-      this.states.directionalLightDiffuseColors.length / 3;
-    fillShader.setUniform('uDirectionalLightCount', directionalLightCount);
-    fillShader.setUniform(
-      'uLightingDirection',
-      this.states.directionalLightDirections
-    );
-    fillShader.setUniform(
-      'uDirectionalDiffuseColors',
-      this.states.directionalLightDiffuseColors
-    );
-    fillShader.setUniform(
-      'uDirectionalSpecularColors',
-      this.states.directionalLightSpecularColors
-    );
-
-    // TODO: sum these here...
-    const ambientLightCount = this.states.ambientLightColors.length / 3;
-    this.mixedAmbientLight = [...this.states.ambientLightColors];
-
-    if (this.states._useMetalness > 0) {
-      this.mixedAmbientLight = this.mixedAmbientLight.map(ambientColors => {
-        let mixing = ambientColors - this.states._useMetalness;
-        return Math.max(0, mixing);
-      });
-    }
-    fillShader.setUniform('uAmbientLightCount', ambientLightCount);
-    fillShader.setUniform('uAmbientColor', this.mixedAmbientLight);
-
-    const spotLightCount = this.states.spotLightDiffuseColors.length / 3;
-    fillShader.setUniform('uSpotLightCount', spotLightCount);
-    fillShader.setUniform('uSpotLightAngle', this.states.spotLightAngle);
-    fillShader.setUniform('uSpotLightConc', this.states.spotLightConc);
-    fillShader.setUniform(
-      'uSpotLightDiffuseColors',
-      this.states.spotLightDiffuseColors
-    );
-    fillShader.setUniform(
-      'uSpotLightSpecularColors',
-      this.states.spotLightSpecularColors
-    );
-    fillShader.setUniform('uSpotLightLocation', this.states.spotLightPositions);
-    fillShader.setUniform(
-      'uSpotLightDirection',
-      this.states.spotLightDirections
-    );
-
-    fillShader.setUniform(
-      'uConstantAttenuation',
-      this.states.constantAttenuation
-    );
-    fillShader.setUniform('uLinearAttenuation', this.states.linearAttenuation);
-    fillShader.setUniform(
-      'uQuadraticAttenuation',
-      this.states.quadraticAttenuation
-    );
-  }
-
-  // getting called from _setFillUniforms
-  _setImageLightUniforms(shader) {
-    //set uniform values
-    shader.setUniform('uUseImageLight', this.states.activeImageLight != null);
-    // true
-    if (this.states.activeImageLight) {
-      // this.states.activeImageLight has image as a key
-      // look up the texture from the diffusedTexture map
-      let diffusedLight = this.getDiffusedTexture(this.states.activeImageLight);
-      shader.setUniform('environmentMapDiffused', diffusedLight);
-      let specularLight = this.getSpecularTexture(this.states.activeImageLight);
-
-      shader.setUniform('environmentMapSpecular', specularLight);
-    }
-  }
-
-  _setPointUniforms(pointShader) {
-    // set the uniform values
-    pointShader.setUniform('uMaterialColor', this.states.curStrokeColor);
-    // @todo is there an instance where this isn't stroke weight?
-    // should be they be same var?
-    pointShader.setUniform(
-      'uPointSize',
-      this.states.strokeWeight * this._pixelDensity
-    );
-  }
-
-  /* Binds a buffer to the drawing context
-   * when passed more than two arguments it also updates or initializes
-   * the data associated with the buffer
-   */
-  _bindBuffer(buffer, target, values, type, usage) {
-    if (!target) target = this.GL.ARRAY_BUFFER;
-    this.GL.bindBuffer(target, buffer);
-    if (values !== undefined) {
-      let data = values;
-      if (values instanceof DataArray) {
-        data = values.dataArray();
-      } else if (!(data instanceof (type || Float32Array))) {
-        data = new (type || Float32Array)(data);
-      }
-      this.GL.bufferData(target, data, usage || this.GL.STATIC_DRAW);
-    }
+    return new type(values);
   }
 
   ///////////////////////////////
@@ -56405,8 +56735,8 @@ class RendererGL extends Renderer {
       Float64Array,
       Int16Array,
       Uint16Array,
-      Uint32Array
-    ].some(x => arr instanceof x);
+      Uint32Array,
+    ].some((x) => arr instanceof x);
   }
 
   /**
@@ -56418,330 +56748,326 @@ class RendererGL extends Renderer {
    * [1, 2, 3, 4, 5, 6]
    */
   _vToNArray(arr) {
-    return arr.flatMap(item => [item.x, item.y, item.z]);
+    return arr.flatMap((item) => [item.x, item.y, item.z]);
   }
-}
 
-function rendererGL(p5, fn) {
-  p5.RendererGL = RendererGL;
+  ///////////////////////////////
+  //// TEXT SUPPORT METHODS
+  //////////////////////////////
 
-  /**
-   * @module Rendering
-   * @submodule Rendering
-   * @for p5
-   */
-  /**
-   * Set attributes for the WebGL Drawing context.
-   * This is a way of adjusting how the WebGL
-   * renderer works to fine-tune the display and performance.
-   *
-   * Note that this will reinitialize the drawing context
-   * if called after the WebGL canvas is made.
-   *
-   * If an object is passed as the parameter, all attributes
-   * not declared in the object will be set to defaults.
-   *
-   * The available attributes are:
-   * <br>
-   * alpha - indicates if the canvas contains an alpha buffer
-   * default is true
-   *
-   * depth - indicates whether the drawing buffer has a depth buffer
-   * of at least 16 bits - default is true
-   *
-   * stencil - indicates whether the drawing buffer has a stencil buffer
-   * of at least 8 bits
-   *
-   * antialias - indicates whether or not to perform anti-aliasing
-   * default is false (true in Safari)
-   *
-   * premultipliedAlpha - indicates that the page compositor will assume
-   * the drawing buffer contains colors with pre-multiplied alpha
-   * default is true
-   *
-   * preserveDrawingBuffer - if true the buffers will not be cleared and
-   * and will preserve their values until cleared or overwritten by author
-   * (note that p5 clears automatically on draw loop)
-   * default is true
-   *
-   * perPixelLighting - if true, per-pixel lighting will be used in the
-   * lighting shader otherwise per-vertex lighting is used.
-   * default is true.
-   *
-   * version - either 1 or 2, to specify which WebGL version to ask for. By
-   * default, WebGL 2 will be requested. If WebGL2 is not available, it will
-   * fall back to WebGL 1. You can check what version is used with by looking at
-   * the global `webglVersion` property.
-   *
-   * @method setAttributes
-   * @for p5
-   * @param  {String}  key Name of attribute
-   * @param  {Boolean}        value New value of named attribute
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100, WEBGL);
-   * }
-   *
-   * function draw() {
-   *   background(255);
-   *   push();
-   *   rotateZ(frameCount * 0.02);
-   *   rotateX(frameCount * 0.02);
-   *   rotateY(frameCount * 0.02);
-   *   fill(0, 0, 0);
-   *   box(50);
-   *   pop();
-   * }
-   * </code>
-   * </div>
-   *
-   * <div>
-   * <code>
-   *  // Now with the antialias attribute set to true.
-   * function setup() {
-   *   setAttributes('antialias', true);
-   *   createCanvas(100, 100, WEBGL);
-   * }
-   *
-   * function draw() {
-   *   background(255);
-   *   push();
-   *   rotateZ(frameCount * 0.02);
-   *   rotateX(frameCount * 0.02);
-   *   rotateY(frameCount * 0.02);
-   *   fill(0, 0, 0);
-   *   box(50);
-   *   pop();
-   * }
-   * </code>
-   * </div>
-   *
-   * <div>
-   * <code>
-   * // press the mouse button to disable perPixelLighting
-   * function setup() {
-   *   createCanvas(100, 100, WEBGL);
-   *   noStroke();
-   *   fill(255);
-   * }
-   *
-   * let lights = [
-   *   { c: '#f00', t: 1.12, p: 1.91, r: 0.2 },
-   *   { c: '#0f0', t: 1.21, p: 1.31, r: 0.2 },
-   *   { c: '#00f', t: 1.37, p: 1.57, r: 0.2 },
-   *   { c: '#ff0', t: 1.12, p: 1.91, r: 0.7 },
-   *   { c: '#0ff', t: 1.21, p: 1.31, r: 0.7 },
-   *   { c: '#f0f', t: 1.37, p: 1.57, r: 0.7 }
-   * ];
-   *
-   * function draw() {
-   *   let t = millis() / 1000 + 1000;
-   *   background(0);
-   *   directionalLight(color('#222'), 1, 1, 1);
-   *
-   *   for (let i = 0; i < lights.length; i++) {
-   *     let light = lights[i];
-   *     pointLight(
-   *       color(light.c),
-   *       p5.Vector.fromAngles(t * light.t, t * light.p, width * light.r)
-   *     );
-   *   }
-   *
-   *   specularMaterial(255);
-   *   sphere(width * 0.1);
-   *
-   *   rotateX(t * 0.77);
-   *   rotateY(t * 0.83);
-   *   rotateZ(t * 0.91);
-   *   torus(width * 0.3, width * 0.07, 24, 10);
-   * }
-   *
-   * function mousePressed() {
-   *   setAttributes('perPixelLighting', false);
-   *   noStroke();
-   *   fill(255);
-   * }
-   * function mouseReleased() {
-   *   setAttributes('perPixelLighting', true);
-   *   noStroke();
-   *   fill(255);
-   * }
-   * </code>
-   * </div>
-   *
-   * @alt a rotating cube with smoother edges
-   */
-  /**
-   * @method setAttributes
-   * @for p5
-   * @param  {Object}  obj object with key-value pairs
-   */
-  fn.setAttributes = function (key, value) {
-    if (typeof this._glAttributes === 'undefined') {
-      console.log(
-        'You are trying to use setAttributes on a p5.Graphics object ' +
-          'that does not use a WEBGL renderer.'
-      );
-      return;
+  _beforeDrawText() {}
+  _afterDrawText() {}
+
+  textCanvas() {
+    if (!this._textCanvas) {
+      this._textCanvas = document.createElement('canvas');
+      this._textCanvas.width = 1;
+      this._textCanvas.height = 1;
+      this._textCanvas.style.display = 'none';
+      // Has to be added to the DOM for measureText to work properly!
+      this.canvas.parentElement.insertBefore(this._textCanvas, this.canvas);
     }
-    let unchanged = true;
-    if (typeof value !== 'undefined') {
-      //first time modifying the attributes
-      if (this._glAttributes === null) {
-        this._glAttributes = {};
-      }
-      if (this._glAttributes[key] !== value) {
-        //changing value of previously altered attribute
-        this._glAttributes[key] = value;
-        unchanged = false;
-      }
-      //setting all attributes with some change
-    } else if (key instanceof Object) {
-      if (this._glAttributes !== key) {
-        this._glAttributes = key;
-        unchanged = false;
-      }
+    return this._textCanvas;
+  }
+
+  textDrawingContext() {
+    if (!this._textDrawingContext) {
+      const textCanvas = this.textCanvas();
+      this._textDrawingContext = textCanvas.getContext('2d');
     }
-    //@todo_FES
-    if (!this._renderer.isP3D || unchanged) {
-      return;
+    return this._textDrawingContext;
+  }
+
+  _positionLines(x, y, width, height, lines) {
+    let { textLeading, textAlign } = this.states;
+    const widths = lines.map(line => this._fontWidthSingle(line));
+    let adjustedX, lineData = new Array(lines.length);
+    let adjustedW = typeof width === 'undefined' ? Math.max(0, ...widths) : width;
+    let adjustedH = typeof height === 'undefined' ? 0 : height;
+
+    for (let i = 0; i < lines.length; i++) {
+      switch (textAlign) {
+        case textCoreConstants.START:
+          throw new Error('textBounds: START not yet supported for textAlign'); // default to LEFT
+        case LEFT:
+          adjustedX = x;
+          break;
+        case CENTER:
+          adjustedX = x +
+            (adjustedW - widths[i]) / 2 -
+            adjustedW / 2 +
+            (width || 0) / 2;
+          break;
+        case RIGHT:
+          adjustedX = x + adjustedW - widths[i] - adjustedW + (width || 0);
+          break;
+        case textCoreConstants.END:
+          throw new Error('textBounds: END not yet supported for textAlign');
+        default:
+          adjustedX = x;
+          break;
+      }
+      lineData[i] = { text: lines[i], x: adjustedX, y: y + i * textLeading };
     }
 
-    if (!this._setupDone) {
-      if (this._renderer.geometryBufferCache.numCached() > 0) {
-        p5._friendlyError(
-          'Sorry, Could not set the attributes, you need to call setAttributes() ' +
-            'before calling the other drawing methods in setup()'
+    return this._yAlignOffset(lineData, adjustedH);
+  }
+
+  _verticalAlignFont = function() {
+    const ctx = this.textDrawingContext();
+    const metrics = ctx.measureText('X');
+    return -metrics.alphabeticBaseline ||
+      (-metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent);
+  }
+
+  _yAlignOffset(dataArr, height) {
+    if (typeof height === 'undefined') {
+      throw Error('_yAlignOffset: height is required');
+    }
+
+    let { textLeading, textBaseline, textSize} = this.states;
+    let yOff = 0, numLines = dataArr.length;
+    let totalHeight = textSize * numLines +
+      ((textLeading - textSize) * (numLines - 1));
+    switch (textBaseline) { // drawingContext ?
+      case TOP:
+        yOff = this._verticalAlignFont();
+        break;
+      case BASELINE:
+        break;
+      case textCoreConstants._CTX_MIDDLE:
+        yOff = (-totalHeight + textSize + (height || 0)) / 2 + this._verticalAlignFont() + this._middleAlignOffset();
+        break;
+      case BOTTOM:
+        yOff = -(totalHeight - textSize) + (height || 0);
+        break;
+      default:
+        console.warn(`${textBaseline} is not supported in WebGL mode.`); // FES?
+        break;
+    }
+    dataArr.forEach(ele => ele.y += yOff);
+    return dataArr;
+  }
+
+  _makeFilterShader(renderer, operation) {
+    const p5 = this._pInst;
+
+    return makeFilterShader(this, operation, p5);
+  }
+
+  /*
+   * As part of imageLight(): we need to create a texture representing
+   * the diffused light hitting an object from each angle. This will
+   * accumulate light from angles in a hemisphere, weighted according to
+   * how head-on the light angle is.
+   *
+   * This method returns a p5.Framebuffer that stores these values, mapping
+   * an angle to each pixel. This creates and caches textures for reuse, since
+   * creating this texture is somewhat expensive.
+   */
+  makeDiffusedTexture(input) {
+    // if one already exists for a given input image
+    if (this.diffusedTextures.get(input) != null) {
+      return this.diffusedTextures.get(input);
+    }
+    // if not, only then create one
+    let newFramebuffer;
+    // hardcoded to 200px, because it's going to be blurry and smooth
+    let smallWidth = 200;
+    let width = smallWidth;
+    let height = Math.floor(smallWidth * (input.height / input.width));
+    newFramebuffer = new Framebuffer$1(this, {
+      width,
+      height,
+      density: 1,
+    });
+    // create framebuffer is like making a new sketch, all functions on main
+    // sketch it would be available on framebuffer
+    if (!this.diffusedShader) {
+      this.diffusedShader = this._createImageLightShader("diffused");
+    }
+    newFramebuffer.draw(() => {
+      this.shader(this.diffusedShader);
+      this._setImageLightShaderUniforms(this.diffusedShader, input);
+      this.states.setValue("strokeColor", null);
+      this.noLights();
+      this.plane(width, height);
+    });
+    this.diffusedTextures.set(input, newFramebuffer);
+    return newFramebuffer;
+  }
+  getDiffusedTexture(input) {
+    return this.diffusedTextures.get(input);
+  }
+
+  /*
+   * used in imageLight,
+   * To create a texture from the input non blurry image, if it doesn't already exist
+   * Creating 8 different levels of textures according to different
+   * sizes and storing them in `levels` array
+   * Creating a new Mipmap texture with that `levels` array
+   * Storing the texture for input image in map called `specularTextures`
+   * maps the input Image to a p5.MipmapTexture
+   */
+  makeSpecularTexture(input) {
+    // check if already exits (there are tex of diff resolution so which one to check)
+    // currently doing the whole array
+    if (this.specularTextures.get(input) != null) {
+      return this.specularTextures.get(input);
+    }
+    // Hardcoded size
+    const size = 512;
+    let tex;
+    let count = Math.floor(Math.log2(size)) + 1; // Actual number of mip levels from size down to 1x1
+
+    if (!this.specularShader) {
+      this.specularShader = this._createImageLightShader("specular");
+    }
+
+    // Prepare mipmap level accumulator
+    const mipmapData = this._prepareMipmapData(size, count);
+
+    const framebuffer = new Framebuffer$1(this, {
+      width: size,
+      height: size,
+      density: 1,
+    });
+
+    // currently only 8 levels
+    // This loop calculates 8 framebuffers of varying size of canvas
+    // and corresponding different roughness levels.
+    // Roughness increases with the decrease in canvas size,
+    // because rougher surfaces have less detailed/more blurry reflections.
+    let mipLevel = 0;
+    for (let w = size; w >= 1; w /= 2) {
+      framebuffer.resize(w, w);
+      let currCount = Math.log(w) / Math.log(2);
+      let roughness = 1 - currCount / count;
+      framebuffer.draw(() => {
+        this.shader(this.specularShader);
+        this.clear();
+        this._setImageLightShaderUniforms(
+          this.specularShader,
+          input,
+          roughness,
         );
-        return;
-      }
+        this.states.setValue("strokeColor", null);
+        this.noLights();
+        this.plane(w, w);
+      });
+
+      // Accumulate framebuffer content for this mip level
+      this._accumulateMipLevel(framebuffer, mipmapData, mipLevel, w, w);
+      mipLevel++;
     }
 
-    this._renderer._resetContext();
+    // Free the Framebuffer
+    framebuffer.remove();
 
-    if (this._renderer.states.curCamera) {
-      this._renderer.states.curCamera._renderer = this._renderer;
+    // Create the final MipmapTexture from accumulated data
+    tex = this._finalizeMipmapTexture(mipmapData);
+    this.specularTextures.set(input, tex);
+    return tex;
+  }
+  getSpecularTexture(input) {
+    return this.specularTextures.get(input);
+  }
+
+  _getSphereMapping(img) {
+    if (!this.sphereMapping) {
+      const p5 = this._pInst;
+      this.sphereMapping = this.baseFilterShader().modify(({ p5 }) => {
+        const uEnvMap = p5.uniformTexture('uEnvMap');
+        const uFovY = p5.uniformFloat('uFovY');
+        const uAspect = p5.uniformFloat('uAspect');
+        // Hack: we don't have matrix uniforms yet; use three vectors
+        const uN1 = p5.uniformVec3('uN1');
+        const uN2 = p5.uniformVec3('uN2');
+        const uN3 = p5.uniformVec3('uN3');
+        p5.getColor((inputs) => {
+          const uFovX = uFovY * uAspect;
+          const angleY = p5.mix(uFovY/2.0,  -uFovY/2.0, inputs.texCoord.y);
+          const angleX = p5.mix(uFovX/2.0, -uFovX/2.0, inputs.texCoord.x);
+          let rotatedNormal = p5.normalize([angleX, angleY, 1]);
+          rotatedNormal = [
+            // Don't mind me, just doing matrix vector multiplication...
+            p5.dot(rotatedNormal, uN1),
+            p5.dot(rotatedNormal, uN2),
+            p5.dot(rotatedNormal, uN3),
+          ];
+          const temp = rotatedNormal.z;
+          rotatedNormal.z = rotatedNormal.x;
+          rotatedNormal.x = -temp;
+          const suv = [
+            p5.atan(rotatedNormal.z, rotatedNormal.x) / (2.0 * p5.PI) + 0.5,
+            0.5 + 0.5 * (-rotatedNormal.y)
+          ];
+          return p5.getTexture(uEnvMap, suv);
+        });
+      }, { p5 });
     }
-  };
+    this.scratchMat3.inverseTranspose4x4(this.states.uViewMatrix);
+    this.scratchMat3.invert(this.scratchMat3); // uNMMatrix is 3x3
+    this.sphereMapping.setUniform("uFovY", this.states.curCamera.cameraFOV);
+    this.sphereMapping.setUniform("uAspect", this.states.curCamera.aspectRatio);
+    // Pass in the normal matrix as three vectors. TODO replace this with
+    // an actual matrix uniform once we have those again.
+    const m = this.scratchMat3.mat3;
+    this.sphereMapping.setUniform("uN1", [m[0], m[3], m[6]]);
+    this.sphereMapping.setUniform("uN2", [m[1], m[4], m[7]]);
+    this.sphereMapping.setUniform("uN3", [m[2], m[5], m[8]]);
+    this.sphereMapping.setUniform("uEnvMap", img);
+    return this.sphereMapping;
+  }
 
-  /**
-   * ensures that p5 is using a 3d renderer. throws an error if not.
+  /*
+   * Abstract methods to be implemented by specific renderers
    */
-  fn._assert3d = function (name) {
-    if (!this._renderer.isP3D)
-      throw new Error(
-        `${name}() is only supported in WEBGL mode. If you'd like to use 3D graphics and WebGL, see  https://p5js.org/examples/form-3d-primitives.html for more information.`
-      );
-  };
-
-  p5.renderers[WEBGL] = p5.RendererGL;
-  p5.renderers[WEBGL2] = p5.RendererGL;
-}
-
-/**
- * @private
- * @param {Uint8Array|Float32Array|undefined} pixels An existing pixels array to reuse if the size is the same
- * @param {WebGLRenderingContext} gl The WebGL context
- * @param {WebGLFramebuffer|null} framebuffer The Framebuffer to read
- * @param {Number} x The x coordiante to read, premultiplied by pixel density
- * @param {Number} y The y coordiante to read, premultiplied by pixel density
- * @param {Number} width The width in pixels to be read (factoring in pixel density)
- * @param {Number} height The height in pixels to be read (factoring in pixel density)
- * @param {GLEnum} format Either RGB or RGBA depending on how many channels to read
- * @param {GLEnum} type The datatype of each channel, e.g. UNSIGNED_BYTE or FLOAT
- * @param {Number|undefined} flipY If provided, the total height with which to flip the y axis about
- * @returns {Uint8Array|Float32Array} pixels A pixels array with the current state of the
- * WebGL context read into it
- */
-function readPixelsWebGL(
-  pixels,
-  gl,
-  framebuffer,
-  x,
-  y,
-  width,
-  height,
-  format,
-  type,
-  flipY
-) {
-  // Record the currently bound framebuffer so we can go back to it after, and
-  // bind the framebuffer we want to read from
-  const prevFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-
-  const channels = format === gl.RGBA ? 4 : 3;
-
-  // Make a pixels buffer if it doesn't already exist
-  const len = width * height * channels;
-  const TypedArrayClass = type === gl.UNSIGNED_BYTE ? Uint8Array : Float32Array;
-  if (!(pixels instanceof TypedArrayClass) || pixels.length !== len) {
-    pixels = new TypedArrayClass(len);
+  _createImageLightShader(type) {
+    throw new Error(
+      "_createImageLightShader must be implemented by the renderer",
+    );
   }
 
-  gl.readPixels(
-    x,
-    flipY ? flipY - y - height : y,
-    width,
-    height,
-    format,
-    type,
-    pixels
-  );
-
-  // Re-bind whatever was previously bound
-  gl.bindFramebuffer(gl.FRAMEBUFFER, prevFramebuffer);
-
-  if (flipY) {
-    // WebGL pixels are inverted compared to 2D pixels, so we have to flip
-    // the resulting rows. Adapted from https://stackoverflow.com/a/41973289
-    const halfHeight = Math.floor(height / 2);
-    const tmpRow = new TypedArrayClass(width * channels);
-    for (let y = 0; y < halfHeight; y++) {
-      const topOffset = y * width * 4;
-      const bottomOffset = (height - y - 1) * width * 4;
-      tmpRow.set(pixels.subarray(topOffset, topOffset + width * 4));
-      pixels.copyWithin(topOffset, bottomOffset, bottomOffset + width * 4);
-      pixels.set(tmpRow, bottomOffset);
+  _setImageLightShaderUniforms(shader, input, roughness) {
+    shader.setUniform("environmentMap", input);
+    if (roughness !== undefined) {
+      shader.setUniform("roughness", roughness);
     }
   }
 
-  return pixels;
+  _createMipmapTexture(levels) {
+    throw new Error("_createMipmapTexture must be implemented by the renderer");
+  }
+
+  _prepareMipmapData(size, mipLevels) {
+    throw new Error("_prepareMipmapData must be implemented by the renderer");
+  }
+
+  _accumulateMipLevel(framebuffer, mipmapData, mipLevel, width, height) {
+    throw new Error("_accumulateMipLevel must be implemented by the renderer");
+  }
+
+  _finalizeMipmapTexture(mipmapData) {
+    throw new Error(
+      "_finalizeMipmapTexture must be implemented by the renderer",
+    );
+  }
+
+  remove() {
+    if (this._textCanvas) {
+      this._textCanvas.parentElement.removeChild(this._textCanvas);
+    }
+    super.remove();
+  }
 }
 
-/**
- * @private
- * @param {WebGLRenderingContext} gl The WebGL context
- * @param {WebGLFramebuffer|null} framebuffer The Framebuffer to read
- * @param {Number} x The x coordinate to read, premultiplied by pixel density
- * @param {Number} y The y coordinate to read, premultiplied by pixel density
- * @param {GLEnum} format Either RGB or RGBA depending on how many channels to read
- * @param {GLEnum} type The datatype of each channel, e.g. UNSIGNED_BYTE or FLOAT
- * @param {Number|undefined} flipY If provided, the total height with which to flip the y axis about
- * @returns {Number[]} pixels The channel data for the pixel at that location
- */
-function readPixelWebGL(gl, framebuffer, x, y, format, type, flipY) {
-  // Record the currently bound framebuffer so we can go back to it after, and
-  // bind the framebuffer we want to read from
-  const prevFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-
-  const channels = format === gl.RGBA ? 4 : 3;
-  const TypedArrayClass = type === gl.UNSIGNED_BYTE ? Uint8Array : Float32Array;
-  const pixels = new TypedArrayClass(channels);
-
-  gl.readPixels(x, flipY ? flipY - y - 1 : y, 1, 1, format, type, pixels);
-
-  // Re-bind whatever was previously bound
-  gl.bindFramebuffer(gl.FRAMEBUFFER, prevFramebuffer);
-
-  return Array.from(pixels);
+function renderer3D(p5, fn) {
+  p5.Renderer3D = Renderer3D;
 }
 
-if (typeof p5 !== 'undefined') {
-  rendererGL(p5, p5.prototype);
+if (typeof p5 !== "undefined") {
+  renderer3D(p5);
 }
 
 /**
@@ -58378,7 +58704,7 @@ function primitives3D(p5, fn){
   ///////////////////////
   //
   // Note: Documentation is not generated on the p5.js website for functions on
-  // the p5.RendererGL prototype.
+  // the p5.Renderer3D prototype.
 
   /**
    * Draws a point, a coordinate in space at the dimension of one pixel,
@@ -58412,16 +58738,15 @@ function primitives3D(p5, fn){
    * </code>
    * </div>
    */
-  RendererGL.prototype.point = function(x, y, z = 0) {
-
-    const _vertex = [];
-    _vertex.push(new Vector(x, y, z));
-    this._drawPoints(_vertex, this.buffers.point);
+  Renderer3D.prototype.point = function(x, y, z = 0) {
+    this.beginShape(POINTS);
+    this.vertex(x, y, z);
+    this.endShape();
 
     return this;
   };
 
-  RendererGL.prototype.triangle = function(args) {
+  Renderer3D.prototype.triangle = function(args) {
     const x1 = args[0],
       y1 = args[1];
     const x2 = args[2],
@@ -58475,7 +58800,7 @@ function primitives3D(p5, fn){
     return this;
   };
 
-  RendererGL.prototype.ellipse = function(args) {
+  Renderer3D.prototype.ellipse = function(args) {
     this.arc(
       args[0],
       args[1],
@@ -58488,7 +58813,7 @@ function primitives3D(p5, fn){
     );
   };
 
-  RendererGL.prototype.arc = function(...args) {
+  Renderer3D.prototype.arc = function(...args) {
     const x = args[0];
     const y = args[1];
     const width = args[2];
@@ -58607,7 +58932,7 @@ function primitives3D(p5, fn){
     return this;
   };
 
-  RendererGL.prototype.rect = function(args) {
+  Renderer3D.prototype.rect = function(args) {
     const x = args[0];
     const y = args[1];
     const width = args[2];
@@ -58616,7 +58941,7 @@ function primitives3D(p5, fn){
     if (typeof args[4] === 'undefined') {
       // Use the retained mode for drawing rectangle,
       // if args for rounding rectangle is not provided by user.
-      const perPixelLighting = this._pInst._glAttributes.perPixelLighting;
+      const perPixelLighting = this._pInst._glAttributes?.perPixelLighting ?? true;
       const detailX = args[4] || (perPixelLighting ? 1 : 24);
       const detailY = args[5] || (perPixelLighting ? 1 : 16);
       const gid = `rect|${detailX}|${detailY}`;
@@ -58745,8 +59070,7 @@ function primitives3D(p5, fn){
     return this;
   };
 
-
-  RendererGL.prototype.quad = function(
+  Renderer3D.prototype.quad = function(
     x1, y1, z1,
     x2, y2, z2,
     x3, y3, z3,
@@ -58754,7 +59078,6 @@ function primitives3D(p5, fn){
     detailX=2,
     detailY=2
   ) {
-
 
     const gid =
       `quad|${x1}|${y1}|${z1}|${x2}|${y2}|${z2}|${x3}|${y3}|${z3}|${x4}|${y4}|${z4}|${detailX}|${detailY}`;
@@ -58817,7 +59140,7 @@ function primitives3D(p5, fn){
   //this implementation of bezier curve
   //is based on Bernstein polynomial
   // pretier-ignore
-  RendererGL.prototype.bezier = function(
+  Renderer3D.prototype.bezier = function(
     x1,
     y1,
     z1, // x2
@@ -58852,7 +59175,7 @@ function primitives3D(p5, fn){
   };
 
   // pretier-ignore
-  RendererGL.prototype.curve = function(
+  Renderer3D.prototype.curve = function(
     x1,
     y1,
     z1, // x2
@@ -58912,7 +59235,7 @@ function primitives3D(p5, fn){
    * </code>
    * </div>
    */
-  RendererGL.prototype.line = function(...args) {
+  Renderer3D.prototype.line = function(...args) {
     if (args.length === 6) {
       // TODO shapes refactor
       this.beginShape(LINES);
@@ -58928,7 +59251,7 @@ function primitives3D(p5, fn){
     return this;
   };
 
-  RendererGL.prototype.image = function(
+  Renderer3D.prototype.image = function(
     img,
     sx,
     sy,
@@ -59108,7 +59431,7 @@ function primitives3D(p5, fn){
     }
   };
 
-  RendererGL.prototype.plane = function(
+  Renderer3D.prototype.plane = function(
     width = 50,
     height = width,
     detailX = 1,
@@ -59150,7 +59473,7 @@ function primitives3D(p5, fn){
     );
   };
 
-  RendererGL.prototype.box = function(
+  Renderer3D.prototype.box = function(
     width = 50,
     height = width,
     depth = height,
@@ -59236,7 +59559,7 @@ function primitives3D(p5, fn){
     );
   };
 
-  RendererGL.prototype.sphere = function(
+  Renderer3D.prototype.sphere = function(
     radius = 50,
     detailX = 24,
     detailY = 16
@@ -59244,7 +59567,7 @@ function primitives3D(p5, fn){
     this.ellipsoid(radius, radius, radius, detailX, detailY);
   };
 
-  RendererGL.prototype.ellipsoid = function(
+  Renderer3D.prototype.ellipsoid = function(
     radiusX = 50,
     radiusY = radiusX,
     radiusZ = radiusX,
@@ -59297,7 +59620,7 @@ function primitives3D(p5, fn){
     );
   };
 
-  RendererGL.prototype.cylinder = function(
+  Renderer3D.prototype.cylinder = function(
     radius = 50,
     height = radius,
     detailX = 24,
@@ -59340,7 +59663,7 @@ function primitives3D(p5, fn){
     );
   };
 
-  RendererGL.prototype.cone = function(
+  Renderer3D.prototype.cone = function(
     radius = 50,
     height = radius,
     detailX = 24,
@@ -59381,7 +59704,7 @@ function primitives3D(p5, fn){
     );
   };
 
-  RendererGL.prototype.torus = function(
+  Renderer3D.prototype.torus = function(
     radius = 50,
     tubeRadius = 10,
     detailX = 24,
@@ -59508,7 +59831,7 @@ function primitives3D(p5, fn){
    * </div>
    */
   fn.curveDetail = function(d) {
-    if (!(this._renderer instanceof RendererGL)) {
+    if (!(this._renderer instanceof Renderer3D)) {
       throw new Error(
         'curveDetail() only works in WebGL mode. Did you mean to call createCanvas(width, height, WEBGL)?'
       );
@@ -60970,7 +61293,7 @@ function light(p5, fn){
   };
 
 
-  RendererGL.prototype.ambientLight = function(v1, v2, v3, a) {
+  Renderer3D.prototype.ambientLight = function(v1, v2, v3, a) {
     const color = this._pInst.color(...arguments);
 
     this.states.setValue('ambientLightColors', [...this.states.ambientLightColors]);
@@ -60983,7 +61306,7 @@ function light(p5, fn){
     this.states.setValue('enableLighting', true);
   };
 
-  RendererGL.prototype.specularColor = function(v1, v2, v3) {
+  Renderer3D.prototype.specularColor = function(v1, v2, v3) {
     const color = this._pInst.color(...arguments);
 
     this.states.setValue('specularColors', [
@@ -60993,7 +61316,7 @@ function light(p5, fn){
     ]);
   };
 
-  RendererGL.prototype.directionalLight = function(v1, v2, v3, x, y, z) {
+  Renderer3D.prototype.directionalLight = function(v1, v2, v3, x, y, z) {
     let color;
     if (v1 instanceof Color) {
       color = v1;
@@ -61034,7 +61357,7 @@ function light(p5, fn){
     this.states.setValue('enableLighting', true);
   };
 
-  RendererGL.prototype.pointLight = function(v1, v2, v3, x, y, z) {
+  Renderer3D.prototype.pointLight = function(v1, v2, v3, x, y, z) {
     let color;
     if (v1 instanceof Color) {
       color = v1;
@@ -61073,20 +61396,23 @@ function light(p5, fn){
     this.states.setValue('enableLighting', true);
   };
 
-  RendererGL.prototype.imageLight = function(img) {
+  Renderer3D.prototype.imageLight = function(img) {
     // activeImageLight property is checked by _setFillUniforms
     // for sending uniforms to the fillshader
     this.states.setValue('activeImageLight', img);
     this.states.setValue('enableLighting', true);
+    // Make sure textures are cached
+    this.makeDiffusedTexture(img);
+    this.makeSpecularTexture(img);
   };
 
-  RendererGL.prototype.lights = function() {
+  Renderer3D.prototype.lights = function() {
     const grayColor = this._pInst.color('rgb(128,128,128)');
     this.ambientLight(grayColor);
     this.directionalLight(grayColor, 0, 0, -1);
   };
 
-  RendererGL.prototype.lightFalloff = function(
+  Renderer3D.prototype.lightFalloff = function(
     constantAttenuation,
     linearAttenuation,
     quadraticAttenuation
@@ -61127,7 +61453,7 @@ function light(p5, fn){
     this.states.setValue('quadraticAttenuation', quadraticAttenuation);
   };
 
-  RendererGL.prototype.spotLight = function(
+  Renderer3D.prototype.spotLight = function(
     v1,
     v2,
     v3,
@@ -61140,6 +61466,8 @@ function light(p5, fn){
     angle,
     concentration
   ) {
+    if (this.states.spotLightDiffuseColors.length / 3 >= 4) return;
+
     let color, position, direction;
     const length = arguments.length;
 
@@ -61297,18 +61625,26 @@ function light(p5, fn){
         return;
     }
     this.states.setValue('spotLightDiffuseColors', [
+      ...this.states.spotLightDiffuseColors,
       color._array[0],
       color._array[1],
       color._array[2]
     ]);
 
     this.states.setValue('spotLightSpecularColors', [
+      ...this.states.spotLightSpecularColors,
       ...this.states.specularColors
     ]);
 
-    this.states.setValue('spotLightPositions', [position.x, position.y, position.z]);
+    this.states.setValue('spotLightPositions', [
+      ...this.states.spotLightPositions,
+      position.x,
+      position.y,
+      position.z
+    ]);
     direction.normalize();
     this.states.setValue('spotLightDirections', [
+      ...this.states.spotLightDirections,
       direction.x,
       direction.y,
       direction.z
@@ -61328,13 +61664,13 @@ function light(p5, fn){
     }
 
     angle = this._pInst._toRadians(angle);
-    this.states.setValue('spotLightAngle', [Math.cos(angle)]);
-    this.states.setValue('spotLightConc', [concentration]);
+    this.states.setValue('spotLightAngle', [...this.states.spotLightAngle, Math.cos(angle)]);
+    this.states.setValue('spotLightConc', [...this.states.spotLightConc, concentration]);
 
     this.states.setValue('enableLighting', true);
   };
 
-  RendererGL.prototype.noLights = function() {
+  Renderer3D.prototype.noLights = function() {
     this.states.setValue('activeImageLight', null);
     this.states.setValue('enableLighting', false);
 
@@ -61366,6 +61702,1230 @@ function light(p5, fn){
 
 if(typeof p5 !== 'undefined'){
   light(p5, p5.prototype);
+}
+
+/**
+ * This module defines the p5.Shader class
+ * @module 3D
+ * @submodule Material
+ * @for p5
+ * @requires core
+ */
+
+class Shader {
+  constructor(renderer, vertSrc, fragSrc, options = {}) {
+    this._renderer = renderer;
+    this._vertSrc = vertSrc;
+    this._fragSrc = fragSrc;
+    this._vertShader = -1;
+    this._fragShader = -1;
+    this._glProgram = 0;
+    this._loadedAttributes = false;
+    this.attributes = {};
+    this._loadedUniforms = false;
+    this.uniforms = {};
+    this._bound = false;
+    this.samplers = [];
+    this.hooks = {
+      // These should be passed in by `.modify()` instead of being manually
+      // passed in.
+
+      // Stores uniforms + default values.
+      uniforms: options.uniforms || {},
+
+      // Stores custom uniform + helper declarations as a string.
+      declarations: options.declarations,
+
+      // Stores an array of variable names + types passed between the vertex and fragment shader
+      varyingVariables: options.varyingVariables || [],
+
+      // Stores helper functions to prepend to shaders.
+      helpers: options.helpers || {},
+
+      // Stores the hook implementations
+      vertex: options.vertex || {},
+      fragment: options.fragment || {},
+
+      // Stores whether or not the hook implementation has been modified
+      // from the default. This is supplied automatically by calling
+      // yourShader.modify(...).
+      modified: {
+        vertex: (options.modified && options.modified.vertex) || {},
+        fragment: (options.modified && options.modified.fragment) || {}
+      }
+    };
+  }
+
+  hookTypes(hookName) {
+    return this._renderer.getShaderHookTypes(this, hookName);
+  }
+
+  shaderSrc(src, shaderType) {
+    return this._renderer.populateHooks(this, src, shaderType);
+  }
+
+  /**
+   * Shaders are written in <a href="https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/GLSL_Shaders">GLSL</a>, but
+   * there are different versions of GLSL that it might be written in.
+   *
+   * Calling this method on a `p5.Shader` will return the GLSL version it uses, either `100 es` or `300 es`.
+   * WebGL 1 shaders will only use `100 es`, and WebGL 2 shaders may use either.
+   *
+   * @returns {String} The GLSL version used by the shader.
+   */
+  version() {
+    const match = /#version (.+)$/.exec(this.vertSrc());
+    if (match) {
+      return match[1];
+    } else {
+      return '100 es';
+    }
+  }
+
+  vertSrc() {
+    return this.shaderSrc(this._vertSrc, 'vertex');
+  }
+
+  fragSrc() {
+    return this.shaderSrc(this._fragSrc, 'fragment');
+  }
+
+  /**
+   * Logs the hooks available in this shader, and their current implementation.
+   *
+   * Each shader may let you override bits of its behavior. Each bit is called
+   * a *hook.* A hook is either for the *vertex* shader, if it affects the
+   * position of vertices, or in the *fragment* shader, if it affects the pixel
+   * color. This method logs those values to the console, letting you know what
+   * you are able to use in a call to
+   * <a href="#/p5.Shader/modify">`modify()`</a>.
+   *
+   * For example, this shader will produce the following output:
+   *
+   * ```js
+   * myShader = baseMaterialShader().modify({
+   *   declarations: 'uniform float time;',
+   *   'vec3 getWorldPosition': `(vec3 pos) {
+   *     pos.y += 20. * sin(time * 0.001 + pos.x * 0.05);
+   *     return pos;
+   *   }`
+   * });
+   * myShader.inspectHooks();
+   * ```
+   *
+   * ```
+   * ==== Vertex shader hooks: ====
+   * void beforeVertex() {}
+   * vec3 getLocalPosition(vec3 position) { return position; }
+   * [MODIFIED] vec3 getWorldPosition(vec3 pos) {
+   *       pos.y += 20. * sin(time * 0.001 + pos.x * 0.05);
+   *       return pos;
+   *     }
+   * vec3 getLocalNormal(vec3 normal) { return normal; }
+   * vec3 getWorldNormal(vec3 normal) { return normal; }
+   * vec2 getUV(vec2 uv) { return uv; }
+   * vec4 getVertexColor(vec4 color) { return color; }
+   * void afterVertex() {}
+   *
+   * ==== Fragment shader hooks: ====
+   * void beforeFragment() {}
+   * Inputs getPixelInputs(Inputs inputs) { return inputs; }
+   * vec4 combineColors(ColorComponents components) {
+   *                 vec4 color = vec4(0.);
+   *                 color.rgb += components.diffuse * components.baseColor;
+   *                 color.rgb += components.ambient * components.ambientColor;
+   *                 color.rgb += components.specular * components.specularColor;
+   *                 color.rgb += components.emissive;
+   *                 color.a = components.opacity;
+   *                 return color;
+   *               }
+   * vec4 getFinalColor(vec4 color) { return color; }
+   * void afterFragment() {}
+   * ```
+   *
+   * @beta
+   */
+  inspectHooks() {
+    console.log('==== Vertex shader hooks: ====');
+    for (const key in this.hooks.vertex) {
+      console.log(
+        (this.hooks.modified.vertex[key] ? '[MODIFIED] ' : '') +
+          key +
+          this.hooks.vertex[key]
+      );
+    }
+    console.log('');
+    console.log('==== Fragment shader hooks: ====');
+    for (const key in this.hooks.fragment) {
+      console.log(
+        (this.hooks.modified.fragment[key] ? '[MODIFIED] ' : '') +
+          key +
+          this.hooks.fragment[key]
+      );
+    }
+    console.log('');
+    console.log('==== Helper functions: ====');
+    for (const key in this.hooks.helpers) {
+      console.log(key + this.hooks.helpers[key]);
+    }
+  }
+
+  /**
+   * Returns a new shader, based on the original, but with custom snippets
+   * of shader code replacing default behaviour.
+   *
+   * Each shader may let you override bits of its behavior. Each bit is called
+   * a *hook.* For example, a hook can let you adjust positions of vertices, or
+   * the color of a pixel. You can inspect the different hooks available by calling
+   * <a href="#/p5.Shader/inspectHooks">`yourShader.inspectHooks()`</a>. You can
+   * also read the reference for the default material, normal material, color, line, and point shaders to
+   * see what hooks they have available.
+   *
+   * `modify()` can be passed a function as a parameter. Inside, you can override hooks
+   * by calling them as functions. Each hook will take in a callback that takes in inputs
+   * and is expected to return an output. For example, here is a function that changes the
+   * material color to red:
+   *
+   * ```js example
+   * let myShader;
+   *
+   * function setup() {
+   *   createCanvas(200, 200, WEBGL);
+   *   myShader = baseMaterialShader().modify(() => {
+   *     getPixelInputs((inputs) => {
+   *       inputs.color = [inputs.texCoord, 0, 1];
+   *       return inputs;
+   *     });
+   *   });
+   * }
+   *
+   * function draw() {
+   *   background(255);
+   *   noStroke();
+   *   shader(myShader); // Apply the custom shader
+   *   plane(width, height); // Draw a plane with the shader applied
+   * }
+   * ```
+   *
+   * In addition to calling hooks, you can create uniforms, which are special variables
+   * used to pass data from p5.js into the shader. They can be created by calling `uniform` + the
+   * type of the data, such as `uniformFloat` for a number of `uniformVector2` for a two-component vector.
+   * They take in a function that returns the data for the variable. You can then reference these
+   * variables in your hooks, and their values will update every time you apply
+   * the shader with the result of your function.
+   *
+   * ```js example
+   * let myShader;
+   *
+   * function setup() {
+   *   createCanvas(200, 200, WEBGL);
+   *   myShader = baseMaterialShader().modify(() => {
+   *     // Get the current time from p5.js
+   *     let t = uniformFloat(() => millis());
+   *
+   *     getPixelInputs((inputs) => {
+   *       inputs.color = [
+   *         inputs.texCoord,
+   *         sin(t * 0.01) / 2 + 0.5,
+   *         1,
+   *       ];
+   *       return inputs;
+   *     });
+   *   });
+   * }
+   *
+   * function draw() {
+   *   background(255);
+   *   noStroke(255);
+   *   shader(myShader); // Apply the custom shader
+   *   plane(width, height); // Draw a plane with the shader applied
+   * }
+   * ```
+   *
+   * p5.strands functions are special, since they get turned into a shader instead of being
+   * run like the rest of your code. They only have access to p5.js functions, and variables
+   * you declare inside the `modify` callback. If you need access to local variables, you
+   * can pass them into `modify` with an optional second parameter, `variables`. These will
+   * then be passed into your function as an argument. If you are
+   * using instance mode, you will need to pass your sketch object in this way.
+   *
+   * If you are also using a build system for your sketch, variable names may be changed as
+   * part of minification. When creating a uniform, you can pass the name of the uniform in
+   * as a first parameter to ensure it doesn't get changed.
+   *
+   * ```js example
+   * new p5((sketch) => {
+   *   let myShader;
+   *
+   *   sketch.setup = function() {
+   *     sketch.createCanvas(200, 200, sketch.WEBGL);
+   *     myShader = sketch.baseMaterialShader().modify(({ sketch }) => {
+   *       let b = uniformFloat('b');
+   *       sketch.getPixelInputs((inputs) => {
+   *         inputs.color = [inputs.texCoord, b, 1];
+   *         return inputs;
+   *       });
+   *     }, { sketch });
+   *   }
+   *
+   *   sketch.draw = function() {
+   *     sketch.background(255);
+   *     sketch.noStroke();
+   *     myShader.setUniform('b', 0.5);
+   *     sketch.shader(myShader); // Apply the custom shader
+   *     sketch.plane(sketch.width, sketch.height); // Draw a plane with the shader applied
+   *   }
+   * });
+   * ```
+   *
+   * You can also write GLSL directly in `modify` if you need direct access. To do so,
+   * `modify()` takes one parameter, `hooks`, an object with the hooks you want
+   * to override. Each key of the `hooks` object is the name
+   * of a hook, and the value is a string with the GLSL code for your hook.
+   *
+   * If you supply functions that aren't existing hooks, they will get added at the start of
+   * the shader as helper functions so that you can use them in your hooks.
+   *
+   * To add new <a href="#/p5.Shader/setUniform">uniforms</a> to your shader, you can pass in a `uniforms` object containing
+   * the type and name of the uniform as the key, and a default value or function returning
+   * a default value as its value. These will be automatically set when the shader is set
+   * with `shader(yourShader)`.
+   *
+   * ```js example
+   * let myShader;
+   *
+   * function setup() {
+   *   createCanvas(200, 200, WEBGL);
+   *   myShader = baseMaterialShader().modify({
+   *     uniforms: {
+   *       'float time': () => millis() // Uniform for time
+   *     },
+   *     'Vertex getWorldInputs': `(Vertex inputs) {
+   *       inputs.position.y +=
+   *         20. * sin(time * 0.001 + inputs.position.x * 0.05);
+   *       return inputs;
+   *     }`
+   *   });
+   * }
+   *
+   * function draw() {
+   *   background(255);
+   *   shader(myShader); // Apply the custom shader
+   *   lights();         // Enable lighting
+   *   noStroke();       // Disable stroke
+   *   fill('red');      // Set fill color to red
+   *   sphere(50);       // Draw a sphere with the shader applied
+   * }
+   * ```
+   *
+   * You can also add a `declarations` key, where the value is a GLSL string declaring
+   * custom uniform variables, globals, and functions shared
+   * between hooks. To add declarations just in a vertex or fragment shader, add
+   * `vertexDeclarations` and `fragmentDeclarations` keys.
+   *
+   * ```js example
+   * let myShader;
+   *
+   * function setup() {
+   *   createCanvas(200, 200, WEBGL);
+   *   myShader = baseMaterialShader().modify({
+   *     // Manually specifying a uniform
+   *     declarations: 'uniform float time;',
+   *     'Vertex getWorldInputs': `(Vertex inputs) {
+   *       inputs.position.y +=
+   *         20. * sin(time * 0.001 + inputs.position.x * 0.05);
+   *       return inputs;
+   *     }`
+   *   });
+   * }
+   *
+   * function draw() {
+   *   background(255);
+   *   shader(myShader);
+   *   myShader.setUniform('time', millis());
+   *   lights();
+   *   noStroke();
+   *   fill('red');
+   *   sphere(50);
+   * }
+   * ```
+   *
+   * @beta
+   * @param {Function} callback A function with p5.strands code to modify the shader.
+   * @param {Object} [variables] An optional object with local variables p5.strands
+   * should have access to.
+   * @returns {p5.Shader}
+   */
+  /**
+   * @param {Object} [hooks] The hooks in the shader to replace.
+   * @returns {p5.Shader}
+   */
+  modify(hooks) {
+    // p5._validateParameters('p5.Shader.modify', arguments);
+    const newHooks = {
+      vertex: {},
+      fragment: {},
+      helpers: {}
+    };
+    for (const key in hooks) {
+      if (key === 'declarations') continue;
+      if (key === 'uniforms') continue;
+      if (key === 'varyingVariables') continue;
+      if (key === 'vertexDeclarations') {
+        newHooks.vertex.declarations =
+          (newHooks.vertex.declarations || '') + '\n' + hooks[key];
+      } else if (key === 'fragmentDeclarations') {
+        newHooks.fragment.declarations =
+          (newHooks.fragment.declarations || '') + '\n' + hooks[key];
+      } else if (this.hooks.vertex[key]) {
+        newHooks.vertex[key] = hooks[key];
+      } else if (this.hooks.fragment[key]) {
+        newHooks.fragment[key] = hooks[key];
+      } else {
+        newHooks.helpers[key] = hooks[key];
+      }
+    }
+    const modifiedVertex = Object.assign({}, this.hooks.modified.vertex);
+    const modifiedFragment = Object.assign({}, this.hooks.modified.fragment);
+    for (const key in newHooks.vertex || {}) {
+      if (key === 'declarations') continue;
+      modifiedVertex[key] = true;
+    }
+    for (const key in newHooks.fragment || {}) {
+      if (key === 'declarations') continue;
+      modifiedFragment[key] = true;
+    }
+
+    return new Shader(this._renderer, this._vertSrc, this._fragSrc, {
+      declarations:
+        (this.hooks.declarations || '') + '\n' + (hooks.declarations || ''),
+      uniforms: Object.assign({}, this.hooks.uniforms, hooks.uniforms || {}),
+      varyingVariables: (hooks.varyingVariables || []).concat(this.hooks.varyingVariables || []),
+      fragment: Object.assign({}, this.hooks.fragment, newHooks.fragment || {}),
+      vertex: Object.assign({}, this.hooks.vertex, newHooks.vertex || {}),
+      helpers: Object.assign({}, this.hooks.helpers, newHooks.helpers || {}),
+      modified: {
+        vertex: modifiedVertex,
+        fragment: modifiedFragment
+      }
+    });
+  }
+
+  /**
+   * Creates, compiles, and links the shader based on its
+   * sources for the vertex and fragment shaders (provided
+   * to the constructor). Populates known attributes and
+   * uniforms from the shader.
+   * @chainable
+   * @private
+   */
+  init() {
+    // If the shader is uninitialized or context was lost
+    if (!this._initialized) {
+      try {
+        this._renderer._initShader(this); // Backend-specific shader init
+      } catch (err) {
+        throw new Error(
+          `Whoops! Something went wrong initializing the shader:\n${err.message || err}`
+        );
+      }
+
+      this._loadAttributes();
+      this._loadUniforms();
+      this._renderer._finalizeShader(this);
+
+      this._initialized = true;
+    }
+
+    return this;
+  }
+
+  /**
+   * @private
+   */
+  setDefaultUniforms() {
+    for (const key in this.hooks.uniforms) {
+      const name = this._renderer.uniformNameFromHookKey(key);
+      const initializer = this.hooks.uniforms[key];
+      let value;
+      if (initializer instanceof Function) {
+        value = initializer();
+      } else {
+        value = initializer;
+      }
+
+      if (value !== undefined && value !== null) {
+        this.setUniform(name, value);
+      }
+    }
+  }
+
+  /**
+   * Copies the shader from one drawing context to another.
+   *
+   * Each `p5.Shader` object must be compiled by calling
+   * <a href="#/p5/shader">shader()</a> before it can run. Compilation happens
+   * in a drawing context which is usually the main canvas or an instance of
+   * <a href="#/p5.Graphics">p5.Graphics</a>. A shader can only be used in the
+   * context where it was compiled. The `copyToContext()` method compiles the
+   * shader again and copies it to another drawing context where it can be
+   * reused.
+   *
+   * The parameter, `context`, is the drawing context where the shader will be
+   * used. The shader can be copied to an instance of
+   * <a href="#/p5.Graphics">p5.Graphics</a>, as in
+   * `myShader.copyToContext(pg)`. The shader can also be copied from a
+   * <a href="#/p5.Graphics">p5.Graphics</a> object to the main canvas using
+   * the `p5.instance` variable, as in `myShader.copyToContext(p5.instance)`.
+   *
+   * Note: A <a href="#/p5.Shader">p5.Shader</a> object created with
+   * <a href="#/p5/createShader">createShader()</a>,
+   * <a href="#/p5/createFilterShader">createFilterShader()</a>, or
+   * <a href="#/p5/loadShader">loadShader()</a>
+   * can be used directly with a <a href="#/p5.Framebuffer">p5.Framebuffer</a>
+   * object created with
+   * <a href="#/p5/createFramebuffer">createFramebuffer()</a>. Both objects
+   * have the same context as the main canvas.
+   *
+   * @param {p5|p5.Graphics} context WebGL context for the copied shader.
+   * @returns {p5.Shader} new shader compiled for the target context.
+   *
+   * @example
+   * <div>
+   * <code>
+   * // Note: A "uniform" is a global variable within a shader program.
+   *
+   * // Create a string with the vertex shader program.
+   * // The vertex shader is called for each vertex.
+   * let vertSrc = `
+   * precision highp float;
+   * uniform mat4 uModelViewMatrix;
+   * uniform mat4 uProjectionMatrix;
+   *
+   * attribute vec3 aPosition;
+   * attribute vec2 aTexCoord;
+   * varying vec2 vTexCoord;
+   *
+   * void main() {
+   *   vTexCoord = aTexCoord;
+   *   vec4 positionVec4 = vec4(aPosition, 1.0);
+   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
+   * }
+   * `;
+   *
+   * // Create a string with the fragment shader program.
+   * // The fragment shader is called for each pixel.
+   * let fragSrc = `
+   * precision mediump float;
+   * varying vec2 vTexCoord;
+   *
+   * void main() {
+   *   vec2 uv = vTexCoord;
+   *   vec3 color = vec3(uv.x, uv.y, min(uv.x + uv.y, 1.0));
+   *   gl_FragColor = vec4(color, 1.0);\
+   * }
+   * `;
+   *
+   * let pg;
+   *
+   * function setup() {
+   *   createCanvas(100, 100, WEBGL);
+   *
+   *   background(200);
+   *
+   *   // Create a p5.Shader object.
+   *   let original = createShader(vertSrc, fragSrc);
+   *
+   *   // Compile the p5.Shader object.
+   *   shader(original);
+   *
+   *   // Create a p5.Graphics object.
+   *   pg = createGraphics(50, 50, WEBGL);
+   *
+   *   // Copy the original shader to the p5.Graphics object.
+   *   let copied = original.copyToContext(pg);
+   *
+   *   // Apply the copied shader to the p5.Graphics object.
+   *   pg.shader(copied);
+   *
+   *   // Style the display surface.
+   *   pg.noStroke();
+   *
+   *   // Add a display surface for the shader.
+   *   pg.plane(50, 50);
+   *
+   *   describe('A square with purple-blue gradient on its surface drawn against a gray background.');
+   * }
+   *
+   * function draw() {
+   *   background(200);
+   *
+   *   // Draw the p5.Graphics object to the main canvas.
+   *   image(pg, -25, -25);
+   * }
+   * </code>
+   * </div>
+   *
+   * <div class='notest'>
+   * <code>
+   * // Note: A "uniform" is a global variable within a shader program.
+   *
+   * // Create a string with the vertex shader program.
+   * // The vertex shader is called for each vertex.
+   * let vertSrc = `
+   * precision highp float;
+   * uniform mat4 uModelViewMatrix;
+   * uniform mat4 uProjectionMatrix;
+   *
+   * attribute vec3 aPosition;
+   * attribute vec2 aTexCoord;
+   * varying vec2 vTexCoord;
+   *
+   * void main() {
+   *   vTexCoord = aTexCoord;
+   *   vec4 positionVec4 = vec4(aPosition, 1.0);
+   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
+   * }
+   * `;
+   *
+   * // Create a string with the fragment shader program.
+   * // The fragment shader is called for each pixel.
+   * let fragSrc = `
+   * precision mediump float;
+   *
+   * varying vec2 vTexCoord;
+   *
+   * void main() {
+   *   vec2 uv = vTexCoord;
+   *   vec3 color = vec3(uv.x, uv.y, min(uv.x + uv.y, 1.0));
+   *   gl_FragColor = vec4(color, 1.0);
+   * }
+   * `;
+   *
+   * let copied;
+   *
+   * function setup() {
+   *   createCanvas(100, 100, WEBGL);
+   *
+   *   // Create a p5.Graphics object.
+   *   let pg = createGraphics(25, 25, WEBGL);
+   *
+   *   // Create a p5.Shader object.
+   *   let original = pg.createShader(vertSrc, fragSrc);
+   *
+   *   // Compile the p5.Shader object.
+   *   pg.shader(original);
+   *
+   *   // Copy the original shader to the main canvas.
+   *   copied = original.copyToContext(p5.instance);
+   *
+   *   // Apply the copied shader to the main canvas.
+   *   shader(copied);
+   *
+   *   describe('A rotating cube with a purple-blue gradient on its surface drawn against a gray background.');
+   * }
+   *
+   * function draw() {
+   *   background(200);
+   *
+   *   // Rotate around the x-, y-, and z-axes.
+   *   rotateX(frameCount * 0.01);
+   *   rotateY(frameCount * 0.01);
+   *   rotateZ(frameCount * 0.01);
+   *
+   *   // Draw the box.
+   *   box(50);
+   * }
+   * </code>
+   * </div>
+   */
+  copyToContext(context) {
+    const shader = new Shader(
+      context._renderer,
+      this._vertSrc,
+      this._fragSrc
+    );
+    shader.ensureCompiledOnContext(context._renderer);
+    return shader;
+  }
+
+  /**
+   * @private
+   */
+  ensureCompiledOnContext(context) {
+    if (this._glProgram !== 0 && this._renderer !== context) {
+      throw new Error(
+        'The shader being run is attached to a different context. Do you need to copy it to this context first with .copyToContext()?'
+      );
+    } else if (this._glProgram === 0) {
+      this._renderer = context?._renderer?.filterRenderer?._renderer || context;
+      this.init();
+    }
+  }
+
+
+  /**
+   * Queries the active attributes for this shader and loads
+   * their names and locations into the attributes array.
+   * @private
+   */
+  _loadAttributes() {
+    if (this._loadedAttributes) {
+      return;
+    }
+    this.attributes = this._renderer._getShaderAttributes(this);
+    this._loadedAttributes = true;
+  }
+
+  /**
+   * Queries the active uniforms for this shader and loads
+   * their names and locations into the uniforms array.
+   * @private
+   */
+  _loadUniforms() {
+    if (this._loadedUniforms) {
+      return;
+    }
+
+    this.uniforms = {};
+    this.samplers = [];
+
+    const uniformMetadata = this._renderer.getUniformMetadata(this);
+
+    for (const meta of uniformMetadata) {
+      const uniform = {
+        ...meta,
+        _cachedData: undefined,
+      };
+
+      if (uniform.isSampler) {
+        this.samplers.push(uniform);
+      }
+
+      this.uniforms[uniform.name] = uniform;
+    }
+
+    this._loadedUniforms = true;
+  }
+
+  /**
+   * initializes (if needed) and binds the shader program.
+   * @private
+   */
+  bindShader(shaderType, options) {
+    if (this.shaderType && this.shaderType !== shaderType) {
+      throw new Error(
+        `You've already used this shader as a ${this.shaderType} shader, but are now using it as a ${shaderType}.`
+      );
+    }
+    this.shaderType = shaderType;
+    this.init();
+    if (!this._bound) {
+      this.useProgram(options);
+      this._bound = true;
+    }
+  }
+
+  /**
+   * @chainable
+   * @private
+   */
+  unbindShader() {
+    if (this._bound) {
+      this.unbindTextures();
+      this._bound = false;
+    }
+    return this;
+  }
+
+  /**
+   * @private
+   */
+  bindTextures() {
+    const empty = this._renderer._getEmptyTexture();
+
+    for (const uniform of this.samplers) {
+      if (uniform.noData) continue;
+      let tex = uniform.texture;
+      if (
+        tex === undefined ||
+        (
+          // Make sure we unbind a framebuffer uniform if it's the same
+          // framebuffer that is actvely being drawn to in order to
+          // prevent a feedback cycle
+          tex.isFramebufferTexture &&
+          !tex.src.framebuffer.antialias &&
+          tex.src.framebuffer === this._renderer.activeFramebuffer()
+        )
+      ) {
+        // user hasn't yet supplied a texture for this slot.
+        // (or there may not be one--maybe just lighting),
+        // so we supply a default texture instead.
+        uniform.texture = tex = empty;
+      }
+      this._renderer._updateTexture(uniform, tex);
+    }
+  }
+
+  /**
+   * @private
+   */
+  unbindTextures() {
+    for (const uniform of this.samplers) {
+      if (uniform.texture?.isFramebufferTexture) {
+        this._renderer._unbindFramebufferTexture(uniform);
+      }
+    }
+  }
+
+  /**
+   * @chainable
+   * @private
+   */
+  useProgram(options) {
+    if (this._renderer._curShader !== this) {
+      this._renderer._useShader(this);
+      this._renderer._curShader = this;
+    }
+    return this;
+  }
+
+  /**
+   * Sets the shader’s uniform (global) variables.
+   *
+   * Shader programs run on the computer’s graphics processing unit (GPU).
+   * They live in part of the computer’s memory that’s completely separate
+   * from the sketch that runs them. Uniforms are global variables within a
+   * shader program. They provide a way to pass values from a sketch running
+   * on the CPU to a shader program running on the GPU.
+   *
+   * The first parameter, `uniformName`, is a string with the uniform’s name.
+   * For the shader above, `uniformName` would be `'r'`.
+   *
+   * The second parameter, `data`, is the value that should be used to set the
+   * uniform. For example, calling `myShader.setUniform('r', 0.5)` would set
+   * the `r` uniform in the shader above to `0.5`. data should match the
+   * uniform’s type. Numbers, strings, booleans, arrays, and many types of
+   * images can all be passed to a shader with `setUniform()`.
+   *
+   * @chainable
+   * @param {String} uniformName name of the uniform. Must match the name
+   *                             used in the vertex and fragment shaders.
+   * @param {Boolean|Number|Number[]|p5.Image|p5.Graphics|p5.MediaElement|p5.Texture}
+   * data value to assign to the uniform. Must match the uniform’s data type.
+   *
+   * @example
+   * <div>
+   * <code>
+   * // Note: A "uniform" is a global variable within a shader program.
+   *
+   * // Create a string with the vertex shader program.
+   * // The vertex shader is called for each vertex.
+   * let vertSrc = `
+   * precision highp float;
+   * uniform mat4 uModelViewMatrix;
+   * uniform mat4 uProjectionMatrix;
+   *
+   * attribute vec3 aPosition;
+   * attribute vec2 aTexCoord;
+   * varying vec2 vTexCoord;
+   *
+   * void main() {
+   *   vTexCoord = aTexCoord;
+   *   vec4 positionVec4 = vec4(aPosition, 1.0);
+   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
+   * }
+   * `;
+   *
+   * // Create a string with the fragment shader program.
+   * // The fragment shader is called for each pixel.
+   * let fragSrc = `
+   * precision mediump float;
+   *
+   * uniform float r;
+   *
+   * void main() {
+   *   gl_FragColor = vec4(r, 1.0, 1.0, 1.0);
+   * }
+   * `;
+   *
+   * function setup() {
+   *   createCanvas(100, 100, WEBGL);
+   *
+   *   // Create a p5.Shader object.
+   *   let myShader = createShader(vertSrc, fragSrc);
+   *
+   *   // Apply the p5.Shader object.
+   *   shader(myShader);
+   *
+   *   // Set the r uniform to 0.5.
+   *   myShader.setUniform('r', 0.5);
+   *
+   *   // Style the drawing surface.
+   *   noStroke();
+   *
+   *   // Add a plane as a drawing surface for the shader.
+   *   plane(100, 100);
+   *
+   *   describe('A cyan square.');
+   * }
+   * </code>
+   * </div>
+   *
+   * <div>
+   * <code>
+   * // Note: A "uniform" is a global variable within a shader program.
+   *
+   * // Create a string with the vertex shader program.
+   * // The vertex shader is called for each vertex.
+   * let vertSrc = `
+   * precision highp float;
+   * uniform mat4 uModelViewMatrix;
+   * uniform mat4 uProjectionMatrix;
+   *
+   * attribute vec3 aPosition;
+   * attribute vec2 aTexCoord;
+   * varying vec2 vTexCoord;
+   *
+   * void main() {
+   *   vTexCoord = aTexCoord;
+   *   vec4 positionVec4 = vec4(aPosition, 1.0);
+   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
+   * }
+   * `;
+   *
+   * // Create a string with the fragment shader program.
+   * // The fragment shader is called for each pixel.
+   * let fragSrc = `
+   * precision mediump float;
+   *
+   * uniform float r;
+   *
+   * void main() {
+   *   gl_FragColor = vec4(r, 1.0, 1.0, 1.0);
+   * }
+   * `;
+   *
+   * let myShader;
+   *
+   * function setup() {
+   *   createCanvas(100, 100, WEBGL);
+   *
+   *   // Create a p5.Shader object.
+   *   myShader = createShader(vertSrc, fragSrc);
+   *
+   *   // Compile and apply the p5.Shader object.
+   *   shader(myShader);
+   *
+   *   describe('A square oscillates color between cyan and white.');
+   * }
+   *
+   * function draw() {
+   *   background(200);
+   *
+   *   // Style the drawing surface.
+   *   noStroke();
+   *
+   *   // Update the r uniform.
+   *   let nextR = 0.5 * (sin(frameCount * 0.01) + 1);
+   *   myShader.setUniform('r', nextR);
+   *
+   *   // Add a plane as a drawing surface.
+   *   plane(100, 100);
+   * }
+   * </code>
+   * </div>
+   *
+   * <div>
+   * <code>
+   * // Note: A "uniform" is a global variable within a shader program.
+   *
+   * // Create a string with the vertex shader program.
+   * // The vertex shader is called for each vertex.
+   * let vertSrc = `
+   * precision highp float;
+   * uniform mat4 uModelViewMatrix;
+   * uniform mat4 uProjectionMatrix;
+   *
+   * attribute vec3 aPosition;
+   * attribute vec2 aTexCoord;
+   * varying vec2 vTexCoord;
+   *
+   * void main() {
+   *   vTexCoord = aTexCoord;
+   *   vec4 positionVec4 = vec4(aPosition, 1.0);
+   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
+   * }
+   * `;
+   *
+   * // Create a string with the fragment shader program.
+   * // The fragment shader is called for each pixel.
+   * let fragSrc = `
+   * precision highp float;
+   * uniform vec2 p;
+   * uniform float r;
+   * const int numIterations = 500;
+   * varying vec2 vTexCoord;
+   *
+   * void main() {
+   *   vec2 c = p + gl_FragCoord.xy * r;
+   *   vec2 z = c;
+   *   float n = 0.0;
+   *
+   *   for (int i = numIterations; i > 0; i--) {
+   *     if (z.x * z.x + z.y * z.y > 4.0) {
+   *       n = float(i) / float(numIterations);
+   *       break;
+   *     }
+   *
+   *     z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
+   *   }
+   *
+   *   gl_FragColor = vec4(
+   *     0.5 - cos(n * 17.0) / 2.0,
+   *     0.5 - cos(n * 13.0) / 2.0,
+   *     0.5 - cos(n * 23.0) / 2.0,
+   *     1.0
+   *   );
+   * }
+   * `;
+   *
+   * let mandelbrot;
+   *
+   * function setup() {
+   *   createCanvas(100, 100, WEBGL);
+   *
+   *   // Create a p5.Shader object.
+   *   mandelbrot = createShader(vertSrc, fragSrc);
+   *
+   *   // Compile and apply the p5.Shader object.
+   *   shader(mandelbrot);
+   *
+   *   // Set the shader uniform p to an array.
+   *   // p is the center point of the Mandelbrot image.
+   *   mandelbrot.setUniform('p', [-0.74364388703, 0.13182590421]);
+   *
+   *   describe('A fractal image zooms in and out of focus.');
+   * }
+   *
+   * function draw() {
+   *   // Set the shader uniform r to a value that oscillates
+   *   // between 0 and 0.005.
+   *   // r is the size of the image in Mandelbrot-space.
+   *   let radius = 0.005 * (sin(frameCount * 0.01) + 1);
+   *   mandelbrot.setUniform('r', radius);
+   *
+   *   // Style the drawing surface.
+   *   noStroke();
+   *
+   *   // Add a plane as a drawing surface.
+   *   plane(100, 100);
+   * }
+   * </code>
+   * </div>
+   */
+  setUniform(uniformName, rawData) {
+    this.init();
+
+    const uniform = this.uniforms[uniformName];
+    if (!uniform) {
+      return;
+    }
+
+    const data = this._renderer._mapUniformData
+      ? this._renderer._mapUniformData(uniform, rawData)
+      : rawData;
+
+    if (uniform.isArray) {
+      if (
+        uniform._cachedData &&
+        this._renderer._arraysEqual(uniform._cachedData, data)
+      ) {
+        return;
+      } else {
+        uniform._cachedData = data.slice(0);
+      }
+    } else if (uniform._cachedData && uniform._cachedData === data) {
+      return;
+    } else {
+      if (Array.isArray(data)) {
+        uniform._cachedData = data.slice(0);
+      } else {
+        uniform._cachedData = data;
+      }
+    }
+
+    this._renderer.updateUniformValue(this, uniform, data);
+  }
+
+  /**
+   * @chainable
+   * @private
+   */
+  enableAttrib(attr, size, type, normalized, stride, offset) {
+    if (attr) {
+      if (
+        typeof IS_MINIFIED === 'undefined' &&
+        this.attributes[attr.name] !== attr
+      ) {
+        console.warn(
+          `The attribute "${attr.name}"passed to enableAttrib does not belong to this shader.`
+        );
+      }
+
+      if (attr.location !== -1) {
+        this._renderer._enableAttrib(this, attr, size, type, normalized, stride, offset);
+      }
+    }
+    return this;
+  }
+}
+function shader(p5, fn){
+  /**
+   * A class to describe a shader program.
+   *
+   * Each `p5.Shader` object contains a shader program that runs on the graphics
+   * processing unit (GPU). Shaders can process many pixels or vertices at the
+   * same time, making them fast for many graphics tasks. They’re written in a
+   * language called
+   * <a href="https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/GLSL_Shaders" target="_blank">GLSL</a>
+   * and run along with the rest of the code in a sketch.
+   *
+   * A shader program consists of two files, a vertex shader and a fragment
+   * shader. The vertex shader affects where 3D geometry is drawn on the screen
+   * and the fragment shader affects color. Once the `p5.Shader` object is
+   * created, it can be used with the <a href="#/p5/shader">shader()</a>
+   * function, as in `shader(myShader)`.
+   *
+   * A shader can optionally describe *hooks,* which are functions in GLSL that
+   * users may choose to provide to customize the behavior of the shader. For the
+   * vertex or the fragment shader, users can pass in an object where each key is
+   * the type and name of a hook function, and each value is a string with the
+   * parameter list and default implementation of the hook. For example, to let users
+   * optionally run code at the start of the vertex shader, the options object could
+   * include:
+   *
+   * ```js
+   * {
+   *   vertex: {
+   *     'void beforeVertex': '() {}'
+   *   }
+   * }
+   * ```
+   *
+   * Then, in your vertex shader source, you can run a hook by calling a function
+   * with the same name prefixed by `HOOK_`:
+   *
+   * ```glsl
+   * void main() {
+   *   HOOK_beforeVertex();
+   *   // Add the rest ofy our shader code here!
+   * }
+   * ```
+   *
+   * Note: <a href="#/p5/createShader">createShader()</a>,
+   * <a href="#/p5/createFilterShader">createFilterShader()</a>, and
+   * <a href="#/p5/loadShader">loadShader()</a> are the recommended ways to
+   * create an instance of this class.
+   *
+   * @class p5.Shader
+   * @constructor
+   * @param {p5.RendererGL} renderer WebGL context for this shader.
+   * @param {String} vertSrc source code for the vertex shader program.
+   * @param {String} fragSrc source code for the fragment shader program.
+   * @param {Object} [options] An optional object describing how this shader can
+   * be augmented with hooks. It can include:
+   *  - `vertex`: An object describing the available vertex shader hooks.
+   *  - `fragment`: An object describing the available frament shader hooks.
+   *
+   * @example
+   * <div>
+   * <code>
+   * // Note: A "uniform" is a global variable within a shader program.
+   *
+   * // Create a string with the vertex shader program.
+   * // The vertex shader is called for each vertex.
+   * let vertSrc = `
+   * precision highp float;
+   * uniform mat4 uModelViewMatrix;
+   * uniform mat4 uProjectionMatrix;
+   *
+   * attribute vec3 aPosition;
+   * attribute vec2 aTexCoord;
+   * varying vec2 vTexCoord;
+   *
+   * void main() {
+   *   vTexCoord = aTexCoord;
+   *   vec4 positionVec4 = vec4(aPosition, 1.0);
+   *   gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;
+   * }
+   * `;
+   *
+   * // Create a string with the fragment shader program.
+   * // The fragment shader is called for each pixel.
+   * let fragSrc = `
+   * precision highp float;
+   *
+   * void main() {
+   *   // Set each pixel's RGBA value to yellow.
+   *   gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
+   * }
+   * `;
+   *
+   * function setup() {
+   *   createCanvas(100, 100, WEBGL);
+   *
+   *   // Create a p5.Shader object.
+   *   let myShader = createShader(vertSrc, fragSrc);
+   *
+   *   // Apply the p5.Shader object.
+   *   shader(myShader);
+   *
+   *   // Style the drawing surface.
+   *   noStroke();
+   *
+   *   // Add a plane as a drawing surface.
+   *   plane(100, 100);
+   *
+   *   describe('A yellow square.');
+   * }
+   * </code>
+   * </div>
+   *
+   * <div>
+   * <code>
+   * // Note: A "uniform" is a global variable within a shader program.
+   *
+   * let mandelbrot;
+   *
+   * async function setup() {
+   *   mandelbrot = await loadShader('assets/shader.vert', 'assets/shader.frag');
+   *   createCanvas(100, 100, WEBGL);
+   *
+   *   // Use the p5.Shader object.
+   *   shader(mandelbrot);
+   *
+   *   // Set the shader uniform p to an array.
+   *   mandelbrot.setUniform('p', [-0.74364388703, 0.13182590421]);
+   *
+   *   describe('A fractal image zooms in and out of focus.');
+   * }
+   *
+   * function draw() {
+   *   // Set the shader uniform r to a value that oscillates between 0 and 2.
+   *   mandelbrot.setUniform('r', sin(frameCount * 0.01) + 1);
+   *
+   *   // Add a quad as a display surface for the shader.
+   *   quad(-1, -1, 1, -1, 1, 1, -1, 1);
+   * }
+   * </code>
+   * </div>
+   */
+  p5.Shader = Shader;
+}
+
+if(typeof p5 !== 'undefined'){
+  shader(p5);
 }
 
 /**
@@ -65027,131 +66587,7 @@ function material(p5, fn){
     return this;
   };
 
-
-  /**
-   * @private blends colors according to color components.
-   * If alpha value is less than 1, or non-standard blendMode
-   * we need to enable blending on our gl context.
-   * @param  {Number[]} color The currently set color, with values in 0-1 range
-   * @param  {Boolean} [hasTransparency] Whether the shape being drawn has other
-   * transparency internally, e.g. via vertex colors
-   * @return {Number[]}  Normalized numbers array
-   */
-  RendererGL.prototype._applyColorBlend = function (colors, hasTransparency) {
-    const gl = this.GL;
-
-    const isTexture = this.states.drawMode === TEXTURE;
-    const doBlend =
-      hasTransparency ||
-      this.states.userFillShader ||
-      this.states.userStrokeShader ||
-      this.states.userPointShader ||
-      isTexture ||
-      this.states.curBlendMode !== BLEND ||
-      colors[colors.length - 1] < 1.0 ||
-      this._isErasing;
-
-    if (doBlend !== this._isBlending) {
-      if (
-        doBlend ||
-        (this.states.curBlendMode !== BLEND &&
-          this.states.curBlendMode !== ADD)
-      ) {
-        gl.enable(gl.BLEND);
-      } else {
-        gl.disable(gl.BLEND);
-      }
-      gl.depthMask(true);
-      this._isBlending = doBlend;
-    }
-    this._applyBlendMode();
-    return colors;
-  };
-
-  /**
-   * @private sets blending in gl context to curBlendMode
-   * @param  {Number[]} color [description]
-   * @return {Number[]}  Normalized numbers array
-   */
-  RendererGL.prototype._applyBlendMode = function () {
-    if (this._cachedBlendMode === this.states.curBlendMode) {
-      return;
-    }
-    const gl = this.GL;
-    switch (this.states.curBlendMode) {
-      case BLEND:
-        gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-        break;
-      case ADD:
-        gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFunc(gl.ONE, gl.ONE);
-        break;
-      case REMOVE:
-        gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
-        break;
-      case MULTIPLY:
-        gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFunc(gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA);
-        break;
-      case SCREEN:
-        gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_COLOR);
-        break;
-      case EXCLUSION:
-        gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
-        gl.blendFuncSeparate(
-          gl.ONE_MINUS_DST_COLOR,
-          gl.ONE_MINUS_SRC_COLOR,
-          gl.ONE,
-          gl.ONE
-        );
-        break;
-      case REPLACE:
-        gl.blendEquation(gl.FUNC_ADD);
-        gl.blendFunc(gl.ONE, gl.ZERO);
-        break;
-      case SUBTRACT:
-        gl.blendEquationSeparate(gl.FUNC_REVERSE_SUBTRACT, gl.FUNC_ADD);
-        gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-        break;
-      case DARKEST:
-        if (this.blendExt) {
-          gl.blendEquationSeparate(
-            this.blendExt.MIN || this.blendExt.MIN_EXT,
-            gl.FUNC_ADD
-          );
-          gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE);
-        } else {
-          console.warn(
-            'blendMode(DARKEST) does not work in your browser in WEBGL mode.'
-          );
-        }
-        break;
-      case LIGHTEST:
-        if (this.blendExt) {
-          gl.blendEquationSeparate(
-            this.blendExt.MAX || this.blendExt.MAX_EXT,
-            gl.FUNC_ADD
-          );
-          gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE);
-        } else {
-          console.warn(
-            'blendMode(LIGHTEST) does not work in your browser in WEBGL mode.'
-          );
-        }
-        break;
-      default:
-        console.error(
-          'Oops! Somehow RendererGL set curBlendMode to an unsupported mode.'
-        );
-        break;
-    }
-    this._cachedBlendMode = this.states.curBlendMode;
-  };
-
-  RendererGL.prototype.shader = function(s) {
+  Renderer3D.prototype.shader = function(s) {
     // Always set the shader as a fill shader
     this.states.setValue('userFillShader', s);
     this.states.setValue('_useNormalMaterial', false);
@@ -65159,32 +66595,32 @@ function material(p5, fn){
     s.setDefaultUniforms();
   };
 
-  RendererGL.prototype.strokeShader = function(s) {
+  Renderer3D.prototype.strokeShader = function(s) {
     this.states.setValue('userStrokeShader', s);
     s.ensureCompiledOnContext(this);
     s.setDefaultUniforms();
   };
 
-  RendererGL.prototype.imageShader = function(s) {
+  Renderer3D.prototype.imageShader = function(s) {
     this.states.setValue('userImageShader', s);
     s.ensureCompiledOnContext(this);
     s.setDefaultUniforms();
   };
 
-  RendererGL.prototype.resetShader = function() {
+  Renderer3D.prototype.resetShader = function() {
     this.states.setValue('userFillShader', null);
     this.states.setValue('userStrokeShader', null);
     this.states.setValue('userImageShader', null);
   };
 
-  RendererGL.prototype.texture = function(tex) {
+  Renderer3D.prototype.texture = function(tex) {
     this.states.setValue('drawMode', TEXTURE);
     this.states.setValue('_useNormalMaterial', false);
     this.states.setValue('_tex', tex);
     this.states.setValue('fillColor', new Color([1, 1, 1]));
   };
 
-  RendererGL.prototype.normalMaterial = function(...args) {
+  Renderer3D.prototype.normalMaterial = function(...args) {
     this.states.setValue('drawMode', FILL);
     this.states.setValue('_useSpecularMaterial', false);
     this.states.setValue('_useEmissiveMaterial', false);
@@ -65194,23 +66630,23 @@ function material(p5, fn){
     this.states.setValue('strokeColor', null);
   };
 
-  // RendererGL.prototype.ambientMaterial = function(v1, v2, v3) {
+  // Renderer3D.prototype.ambientMaterial = function(v1, v2, v3) {
   // }
 
-  // RendererGL.prototype.emissiveMaterial = function(v1, v2, v3, a) {
+  // Renderer3D.prototype.emissiveMaterial = function(v1, v2, v3, a) {
   // }
 
-  // RendererGL.prototype.specularMaterial = function(v1, v2, v3, alpha) {
+  // Renderer3D.prototype.specularMaterial = function(v1, v2, v3, alpha) {
   // }
 
-  RendererGL.prototype.shininess = function(shine) {
+  Renderer3D.prototype.shininess = function(shine) {
     if (shine < 1) {
       shine = 1;
     }
     this.states.setValue('_useShininess', shine);
   };
 
-  RendererGL.prototype.metalness = function(metallic) {
+  Renderer3D.prototype.metalness = function(metallic) {
     const metalMix = 1 - Math.exp(-metallic / 100);
     this.states.setValue('_useMetalness', metalMix);
   };
@@ -66692,7 +68128,7 @@ class Graphics {
    * </div>
    */
   createFramebuffer(options) {
-    return new Framebuffer(this._renderer, options);
+    return new Framebuffer$1(this._renderer, options);
   }
 
   _assert3d(name) {
@@ -66841,24 +68277,29 @@ function graphics(p5, fn){
 
 
 class Texture {
-  constructor (renderer, obj, settings) {
+  constructor (renderer, obj, settings = {}) {
     this._renderer = renderer;
 
-    const gl = this._renderer.GL;
-
-    settings = settings || {};
-
     this.src = obj;
-    this.glTex = undefined;
-    this.glTarget = gl.TEXTURE_2D;
-    this.glFormat = settings.format || gl.RGBA;
-    this.mipmaps = false;
-    this.glMinFilter = settings.minFilter || gl.LINEAR;
-    this.glMagFilter = settings.magFilter || gl.LINEAR;
-    this.glWrapS = settings.wrapS || gl.CLAMP_TO_EDGE;
-    this.glWrapT = settings.wrapT || gl.CLAMP_TO_EDGE;
-    this.glDataType = settings.dataType || gl.UNSIGNED_BYTE;
 
+    this.format = settings.format || 'rgba8unorm';
+    this.minFilter = settings.minFilter || LINEAR;
+    this.magFilter = settings.magFilter || LINEAR;
+    this.wrapS = settings.wrapS || renderer.states.textureWrapX;
+    this.wrapT = settings.wrapT || renderer.states.textureWrapY;
+    this.dataType = settings.dataType || 'uint8';
+
+    this.textureHandle = null;
+
+    this._detectSourceType();
+
+    const textureData = this._getTextureDataFromSource();
+    this.width = textureData.width;
+    this.height = textureData.height;
+
+    this.init(textureData);
+  }
+  /*
     const support = checkWebGLCapabilities(renderer);
     if (this.glFormat === gl.HALF_FLOAT && !support.halfFloat) {
       console.log('This device does not support dataType HALF_FLOAT. Falling back to FLOAT.');
@@ -66886,36 +68327,29 @@ class Texture {
       if (this.glMinFilter === gl.LINEAR) this.glMinFilter = gl.NEAREST;
       if (this.glMagFilter === gl.LINEAR) this.glMagFilter = gl.NEAREST;
     }
+  }*/
 
-    // used to determine if this texture might need constant updating
-    // because it is a video or gif.
-    this.isSrcMediaElement = false;
-    this._videoPrevUpdateTime = 0;
-    this.isSrcHTMLElement =
-      typeof Element !== 'undefined' &&
-      obj instanceof Element &&
-      !(obj instanceof Graphics) &&
-      !(obj instanceof Renderer);
+  _detectSourceType() {
+    const obj = this.src;
+    this.isFramebufferTexture = obj instanceof FramebufferTexture;
     this.isSrcP5Image = obj instanceof Image;
     this.isSrcP5Graphics = obj instanceof Graphics;
     this.isSrcP5Renderer = obj instanceof Renderer;
-    this.isImageData =
-      typeof ImageData !== 'undefined' && obj instanceof ImageData;
-    this.isFramebufferTexture = obj instanceof FramebufferTexture;
-
-    const textureData = this._getTextureDataFromSource();
-    this.width = textureData.width;
-    this.height = textureData.height;
-
-    this.init(textureData);
-    return this;
+    this.isImageData = typeof ImageData !== 'undefined' && obj instanceof ImageData;
+    this.isSrcMediaElement =
+      typeof MediaElement !== 'undefined' && obj instanceof MediaElement;
+    this.isSrcHTMLElement =
+      typeof Element !== 'undefined' &&
+      obj instanceof Element &&
+      !this.isSrcMediaElement &&
+      !this.isSrcP5Graphics &&
+      !this.isSrcP5Renderer;
   }
 
   remove() {
-    if (this.glTex) {
-      const gl = this._renderer.GL;
-      gl.deleteTexture(this.glTex);
-      this.glTex = undefined;
+    if (this.textureHandle) {
+      this._renderer.deleteTexture(this.textureHandle);
+      this.textureHandle = null;
     }
   }
 
@@ -66948,52 +68382,51 @@ class Texture {
    * tries to upload the texture for the first time if data is
    * already available.
    */
-  init (data) {
-    const gl = this._renderer.GL;
+  init(textureData) {
     if (!this.isFramebufferTexture) {
-      this.glTex = gl.createTexture();
+      this.textureHandle = this._renderer.createTexture({
+        format: this.format,
+        dataType: this.dataType,
+        width: textureData.width,
+        height: textureData.height,
+      });
+    } else {
+      this.textureHandle = this._renderer.createFramebufferTextureHandle(this.src);
     }
 
-    this.glWrapS = this._renderer.states.textureWrapX;
-    this.glWrapT = this._renderer.states.textureWrapY;
+    this._renderer.setTextureParams(this, {
+      minFilter: this.minFilter,
+      magFilter: this.magFilter,
+      wrapS: this.wrapS,
+      wrapT: this.wrapT
+    });
 
-    this.setWrapMode(this.glWrapS, this.glWrapT);
     this.bindTexture();
 
-    //gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.glMagFilter);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.glMinFilter);
+    if (this._shouldDeferUpload()) {
+      this._renderer.uploadTextureFromData(
+        this.textureHandle,
+        new Uint8Array(1, 1, 1, 1),
+        1,
+        1
+      );
+    } else if (!this.isFramebufferTexture) {
+      // this.update()
+      this._renderer.uploadTextureFromSource(
+        this.textureHandle,
+        textureData
+      );
+    }
 
-    if (this.isFramebufferTexture) ; else if (
+    this.unbindTexture();
+  }
+
+  _shouldDeferUpload() {
+    return (
       this.width === 0 ||
       this.height === 0 ||
       (this.isSrcMediaElement && !this.src.loadedmetadata)
-    ) {
-    // assign a 1×1 empty texture initially, because data is not yet ready,
-    // so that no errors occur in gl console!
-      const tmpdata = new Uint8Array([1, 1, 1, 1]);
-      gl.texImage2D(
-        this.glTarget,
-        0,
-        gl.RGBA,
-        1,
-        1,
-        0,
-        this.glFormat,
-        this.glDataType,
-        tmpdata
-      );
-    } else {
-    // data is ready: just push the texture!
-      gl.texImage2D(
-        this.glTarget,
-        0,
-        this.glFormat,
-        this.glFormat,
-        this.glDataType,
-        data
-      );
-    }
+    );
   }
 
   /**
@@ -67002,7 +68435,22 @@ class Texture {
    * possible or to expensive to do a calculation to determine wheter or
    * not the data has occurred, this method simply re-uploads the texture.
    */
-  update () {
+  update() {
+    const textureData = this._getTextureDataFromSource();
+    if (!textureData) return false;
+
+    let updated = false;
+
+    if (this._shouldUpdate(textureData)) {
+      this.bindTexture();
+      this._renderer.uploadTextureFromSource(this.textureHandle, textureData);
+      updated = true;
+    }
+
+    return updated;
+  }
+
+  _shouldUpdate(textureData) {
     const data = this.src;
     if (data.width === 0 || data.height === 0) {
       return false; // nothing to do!
@@ -67015,10 +68463,7 @@ class Texture {
       return false;
     }
 
-    const textureData = this._getTextureDataFromSource();
     let updated = false;
-
-    const gl = this._renderer.GL;
     // pull texture from data, make sure width & height are appropriate
     if (
       textureData.width !== this.width ||
@@ -67083,190 +68528,54 @@ class Texture {
       updated = true;
     }
 
-    if (updated) {
-      this.bindTexture();
-      gl.texImage2D(
-        this.glTarget,
-        0,
-        this.glFormat,
-        this.glFormat,
-        this.glDataType,
-        textureData
-      );
-    }
-
     return updated;
   }
 
-  /**
-   * Binds the texture to the appropriate GL target.
-   */
-  bindTexture () {
-    // bind texture using gl context + glTarget and
-    // generated gl texture object
-    const gl = this._renderer.GL;
-    gl.bindTexture(this.glTarget, this.getTexture());
-
+  bindTexture() {
+    this._renderer.bindTexture(this);
     return this;
   }
 
-  /**
-   * Unbinds the texture from the appropriate GL target.
-   */
   unbindTexture () {
-    // unbind per above, disable texturing on glTarget
-    const gl = this._renderer.GL;
-    gl.bindTexture(this.glTarget, null);
+    this._renderer.unbindTexture();
   }
 
   getTexture() {
     if (this.isFramebufferTexture) {
       return this.src.rawTexture();
     } else {
-      return this.glTex;
+      return this.textureHandle;
     }
   }
 
-  /**
-   * Sets how a texture is be interpolated when upscaled or downscaled.
-   * Nearest filtering uses nearest neighbor scaling when interpolating
-   * Linear filtering uses WebGL's linear scaling when interpolating
-   * @param {String} downScale Specifies the texture filtering when
-   *                           textures are shrunk. Options are LINEAR or NEAREST
-   * @param {String} upScale Specifies the texture filtering when
-   *                         textures are magnified. Options are LINEAR or NEAREST
-   * @todo implement mipmapping filters
-   */
-  setInterpolation (downScale, upScale) {
-    const gl = this._renderer.GL;
-
-    this.glMinFilter = this.glFilter(downScale);
-    this.glMagFilter = this.glFilter(upScale);
-
-    this.bindTexture();
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.glMinFilter);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.glMagFilter);
-    this.unbindTexture();
+  getSampler() {
+    return this._renderer.getSampler(this);
   }
 
-  glFilter(filter) {
-    const gl = this._renderer.GL;
-    if (filter === NEAREST) {
-      return gl.NEAREST;
-    } else {
-      return gl.LINEAR;
-    }
+  setInterpolation(minFilter, magFilter) {
+    this.minFilter = minFilter;
+    this.magFilter = magFilter;
+    this._renderer.setTextureParams(this);
   }
 
-  /**
-   * Sets the texture wrapping mode. This controls how textures behave
-   * when their uv's go outside of the 0 - 1 range. There are three options:
-   * CLAMP, REPEAT, and MIRROR. REPEAT & MIRROR are only available if the texture
-   * is a power of two size (128, 256, 512, 1024, etc.).
-   * @param {String} wrapX Controls the horizontal texture wrapping behavior
-   * @param {String} wrapY Controls the vertical texture wrapping behavior
-   */
-  setWrapMode (wrapX, wrapY) {
-    const gl = this._renderer.GL;
-
-    // for webgl 1 we need to check if the texture is power of two
-    // if it isn't we will set the wrap mode to CLAMP
-    // webgl2 will support npot REPEAT and MIRROR but we don't check for it yet
-    const isPowerOfTwo = x => (x & (x - 1)) === 0;
-    const textureData = this._getTextureDataFromSource();
-
-    let wrapWidth;
-    let wrapHeight;
-
-    if (textureData.naturalWidth && textureData.naturalHeight) {
-      wrapWidth = textureData.naturalWidth;
-      wrapHeight = textureData.naturalHeight;
-    } else {
-      wrapWidth = this.width;
-      wrapHeight = this.height;
-    }
-
-    const widthPowerOfTwo = isPowerOfTwo(wrapWidth);
-    const heightPowerOfTwo = isPowerOfTwo(wrapHeight);
-
-    if (wrapX === REPEAT) {
-      if (
-        this._renderer.webglVersion === WEBGL2 ||
-      (widthPowerOfTwo && heightPowerOfTwo)
-      ) {
-        this.glWrapS = gl.REPEAT;
-      } else {
-        console.warn(
-          'You tried to set the wrap mode to REPEAT but the texture size is not a power of two. Setting to CLAMP instead'
-        );
-        this.glWrapS = gl.CLAMP_TO_EDGE;
-      }
-    } else if (wrapX === MIRROR) {
-      if (
-        this._renderer.webglVersion === WEBGL2 ||
-      (widthPowerOfTwo && heightPowerOfTwo)
-      ) {
-        this.glWrapS = gl.MIRRORED_REPEAT;
-      } else {
-        console.warn(
-          'You tried to set the wrap mode to MIRROR but the texture size is not a power of two. Setting to CLAMP instead'
-        );
-        this.glWrapS = gl.CLAMP_TO_EDGE;
-      }
-    } else {
-      // falling back to default if didn't get a proper mode
-      this.glWrapS = gl.CLAMP_TO_EDGE;
-    }
-
-    if (wrapY === REPEAT) {
-      if (
-        this._renderer.webglVersion === WEBGL2 ||
-      (widthPowerOfTwo && heightPowerOfTwo)
-      ) {
-        this.glWrapT = gl.REPEAT;
-      } else {
-        console.warn(
-          'You tried to set the wrap mode to REPEAT but the texture size is not a power of two. Setting to CLAMP instead'
-        );
-        this.glWrapT = gl.CLAMP_TO_EDGE;
-      }
-    } else if (wrapY === MIRROR) {
-      if (
-        this._renderer.webglVersion === WEBGL2 ||
-      (widthPowerOfTwo && heightPowerOfTwo)
-      ) {
-        this.glWrapT = gl.MIRRORED_REPEAT;
-      } else {
-        console.warn(
-          'You tried to set the wrap mode to MIRROR but the texture size is not a power of two. Setting to CLAMP instead'
-        );
-        this.glWrapT = gl.CLAMP_TO_EDGE;
-      }
-    } else {
-      // falling back to default if didn't get a proper mode
-      this.glWrapT = gl.CLAMP_TO_EDGE;
-    }
-
-    this.bindTexture();
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, this.glWrapS);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, this.glWrapT);
-    this.unbindTexture();
+  setWrapMode(wrapX, wrapY) {
+    this.wrapS = wrapX;
+    this.wrapT = wrapY;
+    this._renderer.setTextureParams(this);
   }
 }
 
 class MipmapTexture extends Texture {
-  constructor(renderer, levels, settings) {
-    super(renderer, levels, settings);
-    const gl = this._renderer.GL;
-    if (this.glMinFilter === gl.LINEAR) {
-      this.glMinFilter = gl.LINEAR_MIPMAP_LINEAR;
-    }
-  }
+  constructor(renderer, levels, settings = {}) {
+    // Set default mipmap filtering
+    const mipmapSettings = {
+      minFilter: LINEAR,
+      magFilter: LINEAR,
+      ...settings
+    };
 
-  glFilter(_filter) {
-    const gl = this._renderer.GL;
-    // TODO: support others
-    return gl.LINEAR_MIPMAP_LINEAR;
+    super(renderer, levels, mipmapSettings);
+    this.levels = levels;
   }
 
   _getTextureDataFromSource() {
@@ -67274,26 +68583,42 @@ class MipmapTexture extends Texture {
   }
 
   init(levels) {
-    const gl = this._renderer.GL;
-    this.glTex = gl.createTexture();
+    // Handle both ImageData array (WebGL) and WebGPU texture object
+    if (Array.isArray(levels)) {
+      // WebGL path: levels is array of ImageData
+      const firstLevel = levels[0];
+      this.width = firstLevel.width;
+      this.height = firstLevel.height;
 
-    this.bindTexture();
-    for (let level = 0; level < levels.length; level++) {
-      gl.texImage2D(
-        this.glTarget,
-        level,
-        this.glFormat,
-        this.glFormat,
-        this.glDataType,
-        levels[level]
-      );
+      // Let renderer create the mipmap texture handle
+      this.textureHandle = this._renderer.createMipmapTextureHandle({
+        levels: levels,
+        format: this.format,
+        dataType: this.dataType,
+        width: this.width,
+        height: this.height,
+      });
+    } else {
+      // WebGPU path: levels is a mipmapData object with pre-built GPU texture
+      this.width = levels.size;
+      this.height = levels.size;
+
+      // Let renderer create the texture handle from the GPU texture
+      this.textureHandle = this._renderer.createMipmapTextureHandle({
+        gpuTexture: levels.gpuTexture,
+        format: levels.format,
+        dataType: 'uint8',
+        width: this.width,
+        height: this.height,
+      });
     }
 
-    this.glMinFilter = gl.LINEAR_MIPMAP_LINEAR;
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, this.glMagFilter);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, this.glMinFilter);
-
-    this.unbindTexture();
+    this._renderer.setTextureParams(this, {
+      minFilter: this.minFilter,
+      magFilter: this.magFilter,
+      wrapS: this.wrapS,
+      wrapT: this.wrapT
+    });
   }
 
   update() {}
@@ -67336,29 +68661,493 @@ function texture(p5, fn){
   p5.MipmapTexture = MipmapTexture;
 }
 
+if(typeof p5 !== 'undefined'){
+  texture(p5);
+}
+
+/**
+ * @private
+ * @param {Uint8Array|Float32Array|undefined} pixels An existing pixels array to reuse if the size is the same
+ * @param {WebGLRenderingContext} gl The WebGL context
+ * @param {WebGLFramebuffer|null} framebuffer The Framebuffer to read
+ * @param {Number} x The x coordiante to read, premultiplied by pixel density
+ * @param {Number} y The y coordiante to read, premultiplied by pixel density
+ * @param {Number} width The width in pixels to be read (factoring in pixel density)
+ * @param {Number} height The height in pixels to be read (factoring in pixel density)
+ * @param {GLEnum} format Either RGB or RGBA depending on how many channels to read
+ * @param {GLEnum} type The datatype of each channel, e.g. UNSIGNED_BYTE or FLOAT
+ * @param {Number|undefined} flipY If provided, the total height with which to flip the y axis about
+ * @returns {Uint8Array|Float32Array} pixels A pixels array with the current state of the
+ * WebGL context read into it
+ */
+function readPixelsWebGL(
+  pixels,
+  gl,
+  framebuffer,
+  x,
+  y,
+  width,
+  height,
+  format,
+  type,
+  flipY,
+) {
+  // Record the currently bound framebuffer so we can go back to it after, and
+  // bind the framebuffer we want to read from
+  const prevFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+  const channels = format === gl.RGBA ? 4 : 3;
+
+  // Make a pixels buffer if it doesn't already exist
+  const len = width * height * channels;
+  const TypedArrayClass = type === gl.UNSIGNED_BYTE ? Uint8Array : Float32Array;
+  if (!(pixels instanceof TypedArrayClass) || pixels.length !== len) {
+    pixels = new TypedArrayClass(len);
+  }
+
+  gl.readPixels(
+    x,
+    flipY ? flipY - y - height : y,
+    width,
+    height,
+    format,
+    type,
+    pixels,
+  );
+
+  // Re-bind whatever was previously bound
+  gl.bindFramebuffer(gl.FRAMEBUFFER, prevFramebuffer);
+
+  if (flipY) {
+    // WebGL pixels are inverted compared to 2D pixels, so we have to flip
+    // the resulting rows. Adapted from https://stackoverflow.com/a/41973289
+    const halfHeight = Math.floor(height / 2);
+    const tmpRow = new TypedArrayClass(width * channels);
+    for (let y = 0; y < halfHeight; y++) {
+      const topOffset = y * width * 4;
+      const bottomOffset = (height - y - 1) * width * 4;
+      tmpRow.set(pixels.subarray(topOffset, topOffset + width * 4));
+      pixels.copyWithin(topOffset, bottomOffset, bottomOffset + width * 4);
+      pixels.set(tmpRow, bottomOffset);
+    }
+  }
+
+  return pixels;
+}
+
+/**
+ * @private
+ * @param {WebGLRenderingContext} gl The WebGL context
+ * @param {WebGLFramebuffer|null} framebuffer The Framebuffer to read
+ * @param {Number} x The x coordinate to read, premultiplied by pixel density
+ * @param {Number} y The y coordinate to read, premultiplied by pixel density
+ * @param {GLEnum} format Either RGB or RGBA depending on how many channels to read
+ * @param {GLEnum} type The datatype of each channel, e.g. UNSIGNED_BYTE or FLOAT
+ * @param {Number|undefined} flipY If provided, the total height with which to flip the y axis about
+ * @returns {Number[]} pixels The channel data for the pixel at that location
+ */
+function readPixelWebGL(gl, framebuffer, x, y, format, type, flipY) {
+  // Record the currently bound framebuffer so we can go back to it after, and
+  // bind the framebuffer we want to read from
+  const prevFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+  const channels = format === gl.RGBA ? 4 : 3;
+  const TypedArrayClass = type === gl.UNSIGNED_BYTE ? Uint8Array : Float32Array;
+  const pixels = new TypedArrayClass(channels);
+
+  gl.readPixels(x, flipY ? flipY - y - 1 : y, 1, 1, format, type, pixels);
+
+  // Re-bind whatever was previously bound
+  gl.bindFramebuffer(gl.FRAMEBUFFER, prevFramebuffer);
+
+  return Array.from(pixels);
+}
+
+function setWebGLTextureParams(texture, gl, webglVersion) {
+  texture.bindTexture();
+  const glMinFilter =
+    texture.minFilter === NEAREST ? gl.NEAREST :
+      texture.minFilter === LINEAR_MIPMAP ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR;
+  const glMagFilter =
+    texture.magFilter === NEAREST ? gl.NEAREST : gl.LINEAR;
+
+  // for webgl 1 we need to check if the texture is power of two
+  // if it isn't we will set the wrap mode to CLAMP
+  // webgl2 will support npot REPEAT and MIRROR but we don't check for it yet
+  const isPowerOfTwo = (x) => (x & (x - 1)) === 0;
+  const textureData = texture._getTextureDataFromSource();
+
+  let wrapWidth;
+  let wrapHeight;
+
+  if (textureData.naturalWidth && textureData.naturalHeight) {
+    wrapWidth = textureData.naturalWidth;
+    wrapHeight = textureData.naturalHeight;
+  } else {
+    wrapWidth = texture.width;
+    wrapHeight = texture.height;
+  }
+
+  const widthPowerOfTwo = isPowerOfTwo(wrapWidth);
+  const heightPowerOfTwo = isPowerOfTwo(wrapHeight);
+  let glWrapS, glWrapT;
+
+  if (texture.wrapS === REPEAT) {
+    if (
+      webglVersion === WEBGL2 ||
+      (widthPowerOfTwo && heightPowerOfTwo)
+    ) {
+      glWrapS = gl.REPEAT;
+    } else {
+      console.warn(
+        "You tried to set the wrap mode to REPEAT but the texture size is not a power of two. Setting to CLAMP instead",
+      );
+      glWrapS = gl.CLAMP_TO_EDGE;
+    }
+  } else if (texture.wrapS === MIRROR) {
+    if (
+      webglVersion === WEBGL2 ||
+      (widthPowerOfTwo && heightPowerOfTwo)
+    ) {
+      glWrapS = gl.MIRRORED_REPEAT;
+    } else {
+      console.warn(
+        "You tried to set the wrap mode to MIRROR but the texture size is not a power of two. Setting to CLAMP instead",
+      );
+      glWrapS = gl.CLAMP_TO_EDGE;
+    }
+  } else {
+    // falling back to default if didn't get a proper mode
+    glWrapS = gl.CLAMP_TO_EDGE;
+  }
+
+  if (texture.wrapT === REPEAT) {
+    if (
+      webglVersion === WEBGL2 ||
+      (widthPowerOfTwo && heightPowerOfTwo)
+    ) {
+      glWrapT = gl.REPEAT;
+    } else {
+      console.warn(
+        "You tried to set the wrap mode to REPEAT but the texture size is not a power of two. Setting to CLAMP instead",
+      );
+      glWrapT = gl.CLAMP_TO_EDGE;
+    }
+  } else if (texture.wrapT === MIRROR) {
+    if (
+      webglVersion === WEBGL2 ||
+      (widthPowerOfTwo && heightPowerOfTwo)
+    ) {
+      glWrapT = gl.MIRRORED_REPEAT;
+    } else {
+      console.warn(
+        "You tried to set the wrap mode to MIRROR but the texture size is not a power of two. Setting to CLAMP instead",
+      );
+      glWrapT = gl.CLAMP_TO_EDGE;
+    }
+  } else {
+    // falling back to default if didn't get a proper mode
+    glWrapT = gl.CLAMP_TO_EDGE;
+  }
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, glMinFilter);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, glMagFilter);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, glWrapS);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, glWrapT);
+  texture.unbindTexture();
+}
+
+function setWebGLUniformValue(shader, uniform, data, getTexture, gl) {
+  const location = uniform.location;
+  shader.useProgram();
+
+  switch (uniform.type) {
+    case gl.BOOL:
+      if (data === true) {
+        gl.uniform1i(location, 1);
+      } else {
+        gl.uniform1i(location, 0);
+      }
+      break;
+    case gl.INT:
+      if (uniform.size > 1) {
+        data.length && gl.uniform1iv(location, data);
+      } else {
+        gl.uniform1i(location, data);
+      }
+      break;
+    case gl.FLOAT:
+      if (uniform.size > 1) {
+        data.length && gl.uniform1fv(location, data);
+      } else {
+        gl.uniform1f(location, data);
+      }
+      break;
+    case gl.FLOAT_MAT3:
+      gl.uniformMatrix3fv(location, false, data);
+      break;
+    case gl.FLOAT_MAT4:
+      gl.uniformMatrix4fv(location, false, data);
+      break;
+    case gl.FLOAT_VEC2:
+      if (uniform.size > 1) {
+        data.length && gl.uniform2fv(location, data);
+      } else {
+        gl.uniform2f(location, data[0], data[1]);
+      }
+      break;
+    case gl.FLOAT_VEC3:
+      if (uniform.size > 1) {
+        data.length && gl.uniform3fv(location, data);
+      } else {
+        gl.uniform3f(location, data[0], data[1], data[2]);
+      }
+      break;
+    case gl.FLOAT_VEC4:
+      if (uniform.size > 1) {
+        data.length && gl.uniform4fv(location, data);
+      } else {
+        gl.uniform4f(location, data[0], data[1], data[2], data[3]);
+      }
+      break;
+    case gl.INT_VEC2:
+      if (uniform.size > 1) {
+        data.length && gl.uniform2iv(location, data);
+      } else {
+        gl.uniform2i(location, data[0], data[1]);
+      }
+      break;
+    case gl.INT_VEC3:
+      if (uniform.size > 1) {
+        data.length && gl.uniform3iv(location, data);
+      } else {
+        gl.uniform3i(location, data[0], data[1], data[2]);
+      }
+      break;
+    case gl.INT_VEC4:
+      if (uniform.size > 1) {
+        data.length && gl.uniform4iv(location, data);
+      } else {
+        gl.uniform4i(location, data[0], data[1], data[2], data[3]);
+      }
+      break;
+    case gl.SAMPLER_2D:
+      if (typeof data == "number") {
+        if (
+          data < gl.TEXTURE0 ||
+          data > gl.TEXTURE31 ||
+          data !== Math.ceil(data)
+        ) {
+          console.log(
+            "🌸 p5.js says: " +
+              "You're trying to use a number as the data for a texture." +
+              "Please use a texture.",
+          );
+          return this;
+        }
+        gl.activeTexture(data);
+        gl.uniform1i(location, data);
+      } else {
+        gl.activeTexture(gl.TEXTURE0 + uniform.samplerIndex);
+        uniform.texture = data instanceof Texture ? data : getTexture(data);
+        gl.uniform1i(location, uniform.samplerIndex);
+        if (uniform.texture.src.gifProperties) {
+          uniform.texture.src._animateGif(this._pInst);
+        }
+      }
+      break;
+    case gl.SAMPLER_CUBE:
+    case gl.SAMPLER_3D:
+    case gl.SAMPLER_2D_SHADOW:
+    case gl.SAMPLER_2D_ARRAY:
+    case gl.SAMPLER_2D_ARRAY_SHADOW:
+    case gl.SAMPLER_CUBE_SHADOW:
+    case gl.INT_SAMPLER_2D:
+    case gl.INT_SAMPLER_3D:
+    case gl.INT_SAMPLER_CUBE:
+    case gl.INT_SAMPLER_2D_ARRAY:
+    case gl.UNSIGNED_INT_SAMPLER_2D:
+    case gl.UNSIGNED_INT_SAMPLER_3D:
+    case gl.UNSIGNED_INT_SAMPLER_CUBE:
+    case gl.UNSIGNED_INT_SAMPLER_2D_ARRAY:
+      if (typeof data !== "number") {
+        break;
+      }
+      if (
+        data < gl.TEXTURE0 ||
+        data > gl.TEXTURE31 ||
+        data !== Math.ceil(data)
+      ) {
+        console.log(
+          "🌸 p5.js says: " +
+            "You're trying to use a number as the data for a texture." +
+            "Please use a texture.",
+        );
+        break;
+      }
+      gl.activeTexture(data);
+      gl.uniform1i(location, data);
+      break;
+    //@todo complete all types
+  }
+}
+
+function getWebGLUniformMetadata(shader, gl) {
+  const program = shader._glProgram;
+
+  const numUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+  const result = [];
+
+  let samplerIndex = 0;
+
+  for (let i = 0; i < numUniforms; ++i) {
+    const uniformInfo = gl.getActiveUniform(program, i);
+    const uniform = {};
+    uniform.location = gl.getUniformLocation(program, uniformInfo.name);
+    uniform.size = uniformInfo.size;
+    let uniformName = uniformInfo.name;
+    //uniforms that are arrays have their name returned as
+    //someUniform[0] which is a bit silly so we trim it
+    //off here. The size property tells us that its an array
+    //so we dont lose any information by doing this
+    if (uniformInfo.size > 1) {
+      uniformName = uniformName.substring(0, uniformName.indexOf("[0]"));
+    }
+    uniform.name = uniformName;
+    uniform.type = uniformInfo.type;
+    uniform._cachedData = undefined;
+    if (uniform.type === gl.SAMPLER_2D) {
+      uniform.isSampler = true;
+      uniform.samplerIndex = samplerIndex;
+      samplerIndex++;
+    }
+
+    uniform.isArray =
+      uniformInfo.size > 1 ||
+      uniform.type === gl.FLOAT_MAT3 ||
+      uniform.type === gl.FLOAT_MAT4 ||
+      uniform.type === gl.FLOAT_VEC2 ||
+      uniform.type === gl.FLOAT_VEC3 ||
+      uniform.type === gl.FLOAT_VEC4 ||
+      uniform.type === gl.INT_VEC2 ||
+      uniform.type === gl.INT_VEC4 ||
+      uniform.type === gl.INT_VEC3;
+
+    result.push(uniform);
+  }
+
+  return result;
+}
+
+function getWebGLShaderAttributes(shader, gl) {
+  const attributes = {};
+
+  const numAttributes = gl.getProgramParameter(
+    shader._glProgram,
+    gl.ACTIVE_ATTRIBUTES,
+  );
+  for (let i = 0; i < numAttributes; ++i) {
+    const attributeInfo = gl.getActiveAttrib(shader._glProgram, i);
+    const name = attributeInfo.name;
+    const location = gl.getAttribLocation(shader._glProgram, name);
+    const attribute = {};
+    attribute.name = name;
+    attribute.location = location;
+    attribute.index = i;
+    attribute.type = attributeInfo.type;
+    attribute.size = attributeInfo.size;
+    attributes[name] = attribute;
+  }
+
+  return attributes;
+}
+
+function populateGLSLHooks(shader, src, shaderType) {
+  const main = "void main";
+  if (!src.includes(main)) return src;
+
+  let [preMain, postMain] = src.split(main);
+
+  let hooks = "";
+  let defines = "";
+  for (const key in shader.hooks.uniforms) {
+    hooks += `uniform ${key};\n`;
+  }
+  if (shader.hooks.declarations) {
+    hooks += shader.hooks.declarations + "\n";
+  }
+  if (shader.hooks[shaderType].declarations) {
+    hooks += shader.hooks[shaderType].declarations + "\n";
+  }
+
+  // Handle varying variables from p5.strands
+  if (
+    shader.hooks.varyingVariables &&
+    shader.hooks.varyingVariables.length > 0
+  ) {
+    for (const varyingVar of shader.hooks.varyingVariables) {
+      // Generate OUT declaration for vertex shader, IN declaration for fragment shader
+      if (shaderType === "vertex") {
+        hooks += `OUT ${varyingVar};\n`;
+      } else if (shaderType === "fragment") {
+        hooks += `IN ${varyingVar};\n`;
+      }
+    }
+  }
+  for (const hookDef in shader.hooks.helpers) {
+    hooks += `${hookDef}${shader.hooks.helpers[hookDef]}\n`;
+  }
+  for (const hookDef in shader.hooks[shaderType]) {
+    if (hookDef === "declarations") continue;
+    const [hookType, hookName] = hookDef.split(" ");
+
+    // Add a #define so that if the shader wants to use preprocessor directives to
+    // optimize away the extra function calls in main, it can do so
+    if (
+      shader.hooks.modified.vertex[hookDef] ||
+      shader.hooks.modified.fragment[hookDef]
+    ) {
+      defines += "#define AUGMENTED_HOOK_" + hookName + "\n";
+    }
+
+    hooks +=
+      hookType + " HOOK_" + hookName + shader.hooks[shaderType][hookDef] + "\n";
+  }
+
+  // Allow shaders to specify the location of hook #define statements. Normally these
+  // go after function definitions, but one might want to have them defined earlier
+  // in order to only conditionally make uniforms.
+  if (preMain.indexOf("#define HOOK_DEFINES") !== -1) {
+    preMain = preMain.replace("#define HOOK_DEFINES", "\n" + defines + "\n");
+    defines = "";
+  }
+
+  return preMain + "\n" + defines + hooks + main + postMain;
+}
+
 function checkWebGLCapabilities({ GL, webglVersion }) {
   const gl = GL;
-  const supportsFloat = webglVersion === WEBGL2
-    ? (gl.getExtension('EXT_color_buffer_float') &&
-        gl.getExtension('EXT_float_blend'))
-    : gl.getExtension('OES_texture_float');
-  const supportsFloatLinear = supportsFloat &&
-    gl.getExtension('OES_texture_float_linear');
-  const supportsHalfFloat = webglVersion === WEBGL2
-    ? gl.getExtension('EXT_color_buffer_float')
-    : gl.getExtension('OES_texture_half_float');
-  const supportsHalfFloatLinear = supportsHalfFloat &&
-    gl.getExtension('OES_texture_half_float_linear');
+  const supportsFloat =
+    webglVersion === WEBGL2
+      ? gl.getExtension("EXT_color_buffer_float") &&
+        gl.getExtension("EXT_float_blend")
+      : gl.getExtension("OES_texture_float");
+  const supportsFloatLinear =
+    supportsFloat && gl.getExtension("OES_texture_float_linear");
+  const supportsHalfFloat =
+    webglVersion === WEBGL2
+      ? gl.getExtension("EXT_color_buffer_float")
+      : gl.getExtension("OES_texture_half_float");
+  const supportsHalfFloatLinear =
+    supportsHalfFloat && gl.getExtension("OES_texture_half_float_linear");
   return {
     float: supportsFloat,
     floatLinear: supportsFloatLinear,
     halfFloat: supportsHalfFloat,
-    halfFloatLinear: supportsHalfFloatLinear
+    halfFloatLinear: supportsHalfFloatLinear,
   };
-}
-
-if(typeof p5 !== 'undefined'){
-  texture(p5);
 }
 
 /**
@@ -67374,11 +69163,7 @@ class FramebufferCamera extends Camera {
     super(framebuffer.renderer);
     this.fbo = framebuffer;
 
-    // WebGL textures are upside-down compared to textures that come from
-    // images and graphics. Framebuffer cameras need to invert their y
-    // axes when being rendered to so that the texture comes out rightway up
-    // when read in shaders or image().
-    this.yScale = -1;
+    this.yScale = framebuffer.renderer.framebufferYScale();
   }
 
   _computeCameraDefaultSettings() {
@@ -67386,6 +69171,12 @@ class FramebufferCamera extends Camera {
     this.defaultAspectRatio = this.fbo.width / this.fbo.height;
     this.defaultCameraFOV =
       2 * Math.atan(this.fbo.height / 2 / this.defaultEyeZ);
+  }
+
+  copy() {
+    const _cam = super.copy();
+    _cam.fbo = this.fbo;
+    return _cam;
   }
 }
 
@@ -67408,11 +69199,11 @@ class FramebufferTexture {
   }
 
   rawTexture() {
-    return this.framebuffer[this.property];
+    return { texture: this.framebuffer[this.property] };
   }
 }
 
-class Framebuffer {
+let Framebuffer$1 = class Framebuffer {
   constructor(renderer, settings = {}) {
     this.renderer = renderer;
     this.renderer.framebuffers.add(this);
@@ -67425,7 +69216,7 @@ class Framebuffer {
 
     this.format = settings.format || UNSIGNED_BYTE;
     this.channels = settings.channels || (
-      this.renderer._pInst._glAttributes.alpha
+      this.renderer.defaultFramebufferAlpha()
         ? RGBA
         : RGB
     );
@@ -67433,7 +69224,7 @@ class Framebuffer {
     this.depthFormat = settings.depthFormat || FLOAT;
     this.textureFiltering = settings.textureFiltering || LINEAR;
     if (settings.antialias === undefined) {
-      this.antialiasSamples = this.renderer._pInst._glAttributes.antialias
+      this.antialiasSamples = this.renderer.defaultFramebufferAntialias()
         ? 2
         : 0;
     } else if (typeof settings.antialias === 'number') {
@@ -67442,13 +69233,11 @@ class Framebuffer {
       this.antialiasSamples = settings.antialias ? 2 : 0;
     }
     this.antialias = this.antialiasSamples > 0;
-    if (this.antialias && this.renderer.webglVersion !== WEBGL2) {
-      console.warn('Antialiasing is unsupported in a WebGL 1 context');
+    if (this.antialias && !this.renderer.supportsFramebufferAntialias()) {
+      console.warn('Framebuffer antialiasing is unsupported in this context');
       this.antialias = false;
     }
     this.density = settings.density || this.renderer._pixelDensity;
-    const gl = this.renderer.GL;
-    this.gl = gl;
     if (settings.width && settings.height) {
       const dimensions =
         this.renderer._adjustDimensions(settings.width, settings.height);
@@ -67467,7 +69256,8 @@ class Framebuffer {
       this.height = this.renderer.height;
       this._autoSized = true;
     }
-    this._checkIfFormatsAvailable();
+    // Let renderer validate and adjust formats for this context
+    this.renderer.validateFramebufferFormats(this);
 
     if (settings.stencil && !this.useDepth) {
       console.warn('A stencil buffer can only be used if also using depth. Since the framebuffer has no depth buffer, the stencil buffer will be ignored.');
@@ -67475,23 +69265,13 @@ class Framebuffer {
     this.useStencil = this.useDepth &&
       (settings.stencil === undefined ? true : settings.stencil);
 
-    this.framebuffer = gl.createFramebuffer();
-    if (!this.framebuffer) {
-      throw new Error('Unable to create a framebuffer');
-    }
-    if (this.antialias) {
-      this.aaFramebuffer = gl.createFramebuffer();
-      if (!this.aaFramebuffer) {
-        throw new Error('Unable to create a framebuffer for antialiasing');
-      }
-    }
+    // Let renderer create framebuffer resources with antialiasing support
+    this.renderer.createFramebufferResources(this);
 
     this._recreateTextures();
 
-    const prevCam = this.renderer.states.curCamera;
     this.defaultCamera = this.createCamera();
     this.filterCamera = this.createCamera();
-    this.renderer.states.setValue('curCamera', prevCam);
 
     this.draw(() => this.renderer.clear());
   }
@@ -67821,6 +69601,10 @@ class Framebuffer {
     }
   }
 
+  _deleteTextures() {
+    this.renderer.deleteFramebufferTextures(this);
+  }
+
   /**
    * Creates new textures and renderbuffers given the current size of the
    * framebuffer.
@@ -67828,121 +69612,14 @@ class Framebuffer {
    * @private
    */
   _recreateTextures() {
-    const gl = this.gl;
-
     this._updateSize();
 
-    const prevBoundTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
-    const prevBoundFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
-
-    const colorTexture = gl.createTexture();
-    if (!colorTexture) {
-      throw new Error('Unable to create color texture');
-    }
-    gl.bindTexture(gl.TEXTURE_2D, colorTexture);
-    const colorFormat = this._glColorFormat();
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      colorFormat.internalFormat,
-      this.width * this.density,
-      this.height * this.density,
-      0,
-      colorFormat.format,
-      colorFormat.type,
-      null
-    );
-    this.colorTexture = colorTexture;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-    gl.framebufferTexture2D(
-      gl.FRAMEBUFFER,
-      gl.COLOR_ATTACHMENT0,
-      gl.TEXTURE_2D,
-      colorTexture,
-      0
-    );
-
-    if (this.useDepth) {
-      // Create the depth texture
-      const depthTexture = gl.createTexture();
-      if (!depthTexture) {
-        throw new Error('Unable to create depth texture');
-      }
-      const depthFormat = this._glDepthFormat();
-      gl.bindTexture(gl.TEXTURE_2D, depthTexture);
-      gl.texImage2D(
-        gl.TEXTURE_2D,
-        0,
-        depthFormat.internalFormat,
-        this.width * this.density,
-        this.height * this.density,
-        0,
-        depthFormat.format,
-        depthFormat.type,
-        null
-      );
-
-      gl.framebufferTexture2D(
-        gl.FRAMEBUFFER,
-        this.useStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT,
-        gl.TEXTURE_2D,
-        depthTexture,
-        0
-      );
-      this.depthTexture = depthTexture;
-    }
-
-    // Create separate framebuffer for antialiasing
-    if (this.antialias) {
-      this.colorRenderbuffer = gl.createRenderbuffer();
-      gl.bindRenderbuffer(gl.RENDERBUFFER, this.colorRenderbuffer);
-      gl.renderbufferStorageMultisample(
-        gl.RENDERBUFFER,
-        Math.max(
-          0,
-          Math.min(this.antialiasSamples, gl.getParameter(gl.MAX_SAMPLES))
-        ),
-        colorFormat.internalFormat,
-        this.width * this.density,
-        this.height * this.density
-      );
-
-      if (this.useDepth) {
-        const depthFormat = this._glDepthFormat();
-        this.depthRenderbuffer = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, this.depthRenderbuffer);
-        gl.renderbufferStorageMultisample(
-          gl.RENDERBUFFER,
-          Math.max(
-            0,
-            Math.min(this.antialiasSamples, gl.getParameter(gl.MAX_SAMPLES))
-          ),
-          depthFormat.internalFormat,
-          this.width * this.density,
-          this.height * this.density
-        );
-      }
-
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.aaFramebuffer);
-      gl.framebufferRenderbuffer(
-        gl.FRAMEBUFFER,
-        gl.COLOR_ATTACHMENT0,
-        gl.RENDERBUFFER,
-        this.colorRenderbuffer
-      );
-      if (this.useDepth) {
-        gl.framebufferRenderbuffer(
-          gl.FRAMEBUFFER,
-          this.useStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT,
-          gl.RENDERBUFFER,
-          this.depthRenderbuffer
-        );
-      }
-    }
+    // Let renderer handle texture creation and framebuffer setup
+    this.renderer.recreateFramebufferTextures(this);
 
     if (this.useDepth) {
       this.depth = new FramebufferTexture(this, 'depthTexture');
-      const depthFilter = gl.NEAREST;
+      const depthFilter = NEAREST;
       this.depthP5Texture = new Texture(
         this.renderer,
         this.depth,
@@ -67956,8 +69633,8 @@ class Framebuffer {
 
     this.color = new FramebufferTexture(this, 'colorTexture');
     const filter = this.textureFiltering === LINEAR
-      ? gl.LINEAR
-      : gl.NEAREST;
+      ? LINEAR
+      : NEAREST;
     this.colorP5Texture = new Texture(
       this.renderer,
       this.color,
@@ -67967,131 +69644,6 @@ class Framebuffer {
       }
     );
     this.renderer.textures.set(this.color, this.colorP5Texture);
-
-    gl.bindTexture(gl.TEXTURE_2D, prevBoundTexture);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, prevBoundFramebuffer);
-  }
-
-  /**
-   * To create a WebGL texture, one needs to supply three pieces of information:
-   * the type (the data type each channel will be stored as, e.g. int or float),
-   * the format (the color channels that will each be stored in the previously
-   * specified type, e.g. rgb or rgba), and the internal format (the specifics
-   * of how data for each channel, in the aforementioned type, will be packed
-   * together, such as how many bits to use, e.g. RGBA32F or RGB565.)
-   *
-   * The format and channels asked for by the user hint at what these values
-   * need to be, and the WebGL version affects what options are avaiable.
-   * This method returns the values for these three properties, given the
-   * framebuffer's settings.
-   *
-   * @private
-   */
-  _glColorFormat() {
-    let type, format, internalFormat;
-    const gl = this.gl;
-
-    if (this.format === FLOAT) {
-      type = gl.FLOAT;
-    } else if (this.format === HALF_FLOAT) {
-      type = this.renderer.webglVersion === WEBGL2
-        ? gl.HALF_FLOAT
-        : gl.getExtension('OES_texture_half_float').HALF_FLOAT_OES;
-    } else {
-      type = gl.UNSIGNED_BYTE;
-    }
-
-    if (this.channels === RGBA) {
-      format = gl.RGBA;
-    } else {
-      format = gl.RGB;
-    }
-
-    if (this.renderer.webglVersion === WEBGL2) {
-      // https://webgl2fundamentals.org/webgl/lessons/webgl-data-textures.html
-      const table = {
-        [gl.FLOAT]: {
-          [gl.RGBA]: gl.RGBA32F
-          // gl.RGB32F is not available in Firefox without an alpha channel
-        },
-        [gl.HALF_FLOAT]: {
-          [gl.RGBA]: gl.RGBA16F
-          // gl.RGB16F is not available in Firefox without an alpha channel
-        },
-        [gl.UNSIGNED_BYTE]: {
-          [gl.RGBA]: gl.RGBA8, // gl.RGBA4
-          [gl.RGB]: gl.RGB8 // gl.RGB565
-        }
-      };
-      internalFormat = table[type][format];
-    } else if (this.format === HALF_FLOAT) {
-      internalFormat = gl.RGBA;
-    } else {
-      internalFormat = format;
-    }
-
-    return { internalFormat, format, type };
-  }
-
-  /**
-   * To create a WebGL texture, one needs to supply three pieces of information:
-   * the type (the data type each channel will be stored as, e.g. int or float),
-   * the format (the color channels that will each be stored in the previously
-   * specified type, e.g. rgb or rgba), and the internal format (the specifics
-   * of how data for each channel, in the aforementioned type, will be packed
-   * together, such as how many bits to use, e.g. RGBA32F or RGB565.)
-   *
-   * This method takes into account the settings asked for by the user and
-   * returns values for these three properties that can be used for the
-   * texture storing depth information.
-   *
-   * @private
-   */
-  _glDepthFormat() {
-    let type, format, internalFormat;
-    const gl = this.gl;
-
-    if (this.useStencil) {
-      if (this.depthFormat === FLOAT) {
-        type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
-      } else if (this.renderer.webglVersion === WEBGL2) {
-        type = gl.UNSIGNED_INT_24_8;
-      } else {
-        type = gl.getExtension('WEBGL_depth_texture').UNSIGNED_INT_24_8_WEBGL;
-      }
-    } else {
-      if (this.depthFormat === FLOAT) {
-        type = gl.FLOAT;
-      } else {
-        type = gl.UNSIGNED_INT;
-      }
-    }
-
-    if (this.useStencil) {
-      format = gl.DEPTH_STENCIL;
-    } else {
-      format = gl.DEPTH_COMPONENT;
-    }
-
-    if (this.useStencil) {
-      if (this.depthFormat === FLOAT) {
-        internalFormat = gl.DEPTH32F_STENCIL8;
-      } else if (this.renderer.webglVersion === WEBGL2) {
-        internalFormat = gl.DEPTH24_STENCIL8;
-      } else {
-        internalFormat = gl.DEPTH_STENCIL;
-      }
-    } else if (this.renderer.webglVersion === WEBGL2) {
-      if (this.depthFormat === FLOAT) {
-        internalFormat = gl.DEPTH_COMPONENT32F;
-      } else {
-        internalFormat = gl.DEPTH_COMPONENT24;
-      }
-    } else {
-      internalFormat = gl.DEPTH_COMPONENT;
-    }
-
-    return { internalFormat, format, type };
   }
 
   /**
@@ -68130,17 +69682,7 @@ class Framebuffer {
    * @private
    */
   _handleResize() {
-    const oldColor = this.color;
-    const oldDepth = this.depth;
-    const oldColorRenderbuffer = this.colorRenderbuffer;
-    const oldDepthRenderbuffer = this.depthRenderbuffer;
-
-    this._deleteTexture(oldColor);
-    if (oldDepth) this._deleteTexture(oldDepth);
-    const gl = this.gl;
-    if (oldColorRenderbuffer) gl.deleteRenderbuffer(oldColorRenderbuffer);
-    if (oldDepthRenderbuffer) gl.deleteRenderbuffer(oldDepthRenderbuffer);
-
+    this._deleteTextures();
     this._recreateTextures();
     this.defaultCamera._resize();
   }
@@ -68269,20 +69811,6 @@ class Framebuffer {
   }
 
   /**
-   * Given a raw texture wrapper, delete its stored texture from WebGL memory,
-   * and remove it from p5's list of active textures.
-   *
-   * @param {p5.FramebufferTexture} texture
-   * @private
-   */
-  _deleteTexture(texture) {
-    const gl = this.gl;
-    gl.deleteTexture(texture.rawTexture());
-
-    this.renderer.textures.delete(texture);
-  }
-
-  /**
    * Deletes the framebuffer from GPU memory.
    *
    * Calling `myBuffer.remove()` frees the GPU memory used by the framebuffer.
@@ -68351,19 +69879,11 @@ class Framebuffer {
    * </div>
    */
   remove() {
-    const gl = this.gl;
-    this._deleteTexture(this.color);
-    if (this.depth) this._deleteTexture(this.depth);
-    gl.deleteFramebuffer(this.framebuffer);
-    if (this.aaFramebuffer) {
-      gl.deleteFramebuffer(this.aaFramebuffer);
-    }
-    if (this.depthRenderbuffer) {
-      gl.deleteRenderbuffer(this.depthRenderbuffer);
-    }
-    if (this.colorRenderbuffer) {
-      gl.deleteRenderbuffer(this.colorRenderbuffer);
-    }
+    this._deleteTextures();
+
+    // Let renderer clean up framebuffer resources
+    this.renderer.deleteFramebufferResources(this);
+
     this.renderer.framebuffers.delete(this);
   }
 
@@ -68450,14 +69970,7 @@ class Framebuffer {
    * @private
    */
   _framebufferToBind() {
-    if (this.antialias) {
-      // If antialiasing, draw to an antialiased renderbuffer rather
-      // than directly to the texture. In end() we will copy from the
-      // renderbuffer to the texture.
-      return this.aaFramebuffer;
-    } else {
-      return this.framebuffer;
-    }
+    return this.renderer.getFramebufferToBind(this);
   }
 
   /**
@@ -68466,40 +69979,9 @@ class Framebuffer {
    * @param {'colorTexutre'|'depthTexture'} property The property to update
    */
   _update(property) {
-    if (this.dirty[property] && this.antialias) {
-      const gl = this.gl;
-      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.aaFramebuffer);
-      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.framebuffer);
-      const partsToCopy = {
-        colorTexture: [gl.COLOR_BUFFER_BIT, this.colorP5Texture.glMagFilter]
-      };
-      if (this.useDepth) {
-        partsToCopy.depthTexture = [
-          gl.DEPTH_BUFFER_BIT,
-          this.depthP5Texture.glMagFilter
-        ];
-      }
-      const [flag, filter] = partsToCopy[property];
-      gl.blitFramebuffer(
-        0,
-        0,
-        this.width * this.density,
-        this.height * this.density,
-        0,
-        0,
-        this.width * this.density,
-        this.height * this.density,
-        flag,
-        filter
-      );
+    if (this.dirty[property]) {
+      this.renderer.updateFramebufferTexture(this, property);
       this.dirty[property] = false;
-
-      const activeFbo = this.renderer.activeFramebuffer();
-      if (activeFbo) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, activeFbo._framebufferToBind());
-      } else {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      }
     }
   }
 
@@ -68509,12 +69991,14 @@ class Framebuffer {
    * @private
    */
   _beforeBegin() {
-    const gl = this.gl;
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebufferToBind());
+    this.renderer.bindFramebuffer(this);
     this.renderer.viewport(
       this.width * this.density,
       this.height * this.density
     );
+    if (this.renderer.flushDraw) {
+      this.renderer.flushDraw();
+    }
   }
 
   /**
@@ -68525,6 +70009,12 @@ class Framebuffer {
   _beforeEnd() {
     if (this.antialias) {
       this.dirty = { colorTexture: true, depthTexture: true };
+    }
+    // TODO
+    // This should work but flushes more often than we need to. Ideally we only do this
+    // right before the fbo is read as a texture.
+    if (this.renderer.flushDraw) {
+      this.renderer.flushDraw();
     }
   }
 
@@ -68576,8 +70066,8 @@ class Framebuffer {
    * </div>
    */
   end() {
-    const gl = this.gl;
     this.renderer.pop();
+
     const fbo = this.renderer.activeFramebuffers.pop();
     if (fbo !== this) {
       throw new Error("It looks like you've called end() while another Framebuffer is active.");
@@ -68586,7 +70076,7 @@ class Framebuffer {
     if (this.prevFramebuffer) {
       this.prevFramebuffer._beforeBegin();
     } else {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      this.renderer.bindFramebuffer(null);
       this.renderer.viewport(
         this.renderer._origViewport.width,
         this.renderer._origViewport.height
@@ -68703,25 +70193,19 @@ class Framebuffer {
    */
   loadPixels() {
     this._update('colorTexture');
-    const gl = this.gl;
-    const prevFramebuffer = this.renderer.activeFramebuffer();
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-    const colorFormat = this._glColorFormat();
-    this.pixels = readPixelsWebGL(
-      this.pixels,
-      gl,
-      this.framebuffer,
-      0,
-      0,
-      this.width * this.density,
-      this.height * this.density,
-      colorFormat.format,
-      colorFormat.type
-    );
-    if (prevFramebuffer) {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, prevFramebuffer._framebufferToBind());
+    const result = this.renderer.readFramebufferPixels(this);
+
+    // Check if renderer returned a Promise (WebGPU) or data directly (WebGL)
+    if (result && typeof result.then === 'function') {
+      // WebGPU async case - return Promise
+      return result.then(pixels => {
+        this.pixels = pixels;
+        return pixels;
+      });
     } else {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      // WebGL sync case - assign directly
+      this.pixels = result;
+      return result;
     }
   }
 
@@ -68763,7 +70247,7 @@ class Framebuffer {
   get(x, y, w, h) {
     this._update('colorTexture');
     // p5._validateParameters('p5.Framebuffer.get', arguments);
-    const colorFormat = this._glColorFormat();
+
     if (x === undefined && y === undefined) {
       x = 0;
       y = 0;
@@ -68778,14 +70262,7 @@ class Framebuffer {
         y = constrain(y, 0, this.height - 1);
       }
 
-      return readPixelWebGL(
-        this.gl,
-        this.framebuffer,
-        x * this.density,
-        y * this.density,
-        colorFormat.format,
-        colorFormat.type
-      );
+      return this.renderer.readFramebufferPixel(this, x * this.density, y * this.density);
     }
 
     x = constrain(x, 0, this.width - 1);
@@ -68793,60 +70270,7 @@ class Framebuffer {
     w = constrain(w, 1, this.width - x);
     h = constrain(h, 1, this.height - y);
 
-    const rawData = readPixelsWebGL(
-      undefined,
-      this.gl,
-      this.framebuffer,
-      x * this.density,
-      y * this.density,
-      w * this.density,
-      h * this.density,
-      colorFormat.format,
-      colorFormat.type
-    );
-    // Framebuffer data might be either a Uint8Array or Float32Array
-    // depending on its format, and it may or may not have an alpha channel.
-    // To turn it into an image, we have to normalize the data into a
-    // Uint8ClampedArray with alpha.
-    const fullData = new Uint8ClampedArray(
-      w * h * this.density * this.density * 4
-    );
-
-    // Default channels that aren't in the framebuffer (e.g. alpha, if the
-    // framebuffer is in RGB mode instead of RGBA) to 255
-    fullData.fill(255);
-
-    const channels = colorFormat.type === this.gl.RGB ? 3 : 4;
-    for (let y = 0; y < h * this.density; y++) {
-      for (let x = 0; x < w * this.density; x++) {
-        for (let channel = 0; channel < 4; channel++) {
-          const idx = (y * w * this.density + x) * 4 + channel;
-          if (channel < channels) {
-            // Find the index of this pixel in `rawData`, which might have a
-            // different number of channels
-            const rawDataIdx = channels === 4
-              ? idx
-              : (y * w * this.density + x) * channels + channel;
-            fullData[idx] = rawData[rawDataIdx];
-          }
-        }
-      }
-    }
-
-    // Create an image from the data
-    const region = new Image(w * this.density, h * this.density);
-    region.imageData = region.canvas.getContext('2d').createImageData(
-      region.width,
-      region.height
-    );
-    region.imageData.data.set(fullData);
-    region.pixels = region.imageData.data;
-    region.updatePixels();
-    if (this.density !== 1) {
-      // TODO: support get() at a pixel density > 1
-      region.resize(w, h);
-    }
-    return region;
+    return this.renderer.readFramebufferRegion(this, x, y, w, h);
   }
 
   /**
@@ -68898,87 +70322,10 @@ class Framebuffer {
    * </div>
    */
   updatePixels() {
-    const gl = this.gl;
-    this.colorP5Texture.bindTexture();
-    const colorFormat = this._glColorFormat();
-
-    const channels = colorFormat.format === gl.RGBA ? 4 : 3;
-    const len =
-      this.width * this.height * this.density * this.density * channels;
-    const TypedArrayClass = colorFormat.type === gl.UNSIGNED_BYTE
-      ? Uint8Array
-      : Float32Array;
-    if (
-      !(this.pixels instanceof TypedArrayClass) || this.pixels.length !== len
-    ) {
-      throw new Error(
-        'The pixels array has not been set correctly. Please call loadPixels() before updatePixels().'
-      );
-    }
-
-    gl.texImage2D(
-      gl.TEXTURE_2D,
-      0,
-      colorFormat.internalFormat,
-      this.width * this.density,
-      this.height * this.density,
-      0,
-      colorFormat.format,
-      colorFormat.type,
-      this.pixels
-    );
-    this.colorP5Texture.unbindTexture();
-    this.dirty.colorTexture = false;
-
-    const prevFramebuffer = this.renderer.activeFramebuffer();
-    if (this.antialias) {
-      // We need to make sure the antialiased framebuffer also has the updated
-      // pixels so that if more is drawn to it, it goes on top of the updated
-      // pixels instead of replacing them.
-      // We can't blit the framebuffer to the multisampled antialias
-      // framebuffer to leave both in the same state, so instead we have
-      // to use image() to put the framebuffer texture onto the antialiased
-      // framebuffer.
-      this.begin();
-      this.renderer.push();
-      // this.renderer.imageMode(constants.CENTER);
-      this.renderer.states.setValue('imageMode', CORNER);
-      this.renderer.setCamera(this.filterCamera);
-      this.renderer.resetMatrix();
-      this.renderer.states.setValue('strokeColor', null);
-      this.renderer.clear();
-      this.renderer._drawingFilter = true;
-      this.renderer.image(
-        this,
-        0, 0,
-        this.width, this.height,
-        -this.renderer.width / 2, -this.renderer.height / 2,
-        this.renderer.width, this.renderer.height
-      );
-      this.renderer._drawingFilter = false;
-      this.renderer.pop();
-      if (this.useDepth) {
-        gl.clearDepth(1);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
-      }
-      this.end();
-    } else {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-      if (this.useDepth) {
-        gl.clearDepth(1);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
-      }
-      if (prevFramebuffer) {
-        gl.bindFramebuffer(
-          gl.FRAMEBUFFER,
-          prevFramebuffer._framebufferToBind()
-        );
-      } else {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      }
-    }
+    // Let renderer handle the pixel update process
+    this.renderer.updateFramebufferPixels(this);
   }
-}
+};
 
 function framebuffer(p5, fn){
   /**
@@ -69033,7 +70380,7 @@ function framebuffer(p5, fn){
    *                                object.
    * @param {Object} [settings] configuration options.
    */
-  p5.Framebuffer = Framebuffer;
+  p5.Framebuffer = Framebuffer$1;
 
   /**
    * An object that stores the framebuffer's color data.
@@ -69271,7 +70618,10 @@ if(typeof p5 !== 'undefined'){
 let renderers;
 function rendering(p5, fn){
   // Extend additional renderers object to p5 class, new renderer can be similarly attached
-  renderers = p5.renderers = {};
+  if (!p5.renderers) {
+    p5.renderers = {};
+  }
+  renderers = p5.renderers;
 
   /**
    * Creates a canvas element on the web page.
@@ -69291,7 +70641,7 @@ function rendering(p5, fn){
    * the sketch's rendering mode. If an existing
    * <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement" target="_blank">HTMLCanvasElement</a>
    * is passed, as in `createCanvas(900, 500, myCanvas)`, then it will be used
-   * by the sketch.
+   * by the sketch. To use `WEBGPU` mode, make sure you have the WebGPU mode addon included.
    *
    * The fourth parameter is also optional. If an existing
    * <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement" target="_blank">HTMLCanvasElement</a>
@@ -69306,7 +70656,7 @@ function rendering(p5, fn){
    * @method createCanvas
    * @param  {Number} [width] width of the canvas. Defaults to 100.
    * @param  {Number} [height] height of the canvas. Defaults to 100.
-   * @param  {(P2D|WEBGL|P2DHDR)} [renderer] either P2D or WEBGL. Defaults to `P2D`.
+   * @param  {(P2D|WEBGL|P2DHDR|WEBGPU)} [renderer] either P2D, WEBGL, or WEBGPU. Defaults to `P2D`.
    * @param  {HTMLCanvasElement} [canvas] existing canvas element that should be used for the sketch.
    * @return {p5.Renderer} new `p5.Renderer` that holds the canvas.
    *
@@ -69412,7 +70762,11 @@ function rendering(p5, fn){
       });
     }
 
-    return this._renderer;
+    if (this._renderer.contextReady) {
+      return this._renderer.contextReady.then(() => this._renderer);
+    } else {
+      return this._renderer;
+    }
   };
 
   /**
@@ -69813,7 +71167,7 @@ function rendering(p5, fn){
    * </div>
    */
   fn.createFramebuffer = function (options) {
-    return new Framebuffer(this._renderer, options);
+    return new Framebuffer$1(this._renderer, options);
   };
 
   /**
@@ -69964,17 +71318,1682 @@ if(typeof p5 !== 'undefined'){
   rendering(p5, p5.prototype);
 }
 
+var filterBaseFrag = "precision highp float;\n\nuniform sampler2D tex0;\nuniform vec2 canvasSize;\nuniform vec2 texelSize;\n\nIN vec2 vTexCoord;\n\nstruct FilterInputs {\n  vec2 texCoord;\n  vec2 canvasSize;\n  vec2 texelSize;\n};\n\nvoid main(void) {\n  FilterInputs inputs;\n  inputs.texCoord = vTexCoord;\n  inputs.canvasSize = canvasSize;\n  inputs.texelSize = texelSize;\n  OUT_COLOR = HOOK_getColor(inputs, tex0);\n  OUT_COLOR.rgb *= outColor.a;\n}\n";
+
+var filterBaseVert = "precision highp int;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\n\nIN vec3 aPosition;\nIN vec2 aTexCoord;\nOUT vec2 vTexCoord;\n\nvoid main() {\n  // transferring texcoords for the frag shader\n  vTexCoord = aTexCoord;\n\n  // copy position with a fourth coordinate for projection (1.0 is normal)\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n\n  // project to 3D space\n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n}\n";
+
+var webgl2CompatibilityShader = "#ifdef WEBGL2\n\n#define IN in\n#define OUT out\n\n#ifdef FRAGMENT_SHADER\nout vec4 outColor;\n#define OUT_COLOR outColor\n#endif\n#define TEXTURE texture\n\n#else\n\n#ifdef FRAGMENT_SHADER\n#define IN varying\n#else\n#define IN attribute\n#endif\n#define OUT varying\n#define TEXTURE texture2D\n\n#ifdef FRAGMENT_SHADER\n#define OUT_COLOR gl_FragColor\n#endif\n\n#endif\n\n#ifdef FRAGMENT_SHADER\nvec4 getTexture(in sampler2D content, vec2 coord) {\n  vec4 color = TEXTURE(content, coord);\n  if (color.a > 0.) color.rgb /= color.a;\n  return color;\n}\n#endif\n";
+
+/////////////////////
+// Enums for nodes //
+/////////////////////
+const NodeType = {
+  OPERATION: 'operation',
+  LITERAL: 'literal',
+  VARIABLE: 'variable',
+  CONSTANT: 'constant',
+  STRUCT: 'struct',
+  PHI: 'phi',
+  STATEMENT: 'statement',
+  ASSIGNMENT: 'assignment',
+};
+const NodeTypeToName = Object.fromEntries(
+  Object.entries(NodeType).map(([key, val]) => [val, key])
+);
+const NodeTypeRequiredFields = {
+  [NodeType.OPERATION]: ["opCode", "dependsOn", "dimension", "baseType"],
+  [NodeType.LITERAL]: ["value", "dimension", "baseType"],
+  [NodeType.VARIABLE]: ["identifier", "dimension", "baseType"],
+  [NodeType.CONSTANT]: ["value", "dimension", "baseType"],
+  [NodeType.STRUCT]: [""],
+  [NodeType.PHI]: ["dependsOn", "phiBlocks", "dimension", "baseType"],
+  [NodeType.STATEMENT]: ["statementType"],
+  [NodeType.ASSIGNMENT]: ["dependsOn"]
+};
+const StatementType = {
+  DISCARD: 'discard',
+  BREAK: 'break',
+  EARLY_RETURN: 'early_return',
+  EXPRESSION: 'expression', // Used when we want to output a single expression as a statement, e.g. a for loop condition
+  EMPTY: 'empty', // Used for empty statements like ; in for loops
+};
+const BaseType = {
+  FLOAT: "float",
+  INT: "int",
+  BOOL: "bool",
+  MAT: "mat",
+  DEFER: "defer",
+  SAMPLER2D: "sampler2D",
+  SAMPLER: "sampler",
+};
+const BasePriority = {
+  [BaseType.FLOAT]: 3,
+  [BaseType.INT]: 2,
+  [BaseType.BOOL]: 1,
+  [BaseType.MAT]: 0,
+  [BaseType.DEFER]: -1,
+  [BaseType.SAMPLER2D]: -10,
+  [BaseType.SAMPLER]: -11,
+};
+const DataType = {
+  float1: { fnName: "float", baseType: BaseType.FLOAT, dimension:1, priority: 3,  },
+  float2: { fnName: "vec2", baseType: BaseType.FLOAT, dimension:2, priority: 3,  },
+  float3: { fnName: "vec3", baseType: BaseType.FLOAT, dimension:3, priority: 3,  },
+  float4: { fnName: "vec4", baseType: BaseType.FLOAT, dimension:4, priority: 3,  },
+  int1: { fnName: "int", baseType: BaseType.INT, dimension:1, priority: 2,  },
+  int2: { fnName: "ivec2", baseType: BaseType.INT, dimension:2, priority: 2,  },
+  int3: { fnName: "ivec3", baseType: BaseType.INT, dimension:3, priority: 2,  },
+  int4: { fnName: "ivec4", baseType: BaseType.INT, dimension:4, priority: 2,  },
+  bool1: { fnName: "bool", baseType: BaseType.BOOL, dimension:1, priority: 1,  },
+  bool2: { fnName: "bvec2", baseType: BaseType.BOOL, dimension:2, priority: 1,  },
+  bool3: { fnName: "bvec3", baseType: BaseType.BOOL, dimension:3, priority: 1,  },
+  bool4: { fnName: "bvec4", baseType: BaseType.BOOL, dimension:4, priority: 1,  },
+  mat2: { fnName: "mat2x2", baseType: BaseType.MAT, dimension:2, priority: 0,  },
+  mat3: { fnName: "mat3x3", baseType: BaseType.MAT, dimension:3, priority: 0,  },
+  mat4: { fnName: "mat4x4", baseType: BaseType.MAT, dimension:4, priority: 0,  },
+  defer: { fnName:  null, baseType: BaseType.DEFER, dimension: null, priority: -1 },
+  sampler2D: { fnName: "sampler2D", baseType: BaseType.SAMPLER2D, dimension: 1, priority: -10 },
+  sampler: { fnName: "sampler", baseType: BaseType.SAMPLER, dimension: 1, priority: -11 },
+};
+const structType = function (hookType) {
+  let T = hookType.type === undefined ? hookType : hookType.type;
+  const structType = {
+    name: hookType.name,
+    properties: [],
+    typeName: T.typeName,
+  };
+  // TODO: handle struct properties that are themselves structs
+  for (const prop of T.properties) {
+    const propType = prop.type.dataType;
+    structType.properties.push(
+      {name: prop.name, dataType: propType }
+    );
+  }
+  return structType;
+};
+function isStructType(typeInfo) {
+  return !!(typeInfo && typeInfo.properties);
+}
+const GenType = {
+  FLOAT: { baseType: BaseType.FLOAT, dimension: null, priority: 3 },
+  INT: { baseType: BaseType.INT, dimension: null, priority: 2 },
+  BOOL: { baseType: BaseType.BOOL, dimension: null, priority: 1 },
+};
+function typeEquals(nodeA, nodeB) {
+  return (nodeA.dimension === nodeB.dimension) && (nodeA.baseType === nodeB.baseType);
+}
+const TypeInfoFromGLSLName = Object.fromEntries(
+  Object.values(DataType)
+    .filter(info => info.fnName !== null)
+    .map(info => [info.fnName, info])
+);
+const OpCode = {
+  Binary: {
+    ADD: 0,
+    SUBTRACT: 1,
+    MULTIPLY: 2,
+    DIVIDE: 3,
+    MODULO: 4,
+    EQUAL: 5,
+    NOT_EQUAL: 6,
+    GREATER_THAN: 7,
+    GREATER_EQUAL: 8,
+    LESS_THAN: 9,
+    LESS_EQUAL: 10,
+    LOGICAL_AND: 11,
+    LOGICAL_OR: 12,
+    MEMBER_ACCESS: 13,
+  },
+  Unary: {
+    LOGICAL_NOT: 100,
+    NEGATE: 101,
+    PLUS: 102,
+    SWIZZLE: 103,
+  },
+  Nary: {
+    FUNCTION_CALL: 200,
+    CONSTRUCTOR: 201,
+  }};
+const OperatorTable = [
+  { arity: "unary", name: "not", symbol: "!", opCode: OpCode.Unary.LOGICAL_NOT },
+  { arity: "unary", name: "neg", symbol: "-", opCode: OpCode.Unary.NEGATE },
+  { arity: "unary", name: "plus", symbol: "+", opCode: OpCode.Unary.PLUS },
+  { arity: "binary", name: "add", symbol: "+", opCode: OpCode.Binary.ADD },
+  { arity: "binary", name: "sub", symbol: "-", opCode: OpCode.Binary.SUBTRACT },
+  { arity: "binary", name: "mult", symbol: "*", opCode: OpCode.Binary.MULTIPLY },
+  { arity: "binary", name: "div", symbol: "/", opCode: OpCode.Binary.DIVIDE },
+  { arity: "binary", name: "mod", symbol: "%", opCode: OpCode.Binary.MODULO },
+  { arity: "binary", name: "equalTo", symbol: "==", opCode: OpCode.Binary.EQUAL },
+  { arity: "binary", name: "notEqual", symbol: "!=", opCode: OpCode.Binary.NOT_EQUAL },
+  { arity: "binary", name: "greaterThan", symbol: ">", opCode: OpCode.Binary.GREATER_THAN },
+  { arity: "binary", name: "greaterEqual", symbol: ">=", opCode: OpCode.Binary.GREATER_EQUAL },
+  { arity: "binary", name: "lessThan", symbol: "<", opCode: OpCode.Binary.LESS_THAN },
+  { arity: "binary", name: "lessEqual", symbol: "<=", opCode: OpCode.Binary.LESS_EQUAL },
+  { arity: "binary", name: "and", symbol: "&&", opCode: OpCode.Binary.LOGICAL_AND },
+  { arity: "binary", name: "or", symbol: "||", opCode: OpCode.Binary.LOGICAL_OR },
+];
+// export const SymbolToOpCode = {};
+const OpCodeToSymbol = {};
+const UnarySymbolToName = {};
+for (const { symbol, opCode, name, arity } of OperatorTable) {
+  // SymbolToOpCode[symbol] = opCode;
+  OpCodeToSymbol[opCode] = symbol;
+  if (arity === 'unary') {
+    UnarySymbolToName[symbol] = name;
+  }
+}
+const BlockType = {
+  GLOBAL: 'global',
+  FUNCTION: 'function',
+  BRANCH: 'branch',
+  IF_COND: 'if_cond',
+  IF_BODY: 'if_body',
+  ELSE_COND: 'else_cond',
+  SCOPE_START: 'scope_start',
+  SCOPE_END: 'scope_end',
+  FOR: 'for',
+  MERGE: 'merge',
+  DEFAULT: 'default',
+};
+Object.fromEntries(
+  Object.entries(BlockType).map(([key, val]) => [val, key])
+);
+
+function internalError(errorMessage) {
+    const prefixedMessage = `[p5.strands internal error]: ${errorMessage}`; 
+    throw new Error(prefixedMessage);
+}
+
+function userError(errorType, errorMessage) {
+    const prefixedMessage = `[p5.strands ${errorType}]: ${errorMessage}`;
+    throw new Error(prefixedMessage);
+}
+
+/////////////////////////////////
+// Public functions for strands runtime
+/////////////////////////////////
+
+function createDirectedAcyclicGraph() {
+  const graph = {
+    nextID: 0,
+    cache: new Map(),
+    nodeTypes: [],
+    baseTypes: [],
+    dimensions: [],
+    opCodes: [],
+    values: [],
+    identifiers: [],
+    phiBlocks: [],
+    dependsOn: [],
+    usedBy: [],
+    statementTypes: [],
+    swizzles: [],
+  };
+
+  return graph;
+}
+
+function getOrCreateNode(graph, node) {
+  // const key = getNodeKey(node);
+  // const existing = graph.cache.get(key);
+
+  // if (existing !== undefined) {
+    // return existing;
+  // } else {
+    const id = createNode(graph, node);
+    // graph.cache.set(key, id);
+    return id;
+  // }
+}
+
+function createNodeData(data = {}) {
+  const node = {
+    nodeType: data.nodeType ?? null,
+    baseType: data.baseType ?? null,
+    dimension: data.dimension ?? null,
+    opCode: data.opCode ?? null,
+    value: data.value ?? null,
+    identifier: data.identifier ?? null,
+    statementType: data.statementType ?? null,
+    swizzle: data.swizzle ?? null,
+    dependsOn: Array.isArray(data.dependsOn) ? data.dependsOn : [],
+    usedBy: Array.isArray(data.usedBy) ? data.usedBy : [],
+    phiBlocks: Array.isArray(data.phiBlocks) ? data.phiBlocks : [],
+  };
+  validateNode(node);
+  return node;
+}
+
+function getNodeDataFromID(graph, id) {
+  return {
+    id,
+    nodeType: graph.nodeTypes[id],
+    opCode: graph.opCodes[id],
+    value: graph.values[id],
+    identifier: graph.identifiers[id],
+    dependsOn: graph.dependsOn[id],
+    usedBy: graph.usedBy[id],
+    phiBlocks: graph.phiBlocks[id],
+    dimension: graph.dimensions[id],
+    baseType: graph.baseTypes[id],
+    statementType: graph.statementTypes[id],
+    swizzle: graph.swizzles[id],
+  }
+}
+
+function extractNodeTypeInfo(dag, nodeID) {
+  return {
+    baseType: dag.baseTypes[nodeID],
+    dimension: dag.dimensions[nodeID],
+    priority: BasePriority[dag.baseTypes[nodeID]],
+  };
+}
+
+/////////////////////////////////
+// Private functions
+/////////////////////////////////
+function createNode(graph, node) {
+  const id = graph.nextID++;
+  graph.nodeTypes[id] = node.nodeType;
+  graph.opCodes[id] = node.opCode;
+  graph.values[id] = node.value;
+  graph.identifiers[id] = node.identifier;
+  graph.dependsOn[id] = node.dependsOn.slice();
+  graph.usedBy[id] = node.usedBy;
+  graph.phiBlocks[id] = node.phiBlocks.slice();
+  graph.baseTypes[id] = node.baseType;
+  graph.dimensions[id] = node.dimension;
+  graph.statementTypes[id] = node.statementType;
+  graph.swizzles[id] = node.swizzle;
+
+  for (const dep of node.dependsOn) {
+    if (!Array.isArray(graph.usedBy[dep])) {
+      graph.usedBy[dep] = [];
+    }
+    graph.usedBy[dep].push(id);
+  }
+  return id;
+}
+
+function validateNode(node){
+  const nodeType = node.nodeType;
+  const requiredFields = NodeTypeRequiredFields[nodeType];
+  if (requiredFields.length === 2) {
+    internalError(`Required fields for node type '${NodeTypeToName[nodeType]}' not defined. Please add them to the utils.js file in p5.strands!`);
+  }
+  const missingFields = [];
+  for (const field of requiredFields) {
+    if (node[field] === null) {
+      missingFields.push(field);
+    }
+  }
+  if (node.dependsOn?.some(v => v === undefined)) {
+    throw new Error('Undefined dependency!');
+  }
+  if (missingFields.length > 0) {
+    internalError(`Missing fields ${missingFields.join(', ')} for a node type '${NodeTypeToName[nodeType]}'.`);
+  }
+}
+
+// Todo: remove edges to simplify. Block order is always ordered already.
+
+function createControlFlowGraph() {
+  return {
+    // graph structure
+    blockTypes: [],
+    incomingEdges: [],
+    outgoingEdges: [],
+    blockInstructions: [],
+    // runtime data for constructing graph
+    nextID: 0,
+    blockStack: [],
+    blockOrder: [],
+    blockConditions: {},
+    currentBlock: -1,
+  };
+}
+
+function pushBlock(graph, blockID) {
+  graph.blockStack.push(blockID);
+  graph.blockOrder.push(blockID);
+  graph.currentBlock = blockID;
+}
+
+function popBlock(graph) {
+  graph.blockStack.pop();
+  const len = graph.blockStack.length;
+  graph.currentBlock = graph.blockStack[len-1];
+}
+
+function pushBlockForModification(graph, blockID) {
+  graph.blockStack.push(blockID);
+  graph.currentBlock = blockID;
+}
+
+function createBasicBlock(graph, blockType) {
+  const id = graph.nextID++;
+  graph.blockTypes[id] = blockType;
+  graph.incomingEdges[id] = [];
+  graph.outgoingEdges[id] = [];
+  graph.blockInstructions[id]= [];
+  return id;
+}
+
+function addEdge(graph, from, to) {
+  graph.outgoingEdges[from].push(to);
+  graph.incomingEdges[to].push(from);
+}
+
+function recordInBasicBlock(graph, blockID, nodeID) {
+  if (nodeID === undefined) {
+    internalError('undefined nodeID in `recordInBasicBlock()`');
+  }
+  if (blockID === undefined) {
+    internalError('undefined blockID in `recordInBasicBlock()');
+  }
+  graph.blockInstructions[blockID] = graph.blockInstructions[blockID] || [];
+  graph.blockInstructions[blockID].push(nodeID);
+}
+
+function sortCFG(adjacencyList, start) {
+  const visited = new Set();
+  const postOrder = [];
+  function dfs(v) {
+    if (visited.has(v)) {
+      return;
+    }
+    visited.add(v);
+    for (let w of adjacencyList[v].sort((a, b) => b-a) || []) {
+      dfs(w);
+    }
+    postOrder.push(v);
+  }
+
+  dfs(start);
+  return postOrder.reverse();
+}
+
+class StrandsNode {
+  constructor(id, dimension, strandsContext) {
+    this.id = id;
+    this.strandsContext = strandsContext;
+    this.dimension = dimension;
+    this.isStrandsNode = true;
+
+    // Store original identifier for varying variables
+    const dag = this.strandsContext.dag;
+    const nodeData = getNodeDataFromID(dag, this.id);
+    if (nodeData && nodeData.identifier) {
+      this._originalIdentifier = nodeData.identifier;
+    }
+    if (nodeData) {
+      this._originalBaseType = nodeData.baseType;
+      this._originalDimension = nodeData.dimension;
+    }
+  }
+  copy() {
+    return createStrandsNode(this.id, this.dimension, this.strandsContext);
+  }
+  typeInfo() {
+    return {
+      baseType: this._originalBaseType || BaseType.FLOAT,
+      dimension: this.dimension
+    };
+  }
+  bridge(value) {
+    const { dag, cfg } = this.strandsContext;
+    const orig = getNodeDataFromID(dag, this.id);
+    const baseType = orig?.baseType ?? BaseType.FLOAT;
+
+    let newValueID;
+    if (value instanceof StrandsNode) {
+      newValueID = value.id;
+    } else {
+      const newVal = primitiveConstructorNode(
+        this.strandsContext,
+        { baseType, dimension: this.dimension },
+        value
+      );
+      newValueID = newVal.id;
+    }
+
+    // For varying variables, we need both assignment generation AND a way to reference by identifier
+    if (this._originalIdentifier) {
+      // Create a variable node for the target (the varying variable)
+      const { id: targetVarID } = variableNode(
+        this.strandsContext,
+        { baseType: this._originalBaseType, dimension: this._originalDimension },
+        this._originalIdentifier
+      );
+
+      // Create assignment node for GLSL generation
+      const assignmentNode = createNodeData({
+        nodeType: NodeType.ASSIGNMENT,
+        dependsOn: [targetVarID, newValueID],
+        phiBlocks: []
+      });
+      const assignmentID = getOrCreateNode(dag, assignmentNode);
+      recordInBasicBlock(cfg, cfg.currentBlock, assignmentID);
+
+      // Track for global assignments processing
+      this.strandsContext.globalAssignments.push(assignmentID);
+
+      // Simply update this node to be a variable node with the identifier
+      // This ensures it always generates the variable name in expressions
+      const variableNodeData = createNodeData({
+        nodeType: NodeType.VARIABLE,
+        baseType: this._originalBaseType,
+        dimension: this._originalDimension,
+        identifier: this._originalIdentifier
+      });
+      const variableID = getOrCreateNode(dag, variableNodeData);
+
+      this.id = variableID; // Point to the variable node for expression generation
+    } else {
+      this.id = newValueID; // For non-varying variables, just update to new value
+    }
+
+    return this;
+  }
+  bridgeSwizzle(swizzlePattern, value) {
+    const { dag, cfg } = this.strandsContext;
+    const orig = getNodeDataFromID(dag, this.id);
+    const baseType = orig?.baseType ?? BaseType.FLOAT;
+
+    let newValueID;
+    if (value instanceof StrandsNode) {
+      newValueID = value.id;
+    } else {
+      const newVal = primitiveConstructorNode(
+        this.strandsContext,
+        { baseType, dimension: this.dimension },
+        value
+      );
+      newValueID = newVal.id;
+    }
+
+    // For varying variables, create swizzle assignment
+    if (this._originalIdentifier) {
+      // Create a variable node for the target with swizzle
+      const { id: targetVarID } = variableNode(
+        this.strandsContext,
+        { baseType: this._originalBaseType, dimension: this._originalDimension },
+        this._originalIdentifier
+      );
+
+      // Create a swizzle node for the target (myVarying.xyz)
+      const swizzleNode = createNodeData({
+        nodeType: NodeType.OPERATION,
+        opCode: OpCode.Unary.SWIZZLE,
+        baseType: this._originalBaseType,
+        dimension: swizzlePattern.length, // xyz = 3, xy = 2, etc.
+        swizzle: swizzlePattern,
+        dependsOn: [targetVarID]
+      });
+      const swizzleID = getOrCreateNode(dag, swizzleNode);
+
+      // Create assignment node: myVarying.xyz = value
+      const assignmentNode = createNodeData({
+        nodeType: NodeType.ASSIGNMENT,
+        dependsOn: [swizzleID, newValueID],
+        phiBlocks: []
+      });
+      const assignmentID = getOrCreateNode(dag, assignmentNode);
+      recordInBasicBlock(cfg, cfg.currentBlock, assignmentID);
+
+      // Track for global assignments processing in the current hook context
+      this.strandsContext.globalAssignments.push(assignmentID);
+
+      // Simply update this node to be a variable node with the identifier
+      // This ensures it always generates the variable name in expressions
+      const variableNodeData = createNodeData({
+        nodeType: NodeType.VARIABLE,
+        baseType: this._originalBaseType,
+        dimension: this._originalDimension,
+        identifier: this._originalIdentifier
+      });
+      const variableID = getOrCreateNode(dag, variableNodeData);
+
+      this.id = variableID; // Point to the variable node, not the assignment node
+    } else {
+      this.id = newValueID; // For non-varying variables, just update to new value
+    }
+
+    return this;
+  }
+  getValue() {
+    if (this._originalIdentifier) {
+      const { id, dimension } = variableNode(
+        this.strandsContext,
+        { baseType: this._originalBaseType, dimension: this._originalDimension },
+        this._originalIdentifier
+      );
+      return createStrandsNode(id, dimension, this.strandsContext);
+    }
+
+    return this;
+  }
+}
+function createStrandsNode(id, dimension, strandsContext, onRebind) {
+  return new Proxy(
+    new StrandsNode(id, dimension, strandsContext),
+    swizzleTrap(id, dimension, strandsContext, onRebind)
+  );
+}
+
+// Need the .js extension because we also import this from a Node script.
+// Try to keep this file minimal because of that.
+
+// GLSL Built in functions
+// https://docs.gl/el3/abs
+const builtInGLSLFunctions = {
+  //////////// Trigonometry //////////
+  acos: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  acosh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  asin: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  asinh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  atan: [
+    { params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
+    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
+  ],
+  atanh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  cos: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  cosh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  degrees: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  radians: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  sin: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT , isp5Function: true}],
+  sinh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  tan: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  tanh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+
+  ////////// Mathematics //////////
+  abs: [
+    { params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
+    { params: [GenType.FLOAT], returnType: GenType.INT, isp5Function: true}
+  ],
+  ceil: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  clamp: [
+    { params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
+    { params: [GenType.FLOAT,DataType.float1,DataType.float1], returnType: GenType.FLOAT, isp5Function: false},
+    { params: [GenType.INT, GenType.INT, GenType.INT], returnType: GenType.INT, isp5Function: false},
+    { params: [GenType.INT, DataType.int1, DataType.int1], returnType: GenType.INT, isp5Function: false},
+  ],
+  dFdx: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  dFdy: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  exp: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  exp2: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  floor: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  fma: [{ params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  fract: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  fwidth: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  inversesqrt: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  // "isinf": [{}],
+  // "isnan": [{}],
+  log: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  log2: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  max: [
+    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
+    { params: [GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: true},
+    { params: [GenType.INT, GenType.INT], returnType: GenType.INT, isp5Function: true},
+    { params: [GenType.INT, DataType.int1], returnType: GenType.INT, isp5Function: true},
+  ],
+  min: [
+    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
+    { params: [GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: true},
+    { params: [GenType.INT, GenType.INT], returnType: GenType.INT, isp5Function: true},
+    { params: [GenType.INT, DataType.int1], returnType: GenType.INT, isp5Function: true},
+  ],
+  mix: [
+    { params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
+    { params: [GenType.FLOAT, GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: false},
+    { params: [GenType.FLOAT, GenType.FLOAT, GenType.BOOL], returnType: GenType.FLOAT, isp5Function: false},
+  ],
+  mod: [
+    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
+    { params: [GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: true},
+  ],
+  // "modf": [{}],
+  pow: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  round: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  roundEven: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  sign: [
+    { params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
+    { params: [GenType.INT], returnType: GenType.INT, isp5Function: false},
+  ],
+  smoothstep: [
+    { params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
+    { params: [ DataType.float1,DataType.float1, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
+  ],
+  sqrt: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  step: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  trunc: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+
+  ////////// Vector //////////
+  cross: [{ params: [DataType.float3, DataType.float3], returnType: DataType.float3, isp5Function: true}],
+  distance: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType:DataType.float1, isp5Function: true}],
+  dot: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType:DataType.float1, isp5Function: true}],
+  equal: [
+    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.BOOL, isp5Function: false},
+    { params: [GenType.INT, GenType.INT], returnType: GenType.BOOL, isp5Function: false},
+    { params: [GenType.BOOL, GenType.BOOL], returnType: GenType.BOOL, isp5Function: false},
+  ],
+  faceforward: [{ params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  length: [{ params: [GenType.FLOAT], returnType:DataType.float1, isp5Function: false}],
+  normalize: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
+  notEqual: [
+    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.BOOL, isp5Function: false},
+    { params: [GenType.INT, GenType.INT], returnType: GenType.BOOL, isp5Function: false},
+    { params: [GenType.BOOL, GenType.BOOL], returnType: GenType.BOOL, isp5Function: false},
+  ],
+  reflect: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
+  refract: [{ params: [GenType.FLOAT, GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: false}],
+};
+
+const strandsBuiltinFunctions = {
+  ...builtInGLSLFunctions,
+};
+
+//////////////////////////////////////////////
+// Builders for node graphs
+//////////////////////////////////////////////
+function scalarLiteralNode(strandsContext, typeInfo, value) {
+  const { cfg, dag } = strandsContext;
+  let { dimension, baseType } = typeInfo;
+  if (dimension !== 1) {
+    internalError('Created a scalar literal node with dimension > 1.');
+  }
+  const nodeData = createNodeData({
+    nodeType: NodeType.LITERAL,
+    dimension,
+    baseType,
+    value
+  });
+  const id = getOrCreateNode(dag, nodeData);
+  recordInBasicBlock(cfg, cfg.currentBlock, id);
+  return { id, dimension };
+}
+
+function variableNode(strandsContext, typeInfo, identifier) {
+  const { cfg, dag } = strandsContext;
+  const { dimension, baseType } = typeInfo;
+  const nodeData = createNodeData({
+    nodeType: NodeType.VARIABLE,
+    dimension,
+    baseType,
+    identifier
+  });
+  const id = getOrCreateNode(dag, nodeData);
+  recordInBasicBlock(cfg, cfg.currentBlock, id);
+  return { id, dimension };
+}
+
+function unaryOpNode(strandsContext, nodeOrValue, opCode) {
+  const { dag, cfg } = strandsContext;
+  let dependsOn;
+  let node;
+  if (nodeOrValue instanceof StrandsNode) {
+    node = nodeOrValue;
+  } else {
+    const { id, dimension } = primitiveConstructorNode(strandsContext, { baseType: BaseType.FLOAT, dimension: null }, nodeOrValue);
+    node = createStrandsNode(id, dimension, strandsContext);
+  }
+  dependsOn = [node.id];
+  const nodeData = createNodeData({
+    nodeType: NodeType.OPERATION,
+    opCode,
+    dependsOn,
+    baseType: dag.baseTypes[node.id],
+    dimension: node.dimension
+  });
+  const id = getOrCreateNode(dag, nodeData);
+  recordInBasicBlock(cfg, cfg.currentBlock, id);
+  return { id, dimension: node.dimension };
+}
+
+function binaryOpNode(strandsContext, leftStrandsNode, rightArg, opCode) {
+  const { dag, cfg } = strandsContext;
+  // Construct a node for right if its just an array or number etc.
+  let rightStrandsNode;
+  if (rightArg[0] instanceof StrandsNode && rightArg.length === 1) {
+    rightStrandsNode = rightArg[0];
+  } else {
+    const { id, dimension } = primitiveConstructorNode(strandsContext, { baseType: BaseType.FLOAT, dimension: null }, rightArg);
+    rightStrandsNode = createStrandsNode(id, dimension, strandsContext);
+  }
+  let finalLeftNodeID = leftStrandsNode.id;
+  let finalRightNodeID = rightStrandsNode.id;
+
+  // Check if we have to cast either node
+  const leftType = extractNodeTypeInfo(dag, leftStrandsNode.id);
+  const rightType = extractNodeTypeInfo(dag, rightStrandsNode.id);
+  const cast = { node: null, toType: leftType };
+  const bothDeferred = leftType.baseType === rightType.baseType && leftType.baseType === BaseType.DEFER;
+  if (bothDeferred) {
+    cast.toType.baseType = BaseType.FLOAT;
+    if (leftType.dimension === rightType.dimension) {
+      cast.toType.dimension = leftType.dimension;
+    }
+    else if (leftType.dimension === 1 && rightType.dimension > 1) {
+      cast.toType.dimension = rightType.dimension;
+    }
+    else if (rightType.dimension === 1 && leftType.dimension > 1) {
+      cast.toType.dimension = leftType.dimension;
+    }
+    else {
+      userError("type error", `You have tried to perform a binary operation:\n`+
+        `${leftType.baseType+leftType.dimension} ${OpCodeToSymbol[opCode]} ${rightType.baseType+rightType.dimension}\n` +
+        `It's only possible to operate on two nodes with the same dimension, or a scalar value and a vector.`
+      );
+    }
+    const l = primitiveConstructorNode(strandsContext, cast.toType, leftStrandsNode);
+    const r = primitiveConstructorNode(strandsContext, cast.toType, rightStrandsNode);
+    finalLeftNodeID = l.id;
+    finalRightNodeID = r.id;
+  }
+  else if (leftType.baseType !== rightType.baseType ||
+    leftType.dimension !== rightType.dimension) {
+
+    if (leftType.dimension === 1 && rightType.dimension > 1) {
+      cast.node = leftStrandsNode;
+      cast.toType = rightType;
+    }
+    else if (rightType.dimension === 1 && leftType.dimension > 1) {
+      cast.node = rightStrandsNode;
+      cast.toType = leftType;
+    }
+    else if (leftType.priority > rightType.priority) {
+      // e.g. op(float vector, int vector): cast priority is float > int > bool
+      cast.node = rightStrandsNode;
+      cast.toType = leftType;
+    }
+    else if (rightType.priority > leftType.priority) {
+      cast.node = leftStrandsNode;
+      cast.toType = rightType;
+    }
+    else {
+      userError('type error', `A vector of length ${leftType.dimension} operated with a vector of length ${rightType.dimension} is not allowed.`);
+    }
+
+    const casted = primitiveConstructorNode(strandsContext, cast.toType, cast.node);
+
+    if (cast.node === leftStrandsNode) {
+      leftStrandsNode = createStrandsNode(casted.id, casted.dimension, strandsContext);
+      finalLeftNodeID = leftStrandsNode.id;
+    } else {
+      rightStrandsNode = createStrandsNode(casted.id, casted.dimension, strandsContext);
+      finalRightNodeID = rightStrandsNode.id;
+    }
+  }
+
+  const nodeData = createNodeData({
+    nodeType: NodeType.OPERATION,
+    opCode,
+    dependsOn: [finalLeftNodeID, finalRightNodeID],
+    baseType: cast.toType.baseType,
+    dimension: cast.toType.dimension,
+  });
+  const id = getOrCreateNode(dag, nodeData);
+  recordInBasicBlock(cfg, cfg.currentBlock, id);
+  return { id, dimension: nodeData.dimension };
+}
+
+function structInstanceNode(strandsContext, structTypeInfo, identifier, dependsOn) {
+  const { cfg, dag } = strandsContext;
+  if (dependsOn.length === 0) {
+    for (const prop of structTypeInfo.properties) {
+      const typeInfo = prop.dataType;
+      const nodeData = createNodeData({
+        nodeType: NodeType.VARIABLE,
+        baseType: typeInfo.baseType,
+        dimension: typeInfo.dimension,
+        identifier: `${identifier}.${prop.name}`,
+      });
+      const componentID = getOrCreateNode(dag, nodeData);
+      recordInBasicBlock(cfg, cfg.currentBlock, componentID);
+      dependsOn.push(componentID);
+    }
+  }
+
+  const nodeData = createNodeData({
+    nodeType: NodeType.VARIABLE,
+    dimension: structTypeInfo.properties.length,
+    baseType: structTypeInfo.typeName,
+    identifier,
+    dependsOn
+  });
+  const structID = getOrCreateNode(dag, nodeData);
+  recordInBasicBlock(cfg, cfg.currentBlock, structID);
+
+  return { id: structID, dimension: 0, components: dependsOn };
+}
+
+function mapPrimitiveDepsToIDs(strandsContext, typeInfo, dependsOn) {
+  const inputs = Array.isArray(dependsOn) ? dependsOn : [dependsOn];
+  const mappedDependencies = [];
+  let { dimension, baseType } = typeInfo;
+
+  const dag = strandsContext.dag;
+  let calculatedDimensions = 0;
+  let originalNodeID = null;
+  for (const dep of inputs.flat(Infinity)) {
+    if (dep && dep.isStrandsNode) {
+      const node = getNodeDataFromID(dag, dep.id);
+      originalNodeID = dep.id;
+      baseType = node.baseType;
+
+      if (node.opCode === OpCode.Nary.CONSTRUCTOR) {
+        for (const inner of node.dependsOn) {
+          mappedDependencies.push(inner);
+        }
+      } else {
+        mappedDependencies.push(dep.id);
+      }
+
+      calculatedDimensions += node.dimension;
+      continue;
+    }
+    else if (typeof dep === 'number') {
+      const { id, dimension } = scalarLiteralNode(strandsContext, { dimension: 1, baseType }, dep);
+      mappedDependencies.push(id);
+      calculatedDimensions += dimension;
+      continue;
+    }
+    else {
+      userError('type error', `You've tried to construct a scalar or vector type with a non-numeric value: ${dep}`);
+    }
+  }
+  if (dimension === null) {
+    dimension = calculatedDimensions;
+  } else if (dimension > calculatedDimensions && calculatedDimensions === 1) {
+    calculatedDimensions = dimension;
+  } else if(calculatedDimensions !== 1 && calculatedDimensions !== dimension) {
+    userError('type error', `You've tried to construct a ${baseType + dimension} with ${calculatedDimensions} components`);
+  }
+  const inferredTypeInfo = {
+    dimension,
+    baseType,
+    priority: BasePriority[baseType],
+  };
+  return { originalNodeID, mappedDependencies, inferredTypeInfo };
+}
+
+function constructTypeFromIDs(strandsContext, typeInfo, strandsNodesArray) {
+  const nodeData = createNodeData({
+    nodeType: NodeType.OPERATION,
+    opCode: OpCode.Nary.CONSTRUCTOR,
+    dimension: typeInfo.dimension,
+    baseType: typeInfo.baseType,
+    dependsOn: strandsNodesArray
+  });
+  const id = getOrCreateNode(strandsContext.dag, nodeData);
+  return id;
+}
+
+function primitiveConstructorNode(strandsContext, typeInfo, dependsOn) {
+  const cfg = strandsContext.cfg;
+  const { mappedDependencies, inferredTypeInfo } = mapPrimitiveDepsToIDs(strandsContext, typeInfo, dependsOn);
+
+  const finalType = {
+    baseType: typeInfo.baseType,
+    dimension: inferredTypeInfo.dimension
+  };
+
+  const id = constructTypeFromIDs(strandsContext, finalType, mappedDependencies);
+  if (typeInfo.baseType !== BaseType.DEFER) {
+    recordInBasicBlock(cfg, cfg.currentBlock, id);
+  }
+
+  return { id, dimension: finalType.dimension, components: mappedDependencies };
+}
+
+function structConstructorNode(strandsContext, structTypeInfo, rawUserArgs) {
+  const { cfg, dag } = strandsContext;
+  const { properties } = structTypeInfo;
+
+  if (!(rawUserArgs.length === properties.length)) {
+    userError('type error',
+      `You've tried to construct a ${structTypeInfo.typeName} struct with ${rawUserArgs.length} properties, but it expects ${properties.length} properties.\n` +
+      `The properties it expects are:\n` +
+      `${properties.map(prop => prop.name + ' ' + prop.DataType.baseType + prop.DataType.dimension)}`
+    );
+  }
+
+  const dependsOn = [];
+  for (let i = 0; i < properties.length; i++) {
+    const expectedProperty = properties[i];
+    const { originalNodeID, mappedDependencies } = mapPrimitiveDepsToIDs(strandsContext, expectedProperty.dataType, rawUserArgs[i]);
+    if (originalNodeID) {
+      dependsOn.push(originalNodeID);
+    }
+    else {
+      dependsOn.push(
+        constructTypeFromIDs(strandsContext, expectedProperty.dataType, mappedDependencies)
+      );
+    }
+  }
+
+  const nodeData = createNodeData({
+    nodeType: NodeType.OPERATION,
+    opCode: OpCode.Nary.CONSTRUCTOR,
+    dimension: properties.length,
+    baseType: structTypeInfo.typeName ,
+    dependsOn
+  });
+  const id = getOrCreateNode(dag, nodeData);
+  recordInBasicBlock(cfg, cfg.currentBlock, id);
+  return { id, dimension: properties.length, components: structTypeInfo.components };
+}
+
+function functionCallNode(
+  strandsContext,
+  functionName,
+  rawUserArgs,
+  { overloads: rawOverloads } = {},
+) {
+  const { cfg, dag } = strandsContext;
+  const overloads = rawOverloads || strandsBuiltinFunctions[functionName];
+
+  const preprocessedArgs = rawUserArgs.map((rawUserArg) => mapPrimitiveDepsToIDs(strandsContext, DataType.defer, rawUserArg));
+  const matchingArgsCounts = overloads.filter(overload => overload.params.length === preprocessedArgs.length);
+  if (matchingArgsCounts.length === 0) {
+    const argsLengthSet = new Set();
+    const argsLengthArr = [];
+    overloads.forEach((overload) => argsLengthSet.add(overload.params.length));
+    argsLengthSet.forEach((len) => argsLengthArr.push(`${len}`));
+    const argsLengthStr = argsLengthArr.join(', or ');
+    userError("parameter validation error",`Function '${functionName}' has ${overloads.length} variants which expect ${argsLengthStr} arguments, but ${preprocessedArgs.length} arguments were provided.`);
+  }
+
+  const isGeneric = (T) => T.dimension === null;
+  let bestOverload = null;
+  let bestScore = 0;
+  let inferredReturnType = null;
+  let inferredDimension = null;
+
+  for (const overload of matchingArgsCounts) {
+    let isValid = true;
+    let similarity = 0;
+
+    for (let i = 0; i < preprocessedArgs.length; i++) {
+      const preArg = preprocessedArgs[i];
+      const argType = preArg.inferredTypeInfo;
+      const expectedType = overload.params[i];
+      let dimension = expectedType.dimension;
+
+      if (isGeneric(expectedType)) {
+        if (inferredDimension === null || inferredDimension === 1) {
+          inferredDimension = argType.dimension;
+        }
+
+        if (inferredDimension !== argType.dimension &&
+          !(argType.dimension === 1 && inferredDimension >= 1)
+          ) {
+          isValid = false;
+        }
+        dimension = inferredDimension;
+      }
+      else {
+        if (argType.dimension > dimension) {
+          isValid = false;
+        }
+      }
+
+      if (argType.baseType === expectedType.baseType) {
+        similarity += 2;
+      }
+      else if(expectedType.priority > argType.priority) {
+        similarity += 1;
+      }
+
+    }
+
+    if (isValid && (!bestOverload || similarity > bestScore)) {
+      bestOverload = overload;
+      bestScore = similarity;
+      inferredReturnType =  {...overload.returnType };
+      if (isGeneric(inferredReturnType)) {
+        inferredReturnType.dimension = inferredDimension;
+      }
+    }
+  }
+
+  if (bestOverload === null) {
+    userError('parameter validation', `No matching overload for ${functionName} was found!`);
+  }
+
+  let dependsOn = [];
+  for (let i = 0; i < bestOverload.params.length; i++) {
+    const arg = preprocessedArgs[i];
+    const paramType = { ...bestOverload.params[i] };
+    if (isGeneric(paramType)) {
+      paramType.dimension = inferredDimension;
+    }
+    if (arg.originalNodeID && typeEquals(arg.inferredTypeInfo, paramType)) {
+      dependsOn.push(arg.originalNodeID);
+    }
+    else {
+      const castedArgID = constructTypeFromIDs(strandsContext, paramType, arg.mappedDependencies);
+      recordInBasicBlock(cfg, cfg.currentBlock, castedArgID);
+      dependsOn.push(castedArgID);
+    }
+  }
+
+  const nodeData = createNodeData({
+    nodeType: NodeType.OPERATION,
+    opCode: OpCode.Nary.FUNCTION_CALL,
+    identifier: functionName,
+    dependsOn,
+    baseType: inferredReturnType.baseType,
+    dimension: inferredReturnType.dimension
+  });
+  const id = getOrCreateNode(dag, nodeData);
+  recordInBasicBlock(cfg, cfg.currentBlock, id);
+  return { id, dimension: inferredReturnType.dimension  };
+}
+
+function statementNode(strandsContext, statementType) {
+  const { dag, cfg } = strandsContext;
+  const nodeData = createNodeData({
+    nodeType: NodeType.STATEMENT,
+    statementType
+  });
+  const id = getOrCreateNode(dag, nodeData);
+  recordInBasicBlock(cfg, cfg.currentBlock, id);
+  return id;
+}
+
+function swizzleNode(strandsContext, parentNode, swizzle) {
+  const { dag, cfg } = strandsContext;
+  const baseType = dag.baseTypes[parentNode.id];
+  const nodeData = createNodeData({
+    nodeType: NodeType.OPERATION,
+    baseType,
+    dimension: swizzle.length,
+    opCode: OpCode.Unary.SWIZZLE,
+    dependsOn: [parentNode.id],
+    swizzle,
+  });
+  const id = getOrCreateNode(dag, nodeData);
+  recordInBasicBlock(cfg, cfg.currentBlock, id);
+  return { id, dimension: swizzle.length };
+}
+
+function swizzleTrap(id, dimension, strandsContext, onRebind) {
+    const swizzleSets = [
+      ['x', 'y', 'z', 'w'],
+      ['r', 'g', 'b', 'a'],
+      ['s', 't', 'p', 'q']
+    ].map(s => s.slice(0, dimension));
+    const trap = {
+      get(target, property, receiver) {
+        if (property in target) {
+          return Reflect.get(...arguments);
+        } else {
+          for (const set of swizzleSets) {
+            if ([...property.toString()].every(char => set.includes(char))) {
+              const swizzle = [...property].map(char => {
+                const index = set.indexOf(char);
+                return swizzleSets[0][index];
+              }).join('');
+              const node = swizzleNode(strandsContext, target, swizzle);
+              return createStrandsNode(node.id, node.dimension, strandsContext);
+            }
+          }
+        }
+    },
+  set(target, property, value, receiver) {
+    for (const swizzleSet of swizzleSets) {
+      const chars = [...property];
+      const valid =
+        chars.every(c => swizzleSet.includes(c)) &&
+        new Set(chars).size === chars.length &&
+        target.dimension >= chars.length;
+      if (!valid) continue;
+
+      const dim = target.dimension;
+
+      // lanes are the underlying values of the target vector
+      //  e.g. lane 0 holds the value aliased by 'x', 'r', and 's'
+      // the lanes array is in the 'correct' order
+      const lanes = new Array(dim);
+      for (let i = 0; i < dim; i++) {
+        const { id, dimension } = swizzleNode(strandsContext, target, 'xyzw'[i]);
+        lanes[i] = createStrandsNode(id, dimension, strandsContext);
+      }
+
+      // The scalars array contains the individual components of the users values.
+      // This may not be the most efficient way, as we swizzle each component individually,
+      // so that .xyz becomes .x, .y, .z
+      let scalars = [];
+      if (value instanceof StrandsNode) {
+        if (value.dimension === 1) {
+          scalars = Array(chars.length).fill(value);
+        } else if (value.dimension === chars.length) {
+          for (let k = 0; k < chars.length; k++) {
+            const { id, dimension } = swizzleNode(strandsContext, value, 'xyzw'[k]);
+            scalars.push(createStrandsNode(id, dimension, strandsContext));
+          }
+        } else {
+          userError('type error', `Swizzle assignment: RHS vector does not match LHS vector (need ${chars.length}, got ${value.dimension}).`);
+        }
+      } else if (Array.isArray(value)) {
+        const flat = value.flat(Infinity);
+        if (flat.length === 1) {
+          scalars = Array(chars.length).fill(flat[0]);
+        } else if (flat.length === chars.length) {
+          scalars = flat;
+        } else {
+          userError('type error', `Swizzle assignment: RHS length ${flat.length} does not match ${chars.length}.`);
+        }
+      } else if (typeof value === 'number') {
+        scalars = Array(chars.length).fill(value);
+      } else {
+        userError('type error', `Unsupported RHS for swizzle assignment: ${value}`);
+      }
+
+      // The canonical index refers to the actual value's position in the vector lanes
+      // i.e. we are finding (3,2,1) from .zyx
+      // We set the correct value in the lanes array
+      for (let j = 0; j < chars.length; j++) {
+        const canonicalIndex = swizzleSet.indexOf(chars[j]);
+        lanes[canonicalIndex] = scalars[j];
+      }
+
+      const orig = getNodeDataFromID(strandsContext.dag, target.id);
+      const baseType = orig?.baseType ?? BaseType.FLOAT;
+      const { id: newID } = primitiveConstructorNode(
+        strandsContext,
+        { baseType, dimension: dim },
+        lanes
+      );
+
+      target.id = newID;
+
+      // If we swizzle assign on a struct component i.e.
+      //   inputs.position.rg = [1, 2]
+      // The onRebind callback will update the structs components so that it refers to the new values,
+      // and make a new ID for the struct with these new values
+      if (typeof onRebind === 'function') {
+        onRebind(newID);
+      }
+      return true;
+    }
+    return Reflect.set(...arguments);
+  }
+  };
+  return trap;
+}
+
+function shouldCreateTemp(dag, nodeID) {
+  const nodeType = dag.nodeTypes[nodeID];
+  if (nodeType !== NodeType.OPERATION) return false;
+  if (dag.baseTypes[nodeID] === BaseType.SAMPLER2D) return false;
+  const uses = dag.usedBy[nodeID] || [];
+  return uses.length > 1;
+}
+const TypeNames = {
+  'float1': 'float',
+  'float2': 'vec2',
+  'float3': 'vec3',
+  'float4': 'vec4',
+  'int1': 'int',
+  'int2': 'ivec2',
+  'int3': 'ivec3',
+  'int4': 'ivec4',
+  'bool1': 'bool',
+  'bool2': 'bvec2',
+  'bool3': 'bvec3',
+  'bool4': 'bvec4',
+  'mat2': 'mat2x2',
+  'mat3': 'mat3x3',
+  'mat4': 'mat4x4',
+};
+const cfgHandlers = {
+  [BlockType.DEFAULT]: (blockID, strandsContext, generationContext) => {
+    const { dag, cfg } = strandsContext;
+    const instructions = cfg.blockInstructions[blockID] || [];
+    for (const nodeID of instructions) {
+      const nodeType = dag.nodeTypes[nodeID];
+      if (shouldCreateTemp(dag, nodeID)) {
+        const declaration = glslBackend.generateDeclaration(generationContext, dag, nodeID);
+        generationContext.write(declaration);
+      }
+      if (nodeType === NodeType.STATEMENT) {
+        glslBackend.generateStatement(generationContext, dag, nodeID);
+      }
+      if (nodeType === NodeType.ASSIGNMENT) {
+        glslBackend.generateAssignment(generationContext, dag, nodeID);
+        generationContext.visitedNodes.add(nodeID);
+      }
+    }
+  },
+  [BlockType.BRANCH](blockID, strandsContext, generationContext) {
+    const { dag, cfg } = strandsContext;
+    // Find all phi nodes in this branch block and declare them
+    const blockInstructions = cfg.blockInstructions[blockID] || [];
+    for (const nodeID of blockInstructions) {
+      const node = getNodeDataFromID(dag, nodeID);
+      if (node.nodeType === NodeType.PHI) {
+        // Check if the phi node's first dependency already has a temp name
+        const dependsOn = node.dependsOn || [];
+        if (dependsOn.length > 0) {
+          const firstDependency = dependsOn[0];
+          const existingTempName = generationContext.tempNames[firstDependency];
+          if (existingTempName) {
+            // Reuse the existing temp name instead of creating a new one
+            generationContext.tempNames[nodeID] = existingTempName;
+            continue; // Skip declaration, just alias to existing variable
+          }
+        }
+
+        // Otherwise, create a new temp variable for the phi node
+        const tmp = `T${generationContext.nextTempID++}`;
+        generationContext.tempNames[nodeID] = tmp;
+        const T = extractNodeTypeInfo(dag, nodeID);
+        const typeName = glslBackend.getTypeName(T.baseType, T.dimension);
+        generationContext.write(`${typeName} ${tmp};`);
+      }
+    }
+    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
+  },
+  [BlockType.IF_COND](blockID, strandsContext, generationContext) {
+    const { dag, cfg } = strandsContext;
+    const conditionID = cfg.blockConditions[blockID];
+    const condExpr = glslBackend.generateExpression(generationContext, dag, conditionID);
+    generationContext.write(`if (${condExpr})`);
+    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
+  },
+  [BlockType.ELSE_COND](blockID, strandsContext, generationContext) {
+    generationContext.write(`else`);
+    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
+  },
+  [BlockType.IF_BODY](blockID, strandsContext, generationContext) {
+    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
+    this.assignPhiNodeValues(blockID, strandsContext, generationContext);
+  },
+  [BlockType.SCOPE_START](blockID, strandsContext, generationContext) {
+    generationContext.write(`{`);
+    generationContext.indent++;
+  },
+  [BlockType.SCOPE_END](blockID, strandsContext, generationContext) {
+    generationContext.indent--;
+    generationContext.write(`}`);
+  },
+  [BlockType.MERGE](blockID, strandsContext, generationContext) {
+    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
+  },
+  [BlockType.FUNCTION](blockID, strandsContext, generationContext) {
+    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
+  },
+  [BlockType.FOR](blockID, strandsContext, generationContext) {
+    const { dag, cfg } = strandsContext;
+    const instructions = cfg.blockInstructions[blockID] || [];
+
+    generationContext.write(`for (`);
+
+    // Set flag to suppress semicolon on the last statement
+    const originalSuppressSemicolon = generationContext.suppressSemicolon;
+
+    for (let i = 0; i < instructions.length; i++) {
+      const nodeID = instructions[i];
+      const node = getNodeDataFromID(dag, nodeID);
+      const isLast = i === instructions.length - 1;
+
+      // Suppress semicolon on the last statement
+      generationContext.suppressSemicolon = isLast;
+
+      if (shouldCreateTemp(dag, nodeID)) {
+        const declaration = glslBackend.generateDeclaration(generationContext, dag, nodeID);
+        generationContext.write(declaration);
+      }
+      if (node.nodeType === NodeType.STATEMENT) {
+        glslBackend.generateStatement(generationContext, dag, nodeID);
+      }
+      if (node.nodeType === NodeType.ASSIGNMENT) {
+        glslBackend.generateAssignment(generationContext, dag, nodeID);
+        generationContext.visitedNodes.add(nodeID);
+      }
+    }
+
+    // Restore original flag
+    generationContext.suppressSemicolon = originalSuppressSemicolon;
+
+    generationContext.write(`)`);
+  },
+  assignPhiNodeValues(blockID, strandsContext, generationContext) {
+    const { dag, cfg } = strandsContext;
+    // Find all phi nodes that this block feeds into
+    const successors = cfg.outgoingEdges[blockID] || [];
+    for (const successorBlockID of successors) {
+      const instructions = cfg.blockInstructions[successorBlockID] || [];
+      for (const nodeID of instructions) {
+        const node = getNodeDataFromID(dag, nodeID);
+        if (node.nodeType === NodeType.PHI) {
+          // Find which input of this phi node corresponds to our block
+          const branchIndex = node.phiBlocks?.indexOf(blockID);
+          if (branchIndex !== -1 && branchIndex < node.dependsOn.length) {
+            const sourceNodeID = node.dependsOn[branchIndex];
+            const tempName = generationContext.tempNames[nodeID];
+            if (tempName && sourceNodeID !== null) {
+              const sourceExpr = glslBackend.generateExpression(generationContext, dag, sourceNodeID);
+              generationContext.write(`${tempName} = ${sourceExpr};`);
+            }
+          }
+        }
+      }
+    }
+  },
+};
+const glslBackend = {
+  hookEntry(hookType) {
+    const firstLine = `(${hookType.parameters.flatMap((param) => {
+      return `${param.qualifiers?.length ? param.qualifiers.join(' ') : ''}${param.type.typeName} ${param.name}`;
+    }).join(', ')}) {`;
+    return firstLine;
+  },
+  getTypeName(baseType, dimension) {
+    const primitiveTypeName = TypeNames[baseType + dimension];
+    if (!primitiveTypeName) {
+      return baseType;
+    }
+    return primitiveTypeName;
+  },
+  generateHookUniformKey(name, typeInfo) {
+    return `${this.getTypeName(typeInfo.baseType, typeInfo.dimension)} ${name}`;
+  },
+  generateVaryingVariable(varName, typeInfo) {
+    return `${typeInfo.fnName} ${varName}`;
+  },
+  generateLocalDeclaration(varName, typeInfo) {
+    const typeName = typeInfo.fnName;
+    return `${typeName} ${varName};`;
+  },
+  generateStatement(generationContext, dag, nodeID) {
+    const node = getNodeDataFromID(dag, nodeID);
+    // Generate the expression followed by semicolon (unless suppressed)
+    const semicolon = generationContext.suppressSemicolon ? '' : ';';
+    if (node.statementType === StatementType.DISCARD) {
+      generationContext.write(`discard${semicolon}`);
+    } else if (node.statementType === StatementType.BREAK) {
+      generationContext.write(`break${semicolon}`);
+    } else if (node.statementType === StatementType.EXPRESSION) {
+      const exprNodeID = node.dependsOn[0];
+      const expr = this.generateExpression(generationContext, dag, exprNodeID);
+      generationContext.write(`${expr}${semicolon}`);
+    } else if (node.statementType === StatementType.EMPTY) {
+      generationContext.write(semicolon);
+    } else if (node.statementType === StatementType.EARLY_RETURN) {
+      const exprNodeID = node.dependsOn[0];
+      const expr = this.generateExpression(generationContext, dag, exprNodeID);
+      generationContext.write(`return ${expr}${semicolon}`);
+    }
+  },
+  generateAssignment(generationContext, dag, nodeID) {
+    const node = getNodeDataFromID(dag, nodeID);
+    // dependsOn[0] = targetNodeID, dependsOn[1] = sourceNodeID
+    const targetNodeID = node.dependsOn[0];
+    const sourceNodeID = node.dependsOn[1];
+
+    // Generate the target expression (could be variable or swizzle)
+    const targetExpr = this.generateExpression(generationContext, dag, targetNodeID);
+    const sourceExpr = this.generateExpression(generationContext, dag, sourceNodeID);
+    const semicolon = generationContext.suppressSemicolon ? '' : ';';
+
+    // Generate assignment if we have both target and source
+    if (targetExpr && sourceExpr && targetExpr !== sourceExpr) {
+      generationContext.write(`${targetExpr} = ${sourceExpr}${semicolon}`);
+    }
+  },
+  generateDeclaration(generationContext, dag, nodeID) {
+    const expr = this.generateExpression(generationContext, dag, nodeID);
+    const tmp = `T${generationContext.nextTempID++}`;
+    generationContext.tempNames[nodeID] = tmp;
+    const T = extractNodeTypeInfo(dag, nodeID);
+    const typeName = this.getTypeName(T.baseType, T.dimension);
+    return `${typeName} ${tmp} = ${expr};`;
+  },
+  generateReturnStatement(strandsContext, generationContext, rootNodeID, returnType) {
+    const dag = strandsContext.dag;
+    const rootNode = getNodeDataFromID(dag, rootNodeID);
+    if (isStructType(returnType)) {
+      const structTypeInfo = returnType;
+      for (let i = 0; i < structTypeInfo.properties.length; i++) {
+        const prop = structTypeInfo.properties[i];
+        const val = this.generateExpression(generationContext, dag, rootNode.dependsOn[i]);
+        if (prop.name !== val) {
+          generationContext.write(
+            `${rootNode.identifier}.${prop.name} = ${val};`
+          );
+        }
+      }
+    }
+    generationContext.write(`return ${this.generateExpression(generationContext, dag, rootNodeID)};`);
+  },
+  generateExpression(generationContext, dag, nodeID) {
+    const node = getNodeDataFromID(dag, nodeID);
+    if (generationContext.tempNames?.[nodeID]) {
+      return generationContext.tempNames[nodeID];
+    }
+    switch (node.nodeType) {
+      case NodeType.LITERAL:
+      if (node.baseType === BaseType.FLOAT) {
+        return node.value.toFixed(4);
+      }
+      else {
+        return node.value;
+      }
+      case NodeType.VARIABLE:
+      // Track shared variable usage context
+      if (generationContext.shaderContext && generationContext.strandsContext?.sharedVariables?.has(node.identifier)) {
+        const sharedVar = generationContext.strandsContext.sharedVariables.get(node.identifier);
+        if (generationContext.shaderContext === 'vertex') {
+          sharedVar.usedInVertex = true;
+        } else if (generationContext.shaderContext === 'fragment') {
+          sharedVar.usedInFragment = true;
+        }
+      }
+      return node.identifier;
+      case NodeType.OPERATION:
+      const useParantheses = node.usedBy.length > 0;
+      if (node.opCode === OpCode.Nary.CONSTRUCTOR) {
+        // TODO: differentiate casts and constructors for more efficient codegen.
+        // if (node.dependsOn.length === 1 && node.dimension === 1) {
+        //   return this.generateExpression(generationContext, dag, node.dependsOn[0]);
+        // }
+        if (node.baseType === BaseType.SAMPLER2D) {
+          return this.generateExpression(generationContext, dag, node.dependsOn[0]);
+        }
+        const T = this.getTypeName(node.baseType, node.dimension);
+        const deps = node.dependsOn.map((dep) => this.generateExpression(generationContext, dag, dep));
+        return `${T}(${deps.join(', ')})`;
+      }
+      if (node.opCode === OpCode.Nary.FUNCTION_CALL) {
+        const functionArgs = node.dependsOn.map(arg =>this.generateExpression(generationContext, dag, arg));
+        return `${node.identifier}(${functionArgs.join(', ')})`;
+      }
+      if (node.opCode === OpCode.Binary.MEMBER_ACCESS) {
+        const [lID, rID] = node.dependsOn;
+        const lName = this.generateExpression(generationContext, dag, lID);
+        const rName = this.generateExpression(generationContext, dag, rID);
+        return `${lName}.${rName}`;
+      }
+      if (node.opCode === OpCode.Unary.SWIZZLE) {
+        const parentID = node.dependsOn[0];
+        const parentExpr = this.generateExpression(generationContext, dag, parentID);
+        return `${parentExpr}.${node.swizzle}`;
+      }
+      if (node.dependsOn.length === 2) {
+        const [lID, rID] = node.dependsOn;
+        const left  = this.generateExpression(generationContext, dag, lID);
+        const right = this.generateExpression(generationContext, dag, rID);
+
+        // Special case for modulo: use mod() function for floats in GLSL
+        if (node.opCode === OpCode.Binary.MODULO) {
+          const leftNode = getNodeDataFromID(dag, lID);
+          const rightNode = getNodeDataFromID(dag, rID);
+          // If either operand is float, use mod() function
+          if (leftNode.baseType === BaseType.FLOAT || rightNode.baseType === BaseType.FLOAT) {
+            return `mod(${left}, ${right})`;
+          }
+          // For integers, use % operator
+          return `(${left} % ${right})`;
+        }
+
+        const opSym = OpCodeToSymbol[node.opCode];
+        if (useParantheses) {
+          return `(${left} ${opSym} ${right})`;
+        } else {
+          return `${left} ${opSym} ${right}`;
+        }
+      }
+      if (node.opCode === OpCode.Unary.LOGICAL_NOT
+        || node.opCode === OpCode.Unary.NEGATE
+        || node.opCode === OpCode.Unary.PLUS
+        ) {
+        const [i] = node.dependsOn;
+        const val  = this.generateExpression(generationContext, dag, i);
+        const sym  = OpCodeToSymbol[node.opCode];
+        return `${sym}${val}`;
+      }
+      case NodeType.PHI:
+      // Phi nodes represent conditional merging of values
+      // If this phi node has an identifier (like varying variables), use that
+      if (node.identifier) {
+        return node.identifier;
+      }
+      // Otherwise, they should have been declared as temporary variables
+      // and assigned in the appropriate branches
+      if (generationContext.tempNames?.[nodeID]) {
+        return generationContext.tempNames[nodeID];
+      } else {
+        // If no temp was created, this phi node only has one input
+        // so we can just use that directly
+        const validInputs = node.dependsOn.filter(id => id !== null);
+        if (validInputs.length > 0) {
+          return this.generateExpression(generationContext, dag, validInputs[0]);
+        } else {
+          throw new Error(`No valid inputs for node`)
+        }
+      }
+      case NodeType.ASSIGNMENT:
+      internalError(`ASSIGNMENT nodes should not be used as expressions`);
+      default:
+      internalError(`${NodeTypeToName[node.nodeType]} code generation not implemented yet`);
+    }
+  },
+  generateBlock(blockID, strandsContext, generationContext) {
+    const type = strandsContext.cfg.blockTypes[blockID];
+    const handler = cfgHandlers[type] || cfgHandlers[BlockType.DEFAULT];
+    handler.call(cfgHandlers, blockID, strandsContext, generationContext);
+  },
+
+  createGetTextureCall(strandsContext, args) {
+    // In GLSL, getTexture is straightforward - just pass through the args
+    // First argument should be a texture (sampler2D), second should be coordinates
+    const { id, dimension } = functionCallNode(strandsContext, 'getTexture', args, {
+      overloads: [{
+        params: [DataType.sampler2D, DataType.float2],
+        returnType: DataType.float4
+      }]
+    });
+    return { id, dimension };
+  },
+
+  instanceIdReference() {
+    return 'gl_InstanceID';
+  },
+};
+
+/*
+ * Shared utility function for parsing shader hook types from GLSL shader source
+ */
+function getShaderHookTypes(shader, hookName) {
+  let fullSrc = shader._vertSrc;
+  let body = shader.hooks.vertex[hookName];
+  if (!body) {
+    body = shader.hooks.fragment[hookName];
+    fullSrc = shader._fragSrc;
+  }
+  if (!body) {
+    throw new Error(`Can't find hook ${hookName}!`);
+  }
+  const nameParts = hookName.split(/\s+/g);
+  const functionName = nameParts.pop();
+  const returnType = nameParts.pop();
+  const returnQualifiers = [...nameParts];
+  const parameterMatch = /\(([^\)]*)\)/.exec(body);
+  if (!parameterMatch) {
+    throw new Error(`Couldn't find function parameters in hook body:\n${body}`);
+  }
+  const structProperties = structName => {
+    const structDefMatch = new RegExp(`struct\\s+${structName}\\s*{([^}]*)}`).exec(fullSrc);
+    if (!structDefMatch) return undefined;
+    const properties = [];
+    for (const defSrc of structDefMatch[1].split(';')) {
+      // E.g. `int var1, var2;` or `MyStruct prop;`
+      const parts = defSrc.trim().split(/\s+|,/g);
+      const typeName = parts.shift();
+      const names = [...parts];
+      const typeProperties = structProperties(typeName);
+      for (const name of names) {
+        const dataType = TypeInfoFromGLSLName[typeName] || null;
+        properties.push({
+          name,
+          type: {
+            typeName,
+            qualifiers: [],
+            properties: typeProperties,
+            dataType,
+          }
+        });
+      }
+    }
+    return properties;
+  };
+  const parameters = parameterMatch[1].split(',').map(paramString => {
+    // e.g. `int prop` or `in sampler2D prop` or `const float prop`
+    const parts = paramString.trim().split(/\s+/g);
+    const name = parts.pop();
+    const typeName = parts.pop();
+    const qualifiers = [...parts];
+    const properties = structProperties(typeName);
+    const dataType = TypeInfoFromGLSLName[typeName] || null;
+    return {
+      name,
+      type: {
+        typeName,
+        qualifiers,
+        properties,
+        dataType,
+      }
+    };
+  });
+  const dataType = TypeInfoFromGLSLName[returnType] || null;
+  return {
+    name: functionName,
+    returnType: {
+      typeName: returnType,
+      qualifiers: returnQualifiers,
+      properties: structProperties(returnType),
+      dataType,
+    },
+    parameters
+  };
+}
+
+var noiseGLSL = "// Based on https://github.com/stegu/webgl-noise/blob/22434e04d7753f7e949e8d724ab3da2864c17a0f/src/noise3D.glsl\n// MIT licensed, adapted for p5.strands\n\nvec3 mod289(vec3 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 mod289(vec4 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 permute(vec4 x) {\n  return mod289(((x*34.0)+10.0)*x);\n}\n\nvec4 taylorInvSqrt(vec4 r)\n{\n  return 1.79284291400159 - 0.85373472095314 * r;\n}\n\nfloat baseNoise(vec3 v)\n{\n  const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;\n  const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);\n\n  // First corner\n  vec3 i  = floor(v + dot(v, C.yyy) );\n  vec3 x0 =   v - i + dot(i, C.xxx) ;\n\n  // Other corners\n  vec3 g = step(x0.yzx, x0.xyz);\n  vec3 l = 1.0 - g;\n  vec3 i1 = min( g.xyz, l.zxy );\n  vec3 i2 = max( g.xyz, l.zxy );\n\n  //   x0 = x0 - 0.0 + 0.0 * C.xxx;\n  //   x1 = x0 - i1  + 1.0 * C.xxx;\n  //   x2 = x0 - i2  + 2.0 * C.xxx;\n  //   x3 = x0 - 1.0 + 3.0 * C.xxx;\n  vec3 x1 = x0 - i1 + C.xxx;\n  vec3 x2 = x0 - i2 + C.yyy; // 2.0*C.x = 1/3 = C.y\n  vec3 x3 = x0 - D.yyy;      // -1.0+3.0*C.x = -0.5 = -D.y\n\n  // Permutations\n  i = mod289(i);\n  vec4 p = permute( permute( permute(\n          i.z + vec4(0.0, i1.z, i2.z, 1.0 ))\n        + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))\n      + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\n\n  // Gradients: 7x7 points over a square, mapped onto an octahedron.\n  // The ring size 17*17 = 289 is close to a multiple of 49 (49*6 = 294)\n  float n_ = 0.142857142857; // 1.0/7.0\n  vec3  ns = n_ * D.wyz - D.xzx;\n\n  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);  //  mod(p,7*7)\n\n  vec4 x_ = floor(j * ns.z);\n  vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)\n\n  vec4 x = x_ *ns.x + ns.yyyy;\n  vec4 y = y_ *ns.x + ns.yyyy;\n  vec4 h = 1.0 - abs(x) - abs(y);\n\n  vec4 b0 = vec4( x.xy, y.xy );\n  vec4 b1 = vec4( x.zw, y.zw );\n\n  //vec4 s0 = vec4(lessThan(b0,0.0))*2.0 - 1.0;\n  //vec4 s1 = vec4(lessThan(b1,0.0))*2.0 - 1.0;\n  vec4 s0 = floor(b0)*2.0 + 1.0;\n  vec4 s1 = floor(b1)*2.0 + 1.0;\n  vec4 sh = -step(h, vec4(0.0));\n\n  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;\n  vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;\n\n  vec3 p0 = vec3(a0.xy,h.x);\n  vec3 p1 = vec3(a0.zw,h.y);\n  vec3 p2 = vec3(a1.xy,h.z);\n  vec3 p3 = vec3(a1.zw,h.w);\n\n  //Normalise gradients\n  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n  p0 *= norm.x;\n  p1 *= norm.y;\n  p2 *= norm.z;\n  p3 *= norm.w;\n\n  // Mix final noise value\n  vec4 m = max(0.5 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);\n  m = m * m;\n  return 105.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),\n        dot(p2,x2), dot(p3,x3) ) );\n}\n\nfloat noise(vec3 st, int octaves, float ampFalloff) {\n  float result = 0.0;\n  float amplitude = 1.0;\n  float frequency = 1.0;\n\n  for (int i = 0; i < 8; i++) {\n    if (i >= octaves) break;\n    result += amplitude * baseNoise(st * frequency);\n    frequency *= 2.0;\n    amplitude *= ampFalloff;\n  }\n\n  return result;\n}\n";
+
 class FilterRenderer2D {
   /**
    * Creates a new FilterRenderer2D instance.
-   * @param {p5} pInst - The p5.js instance.
+   * @param {p5} parentRenderer - The p5.js instance.
    */
-  constructor(pInst) {
-    this.pInst = pInst;
+  constructor(parentRenderer) {
+    this.parentRenderer = parentRenderer;
     // Create a canvas for applying WebGL-based filters
     this.canvas = document.createElement('canvas');
-    this.canvas.width = pInst.width;
-    this.canvas.height = pInst.height;
+    this.canvas.width = parentRenderer.width;
+    this.canvas.height = parentRenderer.height;
 
     // Initialize the WebGL context
     let webglVersion = WEBGL2;
@@ -69987,6 +73006,9 @@ class FilterRenderer2D {
       console.error('WebGL not supported, cannot apply filter.');
       return;
     }
+
+    this.textures = new Map();
+
     // Minimal renderer object required by p5.Shader and p5.Texture
     this._renderer = {
       GL: this.gl,
@@ -69995,8 +73017,8 @@ class FilterRenderer2D {
       _emptyTexture: null,
       webglVersion,
       states: {
-        textureWrapX: this.gl.CLAMP_TO_EDGE,
-        textureWrapY: this.gl.CLAMP_TO_EDGE
+        textureWrapX: CLAMP,
+        textureWrapY: CLAMP,
       },
       _arraysEqual: (a, b) => JSON.stringify(a) === JSON.stringify(b),
       _getEmptyTexture: () => {
@@ -70006,22 +73028,175 @@ class FilterRenderer2D {
           this._emptyTexture = new Texture(this._renderer, im);
         }
         return this._emptyTexture;
-      }
+      },
+      _initShader: (shader) => {
+        const gl = this.gl;
+
+        const vertShader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vertShader, shader.vertSrc());
+        gl.compileShader(vertShader);
+        if (!gl.getShaderParameter(vertShader, gl.COMPILE_STATUS)) {
+          throw new Error(`Yikes! An error occurred compiling the vertex shader: ${
+            gl.getShaderInfoLog(vertShader)
+          }`);
+        }
+
+        const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fragShader, shader.fragSrc());
+        gl.compileShader(fragShader);
+        if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS)) {
+          throw new Error(`Darn! An error occurred compiling the fragment shader: ${
+            gl.getShaderInfoLog(fragShader)
+          }`);
+        }
+
+        const program = gl.createProgram();
+        gl.attachShader(program, vertShader);
+        gl.attachShader(program, fragShader);
+        gl.linkProgram(program);
+
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+          throw new Error(
+            `Snap! Error linking shader program: ${gl.getProgramInfoLog(program)}`
+          );
+        }
+
+        shader._glProgram = program;
+        shader._vertShader = vertShader;
+        shader._fragShader = fragShader;
+      },
+      getTexture: (input) => {
+        let src = input;
+        if (src instanceof Framebuffer) {
+          src = src.color;
+        }
+
+        const texture = this.textures.get(src);
+        if (texture) {
+          return texture;
+        }
+
+        const tex = new Texture(this._renderer, src);
+        this.textures.set(src, tex);
+        return tex;
+      },
+      populateHooks: (shader, src, shaderType) => {
+        return populateGLSLHooks(shader, src, shaderType);
+      },
+      _getShaderAttributes: (shader) => {
+        return getWebGLShaderAttributes(shader, this.gl);
+      },
+      getUniformMetadata: (shader) => {
+        return getWebGLUniformMetadata(shader, this.gl);
+      },
+      _finalizeShader: () => {},
+      _useShader: (shader) => {
+        this.gl.useProgram(shader._glProgram);
+      },
+      bindTexture: (tex) => {
+        // bind texture using gl context + glTarget and
+        // generated gl texture object
+        this.gl.bindTexture(this.gl.TEXTURE_2D, tex.getTexture().texture);
+      },
+      unbindTexture: () => {
+        // unbind per above, disable texturing on glTarget
+        this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+      },
+      _unbindFramebufferTexture: (uniform) => {
+        // Make sure an empty texture is bound to the slot so that we don't
+        // accidentally leave a framebuffer bound, causing a feedback loop
+        // when something else tries to write to it
+        const gl = this.gl;
+        const empty = this._getEmptyTexture();
+        gl.activeTexture(gl.TEXTURE0 + uniform.samplerIndex);
+        empty.bindTexture();
+        gl.uniform1i(uniform.location, uniform.samplerIndex);
+      },
+      createTexture: ({ width, height, format, dataType }) => {
+        const gl = this.gl;
+        const tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+                           gl.RGBA, gl.UNSIGNED_BYTE, null);
+        // TODO use format and data type
+        return { texture: tex, glFormat: gl.RGBA, glDataType: gl.UNSIGNED_BYTE };
+      },
+      uploadTextureFromSource: ({ texture, glFormat, glDataType }, source) => {
+        const gl = this.gl;
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, glFormat, glFormat, glDataType, source);
+      },
+      uploadTextureFromData: ({ texture, glFormat, glDataType }, data, width, height) => {
+        const gl = this.gl;
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(
+          gl.TEXTURE_2D,
+          0,
+          glFormat,
+          width,
+          height,
+          0,
+          glFormat,
+          glDataType,
+          data
+        );
+      },
+      setTextureParams: (texture) => {
+        return setWebGLTextureParams(texture, this.gl, this._renderer.webglVersion);
+      },
+      updateUniformValue: (shader, uniform, data) => {
+        return setWebGLUniformValue(
+          shader,
+          uniform,
+          data,
+          (tex) => this._renderer.getTexture(tex),
+          this.gl
+        );
+      },
+      _enableAttrib: (_shader, attr, size, type, normalized, stride, offset) => {
+        const loc = attr.location;
+        const gl = this.gl;
+        // Enable register even if it is disabled
+        if (!this._renderer.registerEnabled.has(loc)) {
+          gl.enableVertexAttribArray(loc);
+          // Record register availability
+          this._renderer.registerEnabled.add(loc);
+        }
+        gl.vertexAttribPointer(
+          loc,
+          size,
+          type || gl.FLOAT,
+          normalized || false,
+          stride || 0,
+          offset || 0
+        );
+      },
+      _disableRemainingAttributes: (shader) => {
+        for (const location of this._renderer.registerEnabled.values()) {
+          if (
+            !Object.keys(shader.attributes).some(
+              key => shader.attributes[key].location === location
+            )
+          ) {
+            this.gl.disableVertexAttribArray(location);
+            this._renderer.registerEnabled.delete(location);
+          }
+        }
+      },
+      _updateTexture: (uniform, tex) => {
+        const gl = this.gl;
+        gl.activeTexture(gl.TEXTURE0 + uniform.samplerIndex);
+        tex.bindTexture();
+        tex.update();
+        gl.uniform1i(uniform.location, uniform.samplerIndex);
+      },
+      baseFilterShader: () => this.baseFilterShader(),
+      strandsBackend: glslBackend,
+      getShaderHookTypes: (shader, hookName) => getShaderHookTypes(shader, hookName),
+      uniformNameFromHookKey: (key) => key.slice(key.indexOf(' ') + 1),
     };
 
     this._baseFilterShader = undefined;
-
-    // Store the fragment shader sources
-    this.filterShaderSources = {
-      [BLUR]: filterBlurFrag,
-      [INVERT]: filterInvertFrag,
-      [THRESHOLD]: filterThresholdFrag,
-      [ERODE]: filterErodeFrag,
-      [GRAY]: filterGrayFrag,
-      [DILATE]: filterDilateFrag,
-      [POSTERIZE]: filterPosterizeFrag,
-      [OPAQUE]: filterOpaqueFrag
-    };
 
     // Store initialized shaders for each operation
     this.filterShaders = {};
@@ -70094,6 +73269,10 @@ class FilterRenderer2D {
     return this._baseFilterShader;
   }
 
+  getNoiseShaderSnippet() {
+    return noiseGLSL;
+  }
+
   /**
    * Set the current filter operation and parameter. If a customShader is provided,
    * that overrides the operation-based shader.
@@ -70137,18 +73316,8 @@ class FilterRenderer2D {
       return;
     }
 
-    const fragShaderSrc = this.filterShaderSources[this.operation];
-    if (!fragShaderSrc) {
-      console.error('No shader available for this operation:', this.operation);
-      return;
-    }
-
-    // Create and store the new shader
-    const newShader = new Shader(
-      this._renderer,
-      filterShaderVert,
-      fragShaderSrc
-    );
+    // Use the shared makeFilterShader function from filterShaders.js
+    const newShader = makeFilterShader(this._renderer, this.operation, this.parentRenderer._pInst);
     this.filterShaders[this.operation] = newShader;
     this._shader = newShader;
   }
@@ -70166,7 +73335,7 @@ class FilterRenderer2D {
 
   get canvasTexture() {
     if (!this._canvasTexture) {
-      this._canvasTexture = new Texture(this._renderer, this.pInst.wrappedElt);
+      this._canvasTexture = new Texture(this._renderer, this.parentRenderer.wrappedElt);
     }
     return this._canvasTexture;
   }
@@ -70176,13 +73345,13 @@ class FilterRenderer2D {
    */
   _renderPass() {
     const gl = this.gl;
-    this._shader.bindShader();
-    const pixelDensity = this.pInst.pixelDensity ?
-      this.pInst.pixelDensity() : 1;
+    this._shader.bindShader('fill');
+    const pixelDensity = this.parentRenderer.pixelDensity ?
+      this.parentRenderer.pixelDensity() : 1;
 
     const texelSize = [
-      1 / (this.pInst.width * pixelDensity),
-      1 / (this.pInst.height * pixelDensity)
+      1 / (this.parentRenderer.width * pixelDensity),
+      1 / (this.parentRenderer.height * pixelDensity)
     ];
 
     const canvasTexture = this.canvasTexture;
@@ -70190,15 +73359,15 @@ class FilterRenderer2D {
     // Set uniforms for the shader
     this._shader.setUniform('tex0', canvasTexture);
     this._shader.setUniform('texelSize', texelSize);
-    this._shader.setUniform('canvasSize', [this.pInst.width, this.pInst.height]);
+    this._shader.setUniform('canvasSize', [this.parentRenderer.width, this.parentRenderer.height]);
     this._shader.setUniform('radius', Math.max(1, this.filterParameter));
     this._shader.setUniform('filterParameter', this.filterParameter);
     this._shader.setDefaultUniforms();
 
-    this.pInst.states.setValue('rectMode', CORNER);
-    this.pInst.states.setValue('imageMode', CORNER);
-    this.pInst.blendMode(BLEND);
-    this.pInst.resetMatrix();
+    this.parentRenderer.states.setValue('rectMode', CORNER);
+    this.parentRenderer.states.setValue('imageMode', CORNER);
+    this.parentRenderer.blendMode(BLEND);
+    this.parentRenderer.resetMatrix();
 
 
     const identityMatrix = [1, 0, 0, 0,
@@ -70216,7 +73385,7 @@ class FilterRenderer2D {
     this._shader.enableAttrib(this._shader.attributes.aTexCoord, 2);
 
     this._shader.bindTextures();
-    this._shader.disableRemainingAttributes();
+    this._renderer._disableRemainingAttributes(this._shader);
 
     // Draw the quad
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -70233,8 +73402,8 @@ class FilterRenderer2D {
       console.error('Cannot apply filter: shader not initialized.');
       return;
     }
-    this.pInst.push();
-    this.pInst.resetMatrix();
+    this.parentRenderer.push();
+    this.parentRenderer.resetMatrix();
     // For blur, we typically do two passes: one horizontal, one vertical.
     if (this.operation === BLUR && !this.customShader) {
       // Horizontal pass
@@ -70242,39 +73411,39 @@ class FilterRenderer2D {
       this._renderPass();
 
       // Draw the result onto itself
-      this.pInst.clear();
-      this.pInst.drawingContext.drawImage(
+      this.parentRenderer.clear();
+      this.parentRenderer.drawingContext.drawImage(
         this.canvas,
         0, 0,
-        this.pInst.width, this.pInst.height
+        this.parentRenderer.width, this.parentRenderer.height
       );
 
       // Vertical pass
       this._shader.setUniform('direction', [0, 1]);
       this._renderPass();
 
-      this.pInst.clear();
-      this.pInst.drawingContext.drawImage(
+      this.parentRenderer.clear();
+      this.parentRenderer.drawingContext.drawImage(
         this.canvas,
         0, 0,
-        this.pInst.width, this.pInst.height
+        this.parentRenderer.width, this.parentRenderer.height
       );
     } else {
       // Single-pass filters
 
       this._renderPass();
-      this.pInst.clear();
+      this.parentRenderer.clear();
       // con
-      this.pInst.blendMode(BLEND);
+      this.parentRenderer.blendMode(BLEND);
 
 
-      this.pInst.drawingContext.drawImage(
+      this.parentRenderer.drawingContext.drawImage(
         this.canvas,
         0, 0,
-        this.pInst.width, this.pInst.height
+        this.parentRenderer.width, this.parentRenderer.height
       );
     }
-    this.pInst.pop();
+    this.parentRenderer.pop();
   }
 }
 
@@ -70572,6 +73741,7 @@ class Renderer2D extends Renderer {
     // Start a new path. Everything from here on out should become part of this
     // one path so that we can clip to the whole thing.
     this.clipPath = new Path2D();
+    this._clipBaseTransform = this.drawingContext.getTransform();
 
     if (this._clipInvert) {
       // Slight hack: draw a big rectangle over everything with reverse winding
@@ -70597,7 +73767,11 @@ class Renderer2D extends Renderer {
   }
 
   endClip() {
+    const savedTransform = this.drawingContext.getTransform();
+    this.drawingContext.setTransform(this._clipBaseTransform);
     this.drawingContext.clip(this.clipPath);
+    this.drawingContext.setTransform(savedTransform);
+
     this.clipPath = null;
 
     super.endClip();
@@ -70812,16 +73986,17 @@ class Renderer2D extends Renderer {
     // round down to get integer numbers
     x = Math.floor(x);
     y = Math.floor(y);
-    if (imgOrCol instanceof Image) {
+    if (imgOrCol instanceof Graphics || imgOrCol instanceof Image) {
       this.drawingContext.save();
       this.drawingContext.setTransform(1, 0, 0, 1, 0, 0);
       this.drawingContext.scale(
         this._pixelDensity,
         this._pixelDensity
       );
-      this.drawingContext.clearRect(x, y, imgOrCol.width, imgOrCol.height);
-      this.drawingContext.drawImage(imgOrCol.canvas, x, y);
-      this.drawingContext.restore();
+      const width = imgOrCol.width;
+      const height = imgOrCol.height;
+      this.drawingContext.clearRect(x, y, width, height);
+      this.drawingContext.drawImage(imgOrCol.canvas, x, y, width, height);
     } else {
       let r = 0,
         g = 0,
@@ -70918,13 +74093,21 @@ class Renderer2D extends Renderer {
    *   start <= stop < start + TWO_PI
    */
   arc(x, y, w, h, start, stop, mode) {
-    const ctx = this.clipPa || this.drawingContext;
+    const ctx = this.drawingContext;
 
     const centerX = x + w / 2,
       centerY = y + h / 2,
       radiusX = w / 2,
       radiusY = h / 2;
-
+    if (this._clipping) {
+      const tempPath = new Path2D();
+      tempPath.ellipse(centerX, centerY, radiusX, radiusY, 0, start, stop);
+      const currentTransform = this.drawingContext.getTransform();
+      const clipBaseTransform = this._clipBaseTransform.inverse();
+      const relativeTransform = clipBaseTransform.multiply(currentTransform);
+      this.clipPath.addPath(tempPath, relativeTransform);
+      return this;
+    }
     // Determines whether to add a line to the center, which should be done
     // when the mode is PIE or default; as well as when the start and end
     // angles do not form a full circle.
@@ -70936,16 +74119,16 @@ class Renderer2D extends Renderer {
 
     // Fill curves
     if (this.states.fillColor) {
-      if (!this._clipping) ctx.beginPath();
+      ctx.beginPath();
       ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, start, stop);
       if (createPieSlice) ctx.lineTo(centerX, centerY);
       ctx.closePath();
-      if (!this._clipping) ctx.fill();
+      ctx.fill();
     }
 
     // Stroke curves
     if (this.states.strokeColor) {
-      if (!this._clipping) ctx.beginPath();
+      ctx.beginPath();
       ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, start, stop);
 
       if (mode === PIE && createPieSlice) {
@@ -70958,8 +74141,7 @@ class Renderer2D extends Renderer {
         // Stroke connects back to path begin for both PIE and CHORD
         ctx.closePath();
       }
-
-      if (!this._clipping) ctx.stroke();
+      ctx.stroke();
     }
 
     return this;
@@ -70967,7 +74149,7 @@ class Renderer2D extends Renderer {
   }
 
   ellipse(args) {
-    const ctx = this.clipPath || this.drawingContext;
+    const ctx = this.drawingContext;
     const doFill = !!this.states.fillColor,
       doStroke = this.states.strokeColor;
     const x = parseFloat(args[0]),
@@ -70987,35 +74169,55 @@ class Renderer2D extends Renderer {
       centerY = y + h / 2,
       radiusX = w / 2,
       radiusY = h / 2;
-    if (!this._clipping) ctx.beginPath();
-
+    if (this._clipping) {
+      const tempPath = new Path2D();
+      tempPath.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
+      const currentTransform = this.drawingContext.getTransform();
+      const clipBaseTransform = this._clipBaseTransform.inverse();
+      const relativeTransform = clipBaseTransform.multiply(currentTransform);
+      this.clipPath.addPath(tempPath, relativeTransform);
+      return this;
+    }
+    ctx.beginPath();
     ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
     ctx.closePath();
-
-    if (!this._clipping && doFill) {
+    if (doFill) {
       ctx.fill();
     }
-    if (!this._clipping && doStroke) {
+    if (doStroke) {
       ctx.stroke();
     }
+
+    return this;
   }
 
   line(x1, y1, x2, y2) {
-    const ctx = this.clipPath || this.drawingContext;
+    const ctx = this.drawingContext;
     if (!this.states.strokeColor) {
       return this;
     } else if (this._getStroke() === styleEmpty) {
       return this;
     }
-    if (!this._clipping) ctx.beginPath();
+    if (this._clipping) {
+      const tempPath = new Path2D();
+      tempPath.moveTo(x1, y1);
+      tempPath.lineTo(x2, y2);
+      const currentTransform = this.drawingContext.getTransform();
+      const clipBaseTransform = this._clipBaseTransform.inverse();
+      const relativeTransform = clipBaseTransform.multiply(currentTransform);
+      this.clipPath.addPath(tempPath, relativeTransform);
+      return this;
+    }
+    ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
+
     return this;
   }
 
   point(x, y) {
-    const ctx = this.clipPath || this.drawingContext;
+    const ctx = this.drawingContext;
     if (!this.states.strokeColor) {
       return this;
     } else if (this._getStroke() === styleEmpty) {
@@ -71023,20 +74225,27 @@ class Renderer2D extends Renderer {
     }
     const s = this._getStroke();
     const f = this._getFill();
-    if (!this._clipping) {
-      // swapping fill color to stroke and back after for correct point rendering
-      this._setFill(s);
+    if (this._clipping) {
+      const tempPath = new Path2D();
+      const drawingContextWidth = this.drawingContext.lineWidth;
+      tempPath.arc(x, y, drawingContextWidth / 2, 0, TWO_PI);
+      const currentTransform = this.drawingContext.getTransform();
+      const clipBaseTransform = this._clipBaseTransform.inverse();
+      const relativeTransform = clipBaseTransform.multiply(currentTransform);
+      this.clipPath.addPath(tempPath, relativeTransform);
+      return this;
     }
-    if (!this._clipping) ctx.beginPath();
+    this._setFill(s);
+    ctx.beginPath();
     ctx.arc(x, y, ctx.lineWidth / 2, 0, TWO_PI, false);
-    if (!this._clipping) {
-      ctx.fill();
-      this._setFill(f);
-    }
+    ctx.fill();
+    this._setFill(f);
+
+    return this;
   }
 
   quad(x1, y1, x2, y2, x3, y3, x4, y4) {
-    const ctx = this.clipPath || this.drawingContext;
+    const ctx = this.drawingContext;
     const doFill = !!this.states.fillColor,
       doStroke = this.states.strokeColor;
     if (doFill && !doStroke) {
@@ -71048,16 +74257,29 @@ class Renderer2D extends Renderer {
         return this;
       }
     }
-    if (!this._clipping) ctx.beginPath();
+    if (this._clipping) {
+      const tempPath = new Path2D();
+      tempPath.moveTo(x1, y1);
+      tempPath.lineTo(x2, y2);
+      tempPath.lineTo(x3, y3);
+      tempPath.lineTo(x4, y4);
+      tempPath.closePath();
+      const currentTransform = this.drawingContext.getTransform();
+      const clipBaseTransform = this._clipBaseTransform.inverse();
+      const relativeTransform = clipBaseTransform.multiply(currentTransform);
+      this.clipPath.addPath(tempPath, relativeTransform);
+      return this;
+    }
+    ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.lineTo(x3, y3);
     ctx.lineTo(x4, y4);
     ctx.closePath();
-    if (!this._clipping && doFill) {
+    if (doFill) {
       ctx.fill();
     }
-    if (!this._clipping && doStroke) {
+    if (doStroke) {
       ctx.stroke();
     }
     return this;
@@ -71072,7 +74294,7 @@ class Renderer2D extends Renderer {
     let tr = args[5];
     let br = args[6];
     let bl = args[7];
-    const ctx = this.clipPath || this.drawingContext;
+    const ctx = this.drawingContext;
     const doFill = !!this.states.fillColor,
       doStroke = this.states.strokeColor;
     if (doFill && !doStroke) {
@@ -71084,8 +74306,20 @@ class Renderer2D extends Renderer {
         return this;
       }
     }
-    if (!this._clipping) ctx.beginPath();
-
+    if (this._clipping) {
+      const tempPath = new Path2D();
+      if (typeof tl === 'undefined') {
+        tempPath.rect(x, y, w, h);
+      } else {
+        tempPath.roundRect(x, y, w, h, [tl, tr, br, bl]);
+      }
+      const currentTransform = this.drawingContext.getTransform();
+      const clipBaseTransform = this._clipBaseTransform.inverse();
+      const relativeTransform = clipBaseTransform.multiply(currentTransform);
+      this.clipPath.addPath(tempPath, relativeTransform);
+      return this;
+    }
+    ctx.beginPath();
     if (typeof tl === 'undefined') {
       // No rounded corners
       ctx.rect(x, y, w, h);
@@ -71136,10 +74370,10 @@ class Renderer2D extends Renderer {
 
       ctx.roundRect(x, y, w, h, [tl, tr, br, bl]);
     }
-    if (!this._clipping && this.states.fillColor) {
+    if (doFill) {
       ctx.fill();
     }
-    if (!this._clipping && this.states.strokeColor) {
+    if (doStroke) {
       ctx.stroke();
     }
     return this;
@@ -71147,7 +74381,7 @@ class Renderer2D extends Renderer {
 
 
   triangle(args) {
-    const ctx = this.clipPath || this.drawingContext;
+    const ctx = this.drawingContext;
     const doFill = !!this.states.fillColor,
       doStroke = this.states.strokeColor;
     const x1 = args[0],
@@ -71165,17 +74399,31 @@ class Renderer2D extends Renderer {
         return this;
       }
     }
-    if (!this._clipping) ctx.beginPath();
+    if (this._clipping) {
+      const tempPath = new Path2D();
+      tempPath.moveTo(x1, y1);
+      tempPath.lineTo(x2, y2);
+      tempPath.lineTo(x3, y3);
+      tempPath.closePath();
+      const currentTransform = this.drawingContext.getTransform();
+      const clipBaseTransform = this._clipBaseTransform.inverse();
+      const relativeTransform = clipBaseTransform.multiply(currentTransform);
+      this.clipPath.addPath(tempPath, relativeTransform);
+      return this;
+    }
+    ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.lineTo(x3, y3);
     ctx.closePath();
-    if (!this._clipping && doFill) {
+    if (doFill) {
       ctx.fill();
     }
-    if (!this._clipping && doStroke) {
+    if (doStroke) {
       ctx.stroke();
     }
+
+    return this;
   }
 
   //////////////////////////////////////////////
@@ -71316,6 +74564,108 @@ class Renderer2D extends Renderer {
 
     super.pop(style);
   }
+
+  // Text support methods
+  textCanvas() {
+    return this.canvas;
+  }
+
+  textDrawingContext() {
+    return this.drawingContext;
+  }
+
+  _renderText(text, x, y, maxY, minY) {
+    let states = this.states;
+    let context = this.textDrawingContext();
+
+    if (y < minY || y >= maxY) {
+      return; // don't render lines beyond minY/maxY
+    }
+
+    this.push();
+
+    // no stroke unless specified by user
+    if (states.strokeColor && states.strokeSet) {
+      context.strokeText(text, x, y);
+    }
+
+    if (!this._clipping && states.fillColor) {
+
+      // if fill hasn't been set by user, use default text fill
+      if (!states.fillSet) {
+        this._setFill(DefaultFill);
+      }
+      context.fillText(text, x, y);
+    }
+
+    this.pop();
+  }
+
+  /*
+    Position the lines of text based on their textAlign/textBaseline properties
+  */
+  _positionLines(x, y, width, height, lines) {
+    let { textLeading, textAlign } = this.states;
+    let adjustedX, lineData = new Array(lines.length);
+    let adjustedW = typeof width === 'undefined' ? 0 : width;
+    let adjustedH = typeof height === 'undefined' ? 0 : height;
+
+    for (let i = 0; i < lines.length; i++) {
+      switch (textAlign) {
+        case textCoreConstants.START:
+          throw new Error('textBounds: START not yet supported for textAlign'); // default to LEFT
+        case LEFT:
+          adjustedX = x;
+          break;
+        case CENTER:
+          adjustedX = x + adjustedW / 2;
+          break;
+        case RIGHT:
+          adjustedX = x + adjustedW;
+          break;
+        case textCoreConstants.END:
+          throw new Error('textBounds: END not yet supported for textAlign');
+      }
+      lineData[i] = { text: lines[i], x: adjustedX, y: y + i * textLeading };
+    }
+
+    return this._yAlignOffset(lineData, adjustedH);
+  }
+
+  /*
+    Get the y-offset for text given the height, leading, line-count and textBaseline property
+  */
+  _yAlignOffset(dataArr, height) {
+    if (typeof height === 'undefined') {
+      throw Error('_yAlignOffset: height is required');
+    }
+
+    let { textLeading, textBaseline } = this.states;
+    let yOff = 0, numLines = dataArr.length;
+    let ydiff = height - (textLeading * (numLines - 1));
+
+    switch (textBaseline) { // drawingContext ?
+      case TOP:
+        break; // ??
+      case BASELINE:
+        break;
+      case textCoreConstants._CTX_MIDDLE:
+        yOff = ydiff / 2 + this._middleAlignOffset();
+        break;
+      case BOTTOM:
+        yOff = ydiff;
+        break;
+      case textCoreConstants.IDEOGRAPHIC:
+        console.warn('textBounds: IDEOGRAPHIC not yet supported for textBaseline'); // FES?
+        break;
+      case textCoreConstants.HANGING:
+        console.warn('textBounds: HANGING not yet supported for textBaseline'); // FES?
+        break;
+    }
+
+    dataArr.forEach(ele => ele.y += yOff);
+    return dataArr;
+  }
 }
 
 function renderer2D(p5, fn){
@@ -71422,6 +74772,7 @@ let p5$2 = class p5 {
     this._curElement = null;
     this._elements = [];
     this._glAttributes = null;
+    this._webgpuAttributes = null;
     this._requestAnimId = 0;
     this._isGlobal = false;
     this._loop = true;
@@ -71506,8 +74857,15 @@ let p5$2 = class p5 {
     return this._renderer.drawingContext;
   }
 
+  static _registeredAddons = new Set();
   static registerAddon(addon) {
     const lifecycles = {};
+
+    // Don't re-register an addon. This allows addons
+    // to register dependency addons without worrying about
+    // them getting double-added.
+    if (p5._registeredAddons.has(addon)) return;
+    p5._registeredAddons.add(addon);
 
     addon(p5, p5.prototype, lifecycles);
 
@@ -72672,7 +76030,7 @@ function gridOutput(p5, fn){
 
   //updates gridOutput
   fn._updateGridOutput = function(idT) {
-    if (this._renderer && this._renderer instanceof p5.RendererGL) {
+    if (this._renderer && this._renderer.isP3D) {
       if (!this._didOutputGridWebGLMessage) {
         this._didOutputGridWebGLMessage = true;
         console.error('gridOutput() does not yet work in WebGL mode.');
@@ -72838,7 +76196,7 @@ function textOutput(p5, fn){
 
   //updates textOutput
   fn._updateTextOutput = function(idT) {
-    if (this._renderer && this._renderer instanceof p5.RendererGL) {
+    if (this._renderer && this._renderer.isP3D) {
       if (!this._didOutputTextWebGLMessage) {
         this._didOutputTextWebGLMessage = true;
         console.error('textOutput() does not yet work in WebGL mode.');
@@ -83149,7 +86507,7 @@ var p5$1 = {
 			[
 				"Number?",
 				"Number?",
-				"P2D|WEBGL|P2DHDR?",
+				"P2D|WEBGL|P2DHDR|WEBGPU?",
 				"HTMLCanvasElement?"
 			],
 			[
@@ -84702,8 +88060,6 @@ var p5$1 = {
 		overloads: [
 			[
 				"Object"
-			],
-			[
 			]
 		]
 	},
@@ -88110,7 +91466,7 @@ function validateParams(p5, fn, lifecycles) {
         if (!p5.disableFriendlyErrors && !p5.disableParameterValidator) {
           validate(name, args);
         }
-        return target.call(this, ...args);
+        return target.apply(this, args);
       };
     }
   );
@@ -104767,6 +108123,22 @@ function noise(p5, fn){
   };
 
   /**
+   * @private
+   * Returns the current number of octaves used by noise().
+   */
+  fn._getNoiseOctaves = function() {
+    return perlin_octaves;
+  };
+
+  /**
+   * @private
+   * Returns the current falloff factor used by noise().
+   */
+  fn._getNoiseAmpFalloff = function() {
+    return perlin_amp_falloff;
+  };
+
+  /**
    * Sets the seed value for the <a href="#/p5/noise">noise()</a> function.
    *
    * By default, <a href="#/p5/noise">noise()</a> produces different results
@@ -107116,7 +110488,7 @@ function utilityFunctions(p5, fn){
    *
    * @method shuffle
    * @param  {Array} array array to shuffle.
-   * @param  {Boolean} [bool] if `true`, shuffle the original array in place. Defaults to `false`.
+   * @param  {Boolean} [modify] if `true`, shuffle the original array in place. Defaults to `false`.
    * @return {Array} shuffled array.
    *
    * @example
@@ -107199,9 +110571,9 @@ function utilityFunctions(p5, fn){
    * </code>
    * </div>
    */
-  fn.shuffle = function (arr, bool) {
+  fn.shuffle = function (arr, modify) {
     const isView = ArrayBuffer && ArrayBuffer.isView && ArrayBuffer.isView(arr);
-    arr = bool || isView ? arr : arr.slice();
+    arr = modify || isView ? arr : arr.slice();
 
     let rnd,
       tmp,
@@ -109743,2703 +113115,6 @@ function loading$1(p5, fn){
 
 if(typeof p5 !== 'undefined'){
   loading$1(p5, p5.prototype);
-}
-
-/**
- * @module Typography
- * @requires core
- */
-
-
-const textCoreConstants = {
-  IDEOGRAPHIC: 'ideographic',
-  _CTX_MIDDLE: 'middle',
-  _TEXT_BOUNDS: '_textBoundsSingle',
-  _FONT_BOUNDS: '_fontBoundsSingle',
-  HANGING: 'hanging',
-  START: 'start',
-  END: 'end'
-};
-
-function textCore(p5, fn) {
-  const LeadingScale = 1.275;
-  const DefaultFill = '#000000';
-  const LinebreakRe = /\r?\n/g;
-  const CommaDelimRe = /,\s+/;
-  const QuotedRe = /^".*"$/;
-  const TabsRe = /\t/g;
-
-  const FontVariationSettings = 'fontVariationSettings';
-  const VariableAxes = ['wght', 'wdth', 'ital', 'slnt', 'opsz'];
-  const VariableAxesRe = new RegExp(`(?:${VariableAxes.join('|')})`);
-
-  const textFunctions = [
-    'text',
-    'textAlign',
-    'textAscent',
-    'textDescent',
-    'textLeading',
-    'textMode',
-    'textFont',
-    'textSize',
-    'textStyle',
-    'textWidth',
-    'textWrap',
-    'textBounds',
-    'textDirection',
-    'textProperty',
-    'textProperties',
-    'fontBounds',
-    'fontWidth',
-    'fontAscent',
-    'fontDescent',
-    'textWeight'
-  ];
-
-  /**
-   * Draws text to the canvas.
-   *
-   * The first parameter, `str`, is the text to be drawn. The second and third
-   * parameters, `x` and `y`, set the coordinates of the text's bottom-left
-   * corner. See <a href="#/p5/textAlign">textAlign()</a> for other ways to
-   * align text.
-   *
-   * The fourth and fifth parameters, `maxWidth` and `maxHeight`, are optional.
-   * They set the dimensions of the invisible rectangle containing the text. By
-   * default, they set its  maximum width and height. See
-   * <a href="#/p5/rectMode">rectMode()</a> for other ways to define the
-   * rectangular text box. Text will wrap to fit within the text box. Text
-   * outside of the box won't be drawn.
-   *
-   * Text can be styled a few ways. Call the <a href="#/p5/fill">fill()</a>
-   * function to set the text's fill color. Call
-   * <a href="#/p5/stroke">stroke()</a> and
-   * <a href="#/p5/strokeWeight">strokeWeight()</a> to set the text's outline.
-   * Call <a href="#/p5/textSize">textSize()</a> and
-   * <a href="#/p5/textFont">textFont()</a> to set the text's size and font,
-   * respectively.
-   *
-   * Note: `WEBGL` mode only supports fonts loaded with
-   * <a href="#/p5/loadFont">loadFont()</a>. Calling
-   * <a href="#/p5/stroke">stroke()</a> has no effect in `WEBGL` mode.
-   *
-   * @method text
-   * @param {String|Object|Array|Number|Boolean} str text to be displayed.
-   * @param {Number} x          x-coordinate of the text box.
-   * @param {Number} y          y-coordinate of the text box.
-   * @param {Number} [maxWidth] maximum width of the text box. See
-   *                            <a href="#/p5/rectMode">rectMode()</a> for
-   *                            other options.
-   * @param {Number} [maxHeight] maximum height of the text box. See
-   *                            <a href="#/p5/rectMode">rectMode()</a> for
-   *                            other options.
-   *
-   * @for p5
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *   background(200);
-   *   text('hi', 50, 50);
-   *
-   *   describe('The text "hi" written in black in the middle of a gray square.');
-   * }
-   * </code>
-   * </div>
-   *
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *   background('skyblue');
-   *   textSize(100);
-   *   text('🌈', 0, 100);
-   *
-   *   describe('A rainbow in a blue sky.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *   textSize(32);
-   *   fill(255);
-   *   stroke(0);
-   *   strokeWeight(4);
-   *   text('hi', 50, 50);
-   *
-   *   describe('The text "hi" written in white with a black outline.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *   background('black');
-   *   textSize(22);
-   *   fill('yellow');
-   *   text('rainbows', 6, 20);
-   *   fill('cornflowerblue');
-   *   text('rainbows', 6, 45);
-   *   fill('tomato');
-   *   text('rainbows', 6, 70);
-   *   fill('limegreen');
-   *   text('rainbows', 6, 95);
-   *
-   *   describe('The text "rainbows" written on several lines, each in a different color.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *   background(200);
-   *   let s = 'The quick brown fox jumps over the lazy dog.';
-   *   text(s, 10, 10, 70, 80);
-   *
-   *   describe('The sample text "The quick brown fox..." written in black across several lines.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *   background(200);
-   *   rectMode(CENTER);
-   *   let s = 'The quick brown fox jumps over the lazy dog.';
-   *   text(s, 50, 50, 70, 80);
-   *
-   *   describe('The sample text "The quick brown fox..." written in black across several lines.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div modernizr='webgl'>
-   * <code>
-   * let font;
-   *
-   * async function setup() {
-   *   createCanvas(100, 100, WEBGL);
-   *   font = await loadFont('assets/inconsolata.otf');
-   *   textFont(font);
-   *   textSize(32);
-   *   textAlign(CENTER, CENTER);
-   * }
-   *
-   * function draw() {
-   *   background(200);
-   *   rotateY(frameCount / 30);
-   *   text('p5*js', 0, 0);
-   *
-   *   describe('The text "p5*js" written in white and spinning in 3D.');
-   * }
-   * </code>
-   * </div>
-   */
-
-  /**
-   * Sets the way text is aligned when <a href="#/p5/text">text()</a> is called.
-   *
-   * By default, calling `text('hi', 10, 20)` places the bottom-left corner of
-   * the text's bounding box at (10, 20).
-   *
-   * The first parameter, `horizAlign`, changes the way
-   * <a href="#/p5/text">text()</a> interprets x-coordinates. By default, the
-   * x-coordinate sets the left edge of the bounding box. `textAlign()` accepts
-   * the following values for `horizAlign`: `LEFT`, `CENTER`, or `RIGHT`.
-   *
-   * The second parameter, `vertAlign`, is optional. It changes the way
-   * <a href="#/p5/text">text()</a> interprets y-coordinates. By default, the
-   * y-coordinate sets the bottom edge of the bounding box. `textAlign()`
-   * accepts the following values for `vertAlign`: `TOP`, `BOTTOM`, `CENTER`,
-   * or `BASELINE`.
-   *
-   * Calling `textAlign()` without arguments returns the current alignment settings.
-   *
-   * @method textAlign
-   * @for p5
-   * @param {LEFT|CENTER|RIGHT} [horizAlign] horizontal alignment
-   * @param {TOP|BOTTOM|CENTER|BASELINE} [vertAlign] vertical alignment
-   * @returns {Object} If no arguments are provided, returns an object with current horizontal and vertical alignment
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Draw a vertical line.
-   *   strokeWeight(0.5);
-   *   line(50, 0, 50, 100);
-   *
-   *   // Top line.
-   *   textSize(16);
-   *   textAlign(RIGHT);
-   *   text('ABCD', 50, 30);
-   *
-   *   // Middle line.
-   *   textAlign(CENTER);
-   *   text('EFGH', 50, 50);
-   *
-   *   // Bottom line.
-   *   textAlign(LEFT);
-   *   text('IJKL', 50, 70);
-   *
-   *   describe('The letters ABCD displayed at top-left, EFGH at center, and IJKL at bottom-right. A vertical line divides the canvas in half.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   strokeWeight(0.5);
-   *
-   *   // First line.
-   *   line(0, 12, width, 12);
-   *   textAlign(CENTER, TOP);
-   *   text('TOP', 50, 12);
-   *
-   *   // Second line.
-   *   line(0, 37, width, 37);
-   *   textAlign(CENTER, CENTER);
-   *   text('CENTER', 50, 37);
-   *
-   *   // Third line.
-   *   line(0, 62, width, 62);
-   *   textAlign(CENTER, BASELINE);
-   *   text('BASELINE', 50, 62);
-   *
-   *   // Fourth line.
-   *   line(0, 97, width, 97);
-   *   textAlign(CENTER, BOTTOM);
-   *   text('BOTTOM', 50, 97);
-   *
-   *   describe('The words "TOP", "CENTER", "BASELINE", and "BOTTOM" each drawn relative to a horizontal line. Their positions demonstrate different vertical alignments.');
-   * }
-   * </code>
-   * </div>
-   */
-
-  /**
-   * Returns the ascent of the text.
-   *
-   * The `textAscent()` function calculates the distance from the baseline to the
-   * highest point of the current font. This value represents the ascent, which is essential
-   * for determining the overall height of the text along with `textDescent()`. If
-   * a text string is provided as an argument, the ascent is calculated based on that specific
-   * string; otherwise, the ascent of the current font is returned.
-   *
-   * @method textAscent
-   * @for p5
-   *
-   * @param {String} [txt] - (Optional) The text string for which to calculate the ascent.
-   *                         If omitted, the function returns the ascent for the current font.
-   * @returns {Number} The ascent value in pixels.
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(400, 300);
-   *   background(220);
-   *
-   *   textSize(48);
-   *   textAlign(LEFT, BASELINE);
-   *   textFont('Georgia');
-   *
-   *   let s = "Hello, p5.js!";
-   *   let x = 50, y = 150;
-   *
-   *   fill(0);
-   *   text(s, x, y);
-   *
-   *   // Get the ascent of the current font
-   *   let asc = textAscent();
-   *
-   *   // Draw a red line at the baseline and a blue line at the ascent position
-   *   stroke('red');
-   *   line(x, y, x + 200, y); // Baseline
-   *   stroke('blue');
-   *   line(x, y - asc, x + 200, y - asc); // Ascent (top of text)
-   *
-   *   noStroke();
-   *   fill(0);
-   *   textSize(16);
-   *   text("textAscent: " + asc.toFixed(2) + " pixels", x, y - asc - 10);
-   * }
-   * </code>
-   * </div>
-   *
-   *
-   * @example
-   * <div>
-   * <code>
-   * let font;
-   *
-   * async function setup()  {
-   *   font = await loadFont('assets/inconsolata.otf');
-   *
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Style the text.
-   *   textFont(font);
-   *
-   *   // Different for each font.
-   *   let fontScale = 0.8;
-   *
-   *   let baseY = 75;
-   *   strokeWeight(0.5);
-   *
-   *   // Draw small text.
-   *   textSize(24);
-   *   text('dp', 0, baseY);
-   *
-   *   // Draw baseline and ascent.
-   *   let a = textAscent() * fontScale;
-   *   line(0, baseY, 23, baseY);
-   *   line(23, baseY - a, 23, baseY);
-   *
-   *   // Draw large text.
-   *   textSize(48);
-   *   text('dp', 45, baseY);
-   *
-   *   // Draw baseline and ascent.
-   *   a = textAscent() * fontScale;
-   *   line(45, baseY, 91, baseY);
-   *   line(91, baseY - a, 91, baseY);
-   *
-   *   describe('The letters "dp" written twice in different sizes. Each version has a horizontal baseline. A vertical line extends upward from each baseline to the top of the "d".');
-   * }
-   * </code>
-   * </div>
-   */
-
-
-  /**
-   * Returns the descent of the text.
-   *
-   * The `textDescent()` function calculates the distance from the baseline to the
-   * lowest point of the current font. This value represents the descent, which, when combined
-   * with the ascent (from `textAscent()`), determines the overall vertical span of the text.
-   * If a text string is provided as an argument, the descent is calculated based on that specific string;
-   * otherwise, the descent of the current font is returned.
-   *
-   * @method textDescent
-   * @for p5
-   *
-   * @param {String} [txt] - (Optional) The text string for which to calculate the descent.
-   *                         If omitted, the function returns the descent for the current font.
-   * @returns {Number} The descent value in pixels.
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(400, 300);
-   *   background(220);
-   *
-   *   textSize(48);
-   *   textAlign(LEFT, BASELINE);
-   *   textFont('Georgia');
-   *
-   *   let s = "Hello, p5.js!";
-   *   let x = 50, y = 150;
-   *
-   *   fill(0);
-   *   text(s, x, y);
-   *
-   *   // Get the descent of the current font
-   *   let desc = textDescent();
-   *
-   *   // Draw a red line at the baseline and a blue line at the bottom of the text
-   *   stroke('red');
-   *   line(x, y, x + 200, y); // Baseline
-   *   stroke('blue');
-   *   line(x, y + desc, x + 200, y + desc); // Descent (bottom of text)
-   *
-   *   noStroke();
-   *   fill(0);
-   *   textSize(16);
-   *   text("textDescent: " + desc.toFixed(2) + " pixels", x, y + desc + 20);
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * let font;
-   *
-   * async function setup()  {
-   *   font = await loadFont('assets/inconsolata.otf');
-   *
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Style the font.
-   *   textFont(font);
-   *
-   *   // Different for each font.
-   *   let fontScale = 0.9;
-   *
-   *   let baseY = 75;
-   *   strokeWeight(0.5);
-   *
-   *   // Draw small text.
-   *   textSize(24);
-   *   text('dp', 0, baseY);
-   *
-   *   // Draw baseline and descent.
-   *   let d = textDescent() * fontScale;
-   *   line(0, baseY, 23, baseY);
-   *   line(23, baseY, 23, baseY + d);
-   *
-   *   // Draw large text.
-   *   textSize(48);
-   *   text('dp', 45, baseY);
-   *
-   *   // Draw baseline and descent.
-   *   d = textDescent() * fontScale;
-   *   line(45, baseY, 91, baseY);
-   *   line(91, baseY, 91, baseY + d);
-   *
-   *   describe('The letters "dp" written twice in different sizes. Each version has a horizontal baseline. A vertical line extends downward from each baseline to the bottom of the "p".');
-   * }
-   * </code>
-   * </div>
-   */
-
-  /**
-   * Sets the spacing between lines of text when
-   * <a href="#/p5/text">text()</a> is called.
-   *
-   * Note: Spacing is measured in pixels.
-   *
-   * Calling `textLeading()` without an argument returns the current spacing.
-   *
-   * @method textLeading
-   * @for p5
-   * @param {Number} [leading] The new text leading to apply, in pixels
-   * @returns {Number} If no arguments are provided, the current text leading
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // "\n" starts a new line of text.
-   *   let lines = 'one\ntwo';
-   *
-   *   // Left.
-   *   text(lines, 10, 25);
-   *
-   *   // Right.
-   *   textLeading(30);
-   *   text(lines, 70, 25);
-   *
-   *   describe('The words "one" and "two" written on separate lines twice. The words on the left have less vertical spacing than the words on the right.');
-   * }
-   * </code>
-   * </div>
-   */
-
-  /**
-   * Sets the font used by the <a href="#/p5/text">text()</a> function.
-   *
-   * The first parameter, `font`, sets the font. `textFont()` recognizes either
-   * a <a href="#/p5.Font">p5.Font</a> object or a string with the name of a
-   * system font. For example, `'Courier New'`.
-   *
-   * The second parameter, `size`, is optional. It sets the font size in pixels.
-   * This has the same effect as calling <a href="#/p5/textSize">textSize()</a>.
-   *
-   * Calling `textFont()` without arguments returns the current font.
-   *
-   * Note: `WEBGL` mode only supports fonts loaded with
-   * <a href="#/p5/loadFont">loadFont()</a>.
-   *
-   * @method textFont
-   * @param {p5.Font|String|Object} [font] The font to apply
-   * @param {Number} [size] An optional text size to apply.
-   * @returns {String|p5.Font} If no arguments are provided, returns the current font
-   * @for p5
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *   background(200);
-   *   textFont('Courier New');
-   *   textSize(24);
-   *   text('hi', 35, 55);
-   *
-   *   describe('The text "hi" written in a black, monospace font on a gray background.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *   background('black');
-   *   fill('palegreen');
-   *   textFont('Courier New', 10);
-   *   text('You turn to the left and see a door. Do you enter?', 5, 5, 90, 90);
-   *   text('>', 5, 70);
-   *
-   *   describe('A text prompt from a game is written in a green, monospace font on a black background.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *   background(200);
-   *   textFont('Verdana');
-   *   let currentFont = textFont();
-   *   text(currentFont, 25, 50);
-   *
-   *   describe('The text "Verdana" written in a black, sans-serif font on a gray background.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * let fontRegular;
-   * let fontItalic;
-   * let fontBold;
-   *
-   * async function setup() {
-   *   createCanvas(100, 100);
-   *   fontRegular = await loadFont('assets/Regular.otf');
-   *   fontItalic = await loadFont('assets/Italic.ttf');
-   *   fontBold = await loadFont('assets/Bold.ttf');
-   *
-   *   background(200);
-   *   textFont(fontRegular);
-   *   text('I am Normal', 10, 30);
-   *   textFont(fontItalic);
-   *   text('I am Italic', 10, 50);
-   *   textFont(fontBold);
-   *   text('I am Bold', 10, 70);
-   *
-   *   describe('The statements "I am Normal", "I am Italic", and "I am Bold" written in black on separate lines. The statements have normal, italic, and bold fonts, respectively.');
-   * }
-   * </code>
-   * </div>
-   */
-
-  /**
-   * Sets or gets the current text size.
-   *
-   * The `textSize()` function is used to specify the size of the text
-   * that will be rendered on the canvas. When called with an argument, it sets the
-   * text size to the specified value (which can be a number representing pixels or a
-   * CSS-style string, e.g., '32px', '2em'). When called without an argument, it
-   * returns the current text size in pixels.
-   *
-   * @method textSize
-   * @for p5
-   *
-   * @param {Number} size - The size to set for the text.
-   * @returns {Number} If no arguments are provided, the current text size in pixels.
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(600, 200);
-   *   background(240);
-   *
-   *   // Set the text size to 48 pixels
-   *   textSize(48);
-   *   textAlign(CENTER, CENTER);
-   *   textFont("Georgia");
-   *
-   *   // Draw text using the current text size
-   *   fill(0);
-   *   text("Hello, p5.js!", width / 2, height / 2);
-   *
-   *   // Retrieve and display the current text size
-   *   let currentSize = textSize();
-   *   fill(50);
-   *   textSize(16);
-   *   text("Current text size: " + currentSize, width / 2, height - 20);
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Top.
-   *   textSize(12);
-   *   text('Font Size 12', 10, 30);
-   *
-   *   // Middle.
-   *   textSize(14);
-   *   text('Font Size 14', 10, 60);
-   *
-   *   // Bottom.
-   *   textSize(16);
-   *   text('Font Size 16', 10, 90);
-   *
-   *   describe('The text "Font Size 12" drawn small, "Font Size 14" drawn medium, and "Font Size 16" drawn large.');
-   * }
-   * </code>
-   * </div>
-   */
-  /**
-   * @method textSize
-   * @for p5
-   * @returns {Number} The current text size in pixels.
-   */
-
-  /**
-   * Sets the style for system fonts when
-   * <a href="#/p5/text">text()</a> is called.
-   *
-   * The parameter, `style`, can be either `NORMAL`, `ITALIC`, `BOLD`, or
-   * `BOLDITALIC`.
-   *
-   * `textStyle()` may be overridden by CSS styling. This function doesn't
-   * affect fonts loaded with <a href="#/p5/loadFont">loadFont()</a>.
-   *
-   * @method textStyle
-   * @for p5
-   * @param {NORMAL|ITALIC|BOLD|BOLDITALIC} style The style to use
-   * @returns {NORMAL|ITALIC|BOLD|BOLDITALIC} If no arguments are provided, the current style
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Style the text.
-   *   textSize(12);
-   *   textAlign(CENTER);
-   *
-   *   // First row.
-   *   textStyle(NORMAL);
-   *   text('Normal', 50, 15);
-   *
-   *   // Second row.
-   *   textStyle(ITALIC);
-   *   text('Italic', 50, 40);
-   *
-   *   // Third row.
-   *   textStyle(BOLD);
-   *   text('Bold', 50, 65);
-   *
-   *   // Fourth row.
-   *   textStyle(BOLDITALIC);
-   *   text('Bold Italic', 50, 90);
-   *
-   *   describe('The words "Normal" displayed normally, "Italic" in italic, "Bold" in bold, and "Bold Italic" in bold italics.');
-   * }
-   * </code>
-   * </div>
-   */
-  /**
-   * @method textStyle
-   * @for p5
-   * @returns {NORMAL|BOLD|ITALIC|BOLDITALIC}
-   */
-
-
-  /**
-   * Calculates the width of the given text string in pixels.
-   *
-   * The `textWidth()` function processes the provided text string to determine its tight bounding box
-   * based on the current text properties such as font, textSize, and textStyle. Internally, it splits
-   * the text into individual lines (if line breaks are present) and computes the bounding box for each
-   * line using the renderer’s measurement functions. The final width is determined as the maximum width
-   * among all these lines.
-   *
-   * For example, if the text contains multiple lines due to wrapping or explicit line breaks, textWidth()
-   * will return the width of the longest line.
-   *
-   * **Note:** In p5.js 2.0+, leading and trailing spaces are ignored.
-   * `textWidth("  Hello  ")` returns the same width as `textWidth("Hello")`.
-   *
-   * @method textWidth
-   * @for p5
-   * @param {String} text The text to measure
-   * @returns {Number} The width of the text
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(200, 200);
-   *   background(220);
-   *
-   *   // Set text size and alignment
-   *   textSize(48);
-   *   textAlign(LEFT, TOP);
-   *
-   *   let myText = "Hello";
-   *
-   *   // Calculate the width of the text
-   *   let tw = textWidth(myText);
-   *
-   *   // Draw the text on the canvas
-   *   fill(0);
-   *   text(myText, 50, 50);
-   *
-   *   // Display the text width below
-   *   noStroke();
-   *   fill(0);
-   *   textSize(20);
-   *   text("Text width: " + tw, 10, 150);
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Style the text.
-   *   textSize(28);
-   *   strokeWeight(0.5);
-   *
-   *   // Calculate the text width.
-   *   let s = 'yoyo';
-   *   let w = textWidth(s);
-   *
-   *   // Display the text.
-   *   text(s, 22, 55);
-   *
-   *   // Underline the text.
-   *   line(22, 55, 22 + w, 55);
-   *
-   *   describe('The word "yoyo" underlined.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(200, 160);
-   *   background(235);
-   *   noLoop();
-   *
-   *   textSize(18);
-   *   textAlign(LEFT, TOP);
-   *
-   *   const x = 12, h = 24;
-   *   const s1 = 'Hello';
-   *   const s2 = 'Hello  ';      // 2 trailing spaces
-   *   const s3 = 'Hello     ';   // many trailing spaces
-   *
-   *   // draw text
-   *   fill(0);
-   *   text(s1, x, 12);
-   *   text(s2, x, 56);
-   *   text(s3, x, 100);
-   *
-   *   // measure and draw tight boxes (all same width)
-   *   noFill(); stroke(255, 0, 0);
-   *   const w1 = textWidth(s1);
-   *   const w2 = textWidth(s2);
-   *   const w3 = textWidth(s3);
-   *   rect(x, 10,  w1, h);
-   *   rect(x, 54, w2, h);
-   *   rect(x, 98, w3, h);
-   *
-   *   // small captions show the actual strings (spaces as ·)
-   *   textSize(10); noStroke(); fill(30);
-   *   text('"' + s1.replace(/ /g, '·') + '"  w=' + w1.toFixed(1), x, 10 + h + 2);
-   *   text('"' + s2.replace(/ /g, '·') + '"  w=' + w2.toFixed(1), x, 54 + h + 2);
-   *   text('"' + s3.replace(/ /g, '·') + '"  w=' + w3.toFixed(1), x, 98 + h + 2);
-   *
-   *   describe('Three lines: Hello with 0, 2, and many trailing spaces. Red boxes use textWidth and are identical. Captions show spaces as dots.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Style the text.
-   *   textSize(28);
-   *   strokeWeight(0.5);
-   *
-   *   // Calculate the text width.
-   *   // "\n" starts a new line.
-   *   let s = 'yo\nyo';
-   *   let w = textWidth(s);
-   *
-   *   // Display the text.
-   *   text(s, 22, 55);
-   *
-   *   // Underline the text.
-   *   line(22, 55, 22 + w, 55);
-   *
-   *   describe('The word "yo" written twice, one copy beneath the other. The words are divided by a horizontal line.');
-   * }
-   * </code>
-   * </div>
-   */
-
-  /**
-   * Sets the style for wrapping text when
-   * <a href="#/p5/text">text()</a> is called.
-   *
-   * The parameter, `style`, can be one of the following values:
-   *
-   * `WORD` starts new lines of text at spaces. If a string of text doesn't
-   * have spaces, it may overflow the text box and the canvas. This is the
-   * default style.
-   *
-   * `CHAR` starts new lines as needed to stay within the text box.
-   *
-   * `textWrap()` only works when the maximum width is set for a text box. For
-   * example, calling `text('Have a wonderful day', 0, 10, 100)` sets the
-   * maximum width to 100 pixels.
-   *
-   * Calling `textWrap()` without an argument returns the current style.
-   *
-   * @method textWrap
-   * @for p5
-   *
-   * @param {WORD|CHAR} style The wrapping style to use
-   * @returns {CHAR|WORD} If no arguments are provided, the current wrapping style
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Style the text.
-   *   textSize(20);
-   *   textWrap(WORD);
-   *
-   *   // Display the text.
-   *   text('Have a wonderful day', 0, 10, 100);
-   *
-   *   describe('The text "Have a wonderful day" written across three lines.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Style the text.
-   *   textSize(20);
-   *   textWrap(CHAR);
-   *
-   *   // Display the text.
-   *   text('Have a wonderful day', 0, 10, 100);
-   *
-   *   describe('The text "Have a wonderful day" written across two lines.');
-   * }
-   * </code>
-   * </div>
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(100, 100);
-   *
-   *   background(200);
-   *
-   *   // Style the text.
-   *   textSize(20);
-   *   textWrap(CHAR);
-   *
-   *   // Display the text.
-   *   text('祝你有美好的一天', 0, 10, 100);
-   *
-   *   describe('The text "祝你有美好的一天" written across two lines.');
-   * }
-   * </code>
-   * </div>
-   */
-  /**
-   * @method textWrap
-   * @for p5
-   * @returns {CHAR|WORD} The current wrapping style
-   */
-
-
-  /**
-   * Computes the tight bounding box for a block of text.
-   *
-   * The `textBounds()` function calculates the precise pixel boundaries that enclose
-   * the rendered text based on the current text properties (such as font, textSize, textStyle, and
-   * alignment). If the text spans multiple lines (due to line breaks or wrapping), the function
-   * measures each line individually and then aggregates these measurements into a single bounding box.
-   * The resulting object contains the x and y coordinates along with the width (w) and height (h)
-   * of the text block.
-   *
-   * @method textBounds
-   * @for p5
-   *
-   * @param {String} str - The text string to measure.
-   * @param {Number} x - The x-coordinate where the text is drawn.
-   * @param {Number} y - The y-coordinate where the text is drawn.
-   * @param {Number} [width] - (Optional) The maximum width available for the text block.
-   *                           When specified, the text may be wrapped to fit within this width.
-   * @param {Number} [height] - (Optional) The maximum height available for the text block.
-   *                            Any lines exceeding this height will be truncated.
-   * @returns {Object} An object with properties `x`, `y`, `w`, and `h` that represent the tight
-   *                   bounding box of the rendered text.
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(300, 200);
-   *   background(220);
-   *
-   *   // Set up text properties for clarity
-   *   textSize(32);
-   *   textAlign(LEFT, TOP);
-   *
-   *   let txt = "Hello, World!";
-   *   // Compute the bounding box for the text starting at (50, 50)
-   *   let bounds = textBounds(txt, 50, 50);
-   *
-   *   // Draw the text
-   *   fill(0);
-   *   text(txt, 50, 50);
-   *
-   *   // Draw the computed bounding box in red to visualize the measured area
-   *   noFill();
-   *   stroke('red');
-   *   rect(bounds.x, bounds.y, bounds.w, bounds.h);
-   * }
-   * </code>
-   * </div>
-   */
-
-
-  /**
-   * Sets or gets the text drawing direction.
-   *
-   * The <code>textDirection()</code> function allows you to specify the direction in which text is
-   * rendered on the canvas. When provided with a <code>direction</code> parameter (such as "ltr" for
-   * left-to-right, "rtl" for right-to-left, or "inherit"), it updates the renderer's state with that
-   * value and applies the new setting. When called without any arguments, it returns the current text
-   * direction. This function is particularly useful for rendering text in languages with different
-   * writing directions.
-   *
-   * @method textDirection
-   * @for p5
-   *
-   * @param {String} direction - The text direction to set ("ltr", "rtl", or "inherit").
-   * @returns {String} If no arguments are provided, the current text direction, either "ltr", "rtl", or "inherit"
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(300, 300);
-   *   background(240);
-   *
-   *   textSize(32);
-   *   textFont("Georgia");
-   *   textAlign(LEFT, TOP);
-   *
-   *   // Set text direction to right-to-left and draw Arabic text.
-   *   textDirection("rtl");
-   *   fill(0);
-   *   text("مرحبًا!", 50, 50);
-   *
-   *   // Set text direction to left-to-right and draw English text.
-   *   textDirection("ltr");
-   *   text("Hello, p5.js!", 50, 150);
-   *
-   *   // Display the current text direction.
-   *   textSize(16);
-   *   fill(50);
-   *   textAlign(LEFT, TOP);
-   *   text("Current textDirection: " + textDirection(), 50, 250);
-   * }
-   * </code>
-   * </div>
-   */
-  /**
-   * @method textDirection
-   * @for p5
-   * @returns {String} The current text direction, either "ltr", "rtl", or "inherit"
-   */
-
-  /**
-   * Sets or gets a single text property for the renderer.
-   *
-   * The `textProperty()` function allows you to set or retrieve a single text-related property,
-   * such as `textAlign`, `textBaseline`, `fontStyle`, or any other property
-   * that may be part of the renderer's state, its drawing context, or the canvas style.
-   *
-   * When called with a `prop` and a `value`, the function sets the property by checking
-   * for its existence in the renderer's state, the drawing context, or the canvas style. If the property is
-   * successfully modified, the function applies the updated text properties. If called with only the
-   * `prop` parameter, the function returns the current value of that property.
-   *
-   * @method textProperty
-   * @for p5
-   *
-   * @param {String} prop - The name of the text property to set or get.
-   * @param value - The value to set for the specified text property. If omitted, the current
-   *                      value of the property is returned
-   * @returns If no arguments are provided, the current value of the specified text property
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(300, 300);
-   *   background(240);
-   *
-   *   // Set the text alignment to CENTER and the baseline to TOP using textProperty.
-   *   textProperty("textAlign", CENTER);
-   *   textProperty("textBaseline", TOP);
-   *
-   *   // Set additional text properties and draw the text.
-   *   textSize(32);
-   *   textFont("Georgia");
-   *   fill(0);
-   *   text("Hello, World!", width / 2, 50);
-   *
-   *   // Retrieve and display the current text properties.
-   *   let currentAlign = textProperty("textAlign");
-   *   let currentBaseline = textProperty("textBaseline");
-   *
-   *   textSize(16);
-   *   textAlign(LEFT, TOP);
-   *   fill(50);
-   *   text("Current textAlign: " + currentAlign, 50, 150);
-   *   text("Current textBaseline: " + currentBaseline, 50, 170);
-   * }
-   * </code>
-   * </div>
-   */
-  /**
-   * @method textProperty
-   * @for p5
-   * @param {String} prop - The name of the text property to set or get.
-   * @returns The current value of the specified text property
-   */
-
-  /**
-   * Gets or sets text properties in batch, similar to calling `textProperty()`
-   * multiple times.
-   *
-   * If an object is passed in, `textProperty(key, value)` will be called for you
-   * on every key/value pair in the object.
-   *
-   * If no arguments are passed in, an object will be returned with all the current
-   * properties.
-   *
-   * @method textProperties
-   * @for p5
-   * @param {Object} properties An object whose keys are properties to set, and whose
-   *                            values are what they should be set to.
-   */
-  /**
-   * @method textProperties
-   * @for p5
-   * @returns {Object} An object with all the possible properties and their current values.
-   */
-
-  /**
-   * Computes a generic (non-tight) bounding box for a block of text.
-   *
-   * The `fontBounds()` function calculates the bounding box for the text based on the
-   * font's intrinsic metrics (such as `fontBoundingBoxAscent` and
-   * `fontBoundingBoxDescent`). Unlike `textBounds()`, which measures the exact
-   * pixel boundaries of the rendered text, `fontBounds()` provides a looser measurement
-   * derived from the font’s default spacing. This measurement is useful for layout purposes where
-   * a consistent approximation of the text's dimensions is desired.
-   *
-   * @method fontBounds
-   * @for p5
-   *
-   * @param {String} str - The text string to measure.
-   * @param {Number} x - The x-coordinate where the text is drawn.
-   * @param {Number} y - The y-coordinate where the text is drawn.
-   * @param {Number} [width] - (Optional) The maximum width available for the text block.
-   *                           When specified, the text may be wrapped to fit within this width.
-   * @param {Number} [height] - (Optional) The maximum height available for the text block.
-   *                            Any lines exceeding this height will be truncated.
-   * @returns {Object} An object with properties `x`, `y`, `w`, and `h` representing the loose
-   *                   bounding box of the text based on the font's intrinsic metrics.
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(300, 200);
-   *   background(240);
-   *
-   *   textSize(32);
-   *   textAlign(LEFT, TOP);
-   *   textFont('Georgia');
-   *
-   *   let txt = "Hello, World!";
-   *   // Compute the bounding box based on the font's intrinsic metrics
-   *   let bounds = fontBounds(txt, 50, 50);
-   *
-   *   fill(0);
-   *   text(txt, 50, 50);
-   *
-   *   noFill();
-   *   stroke('green');
-   *   rect(bounds.x, bounds.y, bounds.w, bounds.h);
-   *
-   *   noStroke();
-   *   fill(50);
-   *   textSize(15);
-   *   text("Font Bounds: x=" + bounds.x.toFixed(1) + ", y=" + bounds.y.toFixed(1) +
-   *        ", w=" + bounds.w.toFixed(1) + ", h=" + bounds.h.toFixed(1), 8, 100);
-   * }
-   * </code>
-   * </div>
-   */
-
-
-  /**
-   * Returns the loose width of a text string based on the current font.
-   *
-   * The `fontWidth()` function measures the width of the provided text string using
-   * the font's default measurement (i.e., the width property from the text metrics returned by
-   * the browser). Unlike `textWidth()`, which calculates the tight pixel boundaries
-   * of the text glyphs, `fontWidth()` uses the font's intrinsic spacing, which may include
-   * additional space for character spacing and kerning. This makes it useful for scenarios where
-   * an approximate width is sufficient for layout and positioning.
-   *
-   * @method fontWidth
-   * @for p5
-   *
-   * @param {String} theText - The text string to measure.
-   * @returns {Number} The loose width of the text in pixels.
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(300, 200);
-   *   background(240);
-   *
-   *   textSize(32);
-   *   textAlign(LEFT, TOP);
-   *   textFont('Georgia');
-   *
-   *   let s = "Hello, World!";
-   *   let fw = fontWidth(s);
-   *
-   *   fill(0);
-   *   text(s, 50, 50);
-   *
-   *   stroke('blue');
-   *   line(50, 90, 50 + fw, 90);
-   *
-   *   noStroke();
-   *   fill(50);
-   *   textSize(16);
-   *   text("Font width: " + fw.toFixed(2) + " pixels", 50, 100);
-   * }
-   * </code>
-   * </div>
-   */
-
-
-  /**
-   * Returns the loose ascent of the text based on the font's intrinsic metrics.
-   *
-   * The `fontAscent()` function calculates the ascent of the text using the font's
-   * intrinsic metrics (e.g., `fontBoundingBoxAscent`). This value represents the space
-   * above the baseline that the font inherently occupies, and is useful for layout purposes when
-   * an approximate vertical measurement is required.
-   *
-   * @method fontAscent
-   * @for p5
-   *
-   * @returns {Number} The loose ascent value in pixels.
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(300, 300);
-   *   background(220);
-   *
-   *   textSize(35);
-   *   textAlign(LEFT, BASELINE);
-   *   textFont('Georgia');
-   *
-   *   let s = "Hello, p5.js!";
-   *   let x = 50, y = 150;
-   *
-   *   fill(0);
-   *   text(s, x, y);
-   *
-   *   // Get the font descent of the current font
-   *   let fasc = fontAscent();
-   *
-   *   // Draw a red line at the baseline and a blue line at the ascent position
-   *   stroke('red');
-   *   line(x, y, x + 200, y); // Baseline
-   *   stroke('blue');
-   *   line(x, y - fasc, x + 200, y - fasc); // Font ascent position
-   *
-   *   noStroke();
-   *   fill(0);
-   *   textSize(16);
-   *   text("fontAscent: " + fasc.toFixed(2) + " pixels", x, y + fdesc + 20);
-   * }
-   * </code>
-   * </div>
-   */
-
-  /**
-   * Returns the loose descent of the text based on the font's intrinsic metrics.
-   *
-   * The `fontDescent()` function calculates the descent of the text using the font's
-   * intrinsic metrics (e.g., `fontBoundingBoxDescent`). This value represents the space
-   * below the baseline that the font inherently occupies, and is useful for layout purposes when
-   * an approximate vertical measurement is required.
-   *
-   * @method fontDescent
-   * @for p5
-   *
-   * @returns {Number} The loose descent value in pixels.
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(300, 300);
-   *   background(220);
-   *
-   *   textSize(48);
-   *   textAlign(LEFT, BASELINE);
-   *   textFont('Georgia');
-   *
-   *   let s = "Hello, p5.js!";
-   *   let x = 50, y = 150;
-   *
-   *   fill(0);
-   *   text(s, x, y);
-   *
-   *   // Get the font descent of the current font
-   *   let fdesc = fontDescent();
-   *
-   *   // Draw a red line at the baseline and a blue line at the descent position
-   *   stroke('red');
-   *   line(x, y, x + 200, y); // Baseline
-   *   stroke('blue');
-   *   line(x, y + fdesc, x + 200, y + fdesc); // Font descent position
-   *
-   *   noStroke();
-   *   fill(0);
-   *   textSize(16);
-   *   text("fontDescent: " + fdesc.toFixed(2) + " pixels", x, y + fdesc + 20);
-   * }
-   * </code>
-   * </div>
-   */
-
-  /**
-   *
-   * Sets or gets the current font weight.
-   *
-   * The <code>textWeight()</code> function is used to specify the weight (thickness) of the text.
-   * When a numeric value is provided, it sets the font weight to that value and updates the
-   * rendering properties accordingly (including the "font-variation-settings" on the canvas style).
-   * When called without an argument, it returns the current font weight setting.
-   *
-   * @method textWeight
-   * @for p5
-   *
-   * @param {Number} weight - The numeric weight value to set for the text.
-   * @returns {Number} If no arguments are provided, the current font weight
-   *
-   * @example
-   * <div>
-   * <code>
-   * function setup() {
-   *   createCanvas(300, 200);
-   *   background(240);
-   *
-   *   // Set text alignment, size, and font
-   *   textAlign(LEFT, TOP);
-   *   textSize(20);
-   *   textFont("Georgia");
-   *
-   *   // Draw text with a normal weight (lighter appearance)
-   *   push();
-   *   textWeight(400);  // Set font weight to 400
-   *   fill(0);
-   *   text("Normal", 50, 50);
-   *   let normalWeight = textWeight();  // Should return 400
-   *   pop();
-   *
-   *   // Draw text with a bold weight (heavier appearance)
-   *   push();
-   *   textWeight(900);  // Set font weight to 900
-   *   fill(0);
-   *   text("Bold", 50, 100);
-   *   let boldWeight = textWeight();  // Should return 900
-   *   pop();
-   *
-   *   // Display the current font weight values on the canvas
-   *   textSize(16);
-   *   fill(50);
-   *   text("Normal Weight: " + normalWeight, 150, 52);
-   *   text("Bold Weight: " + boldWeight, 150, 100);
-   * }
-   * </code>
-   * </div>
-   *
-   * <div>
-   * <code>
-   * let font;
-   *
-   * async function setup() {
-   *   createCanvas(100, 100);
-   *   font = await loadFont(
-   *     'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap'
-   *   );
-   * }
-   *
-   * function draw() {
-   *   background(255);
-   *   textFont(font);
-   *   textAlign(LEFT, TOP);
-   *   textSize(35);
-   *   textWeight(sin(millis() * 0.002) * 200 + 400);
-   *   text('p5*js', 0, 10);
-   *   describe('The text p5*js pulsing its weight over time');
-   * }
-   * </code>
-   * </div>
-   */
-  /**
-   * @method textWeight
-   * @for p5
-   * @returns {Number} The current font weight
-   */
-
-  // attach each text func to p5, delegating to the renderer
-  textFunctions.forEach(func => {
-    fn[func] = function (...args) {
-      if (!(func in Renderer.prototype)) {
-        throw Error(`Renderer2D.prototype.${func} is not defined.`);
-      }
-      return this._renderer[func](...args);
-    };
-    // attach also to p5.Graphics.prototype
-    p5.Graphics.prototype[func] = function (...args) {
-      return this._renderer[func](...args);
-    };
-  });
-
-  const RendererTextProps = {
-    textAlign: { default: fn.LEFT, type: 'Context2d' },
-    textBaseline: { default: fn.BASELINE, type: 'Context2d' },
-    textFont: { default: { family: 'sans-serif' } },
-    textLeading: { default: 15 },
-    textSize: { default: 12 },
-    textWrap: { default: fn.WORD },
-    fontStretch: { default: fn.NORMAL, isShorthand: true },  // font-stretch: { default:  normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded }
-    fontWeight: { default: fn.NORMAL, isShorthand: true },   // font-stretch: { default:  normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded }
-    lineHeight: { default: fn.NORMAL, isShorthand: true },   // line-height: { default:  normal | number | length | percentage }
-    fontVariant: { default: fn.NORMAL, isShorthand: true },  // font-variant: { default:  normal | small-caps }
-    fontStyle: { default: fn.NORMAL, isShorthand: true },    // font-style: { default:  normal | italic | oblique } [was 'textStyle' in v1]
-    direction: { default: 'inherit' } // direction: { default: inherit | ltr | rtl }
-  };
-
-  // note: font must be first here otherwise it may reset other properties
-  const ContextTextProps = ['font', 'direction', 'fontKerning', 'fontStretch', 'fontVariantCaps', 'letterSpacing', 'textAlign', 'textBaseline', 'textRendering', 'wordSpacing'];
-
-  // shorthand font properties that can be set with context2d.font
-  const ShorthandFontProps = Object.keys(RendererTextProps)
-    .filter(p => RendererTextProps[p].isShorthand);
-
-  // allowable values for font-stretch property for context2d.font
-  const FontStretchKeys = ['ultra-condensed', 'extra-condensed', 'condensed', 'semi-condensed', 'normal', 'semi-expanded', 'expanded', 'extra-expanded', 'ultra-expanded'];
-
-  let contextQueue, cachedDiv; // lazy
-
-  ////////////////////////////// start API ///////////////////////////////
-
-  Renderer.prototype.text = function (str, x, y, width, height) {
-
-    let setBaseline = this.textDrawingContext().textBaseline; // store baseline
-
-    // adjust {x,y,w,h} properties based on rectMode
-    ({ x, y, width, height } = this._handleRectMode(x, y, width, height));
-
-    // parse the lines according to width, height & linebreaks
-    let lines = this._processLines(str, width, height);
-
-    // add the adjusted positions [x,y] to each line
-    lines = this._positionLines(x, y, width, height, lines);
-
-    // render each line at the adjusted position
-    lines.forEach(line => this._renderText(line.text, line.x, line.y));
-
-    this.textDrawingContext().textBaseline = setBaseline; // restore baseline
-  };
-
-  /**
-   * Computes the precise (tight) bounding box for a block of text
-   * @param {String} str - the text to measure
-   * @param {Number} x - the x-coordinate of the text
-   * @param {Number} y - the y-coordinate of the text
-   * @param {Number} width - the max width of the text block
-   * @param {Number} height - the max height of the text block
-   * @returns - a bounding box object for the text block: {x,y,w,h}
-   * @private
-   */
-  Renderer.prototype.textBounds = function (str, x, y, width, height) {
-    // delegate to _textBoundsSingle for measuring
-    return this._computeBounds(
-      textCoreConstants._TEXT_BOUNDS,
-      str,
-      x, y,
-      width, height
-    ).bounds;
-  };
-
-  /**
-   * Computes a generic (non-tight) bounding box for a block of text
-   * @param {String} str - the text to measure
-   * @param {Number} x - the x-coordinate of the text
-   * @param {Number} y - the y-coordinate of the text
-   * @param {Number} width - the max width of the text block
-   * @param {Number} height - the max height of the text block
-   * @returns - a bounding box object for the text block: {x,y,w,h}
-   * @private
-   */
-  Renderer.prototype.fontBounds = function (str, x, y, width, height) {
-    // delegate to _fontBoundsSingle for measuring
-    return this._computeBounds(
-      textCoreConstants._FONT_BOUNDS,
-      str,
-      x, y,
-      width, height
-    ).bounds;
-  };
-
-  /**
-   * Get the width of a text string in pixels (tight bounds)
-   * @param {String} theText
-   * @returns - the width of the text in pixels
-   * @private
-   */
-  Renderer.prototype.textWidth = function (theText) {
-    let lines = this._processLines(theText);
-    // return the max width of the lines (using tight bounds)
-    return Math.max(...lines.map(l => this._textWidthSingle(l)));
-  };
-
-  /**
-   * Get the width of a text string in pixels (loose bounds)
-   * @param {String} theText
-   * @returns - the width of the text in pixels
-   * @private
-   */
-  Renderer.prototype.fontWidth = function (theText) {
-    // return the max width of the lines (using loose bounds)
-    let lines = this._processLines(theText);
-    return Math.max(...lines.map(l => this._fontWidthSingle(l)));
-  };
-
-  /**
-   * @param {*} txt - optional text to measure, if provided will be
-   * used to compute the ascent, otherwise the font's ascent will be used
-   * @returns - the ascent of the text
-   * @private
-   */
-  Renderer.prototype.textAscent = function (txt = '') {
-    if (!txt.length) return this.fontAscent();
-    return this.textDrawingContext().measureText(txt).actualBoundingBoxAscent;
-  };
-
-  /**
-   * @returns - returns the ascent for the current font
-   * @private
-   */
-  Renderer.prototype.fontAscent = function () {
-    return this.textDrawingContext().measureText('_').fontBoundingBoxAscent;
-  };
-
-  /**
-   * @param {*} txt - optional text to measure, if provided will
-   * be used to compute the descent, otherwise the font's descent will be used
-   * @returns - the descent of the text
-   * @private
-   */
-  Renderer.prototype.textDescent = function (txt = '') {
-    if (!txt.length) return this.fontDescent();
-    return this.textDrawingContext().measureText(txt).actualBoundingBoxDescent;
-  };
-
-  Renderer.prototype.fontDescent = function () {
-    return this.textDrawingContext().measureText('_').fontBoundingBoxDescent;
-  };
-
-
-  // setters/getters for text properties //////////////////////////
-
-  Renderer.prototype.textAlign = function (h, v) {
-
-    // the setter
-    if (typeof h !== 'undefined') {
-      this.states.setValue('textAlign', h);
-      if (typeof v !== 'undefined') {
-        if (v === fn.CENTER) {
-          v = textCoreConstants._CTX_MIDDLE;
-        }
-        this.states.setValue('textBaseline', v);
-      }
-      return this._applyTextProperties();
-    }
-    // the getter
-    return {
-      horizontal: this.states.textAlign,
-      vertical: this.states.textBaseline
-    };
-  };
-
-  Renderer.prototype._currentTextFont = function () {
-    return this.states.textFont.font || this.states.textFont.family;
-  };
-
-  /**
-   * Set the font and [size] and [options] for rendering text
-   * @param {p5.Font | string} font - the font to use for rendering text
-   * @param {Number} size - the size of the text, can be a number or a css-style string
-   * @param {Object} options - additional options for rendering text, see FontProps
-   * @private
-   */
-  Renderer.prototype.textFont = function (font, size, options) {
-
-    if (arguments.length === 0) {
-      return this._currentTextFont();
-    }
-
-    let family = font;
-
-    // do we have a custon loaded font ?
-    if (font instanceof p5.Font) {
-      family = font.face.family;
-    }
-    else if (font.data instanceof Uint8Array) {
-      family = font.name.fontFamily;
-      if (font.name?.fontSubfamily) {
-        family += '-' + font.name.fontSubfamily;
-      }
-    }
-    else if (typeof font === 'string') {
-      // direct set the font-string if it contains size
-      if (typeof size === 'undefined' && /[.0-9]+(%|em|p[xt])/.test(family)) {
-        //console.log('direct set font-string: ', family);
-        ({ family, size } = this._directSetFontString(family));
-      }
-    }
-
-    if (typeof family !== 'string') throw Error('null font in textFont()');
-
-    // handle two-arg case: textFont(font, options)
-    if (arguments.length === 2 && typeof size === 'object') {
-      options = size;
-      size = undefined;
-    }
-
-    // update font properties in this.states
-    this.states.setValue('textFont', { font, family, size });
-
-    // convert/update the size in this.states
-    if (typeof size !== 'undefined') {
-      this._setTextSize(size);
-    }
-
-    // apply any options to this.states
-    if (typeof options === 'object') {
-      this.textProperties(options);
-    }
-
-    return this._applyTextProperties();
-  };
-
-  Renderer.prototype._directSetFontString = function (font, debug = 0) {
-    if (debug) console.log('_directSetFontString"' + font + '"');
-
-    let defaults = ShorthandFontProps.reduce((props, p) => {
-      props[p] = RendererTextProps[p].default;
-      return props;
-    }, {});
-
-    let el = this._cachedDiv(defaults);
-    el.style.font = font;
-    let style = getComputedStyle(el);
-    ShorthandFontProps.forEach(prop => {
-      this.states[prop] = style[prop];
-      if (debug) console.log('  this.states.' + prop + '="' + style[prop] + '"');
-    });
-
-    return { family: style.fontFamily, size: style.fontSize };
-  };
-
-  Renderer.prototype.textLeading = function (leading) {
-    // the setter
-    if (typeof leading === 'number') {
-      this.states.setValue('leadingSet', true);
-      this.states.setValue('textLeading', leading);
-      return this._applyTextProperties();
-    }
-    // the getter
-    return this.states.textLeading;
-  };
-
-  Renderer.prototype.textWeight = function (weight) {
-    // the setter
-    if (typeof weight === 'number') {
-      this.states.setValue('fontWeight', weight);
-      this._applyTextProperties();
-
-      // Safari works without weight set in the canvas style attribute, and actually
-      // has buggy behavior if it is present, using the wrong weight when drawing
-      // multiple times with different weights
-      if (!p5.prototype._isSafari()) {
-        this._setCanvasStyleProperty('font-variation-settings', `"wght" ${weight}`);
-      }
-      return;
-    }
-    // the getter
-    return this.states.fontWeight;
-  };
-
-  /**
-   * @param {*} size - the size of the text, can be a number or a css-style string
-   * @private
-   */
-  Renderer.prototype.textSize = function (size) {
-
-    // the setter
-    if (typeof size !== 'undefined') {
-      this._setTextSize(size);
-      return this._applyTextProperties();
-    }
-    // the getter
-    return this.states.textSize;
-  };
-
-  Renderer.prototype.textStyle = function (style) {
-
-    // the setter
-    if (typeof style !== 'undefined') {
-      this.states.setValue('fontStyle', style);
-      return this._applyTextProperties();
-    }
-    // the getter
-    return this.states.fontStyle;
-  };
-
-  Renderer.prototype.textWrap = function (wrapStyle) {
-
-    if (wrapStyle === fn.WORD || wrapStyle === fn.CHAR) {
-      this.states.setValue('textWrap', wrapStyle);
-      // no need to apply text properties here as not a context property
-      return this._pInst;
-    }
-    return this.states.textWrap;
-  };
-
-  Renderer.prototype.textDirection = function (direction) {
-
-    if (typeof direction !== 'undefined') {
-      this.states.setValue('direction', direction);
-      return this._applyTextProperties();
-    }
-    return this.states.direction;
-  };
-
-  /**
-   * Sets/gets a single text property for the renderer (eg. fontStyle, fontStretch, etc.)
-   * The property to be set can be a mapped or unmapped property on `this.states` or a property
-   * on `this.textDrawingContext()` or on `this.canvas.style`
-   * The property to get can exist in `this.states` or `this.textDrawingContext()` or `this.canvas.style`
-   * @private
-   */
-  Renderer.prototype.textProperty = function (prop, value, opts) {
-
-    let modified = false, debug = opts?.debug || false;
-
-    // getter: return option from this.states or this.textDrawingContext()
-    if (typeof value === 'undefined') {
-      let props = this.textProperties();
-      if (prop in props) return props[prop];
-      throw Error('Unknown text option "' + prop + '"'); // FES?
-    }
-
-    // set the option in this.states if it exists
-    if (prop in this.states && this.states[prop] !== value) {
-      this.states[prop] = value;
-      modified = true;
-      if (debug) {
-        console.log('this.states.' + prop + '="' + options[prop] + '"');
-      }
-    }
-    // does it exist in CanvasRenderingContext2D ?
-    else if (prop in this.textDrawingContext()) {
-      this._setContextProperty(prop, value, debug);
-      modified = true;
-    }
-    // does it exist in the canvas.style ?
-    else if (prop in this.textCanvas().style) {
-      this._setCanvasStyleProperty(prop, value, debug);
-      modified = true;
-    }
-    else {
-      console.warn('Ignoring unknown text option: "' + prop + '"\n'); // FES?
-    }
-
-    return modified ? this._applyTextProperties() : this._pInst;
-  };
-
-  /**
-   * Batch set/get text properties for the renderer.
-   * The properties can be either on `states` or `drawingContext`
-   * @private
-   */
-  Renderer.prototype.textProperties = function (properties) {
-
-    // setter
-    if (typeof properties !== 'undefined') {
-      Object.keys(properties).forEach(opt => {
-        this.textProperty(opt, properties[opt]);
-      });
-      return this._pInst;
-    }
-
-    // getter: get props from drawingContext
-    let context = this.textDrawingContext();
-    properties = ContextTextProps.reduce((props, p) => {
-      props[p] = context[p];
-      return props;
-    }, {});
-
-    // add renderer props
-    Object.keys(RendererTextProps).forEach(p => {
-      if (RendererTextProps[p]?.type === 'Context2d') {
-        properties[p] = context[p];
-      }
-      else { // a renderer.states property
-        if (p === 'textFont') {
-          // avoid circular ref. inside textFont
-          let current = this._currentTextFont();
-          if (typeof current === 'object' && '_pInst' in current) {
-            current = Object.assign({}, current);
-            delete current._pInst;
-          }
-          properties[p] = current;
-        }
-        else {
-          properties[p] = this.states[p];
-        }
-      }
-    });
-
-    return properties;
-  };
-
-  Renderer.prototype.textMode = function () { /* no-op for processing api */ };
-
-  /////////////////////////////// end API ////////////////////////////////
-
-  Renderer.prototype._currentTextFont = function () {
-    return this.states.textFont.font || this.states.textFont.family;
-  };
-
-  /*
-    Compute the bounds for a block of text based on the specified
-    measure function, either _textBoundsSingle or _fontBoundsSingle
-   * @private
-  */
-  Renderer.prototype._computeBounds = function (
-    type,
-    str,
-    x, y,
-    width, height,
-    opts
-  ) {
-
-    let context = this.textDrawingContext();
-    let setBaseline = context.textBaseline;
-    let { textLeading, textAlign } = this.states;
-
-    // adjust width, height based on current rectMode
-    ({ width, height } = this._rectModeAdjust(x, y, width, height));
-
-    // parse the lines according to the width & linebreaks
-    let lines = this._processLines(str, width, height);
-
-    // get the adjusted positions [x,y] for each line
-    let boxes = lines.map((line, i) => this[type].bind(this)
-    (line, x, y + i * textLeading));
-
-    // adjust the bounding boxes based on horiz. text alignment
-    if (lines.length > 1) {
-      // When width is not provided (e.g., fontBounds path), fall back to the widest line.
-      const maxWidth = boxes.reduce((m, b) => Math.max(m, b.w || 0), 0);
-
-      boxes.forEach((bb) => {
-          const w = (width ?? maxWidth);
-          bb.x += p5.Renderer2D.prototype._xAlignOffset.call(this, textAlign, w);
-        });
-    }
-
-    // adjust the bounding boxes based on vert. text alignment
-    if (typeof height !== 'undefined') {
-      // Call the 2D mode version: the WebGL mode version does additional
-      // alignment adjustments to account for how WebGL renders text.
-      p5.Renderer2D.prototype._yAlignOffset.call(this, boxes, height);
-    }
-
-    // get the bounds for the text block
-    let bounds = boxes[0];
-    if (lines.length > 1) {
-
-      // get the bounds for the multi-line text block
-      bounds = this._aggregateBounds(boxes);
-
-      // align the multi-line bounds
-      if (!opts?.ignoreRectMode) {
-        this._rectModeAlign(bounds, width || 0, height || 0);
-      }
-    }
-
-    context.textBaseline = setBaseline; // restore baseline
-
-    return { bounds, lines };
-  };
-
-  /*
-    Adjust width, height of bounds based on current rectMode
-   * @private
-  */
-  Renderer.prototype._rectModeAdjust = function (x, y, width, height) {
-
-    if (typeof width !== 'undefined') {
-      switch (this.states.rectMode) {
-        case fn.CENTER:
-          break;
-        case fn.CORNERS:
-          width -= x;
-          height -= y;
-          break;
-        case fn.RADIUS:
-          width *= 2;
-          height *= 2;
-          break;
-      }
-    }
-    return { x, y, width, height };
-  };
-
-  /*
-    Attempts to set a property directly on the canvas.style object
-   * @private
-  */
-  Renderer.prototype._setCanvasStyleProperty = function (opt, val, debug) {
-
-    let value = val.toString(); // ensure its a string
-
-    if (debug) console.log('canvas.style.' + opt + '="' + value + '"');
-
-    // handle variable fonts options
-    if (opt === FontVariationSettings) {
-      this._handleFontVariationSettings(value);
-    }
-
-    // lets try to set it on the canvas style
-    this.textCanvas().style[opt] = value;
-
-    // check if the value was set successfully
-    if (this.textCanvas().style[opt] !== value) ;
-  };
-
-  /*
-    Parses the fontVariationSettings string and sets the font properties, only font-weight
-    working consistently across browsers at present
-   * @private
-  */
-  Renderer.prototype._handleFontVariationSettings = function (
-    value, debug = false
-  ) {
-    // check if the value is a string or an object
-    if (typeof value === 'object') {
-      value = Object.keys(value).map(k => k + ' ' + value[k]).join(', ');
-    }
-    let values = value.split(CommaDelimRe);
-    values.forEach(v => {
-      v = v.replace(/["']/g, ''); // remove quotes
-      let matches = VariableAxesRe.exec(v);
-      //console.log('matches: ', matches);
-      if (matches && matches.length) {
-        let axis = matches[0];
-        // get the value to 3 digits of precision with no trailing zeros
-        let val = parseFloat(parseFloat(v.replace(axis, '').trim()).toFixed(3));
-        switch (axis) {
-          case 'wght':
-            if (debug) console.log('setting font-weight=' + val);
-            // manually set the font-weight via the font string
-            if (this.states.fontWeight !== val) this.textWeight(val);
-            return val;
-          case 'wdth':
-            break;
-          case 'ital':
-            if (debug) console.log('setting font-style=' + (val ? 'italic' : 'normal'));
-            break;
-          case 'slnt':
-            if (debug) console.log('setting font-style=' + (val ? 'oblique' : 'normal'));
-            break;
-          case 'opsz':
-            if (debug) console.log('setting font-optical-size=' + val);
-            break;
-        }
-      }
-    });
-  };
-
-
-
-
-  /*
-    For properties not directly managed by the renderer in this.states
-      we check if it has a mapping to a property in this.states
-    Otherwise, add the property to the context-queue for later application
-  */
-  Renderer.prototype._setContextProperty = function (prop, val, debug = false) {
-
-    // check if the value is actually different, else short-circuit
-    if (this.textDrawingContext()[prop] === val) {
-      return this._pInst;
-    }
-
-    // otherwise, we will set the property directly on the `this.textDrawingContext()`
-    // by adding [property, value] to context-queue for later application
-    (contextQueue ??= []).push([prop, val]);
-
-    if (debug) console.log('queued context2d.' + prop + '="' + val + '"');
-  };
-
-  /*
-     Adjust parameters (x,y,w,h) based on current rectMode
-  */
-  Renderer.prototype._handleRectMode = function (x, y, width, height) {
-
-    let rectMode = this.states.rectMode;
-
-    if (typeof width !== 'undefined') {
-      switch (rectMode) {
-        case fn.RADIUS:
-          width *= 2;
-          x -= width / 2;
-          if (typeof height !== 'undefined') {
-            height *= 2;
-            y -= height / 2;
-          }
-          break;
-        case fn.CENTER:
-          x -= width / 2;
-          if (typeof height !== 'undefined') {
-            y -= height / 2;
-          }
-          break;
-        case fn.CORNERS:
-          width -= x;
-          if (typeof height !== 'undefined') {
-            height -= y;
-          }
-          break;
-      }
-    }
-    return { x, y, width, height };
-  };
-
-  /*
-    Get the computed font-size in pixels for a given size string
-    @param {String} size - the font-size string to compute
-    @returns {number} - the computed font-size in pixels
-   * @private
-   */
-  Renderer.prototype._fontSizePx = function (
-    theSize,
-    { family } = this.states.textFont
-  ) {
-    const isNumString = num => !isNaN(num) && num.trim() !== '';
-
-    // check for a number in a string, eg '12'
-    if (isNumString(theSize)) {
-      return parseFloat(theSize);
-    }
-    let ele = this._cachedDiv({ fontSize: theSize });
-    ele.style.fontSize = theSize;
-    ele.style.fontFamily = family;
-    let fontSizeStr = getComputedStyle(ele).fontSize;
-    let fontSize = parseFloat(fontSizeStr);
-    if (typeof fontSize !== 'number') {
-      throw Error('textSize: invalid font-size');
-    }
-    return fontSize;
-  };
-
-  Renderer.prototype._cachedDiv = function (props) {
-    if (typeof cachedDiv === 'undefined') {
-      let ele = document.createElement('div');
-      ele.ariaHidden = 'true';
-      ele.style.display = 'none';
-      Object.entries(props).forEach(([prop, val]) => {
-        ele.style[prop] = val;
-      });
-      this.textCanvas().appendChild(ele);
-      cachedDiv = ele;
-    }
-    return cachedDiv;
-  };
-
-
-  /*
-    Aggregate the bounding boxes of multiple lines of text
-    @param {Array} bboxes - the bounding boxes to aggregate
-    @returns {object} - the aggregated bounding box
-   * @private
-  */
-  Renderer.prototype._aggregateBounds = function (bboxes) {
-    // loop over the bounding boxes to get the min/max x/y values
-    let minX = Math.min(...bboxes.map(b => b.x));
-    let minY = Math.min(...bboxes.map(b => b.y));
-    let maxY = Math.max(...bboxes.map(b => b.y + b.h));
-    let maxX = Math.max(...bboxes.map(b => b.x + b.w));
-    return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
-  };
-
-  // Renderer.prototype._aggregateBounds = function (tx, ty, bboxes) {
-  //   let x = Math.min(...bboxes.map(b => b.x));
-  //   let y = Math.min(...bboxes.map(b => b.y));
-  //   // the width is the max of the x-offset + the box width
-  //   let w = Math.max(...bboxes.map(b => (b.x - tx) + b.w));
-  //   let h = bboxes[bboxes.length - 1].y - bboxes[0].y + bboxes[bboxes.length - 1].h;
-
-
-  //   return { x, y, w, h };
-  // };
-
-  /*
-    Process the text string to handle line-breaks and text wrapping
-    @param {String} str - the text to process
-    @param {Number} width - the width to wrap the text to
-    @returns {array} - the processed lines of text
-   * @private
-  */
-  Renderer.prototype._processLines = function (str, width, height) {
-
-    if (typeof width !== 'undefined') { // only for text with bounds
-      let drawingContext = this.textDrawingContext();
-      if (drawingContext.textBaseline === fn.BASELINE) {
-        this.drawingContext.textBaseline = fn.TOP;
-      }
-    }
-
-    let lines = this._splitOnBreaks(str.toString());
-    let hasLineBreaks = lines.length > 1;
-    let hasWidth = typeof width !== 'undefined';
-    let exceedsWidth = hasWidth &&
-      lines.some(l => this._textWidthSingle(l) > width);
-    let { textLeading: leading, textWrap } = this.states;
-
-    //if (!hasLineBreaks && !exceedsWidth) return lines; // a single-line
-    if (hasLineBreaks || exceedsWidth) {
-      if (hasWidth) lines = this._lineate(textWrap, lines, width);
-    }
-
-    // handle height truncation
-    if (hasWidth && typeof height !== 'undefined') {
-
-      if (typeof leading === 'undefined') {
-        throw Error('leading is required if height is specified');
-      }
-
-      // truncate lines that exceed the height
-      for (let i = 0; i < lines.length; i++) {
-        let lh = leading * (i + 1);
-        if (lh > height) {
-          //console.log('TRUNCATING: ', i, '-', lines.length, '"' + lines.slice(i) + '"');
-          lines = lines.slice(0, i);
-          break;
-        }
-      }
-    }
-
-    return lines;
-  };
-
-  /*
-    Get the x-offset for text given the width and textAlign property
-  */
-  Renderer.prototype._xAlignOffset = function (textAlign, width) {
-    switch (textAlign) {
-      case fn.LEFT:
-        return 0;
-      case fn.CENTER:
-        return width / 2;
-      case fn.RIGHT:
-        return width;
-      case textCoreConstants.START:
-        return 0;
-      case textCoreConstants.END:
-        throw new Error('textBounds: END not yet supported for textAlign');
-      default:
-        return 0;
-    }
-  };
-
-  /*
-    Align the bounding box based on the current rectMode setting
-  */
-  Renderer.prototype._rectModeAlign = function (bb, width, height) {
-    if (typeof width !== 'undefined') {
-
-      switch (this.states.rectMode) {
-        case fn.CENTER:
-          bb.x -= (width - bb.w) / 2;
-          bb.y -= (height - bb.h) / 2;
-          break;
-        case fn.CORNERS:
-          bb.w += bb.x;
-          bb.h += bb.y;
-          break;
-        case fn.RADIUS:
-          bb.x -= (width - bb.w) / 2;
-          bb.y -= (height - bb.h) / 2;
-          bb.w /= 2;
-          bb.h /= 2;
-          break;
-      }
-      return bb;
-    }
-  };
-
-  Renderer.prototype._rectModeAlignRevert = function (bb, width, height) {
-    if (typeof width !== 'undefined') {
-
-      switch (this.states.rectMode) {
-        case fn.CENTER:
-          bb.x += (width - bb.w) / 2;
-          bb.y += (height - bb.h) / 2;
-          break;
-        case fn.CORNERS:
-          bb.w -= bb.x;
-          bb.h -= bb.y;
-          break;
-        case fn.RADIUS:
-          bb.x += (width - bb.w) / 2;
-          bb.y += (height - bb.h) / 2;
-          bb.w *= 2;
-          bb.h *= 2;
-          break;
-      }
-      return bb;
-    }
-  };
-
-  /*
-    Get the (tight) width of a single line of text
-  */
-  Renderer.prototype._textWidthSingle = function (s) {
-    let metrics = this.textDrawingContext().measureText(s);
-    let abl = metrics.actualBoundingBoxLeft;
-    let abr = metrics.actualBoundingBoxRight;
-    return abr + abl;
-  };
-
-  /*
-    Get the (loose) width of a single line of text as specified by the font
-  */
-  Renderer.prototype._fontWidthSingle = function (s) {
-    return this.textDrawingContext().measureText(s).width;
-  };
-
-  /*
-    Get the (tight) bounds of a single line of text based on its actual bounding box
-  */
-  Renderer.prototype._textBoundsSingle = function (s, x = 0, y = 0) {
-
-    let metrics = this.textDrawingContext().measureText(s);
-    let asc = metrics.actualBoundingBoxAscent;
-    let desc = metrics.actualBoundingBoxDescent;
-    let abl = metrics.actualBoundingBoxLeft;
-    let abr = metrics.actualBoundingBoxRight;
-    return { x: x - abl, y: y - asc, w: abr + abl, h: asc + desc };
-  };
-
-  /*
-    Get the (loose) bounds of a single line of text based on its font's bounding box
-  */
-  Renderer.prototype._fontBoundsSingle = function (s, x = 0, y = 0) {
-
-    let metrics = this.textDrawingContext().measureText(s);
-    let asc = metrics.fontBoundingBoxAscent;
-    let desc = metrics.fontBoundingBoxDescent;
-    x -= this._xAlignOffset(this.states.textAlign, metrics.width);
-    return { x, y: y - asc, w: metrics.width, h: asc + desc };  };
-
-  /*
-    Set the textSize property in `this.states` if it has changed
-    @param {number | string} theSize - the font-size to set
-    @returns {boolean} - true if the size was changed, false otherwise
-   */
-  Renderer.prototype._setTextSize = function (theSize) {
-
-    if (typeof theSize === 'string') {
-      // parse the size string via computed style, eg '2em'
-      theSize = this._fontSizePx(theSize);
-    }
-
-    // should be a number now
-    if (typeof theSize === 'number') {
-
-      // set it in `this.states` if its been changed
-      if (this.states.textSize !== theSize) {
-        this.states.setValue('textSize', theSize);
-
-        // handle leading here, if not set otherwise
-        if (!this.states.leadingSet) {
-          this.states.setValue('textLeading', this.states.textSize * LeadingScale);
-        }
-        return true; // size was changed
-      }
-    }
-    else {
-      console.warn('textSize: invalid size: ' + theSize);
-    }
-
-    return false;
-  };
-
-  /*
-    Split the lines of text based on the width and the textWrap property
-    @param {Array} lines - the lines of text to split
-    @param {Number} maxWidth - the maximum width of the lines
-    @param {Object} opts - additional options for splitting the lines
-    @returns {array} - the split lines of text
-   * @private
-  */
-  Renderer.prototype._lineate = function (
-    textWrap,
-    lines,
-    maxWidth = Infinity,
-    opts = {}
-  ) {
-
-    let splitter = opts.splitChar ?? (textWrap === fn.WORD ? ' ' : '');
-    let line, testLine, testWidth, words, newLines = [];
-
-    for (let lidx = 0; lidx < lines.length; lidx++) {
-      line = '';
-      words = lines[lidx].split(splitter);
-      for (let widx = 0; widx < words.length; widx++) {
-        testLine = `${line + words[widx]}` + splitter;
-        testWidth = this._textWidthSingle(testLine);
-        if (line.length > 0 && testWidth > maxWidth) {
-          newLines.push(line.trim());
-          line = `${words[widx]}` + splitter;
-        } else {
-          line = testLine;
-        }
-      }
-      newLines.push(line.trim());
-    }
-    return newLines;
-  };
-
-  /*
-    Split the text into lines based on line-breaks and tabs
-  */
-  Renderer.prototype._splitOnBreaks = function (s) {
-    if (!s || s.length === 0) return [''];
-    return s.replace(TabsRe, '  ').split(LinebreakRe);
-  };
-
-  /*
-    Parse the font-family string to handle complex names, fallbacks, etc.
-  */
-  Renderer.prototype._parseFontFamily = function (familyStr) {
-
-    let parts = familyStr.split(CommaDelimRe);
-    let family = parts.map(part => {
-      part = part.trim();
-      if (part.indexOf(' ') > -1 && !QuotedRe.test(part)) {
-        part = `"${part}"`; // quote font names with spaces
-      }
-      return part;
-    }).join(', ');
-
-    return family;
-  };
-
-  Renderer.prototype._applyFontString = function () {
-    /*
-      Create the font-string according to the CSS font-string specification:
-      If font is specified as a shorthand for several font-related properties, then:
-      - it must include values for: <font-size> and <font-family>
-      - it may optionally include values for:
-          [<font-style>, <font-variant>, <font-weight>, <font-stretch>, <line-height>]
-      Format:
-      - font-style, font-variant and font-weight must precede font-size
-      - font-variant may only specify the values defined in CSS 2.1, that is 'normal' and 'small-caps'.
-      - font-stretch may only be a single keyword value.
-      - line-height must immediately follow font-size, preceded by "/", eg 16px/3.
-      - font-family must be the last value specified.
-    */
-    let {
-      textFont,
-      textSize,
-      lineHeight,
-      fontStyle,
-      fontWeight,
-      fontVariant
-    } = this.states;
-    let drawingContext = this.textDrawingContext();
-
-    let family = this._parseFontFamily(textFont.family);
-    let style = fontStyle !== fn.NORMAL ? `${fontStyle} ` : '';
-    let weight = fontWeight !== fn.NORMAL ? `${fontWeight} ` : '';
-    let variant = fontVariant !== fn.NORMAL ? `${fontVariant} ` : '';
-    let fsize = `${textSize}px` + (lineHeight !== fn.NORMAL ? `/${lineHeight} ` : ' ');
-    let fontString = `${style}${variant}${weight}${fsize}${family}`.trim();
-    //console.log('fontString="' + fontString + '"');
-
-    // set the font string on the context
-    drawingContext.font = fontString;
-
-    // verify that it was set successfully
-    if (drawingContext.font !== fontString) {
-      let expected = fontString;
-      let actual = drawingContext.font;
-      if (expected !== actual) {
-        //console.warn(`Unable to set font property on context2d. It may not be supported.`);
-        //console.log('Expected "' + expected + '" but got: "' + actual + '"'); // TMP
-        return false;
-      }
-    }
-    return true;
-  };
-
-  /*
-    Apply the text properties in `this.states` to the `this.textDrawingContext()`
-    Then apply any properties in the context-queue
-   */
-  Renderer.prototype._applyTextProperties = function (debug = false) {
-
-    this._applyFontString();
-
-    // set these after the font so they're not overridden
-    let context = this.textDrawingContext();
-    context.direction = this.states.direction;
-    context.textAlign = this.states.textAlign;
-    context.textBaseline = this.states.textBaseline;
-
-    // set manually as (still) not fully supported as part of font-string
-    let stretch = this.states.fontStretch;
-    if (FontStretchKeys.includes(stretch) && context.fontStretch !== stretch) {
-      context.fontStretch = stretch;
-    }
-
-    // apply each property in queue after the font so they're not overridden
-    while (contextQueue?.length) {
-
-      let [prop, val] = contextQueue.shift();
-      if (debug) console.log('apply context property "' + prop + '" = "' + val + '"');
-      context[prop] = val;
-
-      // check if the value was set successfully
-      if (context[prop] !== val) {
-        console.warn(`Unable to set '${prop}' property on context2d. It may not be supported.`); // FES?
-        console.log('Expected "' + val + '" but got: "' + context[prop] + '"');
-      }
-    }
-
-    return this._pInst;
-  };
-
-  if (p5.Renderer2D) {
-    p5.Renderer2D.prototype.textCanvas = function () {
-      return this.canvas;
-    };
-    p5.Renderer2D.prototype.textDrawingContext = function () {
-      return this.drawingContext;
-    };
-
-    p5.Renderer2D.prototype._renderText = function (text, x, y, maxY, minY) {
-      let states = this.states;
-      let context = this.textDrawingContext();
-
-      if (y < minY || y >= maxY) {
-        return; // don't render lines beyond minY/maxY
-      }
-
-      this.push();
-
-      // no stroke unless specified by user
-      if (states.strokeColor && states.strokeSet) {
-        context.strokeText(text, x, y);
-      }
-
-      if (!this._clipping && states.fillColor) {
-
-        // if fill hasn't been set by user, use default text fill
-        if (!states.fillSet) {
-          this._setFill(DefaultFill);
-        }
-        context.fillText(text, x, y);
-      }
-
-      this.pop();
-    };
-
-    /*
-      Position the lines of text based on their textAlign/textBaseline properties
-    */
-    p5.Renderer2D.prototype._positionLines = function (
-      x, y,
-      width, height,
-      lines
-    ) {
-
-      let { textLeading, textAlign } = this.states;
-      let adjustedX, lineData = new Array(lines.length);
-      let adjustedW = typeof width === 'undefined' ? 0 : width;
-      let adjustedH = typeof height === 'undefined' ? 0 : height;
-
-      for (let i = 0; i < lines.length; i++) {
-        switch (textAlign) {
-          case textCoreConstants.START:
-            throw new Error('textBounds: START not yet supported for textAlign'); // default to LEFT
-          case fn.LEFT:
-            adjustedX = x;
-            break;
-          case fn.CENTER:
-            adjustedX = x + adjustedW / 2;
-            break;
-          case fn.RIGHT:
-            adjustedX = x + adjustedW;
-            break;
-          case textCoreConstants.END:
-            throw new Error('textBounds: END not yet supported for textAlign');
-        }
-        lineData[i] = { text: lines[i], x: adjustedX, y: y + i * textLeading };
-      }
-
-      return this._yAlignOffset(lineData, adjustedH);
-    };
-
-    /*
-      Get the y-offset for text given the height, leading, line-count and textBaseline property
-    */
-    p5.Renderer2D.prototype._yAlignOffset = function (dataArr, height) {
-
-      if (typeof height === 'undefined') {
-        throw Error('_yAlignOffset: height is required');
-      }
-
-      let { textLeading, textBaseline } = this.states;
-      let yOff = 0, numLines = dataArr.length;
-      let ydiff = height - (textLeading * (numLines - 1));
-      switch (textBaseline) { // drawingContext ?
-        case fn.TOP:
-          break; // ??
-        case fn.BASELINE:
-          break;
-        case textCoreConstants._CTX_MIDDLE:
-          yOff = ydiff / 2;
-          break;
-        case fn.BOTTOM:
-          yOff = ydiff;
-          break;
-        case textCoreConstants.IDEOGRAPHIC:
-          console.warn('textBounds: IDEOGRAPHIC not yet supported for textBaseline'); // FES?
-          break;
-        case textCoreConstants.HANGING:
-          console.warn('textBounds: HANGING not yet supported for textBaseline'); // FES?
-          break;
-      }
-      dataArr.forEach(ele => ele.y += yOff);
-      return dataArr;
-    };
-  }
-
-  if (p5.RendererGL) {
-    p5.RendererGL.prototype.textCanvas = function() {
-      if (!this._textCanvas) {
-        this._textCanvas = document.createElement('canvas');
-        this._textCanvas.width = 1;
-        this._textCanvas.height = 1;
-        this._textCanvas.style.display = 'none';
-        // Has to be added to the DOM for measureText to work properly!
-        this.canvas.parentElement.insertBefore(this._textCanvas, this.canvas);
-      }
-      return this._textCanvas;
-    };
-    p5.RendererGL.prototype.textDrawingContext = function() {
-      if (!this._textDrawingContext) {
-        const textCanvas = this.textCanvas();
-        this._textDrawingContext = textCanvas.getContext('2d');
-      }
-      return this._textDrawingContext;
-    };
-    const oldRemove = p5.RendererGL.prototype.remove;
-    p5.RendererGL.prototype.remove = function() {
-      if (this._textCanvas) {
-        this._textCanvas.parentElement.removeChild(this._textCanvas);
-      }
-      oldRemove.call(this);
-    };
-
-    p5.RendererGL.prototype._positionLines = function (
-      x, y,
-      width, height,
-      lines
-    ) {
-
-      let { textLeading, textAlign } = this.states;
-      const widths = lines.map(line => this._fontWidthSingle(line));
-      let adjustedX, lineData = new Array(lines.length);
-      let adjustedW = typeof width === 'undefined' ? Math.max(0, ...widths) : width;
-      let adjustedH = typeof height === 'undefined' ? 0 : height;
-
-      for (let i = 0; i < lines.length; i++) {
-        switch (textAlign) {
-          case textCoreConstants.START:
-            throw new Error('textBounds: START not yet supported for textAlign'); // default to LEFT
-          case fn.LEFT:
-            adjustedX = x;
-            break;
-          case fn.CENTER:
-            adjustedX = x +
-              (adjustedW - widths[i]) / 2 -
-              adjustedW / 2 +
-              (width || 0) / 2;
-            break;
-          case fn.RIGHT:
-            adjustedX = x + adjustedW - widths[i] - adjustedW + (width || 0);
-            break;
-          case textCoreConstants.END:
-            throw new Error('textBounds: END not yet supported for textAlign');
-        }
-        lineData[i] = { text: lines[i], x: adjustedX, y: y + i * textLeading };
-      }
-
-      return this._yAlignOffset(lineData, adjustedH);
-    };
-
-    p5.RendererGL.prototype._yAlignOffset = function (dataArr, height) {
-
-      if (typeof height === 'undefined') {
-        throw Error('_yAlignOffset: height is required');
-      }
-
-      let { textLeading, textBaseline, textSize} = this.states;
-      let yOff = 0, numLines = dataArr.length;
-      let totalHeight = textSize * numLines +
-        ((textLeading - textSize) * (numLines - 1));
-      switch (textBaseline) { // drawingContext ?
-        case fn.TOP:
-          yOff = textSize;
-          break;
-        case fn.BASELINE:
-          break;
-        case textCoreConstants._CTX_MIDDLE:
-          yOff = -totalHeight / 2 + textSize + (height || 0) / 2;
-          break;
-        case fn.BOTTOM:
-          yOff = -(totalHeight - textSize) + (height || 0);
-          break;
-        default:
-          console.warn(`${textBaseline} is not supported in WebGL mode.`); // FES?
-          break;
-      }
-      yOff += this.states.textFont.font?._verticalAlign(textSize) || 0; // Does this function exist?
-      dataArr.forEach(ele => ele.y += yOff);
-      return dataArr;
-    };
-  }
-}
-
-if (typeof p5 !== 'undefined') {
-  textCore(p5, p5.prototype);
 }
 
 var lib = {};
@@ -120537,63 +121212,148 @@ class Font {
   textToModel(str, x, y, width, height, options) {
     ({ width, height, options } = this._parseArgs(width, height, options));
     const extrude = options?.extrude || 0;
-    const contours = this.textToContours(str, x, y, width, height, options);
 
+    let contours = this.textToContours(str, x, y, width, height, options);
+    // Step 2: build base flat geometry - single shape
     const geom = this._pInst.buildGeometry(() => {
-      if (extrude === 0) {
-        const prevValidateFaces = this._pInst._renderer._validateFaces;
-        this._pInst._renderer._validateFaces = true;
-        this._pInst.beginShape();
-        this._pInst.normal(0, 0, 1);
-        for (const contour of contours) {
-          this._pInst.beginContour();
-          for (const { x, y } of contour) {
-            this._pInst.vertex(x, y);
-          }
-          this._pInst.endContour(this._pInst.CLOSE);
-        }
-        this._pInst.endShape();
-        this._pInst._renderer._validateFaces = prevValidateFaces;
-      } else {
-        const prevValidateFaces = this._pInst._renderer._validateFaces;
-        this._pInst._renderer._validateFaces = true;
+      const prevValidateFaces = this._pInst._renderer._validateFaces;
+      this._pInst._renderer._validateFaces = true;
 
-        // Draw front faces
-        for (const side of [1, -1]) {
-          this._pInst.beginShape();
-          for (const contour of contours) {
-            this._pInst.beginContour();
-            for (const { x, y } of contour) {
-              this._pInst.vertex(x, y, side * extrude * 0.5);
-            }
-            this._pInst.endContour(this._pInst.CLOSE);
-          }
-          this._pInst.endShape();
+      this._pInst.beginShape();
+      for (const contour of contours) {
+        this._pInst.beginContour();
+        for (const pt of contour) {
+          this._pInst.vertex(pt.x, pt.y, 0);
         }
-        this._pInst._renderer._validateFaces = prevValidateFaces;
-
-        // Draw sides
-        for (const contour of contours) {
-          this._pInst.beginShape(this._pInst.QUAD_STRIP);
-          for (const v of contour) {
-            for (const side of [-1, 1]) {
-              this._pInst.vertex(v.x, v.y, side * extrude * 0.5);
-            }
-          }
-          this._pInst.endShape();
-        }
+        this._pInst.endContour(this._pInst.CLOSE);
       }
+
+      this._pInst.endShape(this._pInst.CLOSE);
+
+      this._pInst._renderer._validateFaces = prevValidateFaces;
     });
-    if (extrude !== 0) {
-      geom.computeNormals();
-      for (const face of geom.faces) {
-        if (face.every(idx => geom.vertices[idx].z <= -extrude * 0.5 + 0.1)) {
-          for (const idx of face) geom.vertexNormals[idx].set(0, 0, -1);
-          face.reverse();
-        }
+
+    if (extrude === 0) {
+      return geom;
+    }
+
+    // The tessellation process creates separate vertices for each triangle,
+    // even when they share the same position. We need to deduplicate them
+    // to find which faces are actually connected, so we can identify the
+    // outer edges for extrusion.
+
+    const vertexIndices = {};
+    const vertexId = v => `${v.x.toFixed(6)}-${v.y.toFixed(6)}-${v.z.toFixed(6)}`;
+    const newVertices = [];
+    const newVertexIndex = [];
+
+    for (const v of geom.vertices) {
+      const id = vertexId(v);
+      if (!(id in vertexIndices)) {
+        const index = newVertices.length;
+        vertexIndices[id] = index;
+        newVertices.push(v.copy());
+      }
+      newVertexIndex.push(vertexIndices[id]);
+    }
+
+    // Remap faces to use deduplicated vertices
+    const newFaces = geom.faces.map(f => f.map(i => newVertexIndex[i]));
+
+    //Find outer edges (edges that appear in only one face)
+    const seen = {};
+    for (const face of newFaces) {
+      for (let off = 0; off < face.length; off++) {
+        const a = face[off];
+        const b = face[(off + 1) % face.length];
+        const id = `${Math.min(a, b)}-${Math.max(a, b)}`;
+        if (!seen[id]) seen[id] = [];
+        seen[id].push([a, b]);
       }
     }
-    return geom;
+    const validEdges = [];
+    for (const key in seen) {
+      if (seen[key].length === 1) {
+        validEdges.push(seen[key][0]);
+      }
+    }
+
+    // Step 5: Create extruded geometry
+    const extruded = this._pInst.buildGeometry(() => {});
+    const half = extrude * 0.5;
+    extruded.vertices = [];
+    extruded.faces = [];
+    extruded.edges = []; // INITIALIZE EDGES ARRAY
+
+    // Add side face vertices (separate for each edge for flat shading)
+    for (const [a, b] of validEdges) {
+      const vA = newVertices[a];
+      const vB = newVertices[b];
+
+      // Skip if vertices are too close (degenerate edge)
+      // We only need to check the perimeter edge length since the other edge
+      // is the extrude direction, which is always > 0 for extruded geometry
+
+      const edgeVector = new Vector(vB.x - vA.x, vB.y - vA.y, vB.z - vA.z);
+      const extrudeVector = new Vector(0, 0, extrude);
+      const crossProduct = Vector.cross(edgeVector, extrudeVector);
+      const dist = edgeVector.mag();
+      if (crossProduct.mag() < 0.0001 || dist < 0.0001) continue;
+      // Front face vertices
+      const frontA = extruded.vertices.length;
+      extruded.vertices.push(new Vector(vA.x, vA.y, vA.z + half));
+      const frontB = extruded.vertices.length;
+      extruded.vertices.push(new Vector(vB.x, vB.y, vB.z + half));
+      const backA = extruded.vertices.length;
+      extruded.vertices.push(new Vector(vA.x, vA.y, vA.z - half));
+      const backB = extruded.vertices.length;
+      extruded.vertices.push(new Vector(vB.x, vB.y, vB.z - half));
+
+      extruded.faces.push([frontA, backA, backB]);
+      extruded.faces.push([frontA, backB, frontB]);
+      extruded.edges.push([frontA, frontB]);
+      extruded.edges.push([backA, backB]);
+      extruded.edges.push([frontA, backA]);
+      extruded.edges.push([frontB, backB]);
+    }
+
+    // Add front face (with unshared vertices for flat shading)
+    const frontVertexOffset = extruded.vertices.length;
+    for (const v of newVertices) {
+      extruded.vertices.push(new Vector(v.x, v.y, v.z + half));
+    }
+    for (const face of newFaces) {
+      if (face.length < 3) continue;
+      const mappedFace = face.map(i => i + frontVertexOffset);
+      extruded.faces.push(mappedFace);
+
+      // ADD EDGES FOR FRONT FACE
+      for (let i = 0; i < mappedFace.length; i++) {
+        const nextIndex = (i + 1) % mappedFace.length;
+        extruded.edges.push([mappedFace[i], mappedFace[nextIndex]]);
+      }
+    }
+
+    // Add back face (reversed winding order)
+    const backVertexOffset = extruded.vertices.length;
+    for (const v of newVertices) {
+      extruded.vertices.push(new Vector(v.x, v.y, v.z - half));
+    }
+
+    for (const face of newFaces) {
+      if (face.length < 3) continue;
+      const mappedFace = [...face].reverse().map(i => i + backVertexOffset);
+      extruded.faces.push(mappedFace);
+
+      // ADD EDGES FOR BACK FACE
+      for (let i = 0; i < mappedFace.length; i++) {
+        const nextIndex = (i + 1) % mappedFace.length;
+        extruded.edges.push([mappedFace[i], mappedFace[nextIndex]]);
+      }
+    }
+
+    extruded.computeNormals();
+    return extruded;
   }
 
   variations() {
@@ -120646,25 +121406,14 @@ class Font {
 
   /////////////////////////////// HELPERS ////////////////////////////////
 
-  _verticalAlign(size) {
-    const { sCapHeight } = this.data?.['OS/2'] || {};
-    const { unitsPerEm = 1000 } = this.data?.head || {};
-    const { ascender = 0, descender = 0 } = this.data?.hhea || {};
-    const current = ascender / 2;
-    const target = (sCapHeight || (ascender + descender)) / 2;
-    const offset = target - current;
-    return offset * size / unitsPerEm;
-  }
-
   /*
     Returns an array of line objects, each containing { text, x, y, glyphs: [ {g, path} ] }
   */
   _lineateAndPathify(str, x, y, width, height, options = {}) {
 
     let renderer = options?.graphics?._renderer || this._pInst._renderer;
-
-    // save the baseline
-    let setBaseline = renderer.drawingContext.textBaseline;
+    renderer.push();
+    renderer.textFont(this);
 
     // lineate and compute bounds for the text
     let { lines, bounds } = renderer._computeBounds
@@ -120681,8 +121430,7 @@ class Font {
     const axs = this._currentAxes(renderer);
     let pathsForLine = lines.map(l => this._lineToGlyphs(l, { scale, axs }));
 
-    // restore the baseline
-    renderer.drawingContext.textBaseline = setBaseline;
+    renderer.pop();
 
     return pathsForLine;
   }
@@ -120766,7 +121514,7 @@ class Font {
 
   _position(renderer, lines, bounds, width, height) {
 
-    let { textAlign, textLeading } = renderer.states;
+    let { textAlign, textLeading} = renderer.states;
     let metrics = this._measureTextDefault(renderer, 'X');
     let ascent = metrics.fontBoundingBoxAscent;
 
@@ -121359,7 +122107,8 @@ function font(p5, fn) {
    * <code>
    * // Some other forms of loading fonts:
    * loadFont("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap");
-   * loadFont(`@font-face { font-family: "Bricolage Grotesque", serif; font-optical-sizing: auto; font-weight: 400; font-style: normal; font-variation-settings: "wdth" 100; }`);
+   *
+   * loadFont('@font-face { font-family: "Bricolage Grotesque", serif; font-optical-sizing: auto; font-weight: 400; font-style: normal; font-variation-settings: "wdth" 100; }');
    * </code>
    * </div>
    */
@@ -121388,7 +122137,15 @@ function font(p5, fn) {
     let isCSS = path.includes('@font-face');
 
     if (!isCSS) {
-      const info = await fetch(path, { method: 'HEAD' });
+      let info;
+      try {
+        info = await fetch(path, { method: 'HEAD' });
+      } catch (e) {
+        // Sometimes files fail when requested with HEAD. Fallback to a
+        // regular GET. It loads more data, but at least then it's cached
+        // for the likely case when we have to fetch the whole thing.
+        info = await fetch(path);
+      }
       const isCSSFile = info.headers.get('content-type')?.startsWith('text/css');
       if (isCSSFile) {
         isCSS = true;
@@ -121565,7 +122322,7 @@ if (typeof p5 !== 'undefined') {
 }
 
 function text(p5, fn) {
-  RendererGL.prototype.maxCachedGlyphs = function() {
+  Renderer3D.prototype.maxCachedGlyphs = function() {
     // TODO: use more than vibes to find a good value for this
     return 200;
   };
@@ -121584,17 +122341,6 @@ function text(p5, fn) {
       return val;
     }
   };
-
-  // Text/Typography (see src/type/textCore.js)
-  /*
-  RendererGL.prototype.textWidth = function(s) {
-    if (this._isOpenType()) {
-      return this.states.textFont.font._textWidth(s, this.states.textSize);
-    }
-
-    return 0; // TODO: error
-  };
-  */
 
   // rendering constants
 
@@ -122243,7 +122989,7 @@ function text(p5, fn) {
     }
   }
 
-  RendererGL.prototype._renderText = function (line, x, y, maxY, minY) {
+  Renderer3D.prototype._renderText = function (line, x, y, maxY, minY) {
     if (!this.states.textFont || typeof this.states.textFont === 'string') {
       console.log(
         'WEBGL: you must load and set a font before drawing text. See `loadFont` and `textFont` for more details.'
@@ -122289,11 +123035,10 @@ function text(p5, fn) {
     this.scale(scale, scale, 1);
 
     // initialize the font shader
-    const gl = this.GL;
     const initializeShader = !this._defaultFontShader;
     const sh = this._getFontShader();
     sh.init();
-    sh.bindShader(); // first time around, bind the shader fully
+    sh.bindShader('text'); // first time around, bind the shader fully
 
     if (initializeShader) {
       // these are constants, really. just initialize them one-time.
@@ -122305,7 +123050,7 @@ function text(p5, fn) {
 
     const curFillColor = this.states.fillSet
       ? this.states.curFillColor
-      : [0, 0, 0, 255];
+      : [0, 0, 0, 1];
 
     this._setGlobalUniforms(sh);
     this._applyColorBlend(curFillColor);
@@ -122335,15 +123080,11 @@ function text(p5, fn) {
     for (const buff of this.buffers.text) {
       buff._prepareBuffer(g, sh);
     }
-    this._bindBuffer(
-      this.geometryBufferCache.cache.glyph.indexBuffer,
-      gl.ELEMENT_ARRAY_BUFFER
-    );
 
     // this will have to do for now...
     sh.setUniform('uMaterialColor', curFillColor);
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-
+    this._disableRemainingAttributes(sh);
+    this._beforeDrawText();
     this.glyphDataCache = this.glyphDataCache || new Set();
 
     try {
@@ -122394,7 +123135,7 @@ function text(p5, fn) {
           sh.bindTextures(); // afterwards, only textures need updating
 
           // draw it
-          gl.drawElements(gl.TRIANGLES, 6, this.GL.UNSIGNED_SHORT, 0);
+          this._drawBuffers(g, { mode: TRIANGLES, count: 1 });
         }
       }
     } finally {
@@ -122403,701 +123144,2105 @@ function text(p5, fn) {
 
       this.states.setValue('strokeColor', doStroke);
       this.states.setValue('drawMode', drawMode);
-      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
+      this._afterDrawText();
       this.pop();
     }
   };
 }
 
-/////////////////////
-// Enums for nodes //
-/////////////////////
-const NodeType = {
-  OPERATION: 'operation',
-  LITERAL: 'literal',
-  VARIABLE: 'variable',
-  CONSTANT: 'constant',
-  STRUCT: 'struct',
-  PHI: 'phi',
-  STATEMENT: 'statement',
-  ASSIGNMENT: 'assignment',
+var lightingShader = "#define PI 3.141592\n\nprecision highp float;\nprecision highp int;\n\nuniform mat4 uViewMatrix;\n\nuniform bool uUseLighting;\n\nuniform mat3 uCameraRotation;\nuniform int uDirectionalLightCount;\nuniform vec3 uLightingDirection[5];\nuniform vec3 uDirectionalDiffuseColors[5];\nuniform vec3 uDirectionalSpecularColors[5];\n\nuniform int uPointLightCount;\nuniform vec3 uPointLightLocation[5];\nuniform vec3 uPointLightDiffuseColors[5];\t\nuniform vec3 uPointLightSpecularColors[5];\n\nuniform int uSpotLightCount;\nuniform float uSpotLightAngle[5];\nuniform float uSpotLightConc[5];\nuniform vec3 uSpotLightDiffuseColors[5];\nuniform vec3 uSpotLightSpecularColors[5];\nuniform vec3 uSpotLightLocation[5];\nuniform vec3 uSpotLightDirection[5];\n\nuniform bool uSpecular;\nuniform float uShininess;\nuniform float uMetallic;\n\nuniform float uConstantAttenuation;\nuniform float uLinearAttenuation;\nuniform float uQuadraticAttenuation;\n\n// setting from  _setImageLightUniforms()\n// boolean to initiate the calculateImageDiffuse and calculateImageSpecular\nuniform bool uUseImageLight;\n// texture for use in calculateImageDiffuse\nuniform sampler2D environmentMapDiffused;\n// texture for use in calculateImageSpecular\nuniform sampler2D environmentMapSpecular;\n\nconst float specularFactor = 2.0;\nconst float diffuseFactor = 0.73;\n\nstruct LightResult {\n  float specular;\n  float diffuse;\n};\n\nfloat _phongSpecular(\n  vec3 lightDirection,\n  vec3 viewDirection,\n  vec3 surfaceNormal,\n  float shininess) {\n\n  vec3 R = reflect(lightDirection, surfaceNormal);\n  return pow(max(0.0, dot(R, viewDirection)), shininess);\n}\n\nfloat _lambertDiffuse(vec3 lightDirection, vec3 surfaceNormal) {\n  return max(0.0, dot(-lightDirection, surfaceNormal));\n}\n\nLightResult _light(vec3 viewDirection, vec3 normal, vec3 lightVector, float shininess, float metallic) {\n\n  vec3 lightDir = normalize(lightVector);\n\n  //compute our diffuse & specular terms\n  LightResult lr;\n  float specularIntensity = mix(1.0, 0.4, metallic);\n  float diffuseIntensity = mix(1.0, 0.1, metallic);\n  if (uSpecular)\n    lr.specular = (_phongSpecular(lightDir, viewDirection, normal, shininess)) * specularIntensity;\n    lr.diffuse = _lambertDiffuse(lightDir, normal) * diffuseIntensity;\n  return lr;\n}\n\n// converts the range of \"value\" from [min1 to max1] to [min2 to max2]\nfloat map(float value, float min1, float max1, float min2, float max2) {\n  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);\n}\n\nvec2 mapTextureToNormal( vec3 v ){\n  // x = r sin(phi) cos(theta)   \n  // y = r cos(phi)  \n  // z = r sin(phi) sin(theta)\n  float phi = acos( v.y );\n  // if phi is 0, then there are no x, z components\n  float theta = 0.0;\n  // else \n  theta = acos(v.x / sin(phi));\n  float sinTheta = v.z / sin(phi);\n  if (sinTheta < 0.0) {\n    // Turn it into -theta, but in the 0-2PI range\n    theta = 2.0 * PI - theta;\n  }\n  theta = theta / (2.0 * 3.14159);\n  phi = phi / 3.14159 ;\n  \n  vec2 angles = vec2( fract(theta + 0.25), 1.0 - phi );\n  return angles;\n}\n\n\nvec3 calculateImageDiffuse(vec3 vNormal, vec3 vViewPosition, float metallic){\n  // make 2 seperate builds \n  vec3 worldCameraPosition =  vec3(0.0, 0.0, 0.0);  // hardcoded world camera position\n  vec3 worldNormal = normalize(vNormal * uCameraRotation);\n  vec2 newTexCoor = mapTextureToNormal( worldNormal );\n  vec4 texture = TEXTURE( environmentMapDiffused, newTexCoor );\n  // this is to make the darker sections more dark\n  // png and jpg usually flatten the brightness so it is to reverse that\n  return mix(smoothstep(vec3(0.0), vec3(1.0), texture.xyz), vec3(0.0), metallic);\n}\n\nvec3 calculateImageSpecular(vec3 vNormal, vec3 vViewPosition, float shininess, float metallic){\n  vec3 worldCameraPosition =  vec3(0.0, 0.0, 0.0);\n  vec3 worldNormal = normalize(vNormal);\n  vec3 lightDirection = normalize( vViewPosition - worldCameraPosition );\n  vec3 R = reflect(lightDirection, worldNormal) * uCameraRotation;\n  vec2 newTexCoor = mapTextureToNormal( R );\n#ifdef WEBGL2\n  // In p5js the range of shininess is >= 1,\n  // Therefore roughness range will be ([0,1]*8)*20 or [0, 160]\n  // The factor of 8 is because currently the getSpecularTexture\n  // only calculated 8 different levels of roughness\n  // The factor of 20 is just to spread up this range so that,\n  // [1, max] of shininess is converted to [0,160] of roughness\n  float roughness = 20. / shininess;\n  vec4 outColor = textureLod(environmentMapSpecular, newTexCoor, roughness * 8.);\n#else\n  vec4 outColor = TEXTURE(environmentMapSpecular, newTexCoor);\n#endif\n  // this is to make the darker sections more dark\n  // png and jpg usually flatten the brightness so it is to reverse that\n  return mix(\n    pow(outColor.xyz, vec3(10)),\n    pow(outColor.xyz, vec3(1.2)),\n    metallic \n  );\n}\n\nvoid totalLight(\n  vec3 modelPosition,\n  vec3 normal,\n  float shininess,\n  float metallic,\n  out vec3 totalDiffuse,\n  out vec3 totalSpecular\n) {\n\n  totalSpecular = vec3(0.0);\n\n  if (!uUseLighting) {\n    totalDiffuse = vec3(1.0);\n    return;\n  }\n\n  totalDiffuse = vec3(0.0);\n\n  vec3 viewDirection = normalize(-modelPosition);\n\n  for (int j = 0; j < 5; j++) {\n    if (j < uDirectionalLightCount) {\n      vec3 lightVector = (uViewMatrix * vec4(uLightingDirection[j], 0.0)).xyz;\n      vec3 lightColor = uDirectionalDiffuseColors[j];\n      vec3 specularColor = uDirectionalSpecularColors[j];\n      LightResult result = _light(viewDirection, normal, lightVector, shininess, metallic);\n      totalDiffuse += result.diffuse * lightColor;\n      totalSpecular += result.specular * lightColor * specularColor;\n    }\n\n    if (j < uPointLightCount) {\n      vec3 lightPosition = (uViewMatrix * vec4(uPointLightLocation[j], 1.0)).xyz;\n      vec3 lightVector = modelPosition - lightPosition;\n      //calculate attenuation\n      float lightDistance = length(lightVector);\n      float lightFalloff = 1.0 / (uConstantAttenuation + lightDistance * uLinearAttenuation + (lightDistance * lightDistance) * uQuadraticAttenuation);\n      vec3 lightColor = lightFalloff * uPointLightDiffuseColors[j];\n      vec3 specularColor = lightFalloff * uPointLightSpecularColors[j];\n\n      LightResult result = _light(viewDirection, normal, lightVector, shininess, metallic);\n      totalDiffuse += result.diffuse * lightColor;\n      totalSpecular += result.specular * lightColor * specularColor;\n    }\n\n    if(j < uSpotLightCount) {\n      vec3 lightPosition = (uViewMatrix * vec4(uSpotLightLocation[j], 1.0)).xyz;\n      vec3 lightVector = modelPosition - lightPosition;\n    \n      float lightDistance = length(lightVector);\n      float lightFalloff = 1.0 / (uConstantAttenuation + lightDistance * uLinearAttenuation + (lightDistance * lightDistance) * uQuadraticAttenuation);\n\n      vec3 lightDirection = (uViewMatrix * vec4(uSpotLightDirection[j], 0.0)).xyz;\n      float spotDot = dot(normalize(lightVector), normalize(lightDirection));\n      float spotFalloff;\n      if(spotDot < uSpotLightAngle[j]) {\n        spotFalloff = 0.0;\n      }\n      else {\n        spotFalloff = pow(spotDot, uSpotLightConc[j]);\n      }\n      lightFalloff *= spotFalloff;\n\n      vec3 lightColor = uSpotLightDiffuseColors[j];\n      vec3 specularColor = uSpotLightSpecularColors[j];\n     \n      LightResult result = _light(viewDirection, normal, lightVector, shininess, metallic);\n      \n      totalDiffuse += result.diffuse * lightColor * lightFalloff;\n      totalSpecular += result.specular * lightColor * specularColor * lightFalloff;\n    }\n  }\n\n  if( uUseImageLight ){\n    totalDiffuse += calculateImageDiffuse(normal, modelPosition, metallic);\n    totalSpecular += calculateImageSpecular(normal, modelPosition, shininess, metallic);\n  }\n\n  totalDiffuse *= diffuseFactor;\n  totalSpecular *= specularFactor;\n}\n";
+
+var normalVert = "IN vec3 aPosition;\nIN vec3 aNormal;\nIN vec2 aTexCoord;\nIN vec4 aVertexColor;\n\n#define HOOK_DEFINES\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\nuniform mat4 uModelMatrix;\nuniform mat4 uViewMatrix;\nuniform mat3 uModelNormalMatrix;\nuniform mat3 uCameraNormalMatrix;\n#else\nuniform mat4 uModelViewMatrix;\nuniform mat3 uNormalMatrix;\n#endif\nuniform mat4 uProjectionMatrix;\n\nuniform vec4 uMaterialColor;\nuniform bool uUseVertexColor;\n\nOUT vec3 vVertexNormal;\nOUT highp vec2 vVertTexCoord;\nOUT vec4 vColor;\n\nstruct Vertex {\n  vec3 position;\n  vec3 normal;\n  vec2 texCoord;\n  vec4 color;\n};\n\nvoid main(void) {\n  HOOK_beforeVertex();\n\n  Vertex inputs;\n  inputs.position = aPosition;\n  inputs.normal = aNormal;\n  inputs.texCoord = aTexCoord;\n  inputs.color = (uUseVertexColor && aVertexColor.x >= 0.0) ? aVertexColor : uMaterialColor;\n#ifdef AUGMENTED_HOOK_getObjectInputs\n  inputs = HOOK_getObjectInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  inputs.position = (uModelMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uModelNormalMatrix * inputs.normal;\n  inputs = HOOK_getWorldInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  // Already multiplied by the model matrix, just apply view\n  inputs.position = (uViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uCameraNormalMatrix * inputs.normal;\n#else\n  // Apply both at once\n  inputs.position = (uModelViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uNormalMatrix * inputs.normal;\n#endif\n#ifdef AUGMENTED_HOOK_getCameraInputs\n  inputs = HOOK_getCameraInputs(inputs);\n#endif\n\n  // Pass varyings to fragment shader\n  vVertTexCoord = inputs.texCoord;\n  vVertexNormal = normalize(inputs.normal);\n  vColor = inputs.color;\n\n  gl_Position = uProjectionMatrix * vec4(inputs.position, 1.);\n\n  HOOK_afterVertex();\n}\n";
+
+var normalFrag = "IN vec3 vVertexNormal;\nvoid main(void) {\n  HOOK_beforeFragment();\n  OUT_COLOR = HOOK_getFinalColor(vec4(vVertexNormal, 1.0));\n  HOOK_afterFragment();\n}\n";
+
+var basicFrag = "IN vec4 vColor;\nvoid main(void) {\n  HOOK_beforeFragment();\n  OUT_COLOR = HOOK_getFinalColor(vColor);\n  OUT_COLOR.rgb *= OUT_COLOR.a; // Premultiply alpha before rendering\n  HOOK_afterFragment();\n}\n";
+
+var lightVert = "// include lighting.glgl\n\nIN vec3 aPosition;\nIN vec3 aNormal;\nIN vec2 aTexCoord;\nIN vec4 aVertexColor;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform mat3 uNormalMatrix;\n\nuniform bool uUseVertexColor;\nuniform vec4 uMaterialColor;\n\nOUT highp vec2 vVertTexCoord;\nOUT vec3 vDiffuseColor;\nOUT vec3 vSpecularColor;\nOUT vec4 vColor;\n\nvoid main(void) {\n\n  vec4 viewModelPosition = uModelViewMatrix * vec4(aPosition, 1.0);\n  gl_Position = uProjectionMatrix * viewModelPosition;\n\n  vec3 vertexNormal = normalize(uNormalMatrix * aNormal);\n  vVertTexCoord = aTexCoord;\n\n  totalLight(viewModelPosition.xyz, vertexNormal, vDiffuseColor, vSpecularColor);\n\n  for (int i = 0; i < 8; i++) {\n    if (i < uAmbientLightCount) {\n      vDiffuseColor += uAmbientColor[i];\n    }\n  }\n  \n  vColor = ((uUseVertexColor && aVertexColor.x >= 0.0) ? aVertexColor : uMaterialColor);\n}\n";
+
+var lightTextureFrag = "uniform vec4 uTint;\nuniform sampler2D uSampler;\nuniform bool isTexture;\nuniform bool uEmissive;\n\nIN highp vec2 vVertTexCoord;\nIN vec3 vDiffuseColor;\nIN vec3 vSpecularColor;\nIN vec4 vColor;\n\nvoid main(void) {\n  if(uEmissive && !isTexture) {\n    OUT_COLOR = vColor;\n  }\n  else {\n    vec4 baseColor = isTexture\n      // Textures come in with premultiplied alpha. To apply tint and still have\n      // premultiplied alpha output, we need to multiply the RGB channels by the\n      // tint RGB, and all channels by the tint alpha.\n      ? TEXTURE(uSampler, vVertTexCoord) * vec4(uTint.rgb/255., 1.) * (uTint.a/255.)\n      // Colors come in with unmultiplied alpha, so we need to multiply the RGB\n      // channels by alpha to convert it to premultiplied alpha.\n      : vec4(vColor.rgb * vColor.a, vColor.a);\n    OUT_COLOR = vec4(baseColor.rgb * vDiffuseColor + vSpecularColor, baseColor.a);\n  }\n}\n";
+
+var phongVert = "precision highp int;\n\n#define HOOK_DEFINES\n\nIN vec3 aPosition;\nIN vec3 aNormal;\nIN vec2 aTexCoord;\nIN vec4 aVertexColor;\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\nuniform mat4 uModelMatrix;\nuniform mat4 uViewMatrix;\nuniform mat3 uModelNormalMatrix;\nuniform mat3 uCameraNormalMatrix;\n#else\nuniform mat4 uModelViewMatrix;\nuniform mat3 uNormalMatrix;\n#endif\nuniform mat4 uProjectionMatrix;\n\nuniform bool uUseVertexColor;\nuniform vec4 uMaterialColor;\n\nOUT vec3 vNormal;\nOUT vec2 vTexCoord;\nOUT vec3 vViewPosition;\nOUT vec3 vAmbientColor;\nOUT vec4 vColor;\n\nstruct Vertex {\n  vec3 position;\n  vec3 normal;\n  vec2 texCoord;\n  vec4 color;\n};\n\nvoid main(void) {\n  HOOK_beforeVertex();\n\n  Vertex inputs;\n  inputs.position = aPosition;\n  inputs.normal = aNormal;\n  inputs.texCoord = aTexCoord;\n  inputs.color = (uUseVertexColor && aVertexColor.x >= 0.0) ? aVertexColor : uMaterialColor;\n#ifdef AUGMENTED_HOOK_getObjectInputs\n  inputs = HOOK_getObjectInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  inputs.position = (uModelMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uModelNormalMatrix * inputs.normal;\n  inputs = HOOK_getWorldInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  // Already multiplied by the model matrix, just apply view\n  inputs.position = (uViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uCameraNormalMatrix * inputs.normal;\n#else\n  // Apply both at once\n  inputs.position = (uModelViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.normal = uNormalMatrix * inputs.normal;\n#endif\n#ifdef AUGMENTED_HOOK_getCameraInputs\n  inputs = HOOK_getCameraInputs(inputs);\n#endif\n\n  // Pass varyings to fragment shader\n  vViewPosition = inputs.position;\n  vTexCoord = inputs.texCoord;\n  vNormal = inputs.normal;\n  vColor = inputs.color;\n\n  gl_Position = uProjectionMatrix * vec4(inputs.position, 1.);\n  HOOK_afterVertex();\n}\n";
+
+var phongFrag = "// include lighting.glsl\nprecision highp int;\n\nuniform bool uHasSetAmbient;\nuniform vec3 uAmbientColor;\nuniform vec4 uSpecularMatColor;\nuniform vec4 uAmbientMatColor;\nuniform vec4 uEmissiveMatColor;\n\nuniform vec4 uTint;\nuniform sampler2D uSampler;\nuniform bool isTexture;\n\nIN vec3 vNormal;\nIN vec2 vTexCoord;\nIN vec3 vViewPosition;\nIN vec4 vColor;\n\nstruct ColorComponents {\n  vec3 baseColor;\n  float opacity;\n  vec3 ambientColor;\n  vec3 specularColor;\n  vec3 diffuse;\n  vec3 ambient;\n  vec3 specular;\n  vec3 emissive;\n};\n\nstruct Inputs {\n  vec3 normal;\n  vec2 texCoord;\n  vec3 ambientLight;\n  vec3 ambientMaterial;\n  vec3 specularMaterial;\n  vec3 emissiveMaterial;\n  vec4 color;\n  float shininess;\n  float metalness;\n};\n\nvoid main(void) {\n  HOOK_beforeFragment();\n\n  Inputs inputs;\n  inputs.normal = normalize(vNormal);\n  inputs.texCoord = vTexCoord;\n  inputs.ambientLight = uAmbientColor;\n  inputs.color = isTexture\n      ? TEXTURE(uSampler, vTexCoord) * (vec4(uTint.rgb/255., 1.) * uTint.a/255.)\n      : vColor;\n  if (isTexture && inputs.color.a > 0.0) {\n    // Textures come in with premultiplied alpha. Temporarily unpremultiply it\n    // so hooks users don't have to think about premultiplied alpha.\n    inputs.color.rgb /= inputs.color.a;\n  }\n  inputs.shininess = uShininess;\n  inputs.metalness = uMetallic;\n  inputs.ambientMaterial = uHasSetAmbient ? uAmbientMatColor.rgb : inputs.color.rgb;\n  inputs.specularMaterial = uSpecularMatColor.rgb;\n  inputs.emissiveMaterial = uEmissiveMatColor.rgb;\n  inputs = HOOK_getPixelInputs(inputs);\n\n  vec3 diffuse;\n  vec3 specular;\n  totalLight(vViewPosition, inputs.normal, inputs.shininess, inputs.metalness, diffuse, specular);\n\n  // Calculating final color as result of all lights (plus emissive term).\n\n  vec4 baseColor = inputs.color;\n  ColorComponents c;\n  c.opacity = baseColor.a;\n  c.baseColor = baseColor.rgb;\n  c.ambientColor = inputs.ambientMaterial;\n  c.specularColor = inputs.specularMaterial;\n  c.diffuse = diffuse;\n  c.ambient = inputs.ambientLight;\n  c.specular = specular;\n  c.emissive = inputs.emissiveMaterial;\n  OUT_COLOR = HOOK_getFinalColor(HOOK_combineColors(c));\n  OUT_COLOR.rgb *= OUT_COLOR.a; // Premultiply alpha before rendering\n  HOOK_afterFragment();\n}\n";
+
+var fontVert = "IN vec3 aPosition;\nIN vec2 aTexCoord;\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\n\nuniform vec4 uGlyphRect;\nuniform float uGlyphOffset;\n\nOUT vec2 vTexCoord;\n\nvoid main() {\n  vec4 positionVec4 = vec4(aPosition, 1.0);\n\n  // scale by the size of the glyph's rectangle\n  positionVec4.xy *= uGlyphRect.zw - uGlyphRect.xy;\n\n  // Expand glyph bounding boxes by 1px on each side to give a bit of room\n  // for antialiasing\n  vec3 newOrigin = (uModelViewMatrix * vec4(0., 0., 0., 1.)).xyz;\n  vec3 newDX = (uModelViewMatrix * vec4(1., 0., 0., 1.)).xyz;\n  vec3 newDY = (uModelViewMatrix * vec4(0., 1., 0., 1.)).xyz;\n  vec2 pixelScale = vec2(\n    1. / length(newOrigin - newDX),\n    1. / length(newOrigin - newDY)\n  );\n  vec2 offset = pixelScale * normalize(aTexCoord - vec2(0.5, 0.5));\n  vec2 textureOffset = offset * (1. / vec2(\n    uGlyphRect.z - uGlyphRect.x,\n    uGlyphRect.w - uGlyphRect.y\n  ));\n\n  // move to the corner of the glyph\n  positionVec4.xy += uGlyphRect.xy;\n\n  // move to the letter's line offset\n  positionVec4.x += uGlyphOffset;\n\n  positionVec4.xy += offset;\n  \n  gl_Position = uProjectionMatrix * uModelViewMatrix * positionVec4;\n  vTexCoord = aTexCoord + textureOffset;\n}\n";
+
+var fontFrag = "#ifndef WEBGL2\n#extension GL_OES_standard_derivatives : enable\n#endif\n\n#if 0\n  // simulate integer math using floats\n\t#define int float\n\t#define ivec2 vec2\n\t#define INT(x) float(x)\n\n\tint ifloor(float v) { return floor(v); }\n\tivec2 ifloor(vec2 v) { return floor(v); }\n\n#else\n  // use native integer math\n\tprecision highp int;\n\t#define INT(x) x\n\n\tint ifloor(float v) { return int(v); }\n\tint ifloor(int v) { return v; }\n\tivec2 ifloor(vec2 v) { return ivec2(v); }\n\n#endif\n\nuniform sampler2D uSamplerStrokes;\nuniform sampler2D uSamplerRowStrokes;\nuniform sampler2D uSamplerRows;\nuniform sampler2D uSamplerColStrokes;\nuniform sampler2D uSamplerCols;\n\nuniform ivec2 uStrokeImageSize;\nuniform ivec2 uCellsImageSize;\nuniform ivec2 uGridImageSize;\n\nuniform ivec2 uGridOffset;\nuniform ivec2 uGridSize;\nuniform vec4 uMaterialColor;\n\nIN vec2 vTexCoord;\n\n// some helper functions\nint ROUND(float v) { return ifloor(v + 0.5); }\nivec2 ROUND(vec2 v) { return ifloor(v + 0.5); }\nfloat saturate(float v) { return clamp(v, 0.0, 1.0); }\nvec2 saturate(vec2 v) { return clamp(v, 0.0, 1.0); }\n\nint mul(float v1, int v2) {\n  return ifloor(v1 * float(v2));\n}\n\nivec2 mul(vec2 v1, ivec2 v2) {\n  return ifloor(v1 * vec2(v2) + 0.5);\n}\n\n// unpack a 16-bit integer from a float vec2\nint getInt16(vec2 v) {\n  ivec2 iv = ROUND(v * 255.0);\n  return iv.x * INT(128) + iv.y;\n}\n\nvec2 pixelScale;\nvec2 coverage = vec2(0.0);\nvec2 weight = vec2(0.5);\nconst float minDistance = 1.0/8192.0;\nconst float hardness = 1.05; // amount of antialias\n\n// the maximum number of curves in a glyph\nconst int N = INT(250);\n\n// retrieves an indexed pixel from a sampler\nvec4 getTexel(sampler2D sampler, int pos, ivec2 size) {\n  int width = size.x;\n  int y = ifloor(pos / width);\n  int x = pos - y * width;  // pos % width\n\n  return TEXTURE(sampler, (vec2(x, y) + 0.5) / vec2(size));\n}\n\nvoid calulateCrossings(vec2 p0, vec2 p1, vec2 p2, out vec2 C1, out vec2 C2) {\n\n  // get the coefficients of the quadratic in t\n  vec2 a = p0 - p1 * 2.0 + p2;\n  vec2 b = p0 - p1;\n  vec2 c = p0 - vTexCoord;\n\n  // found out which values of 't' it crosses the axes\n  vec2 surd = sqrt(max(vec2(0.0), b * b - a * c));\n  vec2 t1 = ((b - surd) / a).yx;\n  vec2 t2 = ((b + surd) / a).yx;\n\n  // approximate straight lines to avoid rounding errors\n  if (abs(a.y) < 0.001)\n    t1.x = t2.x = c.y / (2.0 * b.y);\n\n  if (abs(a.x) < 0.001)\n    t1.y = t2.y = c.x / (2.0 * b.x);\n\n  // plug into quadratic formula to find the corrdinates of the crossings\n  C1 = ((a * t1 - b * 2.0) * t1 + c) * pixelScale;\n  C2 = ((a * t2 - b * 2.0) * t2 + c) * pixelScale;\n}\n\nvoid coverageX(vec2 p0, vec2 p1, vec2 p2) {\n\n  vec2 C1, C2;\n  calulateCrossings(p0, p1, p2, C1, C2);\n\n  // determine on which side of the x-axis the points lie\n  bool y0 = p0.y > vTexCoord.y;\n  bool y1 = p1.y > vTexCoord.y;\n  bool y2 = p2.y > vTexCoord.y;\n\n  // could web be under the curve (after t1)?\n  if (y1 ? !y2 : y0) {\n    // add the coverage for t1\n    coverage.x += saturate(C1.x + 0.5);\n    // calculate the anti-aliasing for t1\n    weight.x = min(weight.x, abs(C1.x));\n  }\n\n  // are we outside the curve (after t2)?\n  if (y1 ? !y0 : y2) {\n    // subtract the coverage for t2\n    coverage.x -= saturate(C2.x + 0.5);\n    // calculate the anti-aliasing for t2\n    weight.x = min(weight.x, abs(C2.x));\n  }\n}\n\n// this is essentially the same as coverageX, but with the axes swapped\nvoid coverageY(vec2 p0, vec2 p1, vec2 p2) {\n\n  vec2 C1, C2;\n  calulateCrossings(p0, p1, p2, C1, C2);\n\n  bool x0 = p0.x > vTexCoord.x;\n  bool x1 = p1.x > vTexCoord.x;\n  bool x2 = p2.x > vTexCoord.x;\n\n  if (x1 ? !x2 : x0) {\n    coverage.y -= saturate(C1.y + 0.5);\n    weight.y = min(weight.y, abs(C1.y));\n  }\n\n  if (x1 ? !x0 : x2) {\n    coverage.y += saturate(C2.y + 0.5);\n    weight.y = min(weight.y, abs(C2.y));\n  }\n}\n\nvoid main() {\n\n  // calculate the pixel scale based on screen-coordinates\n  pixelScale = hardness / fwidth(vTexCoord);\n\n  // which grid cell is this pixel in?\n  ivec2 gridCoord = ifloor(vTexCoord * vec2(uGridSize));\n\n  // intersect curves in this row\n  {\n    // the index into the row info bitmap\n    int rowIndex = gridCoord.y + uGridOffset.y;\n    // fetch the info texel\n    vec4 rowInfo = getTexel(uSamplerRows, rowIndex, uGridImageSize);\n    // unpack the rowInfo\n    int rowStrokeIndex = getInt16(rowInfo.xy);\n    int rowStrokeCount = getInt16(rowInfo.zw);\n\n    for (int iRowStroke = INT(0); iRowStroke < N; iRowStroke++) {\n      if (iRowStroke >= rowStrokeCount)\n        break;\n\n      // each stroke is made up of 3 points: the start and control point\n      // and the start of the next curve.\n      // fetch the indices of this pair of strokes:\n      vec4 strokeIndices = getTexel(uSamplerRowStrokes, rowStrokeIndex++, uCellsImageSize);\n\n      // unpack the stroke index\n      int strokePos = getInt16(strokeIndices.xy);\n\n      // fetch the two strokes\n      vec4 stroke0 = getTexel(uSamplerStrokes, strokePos + INT(0), uStrokeImageSize);\n      vec4 stroke1 = getTexel(uSamplerStrokes, strokePos + INT(1), uStrokeImageSize);\n\n      // calculate the coverage\n      coverageX(stroke0.xy, stroke0.zw, stroke1.xy);\n    }\n  }\n\n  // intersect curves in this column\n  {\n    int colIndex = gridCoord.x + uGridOffset.x;\n    vec4 colInfo = getTexel(uSamplerCols, colIndex, uGridImageSize);\n    int colStrokeIndex = getInt16(colInfo.xy);\n    int colStrokeCount = getInt16(colInfo.zw);\n    \n    for (int iColStroke = INT(0); iColStroke < N; iColStroke++) {\n      if (iColStroke >= colStrokeCount)\n        break;\n\n      vec4 strokeIndices = getTexel(uSamplerColStrokes, colStrokeIndex++, uCellsImageSize);\n\n      int strokePos = getInt16(strokeIndices.xy);\n      vec4 stroke0 = getTexel(uSamplerStrokes, strokePos + INT(0), uStrokeImageSize);\n      vec4 stroke1 = getTexel(uSamplerStrokes, strokePos + INT(1), uStrokeImageSize);\n      coverageY(stroke0.xy, stroke0.zw, stroke1.xy);\n    }\n  }\n\n  weight = saturate(1.0 - weight * 2.0);\n  float distance = max(weight.x + weight.y, minDistance); // manhattan approx.\n  float antialias = abs(dot(coverage, weight) / distance);\n  float cover = min(abs(coverage.x), abs(coverage.y));\n  OUT_COLOR = vec4(uMaterialColor.rgb, 1.) * uMaterialColor.a;\n  OUT_COLOR *= saturate(max(antialias, cover));\n}\n";
+
+var lineVert = "/*\n  Part of the Processing project - http://processing.org\n  Copyright (c) 2012-15 The Processing Foundation\n  Copyright (c) 2004-12 Ben Fry and Casey Reas\n  Copyright (c) 2001-04 Massachusetts Institute of Technology\n  This library is free software; you can redistribute it and/or\n  modify it under the terms of the GNU Lesser General Public\n  License as published by the Free Software Foundation, version 2.1.\n  This library is distributed in the hope that it will be useful,\n  but WITHOUT ANY WARRANTY; without even the implied warranty of\n  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU\n  Lesser General Public License for more details.\n  You should have received a copy of the GNU Lesser General\n  Public License along with this library; if not, write to the\n  Free Software Foundation, Inc., 59 Temple Place, Suite 330,\n  Boston, MA  02111-1307  USA\n*/\n\n#define PROCESSING_LINE_SHADER\n\n#define HOOK_DEFINES\n\nprecision highp int;\nprecision highp float;\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\nuniform mat4 uModelMatrix;\nuniform mat4 uViewMatrix;\n#else\nuniform mat4 uModelViewMatrix;\n#endif\n\nuniform mat4 uProjectionMatrix;\nuniform float uStrokeWeight;\n\nuniform bool uUseLineColor;\nuniform bool uSimpleLines;\nuniform vec4 uMaterialColor;\n\nuniform vec4 uViewport;\nuniform int uPerspective;\nuniform int uStrokeJoin;\n\nIN vec3 aPosition;\nIN vec3 aTangentIn;\nIN vec3 aTangentOut;\nIN float aSide;\nIN vec4 aVertexColor;\n\nOUT vec4 vColor;\nOUT vec2 vTangent;\nOUT vec2 vCenter;\nOUT vec2 vPosition;\nOUT float vMaxDist;\nOUT float vCap;\nOUT float vJoin;\nOUT float vStrokeWeight;\n\nvec2 lineIntersection(vec2 aPoint, vec2 aDir, vec2 bPoint, vec2 bDir) {\n  // Rotate and translate so a starts at the origin and goes out to the right\n  bPoint -= aPoint;\n  vec2 rotatedBFrom = vec2(\n    bPoint.x*aDir.x + bPoint.y*aDir.y,\n    bPoint.y*aDir.x - bPoint.x*aDir.y\n  );\n  vec2 bTo = bPoint + bDir;\n  vec2 rotatedBTo = vec2(\n    bTo.x*aDir.x + bTo.y*aDir.y,\n    bTo.y*aDir.x - bTo.x*aDir.y\n  );\n  float intersectionDistance =\n    rotatedBTo.x + (rotatedBFrom.x - rotatedBTo.x) * rotatedBTo.y /\n    (rotatedBTo.y - rotatedBFrom.y);\n  return aPoint + aDir * intersectionDistance;\n}\n\nstruct StrokeVertex {\n  vec3 position;\n  vec3 tangentIn;\n  vec3 tangentOut;\n  vec4 color;\n  float weight;\n};\n\nvoid main() {\n  HOOK_beforeVertex();\n\n  if (!uSimpleLines) {\n      // Caps have one of either the in or out tangent set to 0\n      vCap = (aTangentIn == vec3(0.)) != (aTangentOut == vec3(0.)) ? 1. : 0.;\n\n      // Joins have two unique, defined tangents\n      vJoin = (\n          aTangentIn != vec3(0.) &&\n          aTangentOut != vec3(0.) &&\n          aTangentIn != aTangentOut\n      ) ? 1. : 0.;\n  }\n\n  StrokeVertex inputs;\n  inputs.position = aPosition.xyz;\n  inputs.color = uUseLineColor ? aVertexColor : uMaterialColor;\n  inputs.weight = uStrokeWeight;\n  inputs.tangentIn = aTangentIn;\n  inputs.tangentOut = aTangentOut;\n\n#ifdef AUGMENTED_HOOK_getObjectInputs\n  inputs = HOOK_getObjectInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  inputs.position = (uModelMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.tangentIn = (uModelMatrix * vec4(aTangentIn, 0.)).xyz;\n  inputs.tangentOut = (uModelMatrix * vec4(aTangentOut, 0.)).xyz;\n  inputs = HOOK_getWorldInputs(inputs);\n#endif\n\n#ifdef AUGMENTED_HOOK_getWorldInputs\n  // Already multiplied by the model matrix, just apply view\n  inputs.position = (uViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.tangentIn = (uViewMatrix * vec4(aTangentIn, 0.)).xyz;\n  inputs.tangentOut = (uViewMatrix * vec4(aTangentOut, 0.)).xyz;\n#else\n  // Apply both at once\n  inputs.position = (uModelViewMatrix * vec4(inputs.position, 1.)).xyz;\n  inputs.tangentIn = (uModelViewMatrix * vec4(aTangentIn, 0.)).xyz;\n  inputs.tangentOut = (uModelViewMatrix * vec4(aTangentOut, 0.)).xyz;\n#endif\n#ifdef AUGMENTED_HOOK_getCameraInputs\n  inputs = HOOK_getCameraInputs(inputs);\n#endif\n\n  vec4 posp = vec4(inputs.position, 1.);\n  vec4 posqIn = vec4(inputs.position + inputs.tangentIn, 1.);\n  vec4 posqOut = vec4(inputs.position + inputs.tangentOut, 1.);\n  vStrokeWeight = inputs.weight;\n\n  float facingCamera = pow(\n    // The word space tangent's z value is 0 if it's facing the camera\n    abs(normalize(posqIn-posp).z),\n\n    // Using pow() here to ramp `facingCamera` up from 0 to 1 really quickly\n    // so most lines get scaled and don't get clipped\n    0.25\n  );\n\n  // Moving vertices slightly toward the camera\n  // to avoid depth-fighting with the fill triangles.\n  // A mix of scaling and offsetting is used based on distance\n  // Discussion here:\n  // https://github.com/processing/p5.js/issues/7200 \n\n  // using a scale <1 moves the lines towards nearby camera\n  // in order to prevent popping effects due to half of\n  // the line disappearing behind the geometry faces.\n  float zDistance = -posp.z; \n  float distanceFactor = smoothstep(0.0, 800.0, zDistance); \n  \n  // Discussed here:\n  // http://www.opengl.org/discussion_boards/ubbthreads.php?ubb=showflat&Number=252848  \n  float scale = mix(1., 0.995, facingCamera);\n  float dynamicScale = mix(scale, 1.0, distanceFactor); // Closer = more scale, farther = less\n\n  posp.xyz = posp.xyz * dynamicScale;\n  posqIn.xyz = posqIn.xyz * dynamicScale;\n  posqOut.xyz = posqOut.xyz * dynamicScale;\n\n  // Moving vertices slightly toward camera when far away \n  // https://github.com/processing/p5.js/issues/6956 \n  float zOffset = mix(0., -1., facingCamera);\n  float dynamicZAdjustment = mix(0.0, zOffset, distanceFactor); // Closer = less zAdjustment, farther = more\n\n  posp.z -= dynamicZAdjustment;\n  posqIn.z -= dynamicZAdjustment;\n  posqOut.z -= dynamicZAdjustment;\n  \n  vec4 p = uProjectionMatrix * posp;\n  vec4 qIn = uProjectionMatrix * posqIn;\n  vec4 qOut = uProjectionMatrix * posqOut;\n\n  // formula to convert from clip space (range -1..1) to screen space (range 0..[width or height])\n  // screen_p = (p.xy/p.w + <1,1>) * 0.5 * uViewport.zw\n\n  // prevent division by W by transforming the tangent formula (div by 0 causes\n  // the line to disappear, see https://github.com/processing/processing/issues/5183)\n  // t = screen_q - screen_p\n  //\n  // tangent is normalized and we don't care which aDirection it points to (+-)\n  // t = +- normalize( screen_q - screen_p )\n  // t = +- normalize( (q.xy/q.w+<1,1>)*0.5*uViewport.zw - (p.xy/p.w+<1,1>)*0.5*uViewport.zw )\n  //\n  // extract common factor, <1,1> - <1,1> cancels out\n  // t = +- normalize( (q.xy/q.w - p.xy/p.w) * 0.5 * uViewport.zw )\n  //\n  // convert to common divisor\n  // t = +- normalize( ((q.xy*p.w - p.xy*q.w) / (p.w*q.w)) * 0.5 * uViewport.zw )\n  //\n  // remove the common scalar divisor/factor, not needed due to normalize and +-\n  // (keep uViewport - can't remove because it has different components for x and y\n  //  and corrects for aspect ratio, see https://github.com/processing/processing/issues/5181)\n  // t = +- normalize( (q.xy*p.w - p.xy*q.w) * uViewport.zw )\n\n  vec2 tangentIn = normalize((qIn.xy*p.w - p.xy*qIn.w) * uViewport.zw);\n  vec2 tangentOut = normalize((qOut.xy*p.w - p.xy*qOut.w) * uViewport.zw);\n\n  vec2 curPerspScale;\n  if(uPerspective == 1) {\n    // Perspective ---\n    // convert from world to clip by multiplying with projection scaling factor\n    // to get the right thickness (see https://github.com/processing/processing/issues/5182)\n\n    // The y value of the projection matrix may be flipped if rendering to a Framebuffer.\n    // Multiplying again by its sign here negates the flip to get just the scale.\n    curPerspScale = (uProjectionMatrix * vec4(1, sign(uProjectionMatrix[1][1]), 0, 0)).xy;\n  } else {\n    // No Perspective ---\n    // multiply by W (to cancel out division by W later in the pipeline) and\n    // convert from screen to clip (derived from clip to screen above)\n    curPerspScale = p.w / (0.5 * uViewport.zw);\n  }\n\n  vec2 offset;\n  if (vJoin == 1. && !uSimpleLines) {\n    vTangent = normalize(tangentIn + tangentOut);\n    vec2 normalIn = vec2(-tangentIn.y, tangentIn.x);\n    vec2 normalOut = vec2(-tangentOut.y, tangentOut.x);\n    float side = sign(aSide);\n    float sideEnum = abs(aSide);\n\n    // We generate vertices for joins on either side of the centerline, but\n    // the \"elbow\" side is the only one needing a join. By not setting the\n    // offset for the other side, all its vertices will end up in the same\n    // spot and not render, effectively discarding it.\n    if (sign(dot(tangentOut, vec2(-tangentIn.y, tangentIn.x))) != side) {\n      // Side enums:\n      //   1: the side going into the join\n      //   2: the middle of the join\n      //   3: the side going out of the join\n      if (sideEnum == 2.) {\n        // Calculate the position + tangent on either side of the join, and\n        // find where the lines intersect to find the elbow of the join\n        vec2 c = (posp.xy/posp.w + vec2(1.,1.)) * 0.5 * uViewport.zw;\n        vec2 intersection = lineIntersection(\n          c + (side * normalIn * inputs.weight / 2.),\n          tangentIn,\n          c + (side * normalOut * inputs.weight / 2.),\n          tangentOut\n        );\n        offset = (intersection - c);\n\n        // When lines are thick and the angle of the join approaches 180, the\n        // elbow might be really far from the center. We'll apply a limit to\n        // the magnitude to avoid lines going across the whole screen when this\n        // happens.\n        float mag = length(offset);\n        float maxMag = 3. * inputs.weight;\n        if (mag > maxMag) {\n          offset *= maxMag / mag;\n        }\n      } else if (sideEnum == 1.) {\n        offset = side * normalIn * inputs.weight / 2.;\n      } else if (sideEnum == 3.) {\n        offset = side * normalOut * inputs.weight / 2.;\n      }\n    }\n    if (uStrokeJoin == STROKE_JOIN_BEVEL) {\n      vec2 avgNormal = vec2(-vTangent.y, vTangent.x);\n      vMaxDist = abs(dot(avgNormal, normalIn * inputs.weight / 2.));\n    } else {\n      vMaxDist = inputs.weight / 2.;\n    }\n  } else {\n    vec2 tangent = aTangentIn == vec3(0.) ? tangentOut : tangentIn;\n\n    vTangent = tangent;\n    vec2 normal = vec2(-tangent.y, tangent.x);\n\n    float normalOffset = sign(aSide);\n    // Caps will have side values of -2 or 2 on the edge of the cap that\n    // extends out from the line\n    float tangentOffset = abs(aSide) - 1.;\n    offset = (normal * normalOffset + tangent * tangentOffset) *\n      inputs.weight * 0.5;\n    vMaxDist = inputs.weight / 2.;\n  }\n\n  vCenter = p.xy;\n  vPosition = vCenter + offset;\n  vColor = inputs.color;\n\n  gl_Position.xy = p.xy + offset.xy * curPerspScale;\n  gl_Position.zw = p.zw;\n  \n  HOOK_afterVertex();\n}\n";
+
+var lineFrag = "precision highp int;\nprecision highp float;\n\nuniform vec4 uMaterialColor;\nuniform int uStrokeCap;\nuniform int uStrokeJoin;\n\nIN vec4 vColor;\nIN vec2 vTangent;\nIN vec2 vCenter;\nIN vec2 vPosition;\nIN float vStrokeWeight;\nIN float vMaxDist;\nIN float vCap;\nIN float vJoin;\n\nfloat distSquared(vec2 a, vec2 b) {\n  vec2 aToB = b - a;\n  return dot(aToB, aToB);\n}\n\nstruct Inputs {\n  vec4 color;\n  vec2 tangent;\n  vec2 center;\n  vec2 position;\n  float strokeWeight;\n};\n\nvoid main() {\n  HOOK_beforeFragment();\n\n  Inputs inputs;\n  inputs.color = vColor;\n  inputs.tangent = vTangent;\n  inputs.center = vCenter;\n  inputs.position = vPosition;\n  inputs.strokeWeight = vStrokeWeight;\n  inputs = HOOK_getPixelInputs(inputs);\n\n  if (vCap > 0.) {\n    if (\n      uStrokeCap == STROKE_CAP_ROUND &&\n      HOOK_shouldDiscard(distSquared(inputs.position, inputs.center) > inputs.strokeWeight * inputs.strokeWeight * 0.25)\n    ) {\n      discard;\n    } else if (\n      uStrokeCap == STROKE_CAP_SQUARE &&\n      HOOK_shouldDiscard(dot(inputs.position - inputs.center, inputs.tangent) > 0.)\n    ) {\n      discard;\n    // Use full area for PROJECT\n    } else if (HOOK_shouldDiscard(false)) {\n      discard;\n    }\n  } else if (vJoin > 0.) {\n    if (\n      uStrokeJoin == STROKE_JOIN_ROUND &&\n      HOOK_shouldDiscard(distSquared(inputs.position, inputs.center) > inputs.strokeWeight * inputs.strokeWeight * 0.25)\n    ) {\n      discard;\n    } else if (uStrokeJoin == STROKE_JOIN_BEVEL) {\n      vec2 normal = vec2(-inputs.tangent.y, inputs.tangent.x);\n      if (HOOK_shouldDiscard(abs(dot(inputs.position - inputs.center, normal)) > vMaxDist)) {\n        discard;\n      }\n    // Use full area for MITER\n    } else if (HOOK_shouldDiscard(false)) {\n      discard;\n    }\n  }\n  OUT_COLOR = HOOK_getFinalColor(vec4(inputs.color.rgb, 1.) * inputs.color.a);\n  HOOK_afterFragment();\n}\n";
+
+var imageLightVert = "precision highp float;\nattribute vec3 aPosition;\nattribute vec3 aNormal;\nattribute vec2 aTexCoord;\n\nvarying vec3 localPos;\nvarying vec3 vWorldNormal;\nvarying vec3 vWorldPosition;\nvarying vec2 vTexCoord;\n\nuniform mat4 uModelViewMatrix;\nuniform mat4 uProjectionMatrix;\nuniform mat3 uNormalMatrix;\n\nvoid main() {\n  // Multiply the position by the matrix.\n  vec4 viewModelPosition = uModelViewMatrix * vec4(aPosition, 1.0);\n  gl_Position = uProjectionMatrix * viewModelPosition;  \n  \n  // orient the normals and pass to the fragment shader\n  vWorldNormal = uNormalMatrix * aNormal;\n  \n  // send the view position to the fragment shader\n  vWorldPosition = (uModelViewMatrix * vec4(aPosition, 1.0)).xyz;\n  \n  localPos = vWorldPosition;\n  vTexCoord = aTexCoord;\n}\n\n\n/*\nin the vertex shader we'll compute the world position and world oriented normal of the vertices and pass those to the fragment shader as varyings.\n*/\n";
+
+var imageLightDiffusedFrag = "precision highp float;\nvarying vec3 localPos;\n\n// the HDR cubemap converted (can be from an equirectangular environment map.)\nuniform sampler2D environmentMap;\nvarying vec2 vTexCoord;\n\nconst float PI = 3.14159265359;\n\nvec2 nTOE( vec3 v ){\n  // x = r sin(phi) cos(theta)   \n  // y = r cos(phi)  \n  // z = r sin(phi) sin(theta)\n  float phi = acos( v.y );\n  // if phi is 0, then there are no x, z components\n  float theta = 0.0;\n  // else \n  theta = acos(v.x / sin(phi));\n  float sinTheta = v.z / sin(phi);\n  if (sinTheta < 0.0) {\n    // Turn it into -theta, but in the 0-2PI range\n    theta = 2.0 * PI - theta;\n  }\n  theta = theta / (2.0 * 3.14159);\n  phi = phi / 3.14159 ;\n  \n  vec2 angles = vec2( phi, theta );\n  return angles;\n}\n\nfloat random(vec2 p) {\n  vec3 p3  = fract(vec3(p.xyx) * .1031);\n  p3 += dot(p3, p3.yzx + 33.33);\n  return fract((p3.x + p3.y) * p3.z);\n}\n\nvoid main()\n{   \t \n\t// the sample direction equals the hemisphere's orientation\n  float phi = vTexCoord.x * 2.0 * PI;\n  float theta = vTexCoord.y * PI;\n  float x = sin(theta) * cos(phi);\n  float y = sin(theta) * sin(phi);\n  float z = cos(theta);\n  vec3 normal = vec3( x, y, z);\n\n\t// Discretely sampling the hemisphere given the integral's\n  // spherical coordinates translates to the following fragment code:\n\tvec3 irradiance = vec3(0.0);  \n\tvec3 up\t= vec3(0.0, 1.0, 0.0);\n\tvec3 right = normalize(cross(up, normal));\n\tup = normalize(cross(normal, right));\n\n\t//  We specify a fixed sampleDelta delta value to traverse\n  // the hemisphere; decreasing or increasing the sample delta\n  // will increase or decrease the accuracy respectively.\n\tconst float sampleDelta = 0.100;\n\tfloat nrSamples = 0.0;\n  float randomOffset = random(gl_FragCoord.xy) * sampleDelta;\n\tfor(float rawPhi = 0.0; rawPhi < 2.0 * PI; rawPhi += sampleDelta)\n\t{\n    float phi = rawPhi + randomOffset;\n    for(float rawTheta = 0.0; rawTheta < ( 0.5 ) * PI; rawTheta += sampleDelta)\n    {\n      float theta = rawTheta + randomOffset;\n      // spherical to cartesian (in tangent space) // tangent space to world // add each sample result to irradiance\n      float x = sin(theta) * cos(phi);\n      float y = sin(theta) * sin(phi);\n      float z = cos(theta);\n      vec3 tangentSample = vec3( x, y, z);\n      \n      vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * normal;\n        irradiance += (texture2D(environmentMap, nTOE(sampleVec)).xyz) * cos(theta) * sin(theta);\n      nrSamples++;\n    }\n\t}\n\t// divide by the total number of samples taken, giving us the average sampled irradiance.\n\tirradiance = PI * irradiance * (1.0 / float(nrSamples )) ;\n  \n \n\tgl_FragColor = vec4(irradiance, 1.0);\n}";
+
+var imageLightSpecularFrag = "precision highp float;\r\nvarying vec3 localPos;\r\nvarying vec2 vTexCoord;\r\n\r\n// our texture\r\nuniform sampler2D environmentMap;\r\nuniform float roughness;\r\n\r\nconst float PI = 3.14159265359;\r\n\r\nfloat VanDerCorput(int bits);\r\nvec2 HammersleyNoBitOps(int i, int N);\r\nvec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness);\r\n\r\n\r\nvec2 nTOE( vec3 v ){\r\n  // x = r sin(phi) cos(theta)   \r\n  // y = r cos(phi)  \r\n  // z = r sin(phi) sin(theta)\r\n  float phi = acos( v.y );\r\n  // if phi is 0, then there are no x, z components\r\n  float theta = 0.0;\r\n  // else \r\n  theta = acos(v.x / sin(phi));\r\n  float sinTheta = v.z / sin(phi);\r\n  if (sinTheta < 0.0) {\r\n    // Turn it into -theta, but in the 0-2PI range\r\n    theta = 2.0 * PI - theta;\r\n  }\r\n  theta = theta / (2.0 * 3.14159);\r\n  phi = phi / 3.14159 ;\r\n  \r\n  vec2 angles = vec2( phi, theta );\r\n  return angles;\r\n}\r\n\r\n\r\nvoid main(){\r\n  const int SAMPLE_COUNT = 400; // 4096\r\n  int lowRoughnessLimit = int(pow(2.0,(roughness+0.1)*20.0));\r\n  float totalWeight = 0.0;\r\n  vec3 prefilteredColor = vec3(0.0);\r\n  float phi = vTexCoord.x * 2.0 * PI;\r\n  float theta = vTexCoord.y * PI;\r\n  float x = sin(theta) * cos(phi);\r\n  float y = sin(theta) * sin(phi);\r\n  float z = cos(theta);\r\n  vec3 N = vec3(x,y,z);\r\n  vec3 V = N;\r\n  for (int i = 0; i < SAMPLE_COUNT; ++i)\r\n  {\r\n    // break at smaller sample numbers for low roughness levels\r\n    if(i == lowRoughnessLimit)\r\n    {\r\n      break;\r\n    }\r\n    vec2 Xi = HammersleyNoBitOps(i, SAMPLE_COUNT);\r\n    vec3 H = ImportanceSampleGGX(Xi, N, roughness);\r\n    vec3 L = normalize(2.0 * dot(V, H) * H - V);\r\n\r\n    float NdotL = max(dot(N, L), 0.0);\r\n    if (NdotL > 0.0)\r\n    {\r\n      prefilteredColor += texture2D(environmentMap, nTOE(L)).xyz * NdotL;\r\n      totalWeight += NdotL;\r\n    }\r\n  }\r\n  prefilteredColor = prefilteredColor / totalWeight;\r\n\r\n  gl_FragColor = vec4(prefilteredColor, 1.0);\r\n}\r\n\r\nvec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness){\r\n  float a = roughness * roughness;\r\n\r\n  float phi = 2.0 * PI * Xi.x;\r\n  float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a * a - 1.0) * Xi.y));\r\n  float sinTheta = sqrt(1.0 - cosTheta * cosTheta);\r\n  // from spherical coordinates to cartesian coordinates\r\n  vec3 H;\r\n  H.x = cos(phi) * sinTheta;\r\n  H.y = sin(phi) * sinTheta;\r\n  H.z = cosTheta;\r\n\r\n  // from tangent-space vector to world-space sample vector\r\n  vec3 up = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);\r\n  vec3 tangent = normalize(cross(up, N));\r\n  vec3 bitangent = cross(N, tangent);\r\n\r\n  vec3 sampleVec = tangent * H.x + bitangent * H.y + N * H.z;\r\n  return normalize(sampleVec);\r\n}\r\n\r\n\r\nfloat VanDerCorput(int n, int base)\r\n{\r\n#ifdef WEBGL2\r\n\r\n    uint bits = uint(n);\r\n    bits = (bits << 16u) | (bits >> 16u);\r\n    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);\r\n    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);\r\n    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);\r\n    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);\r\n    return float(bits) * 2.3283064365386963e-10; // / 0x100000000\r\n\r\n#else\r\n\r\n  float invBase = 1.0 / float(base);\r\n  float denom = 1.0;\r\n  float result = 0.0;\r\n\r\n\r\n  for (int i = 0; i < 32; ++i)\r\n  {\r\n        if (n > 0)\r\n        {\r\n        denom = mod(float(n), 2.0);\r\n        result += denom * invBase;\r\n        invBase = invBase / 2.0;\r\n        n = int(float(n) / 2.0);\r\n        }\r\n  }\r\n\r\n\r\n  return result;\r\n\r\n#endif\r\n}\r\n\r\nvec2 HammersleyNoBitOps(int i, int N)\r\n{\r\n  return vec2(float(i) / float(N), VanDerCorput(i, 2));\r\n}\r\n";
+
+const { lineDefs } = getStrokeDefs((n, v) => `#define ${n} ${v}\n`);
+
+const defaultShaders = {
+  normalVert,
+  normalFrag,
+  basicFrag,
+  lightVert: lightingShader + lightVert,
+  lightTextureFrag,
+  phongVert,
+  phongFrag: lightingShader + phongFrag,
+  fontVert,
+  fontFrag,
+  lineVert: lineDefs + lineVert,
+  lineFrag: lineDefs + lineFrag,
+  imageLightVert,
+  imageLightDiffusedFrag,
+  imageLightSpecularFrag,
+  filterBaseVert,
+  filterBaseFrag,
 };
-const NodeTypeToName = Object.fromEntries(
-  Object.entries(NodeType).map(([key, val]) => [val, key])
-);
-const NodeTypeRequiredFields = {
-  [NodeType.OPERATION]: ["opCode", "dependsOn", "dimension", "baseType"],
-  [NodeType.LITERAL]: ["value", "dimension", "baseType"],
-  [NodeType.VARIABLE]: ["identifier", "dimension", "baseType"],
-  [NodeType.CONSTANT]: ["value", "dimension", "baseType"],
-  [NodeType.STRUCT]: [""],
-  [NodeType.PHI]: ["dependsOn", "phiBlocks", "dimension", "baseType"],
-  [NodeType.STATEMENT]: ["statementType"],
-  [NodeType.ASSIGNMENT]: ["dependsOn"]
-};
-const StatementType = {
-  DISCARD: 'discard',
-  BREAK: 'break',
-  EXPRESSION: 'expression', // Used when we want to output a single expression as a statement, e.g. a for loop condition
-  EMPTY: 'empty', // Used for empty statements like ; in for loops
-};
-const BaseType = {
-  FLOAT: "float",
-  INT: "int",
-  BOOL: "bool",
-  MAT: "mat",
-  DEFER: "defer",
-  SAMPLER2D: "sampler2D",
-};
-const BasePriority = {
-  [BaseType.FLOAT]: 3,
-  [BaseType.INT]: 2,
-  [BaseType.BOOL]: 1,
-  [BaseType.MAT]: 0,
-  [BaseType.DEFER]: -1,
-  [BaseType.SAMPLER2D]: -10,
-};
-const DataType = {
-  float1: { fnName: "float", baseType: BaseType.FLOAT, dimension:1, priority: 3,  },
-  float2: { fnName: "vec2", baseType: BaseType.FLOAT, dimension:2, priority: 3,  },
-  float3: { fnName: "vec3", baseType: BaseType.FLOAT, dimension:3, priority: 3,  },
-  float4: { fnName: "vec4", baseType: BaseType.FLOAT, dimension:4, priority: 3,  },
-  int1: { fnName: "int", baseType: BaseType.INT, dimension:1, priority: 2,  },
-  int2: { fnName: "ivec2", baseType: BaseType.INT, dimension:2, priority: 2,  },
-  int3: { fnName: "ivec3", baseType: BaseType.INT, dimension:3, priority: 2,  },
-  int4: { fnName: "ivec4", baseType: BaseType.INT, dimension:4, priority: 2,  },
-  bool1: { fnName: "bool", baseType: BaseType.BOOL, dimension:1, priority: 1,  },
-  bool2: { fnName: "bvec2", baseType: BaseType.BOOL, dimension:2, priority: 1,  },
-  bool3: { fnName: "bvec3", baseType: BaseType.BOOL, dimension:3, priority: 1,  },
-  bool4: { fnName: "bvec4", baseType: BaseType.BOOL, dimension:4, priority: 1,  },
-  mat2: { fnName: "mat2x2", baseType: BaseType.MAT, dimension:2, priority: 0,  },
-  mat3: { fnName: "mat3x3", baseType: BaseType.MAT, dimension:3, priority: 0,  },
-  mat4: { fnName: "mat4x4", baseType: BaseType.MAT, dimension:4, priority: 0,  },
-  defer: { fnName:  null, baseType: BaseType.DEFER, dimension: null, priority: -1 },
-  sampler2D: { fnName: "sampler2D", baseType: BaseType.SAMPLER2D, dimension: 1, priority: -10 },
-};
-const structType = function (hookType) {
-  let T = hookType.type === undefined ? hookType : hookType.type;
-  const structType = {
-    name: hookType.name,
-    properties: [],
-    typeName: T.typeName,
-  };
-  // TODO: handle struct properties that are themselves structs
-  for (const prop of T.properties) {
-    const propType = TypeInfoFromGLSLName[prop.type.typeName];
-    structType.properties.push(
-      {name: prop.name, dataType: propType }
-    );
-  }
-  return structType;
-};
-function isStructType(typeName) {
-  return !isNativeType(typeName);
-}
-function isNativeType(typeName) {
-  // Check if it's in DataType keys (internal names like 'float4')
-  if (Object.keys(DataType).includes(typeName)) {
-    return true;
-  }
-
-  // Check if it's a GLSL type name (like 'vec4', 'float', etc.)
-  const glslNativeTypes = {
-    'float': true,
-    'vec2': true,
-    'vec3': true,
-    'vec4': true,
-    'int': true,
-    'ivec2': true,
-    'ivec3': true,
-    'ivec4': true,
-    'bool': true,
-    'bvec2': true,
-    'bvec3': true,
-    'bvec4': true,
-    'mat2': true,
-    'mat3': true,
-    'mat4': true,
-    'sampler2D': true
-  };
-
-  return !!glslNativeTypes[typeName];
-}
-const GenType = {
-  FLOAT: { baseType: BaseType.FLOAT, dimension: null, priority: 3 },
-  INT: { baseType: BaseType.INT, dimension: null, priority: 2 },
-  BOOL: { baseType: BaseType.BOOL, dimension: null, priority: 1 },
-};
-function typeEquals(nodeA, nodeB) {
-  return (nodeA.dimension === nodeB.dimension) && (nodeA.baseType === nodeB.baseType);
-}
-const TypeInfoFromGLSLName = Object.fromEntries(
-  Object.values(DataType)
-    .filter(info => info.fnName !== null)
-    .map(info => [info.fnName, info])
-);
-const OpCode = {
-  Binary: {
-    ADD: 0,
-    SUBTRACT: 1,
-    MULTIPLY: 2,
-    DIVIDE: 3,
-    MODULO: 4,
-    EQUAL: 5,
-    NOT_EQUAL: 6,
-    GREATER_THAN: 7,
-    GREATER_EQUAL: 8,
-    LESS_THAN: 9,
-    LESS_EQUAL: 10,
-    LOGICAL_AND: 11,
-    LOGICAL_OR: 12,
-    MEMBER_ACCESS: 13,
-  },
-  Unary: {
-    LOGICAL_NOT: 100,
-    NEGATE: 101,
-    PLUS: 102,
-    SWIZZLE: 103,
-  },
-  Nary: {
-    FUNCTION_CALL: 200,
-    CONSTRUCTOR: 201,
-  }};
-const OperatorTable = [
-  { arity: "unary", name: "not", symbol: "!", opCode: OpCode.Unary.LOGICAL_NOT },
-  { arity: "unary", name: "neg", symbol: "-", opCode: OpCode.Unary.NEGATE },
-  { arity: "unary", name: "plus", symbol: "+", opCode: OpCode.Unary.PLUS },
-  { arity: "binary", name: "add", symbol: "+", opCode: OpCode.Binary.ADD },
-  { arity: "binary", name: "sub", symbol: "-", opCode: OpCode.Binary.SUBTRACT },
-  { arity: "binary", name: "mult", symbol: "*", opCode: OpCode.Binary.MULTIPLY },
-  { arity: "binary", name: "div", symbol: "/", opCode: OpCode.Binary.DIVIDE },
-  { arity: "binary", name: "mod", symbol: "%", opCode: OpCode.Binary.MODULO },
-  { arity: "binary", name: "equalTo", symbol: "==", opCode: OpCode.Binary.EQUAL },
-  { arity: "binary", name: "notEqual", symbol: "!=", opCode: OpCode.Binary.NOT_EQUAL },
-  { arity: "binary", name: "greaterThan", symbol: ">", opCode: OpCode.Binary.GREATER_THAN },
-  { arity: "binary", name: "greaterEqual", symbol: ">=", opCode: OpCode.Binary.GREATER_EQUAL },
-  { arity: "binary", name: "lessThan", symbol: "<", opCode: OpCode.Binary.LESS_THAN },
-  { arity: "binary", name: "lessEqual", symbol: "<=", opCode: OpCode.Binary.LESS_EQUAL },
-  { arity: "binary", name: "and", symbol: "&&", opCode: OpCode.Binary.LOGICAL_AND },
-  { arity: "binary", name: "or", symbol: "||", opCode: OpCode.Binary.LOGICAL_OR },
-];
-// export const SymbolToOpCode = {};
-const OpCodeToSymbol = {};
-const UnarySymbolToName = {};
-for (const { symbol, opCode, name, arity } of OperatorTable) {
-  // SymbolToOpCode[symbol] = opCode;
-  OpCodeToSymbol[opCode] = symbol;
-  if (arity === 'unary') {
-    UnarySymbolToName[symbol] = name;
-  }
-}
-const BlockType = {
-  GLOBAL: 'global',
-  FUNCTION: 'function',
-  BRANCH: 'branch',
-  IF_COND: 'if_cond',
-  IF_BODY: 'if_body',
-  ELSE_COND: 'else_cond',
-  SCOPE_START: 'scope_start',
-  SCOPE_END: 'scope_end',
-  FOR: 'for',
-  MERGE: 'merge',
-  DEFAULT: 'default',
-};
-Object.fromEntries(
-  Object.entries(BlockType).map(([key, val]) => [val, key])
-);
-
-function internalError(errorMessage) {
-    const prefixedMessage = `[p5.strands internal error]: ${errorMessage}`; 
-    throw new Error(prefixedMessage);
+for (const key in defaultShaders) {
+  defaultShaders[key] = webgl2CompatibilityShader + defaultShaders[key];
 }
 
-function userError(errorType, errorMessage) {
-    const prefixedMessage = `[p5.strands ${errorType}]: ${errorMessage}`;
-    throw new Error(prefixedMessage);
-}
+/**
+ * 3D graphics class
+ * @private
+ * @class p5.RendererGL
+ * @extends p5.Renderer
+ * @todo extend class to include public method for offscreen
+ * rendering (FBO).
+ */
+class RendererGL extends Renderer3D {
+  constructor(pInst, w, h, isMainCanvas, elt) {
+    super(pInst, w, h, isMainCanvas, elt);
 
-/////////////////////////////////
-// Public functions for strands runtime
-/////////////////////////////////
-
-function createDirectedAcyclicGraph() {
-  const graph = {
-    nextID: 0,
-    cache: new Map(),
-    nodeTypes: [],
-    baseTypes: [],
-    dimensions: [],
-    opCodes: [],
-    values: [],
-    identifiers: [],
-    phiBlocks: [],
-    dependsOn: [],
-    usedBy: [],
-    statementTypes: [],
-    swizzles: [],
-  };
-
-  return graph;
-}
-
-function getOrCreateNode(graph, node) {
-  // const key = getNodeKey(node);
-  // const existing = graph.cache.get(key);
-
-  // if (existing !== undefined) {
-    // return existing;
-  // } else {
-    const id = createNode(graph, node);
-    // graph.cache.set(key, id);
-    return id;
-  // }
-}
-
-function createNodeData(data = {}) {
-  const node = {
-    nodeType: data.nodeType ?? null,
-    baseType: data.baseType ?? null,
-    dimension: data.dimension ?? null,
-    opCode: data.opCode ?? null,
-    value: data.value ?? null,
-    identifier: data.identifier ?? null,
-    statementType: data.statementType ?? null,
-    swizzle: data.swizzle ?? null,
-    dependsOn: Array.isArray(data.dependsOn) ? data.dependsOn : [],
-    usedBy: Array.isArray(data.usedBy) ? data.usedBy : [],
-    phiBlocks: Array.isArray(data.phiBlocks) ? data.phiBlocks : [],
-  };
-  validateNode(node);
-  return node;
-}
-
-function getNodeDataFromID(graph, id) {
-  return {
-    id,
-    nodeType: graph.nodeTypes[id],
-    opCode: graph.opCodes[id],
-    value: graph.values[id],
-    identifier: graph.identifiers[id],
-    dependsOn: graph.dependsOn[id],
-    usedBy: graph.usedBy[id],
-    phiBlocks: graph.phiBlocks[id],
-    dimension: graph.dimensions[id],
-    baseType: graph.baseTypes[id],
-    statementType: graph.statementTypes[id],
-    swizzle: graph.swizzles[id],
-  }
-}
-
-function extractNodeTypeInfo(dag, nodeID) {
-  return {
-    baseType: dag.baseTypes[nodeID],
-    dimension: dag.dimensions[nodeID],
-    priority: BasePriority[dag.baseTypes[nodeID]],
-  };
-}
-
-/////////////////////////////////
-// Private functions
-/////////////////////////////////
-function createNode(graph, node) {
-  const id = graph.nextID++;
-  graph.nodeTypes[id] = node.nodeType;
-  graph.opCodes[id] = node.opCode;
-  graph.values[id] = node.value;
-  graph.identifiers[id] = node.identifier;
-  graph.dependsOn[id] = node.dependsOn.slice();
-  graph.usedBy[id] = node.usedBy;
-  graph.phiBlocks[id] = node.phiBlocks.slice();
-  graph.baseTypes[id] = node.baseType;
-  graph.dimensions[id] = node.dimension;
-  graph.statementTypes[id] = node.statementType;
-  graph.swizzles[id] = node.swizzle;
-
-  for (const dep of node.dependsOn) {
-    if (!Array.isArray(graph.usedBy[dep])) {
-      graph.usedBy[dep] = [];
-    }
-    graph.usedBy[dep].push(id);
-  }
-  return id;
-}
-
-function validateNode(node){
-  const nodeType = node.nodeType;
-  const requiredFields = NodeTypeRequiredFields[nodeType];
-  if (requiredFields.length === 2) {
-    internalError(`Required fields for node type '${NodeTypeToName[nodeType]}' not defined. Please add them to the utils.js file in p5.strands!`);
-  }
-  const missingFields = [];
-  for (const field of requiredFields) {
-    if (node[field] === null) {
-      missingFields.push(field);
-    }
-  }
-  if (node.dependsOn?.some(v => v === undefined)) {
-    throw new Error('Undefined dependency!');
-  }
-  if (missingFields.length > 0) {
-    internalError(`Missing fields ${missingFields.join(', ')} for a node type '${NodeTypeToName[nodeType]}'.`);
-  }
-}
-
-function shouldCreateTemp(dag, nodeID) {
-  const nodeType = dag.nodeTypes[nodeID];
-  if (nodeType !== NodeType.OPERATION) return false;
-  if (dag.baseTypes[nodeID] === BaseType.SAMPLER2D) return false;
-  const uses = dag.usedBy[nodeID] || [];
-  return uses.length > 1;
-}
-const TypeNames = {
-  'float1': 'float',
-  'float2': 'vec2',
-  'float3': 'vec3',
-  'float4': 'vec4',
-  'int1': 'int',
-  'int2': 'ivec2',
-  'int3': 'ivec3',
-  'int4': 'ivec4',
-  'bool1': 'bool',
-  'bool2': 'bvec2',
-  'bool3': 'bvec3',
-  'bool4': 'bvec4',
-  'mat2': 'mat2x2',
-  'mat3': 'mat3x3',
-  'mat4': 'mat4x4',
-};
-const cfgHandlers = {
-  [BlockType.DEFAULT]: (blockID, strandsContext, generationContext) => {
-    const { dag, cfg } = strandsContext;
-    const instructions = cfg.blockInstructions[blockID] || [];
-    for (const nodeID of instructions) {
-      const nodeType = dag.nodeTypes[nodeID];
-      if (shouldCreateTemp(dag, nodeID)) {
-        const declaration = glslBackend.generateDeclaration(generationContext, dag, nodeID);
-        generationContext.write(declaration);
-      }
-      if (nodeType === NodeType.STATEMENT) {
-        glslBackend.generateStatement(generationContext, dag, nodeID);
-      }
-      if (nodeType === NodeType.ASSIGNMENT) {
-        glslBackend.generateAssignment(generationContext, dag, nodeID);
-        generationContext.visitedNodes.add(nodeID);
-      }
-    }
-  },
-  [BlockType.BRANCH](blockID, strandsContext, generationContext) {
-    const { dag, cfg } = strandsContext;
-    // Find all phi nodes in this branch block and declare them
-    const blockInstructions = cfg.blockInstructions[blockID] || [];
-    for (const nodeID of blockInstructions) {
-      const node = getNodeDataFromID(dag, nodeID);
-      if (node.nodeType === NodeType.PHI) {
-        // Check if the phi node's first dependency already has a temp name
-        const dependsOn = node.dependsOn || [];
-        if (dependsOn.length > 0) {
-          const firstDependency = dependsOn[0];
-          const existingTempName = generationContext.tempNames[firstDependency];
-          if (existingTempName) {
-            // Reuse the existing temp name instead of creating a new one
-            generationContext.tempNames[nodeID] = existingTempName;
-            continue; // Skip declaration, just alias to existing variable
-          }
-        }
-
-        // Otherwise, create a new temp variable for the phi node
-        const tmp = `T${generationContext.nextTempID++}`;
-        generationContext.tempNames[nodeID] = tmp;
-        const T = extractNodeTypeInfo(dag, nodeID);
-        const typeName = glslBackend.getTypeName(T.baseType, T.dimension);
-        generationContext.write(`${typeName} ${tmp};`);
-      }
-    }
-    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
-  },
-  [BlockType.IF_COND](blockID, strandsContext, generationContext) {
-    const { dag, cfg } = strandsContext;
-    const conditionID = cfg.blockConditions[blockID];
-    const condExpr = glslBackend.generateExpression(generationContext, dag, conditionID);
-    generationContext.write(`if (${condExpr})`);
-    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
-  },
-  [BlockType.ELSE_COND](blockID, strandsContext, generationContext) {
-    generationContext.write(`else`);
-    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
-  },
-  [BlockType.IF_BODY](blockID, strandsContext, generationContext) {
-    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
-    this.assignPhiNodeValues(blockID, strandsContext, generationContext);
-  },
-  [BlockType.SCOPE_START](blockID, strandsContext, generationContext) {
-    generationContext.write(`{`);
-    generationContext.indent++;
-  },
-  [BlockType.SCOPE_END](blockID, strandsContext, generationContext) {
-    generationContext.indent--;
-    generationContext.write(`}`);
-  },
-  [BlockType.MERGE](blockID, strandsContext, generationContext) {
-    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
-  },
-  [BlockType.FUNCTION](blockID, strandsContext, generationContext) {
-    this[BlockType.DEFAULT](blockID, strandsContext, generationContext);
-  },
-  [BlockType.FOR](blockID, strandsContext, generationContext) {
-    const { dag, cfg } = strandsContext;
-    const instructions = cfg.blockInstructions[blockID] || [];
-
-    generationContext.write(`for (`);
-
-    // Set flag to suppress semicolon on the last statement
-    const originalSuppressSemicolon = generationContext.suppressSemicolon;
-
-    for (let i = 0; i < instructions.length; i++) {
-      const nodeID = instructions[i];
-      const node = getNodeDataFromID(dag, nodeID);
-      const isLast = i === instructions.length - 1;
-
-      // Suppress semicolon on the last statement
-      generationContext.suppressSemicolon = isLast;
-
-      if (shouldCreateTemp(dag, nodeID)) {
-        const declaration = glslBackend.generateDeclaration(generationContext, dag, nodeID);
-        generationContext.write(declaration);
-      }
-      if (node.nodeType === NodeType.STATEMENT) {
-        glslBackend.generateStatement(generationContext, dag, nodeID);
-      }
-      if (node.nodeType === NodeType.ASSIGNMENT) {
-        glslBackend.generateAssignment(generationContext, dag, nodeID);
-        generationContext.visitedNodes.add(nodeID);
-      }
+    if (this.webglVersion === WEBGL2) {
+      this.blendExt = this.GL;
+    } else {
+      this.blendExt = this.GL.getExtension("EXT_blend_minmax");
     }
 
-    // Restore original flag
-    generationContext.suppressSemicolon = originalSuppressSemicolon;
+    this._userEnabledStencil = false;
+    // Store original methods for internal use
+    this._internalEnable = this.drawingContext.enable;
+    this._internalDisable = this.drawingContext.disable;
 
-    generationContext.write(`)`);
-  },
-  assignPhiNodeValues(blockID, strandsContext, generationContext) {
-    const { dag, cfg } = strandsContext;
-    // Find all phi nodes that this block feeds into
-    const successors = cfg.outgoingEdges[blockID] || [];
-    for (const successorBlockID of successors) {
-      const instructions = cfg.blockInstructions[successorBlockID] || [];
-      for (const nodeID of instructions) {
-        const node = getNodeDataFromID(dag, nodeID);
-        if (node.nodeType === NodeType.PHI) {
-          // Find which input of this phi node corresponds to our block
-          const branchIndex = node.phiBlocks?.indexOf(blockID);
-          if (branchIndex !== -1 && branchIndex < node.dependsOn.length) {
-            const sourceNodeID = node.dependsOn[branchIndex];
-            const tempName = generationContext.tempNames[nodeID];
-            if (tempName && sourceNodeID !== null) {
-              const sourceExpr = glslBackend.generateExpression(generationContext, dag, sourceNodeID);
-              generationContext.write(`${tempName} = ${sourceExpr};`);
-            }
-          }
+    // Override WebGL enable function
+    this.drawingContext.enable = (key) => {
+      if (key === this.drawingContext.STENCIL_TEST) {
+        if (!this._clipping) {
+          this._userEnabledStencil = true;
         }
       }
-    }
-  },
-};
-const glslBackend = {
-  hookEntry(hookType) {
-    const firstLine = `(${hookType.parameters.flatMap((param) => {
-      return `${param.qualifiers?.length ? param.qualifiers.join(' ') : ''}${param.type.typeName} ${param.name}`;
-    }).join(', ')}) {`;
-    return firstLine;
-  },
-  getTypeName(baseType, dimension) {
-    const primitiveTypeName = TypeNames[baseType + dimension];
-    if (!primitiveTypeName) {
-      return baseType;
-    }
-    return primitiveTypeName;
-  },
-  generateUniformDeclaration(name, typeInfo) {
-    return `${this.getTypeName(typeInfo.baseType, typeInfo.dimension)} ${name}`;
-  },
-  generateStatement(generationContext, dag, nodeID) {
-    const node = getNodeDataFromID(dag, nodeID);
-    const semicolon = generationContext.suppressSemicolon ? '' : ';';
-    if (node.statementType === StatementType.DISCARD) {
-      generationContext.write(`discard${semicolon}`);
-    } else if (node.statementType === StatementType.BREAK) {
-      generationContext.write(`break${semicolon}`);
-    } else if (node.statementType === StatementType.EXPRESSION) {
-      // Generate the expression followed by semicolon (unless suppressed)
-      const exprNodeID = node.dependsOn[0];
-      const expr = this.generateExpression(generationContext, dag, exprNodeID);
-      generationContext.write(`${expr}${semicolon}`);
-    } else if (node.statementType === StatementType.EMPTY) {
-      // Generate just a semicolon (unless suppressed)
-      generationContext.write(semicolon);
-    }
-  },
-  generateAssignment(generationContext, dag, nodeID) {
-    const node = getNodeDataFromID(dag, nodeID);
-    // dependsOn[0] = targetNodeID, dependsOn[1] = sourceNodeID
-    const targetNodeID = node.dependsOn[0];
-    const sourceNodeID = node.dependsOn[1];
+      return this._internalEnable.call(this.drawingContext, key);
+    };
 
-    // Generate the target expression (could be variable or swizzle)
-    const targetExpr = this.generateExpression(generationContext, dag, targetNodeID);
-    const sourceExpr = this.generateExpression(generationContext, dag, sourceNodeID);
-    const semicolon = generationContext.suppressSemicolon ? '' : ';';
+    // Override WebGL disable function
+    this.drawingContext.disable = (key) => {
+      if (key === this.drawingContext.STENCIL_TEST) {
+          this._userEnabledStencil = false;
+      }
+      return this._internalDisable.call(this.drawingContext, key);
+    };
 
-    // Generate assignment if we have both target and source
-    if (targetExpr && sourceExpr && targetExpr !== sourceExpr) {
-      generationContext.write(`${targetExpr} = ${sourceExpr}${semicolon}`);
+    this._cachedBlendMode = undefined;
+    this.strandsBackend = glslBackend;
+  }
+
+  setupContext() {
+    this._setAttributeDefaults(this._pInst);
+    this._initContext();
+    // This redundant property is useful in reminding you that you are
+    // interacting with WebGLRenderingContext, still worth considering future removal
+    this.GL = this.drawingContext;
+  }
+
+  //////////////////////////////////////////////
+  // Rendering
+  //////////////////////////////////////////////
+
+  /**
+   * @private sets blending in gl context to curBlendMode
+   * @param  {Number[]} color [description]
+   * @return {Number[]}  Normalized numbers array
+   */
+  _applyBlendMode () {
+    if (this._cachedBlendMode === this.states.curBlendMode) {
+      return;
     }
-  },
-  generateDeclaration(generationContext, dag, nodeID) {
-    const expr = this.generateExpression(generationContext, dag, nodeID);
-    const tmp = `T${generationContext.nextTempID++}`;
-    generationContext.tempNames[nodeID] = tmp;
-    const T = extractNodeTypeInfo(dag, nodeID);
-    const typeName = this.getTypeName(T.baseType, T.dimension);
-    return `${typeName} ${tmp} = ${expr};`;
-  },
-  generateReturnStatement(strandsContext, generationContext, rootNodeID, returnType) {
-    const dag = strandsContext.dag;
-    const rootNode = getNodeDataFromID(dag, rootNodeID);
-    if (isStructType(rootNode.baseType)) {
-      const structTypeInfo = returnType;
-      for (let i = 0; i < structTypeInfo.properties.length; i++) {
-        const prop = structTypeInfo.properties[i];
-        const val = this.generateExpression(generationContext, dag, rootNode.dependsOn[i]);
-        if (prop.name !== val) {
-          generationContext.write(
-            `${rootNode.identifier}.${prop.name} = ${val};`
+    const gl = this.GL;
+    switch (this.states.curBlendMode) {
+      case BLEND:
+        gl.blendEquation(gl.FUNC_ADD);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        break;
+      case ADD:
+        gl.blendEquation(gl.FUNC_ADD);
+        gl.blendFunc(gl.ONE, gl.ONE);
+        break;
+      case REMOVE:
+        gl.blendEquation(gl.FUNC_ADD);
+        gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
+        break;
+      case MULTIPLY:
+        gl.blendEquation(gl.FUNC_ADD);
+        gl.blendFunc(gl.DST_COLOR, gl.ONE_MINUS_SRC_ALPHA);
+        break;
+      case SCREEN:
+        gl.blendEquation(gl.FUNC_ADD);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_COLOR);
+        break;
+      case EXCLUSION:
+        gl.blendEquationSeparate(gl.FUNC_ADD, gl.FUNC_ADD);
+        gl.blendFuncSeparate(
+          gl.ONE_MINUS_DST_COLOR,
+          gl.ONE_MINUS_SRC_COLOR,
+          gl.ONE,
+          gl.ONE
+        );
+        break;
+      case REPLACE:
+        gl.blendEquation(gl.FUNC_ADD);
+        gl.blendFunc(gl.ONE, gl.ZERO);
+        break;
+      case SUBTRACT:
+        gl.blendEquationSeparate(gl.FUNC_REVERSE_SUBTRACT, gl.FUNC_ADD);
+        gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        break;
+      case DARKEST:
+        if (this.blendExt) {
+          gl.blendEquationSeparate(
+            this.blendExt.MIN || this.blendExt.MIN_EXT,
+            gl.FUNC_ADD
+          );
+          gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE);
+        } else {
+          console.warn(
+            'blendMode(DARKEST) does not work in your browser in WEBGL mode.'
+          );
+        }
+        break;
+      case LIGHTEST:
+        if (this.blendExt) {
+          gl.blendEquationSeparate(
+            this.blendExt.MAX || this.blendExt.MAX_EXT,
+            gl.FUNC_ADD
+          );
+          gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ONE, gl.ONE);
+        } else {
+          console.warn(
+            'blendMode(LIGHTEST) does not work in your browser in WEBGL mode.'
+          );
+        }
+        break;
+      default:
+        console.error(
+          'Oops! Somehow Renderer3D set curBlendMode to an unsupported mode.'
+        );
+        break;
+    }
+    this._cachedBlendMode = this.states.curBlendMode;
+  }
+
+  _shaderOptions() {
+    return undefined;
+  }
+
+  _useShader(shader) {
+    const gl = this.GL;
+    gl.useProgram(shader._glProgram);
+  }
+
+  /**
+   * Once all buffers have been bound, this checks to see if there are any
+   * remaining active attributes, likely left over from previous renders,
+   * and disables them so that they don't affect rendering.
+   * @private
+   */
+  _disableRemainingAttributes(shader) {
+    for (const location of this.registerEnabled.values()) {
+      if (
+        !Object.keys(shader.attributes).some(
+          key => shader.attributes[key].location === location
+        )
+      ) {
+        this.GL.disableVertexAttribArray(location);
+        this.registerEnabled.delete(location);
+      }
+    }
+  }
+
+  _drawBuffers(geometry, { mode = TRIANGLES, count }) {
+    const gl = this.GL;
+    const glBuffers = this.geometryBufferCache.getCached(geometry);
+
+    if (!glBuffers) return;
+
+    if (this._curShader.shaderType === 'stroke'){
+      if (count === 1) {
+        gl.drawArrays(gl.TRIANGLES, 0, geometry.lineVertices.length / 3);
+       } else {
+       try {
+          gl.drawArraysInstanced(
+          gl.TRIANGLES,
+            0,
+            geometry.lineVertices.length / 3,
+            count
+          );
+        } catch (e) {
+          console.log(
+            "🌸 p5.js says: Instancing is only supported in WebGL2 mode"
+          );
+        }
+       }
+    } else if (this._curShader.shaderType === 'text') {
+      // Text rendering uses a fixed quad geometry with 6 indices
+      this._bindBuffer(glBuffers.indexBuffer, gl.ELEMENT_ARRAY_BUFFER);
+      gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+    } else if (glBuffers.indexBuffer) {
+      this._bindBuffer(glBuffers.indexBuffer, gl.ELEMENT_ARRAY_BUFFER);
+
+      // If this model is using a Uint32Array we need to ensure the
+      // OES_element_index_uint WebGL extension is enabled.
+      if (
+        this._pInst.webglVersion !== WEBGL2 &&
+        glBuffers.indexBufferType === gl.UNSIGNED_INT
+      ) {
+        if (!gl.getExtension("OES_element_index_uint")) {
+          throw new Error(
+            "Unable to render a 3d model with > 65535 triangles. Your web browser does not support the WebGL Extension OES_element_index_uint."
+          );
+        }
+      }
+
+      if (count === 1) {
+        gl.drawElements(
+          gl.TRIANGLES,
+          geometry.faces.length * 3,
+          glBuffers.indexBufferType,
+          0
+        );
+      } else {
+        try {
+          gl.drawElementsInstanced(
+            gl.TRIANGLES,
+            geometry.faces.length * 3,
+            glBuffers.indexBufferType,
+            0,
+            count
+          );
+        } catch (e) {
+          console.log(
+            "🌸 p5.js says: Instancing is only supported in WebGL2 mode"
+          );
+        }
+      }
+    } else {
+      const glMode = mode === TRIANGLES ? gl.TRIANGLES : gl.TRIANGLE_STRIP;
+      if (count === 1) {
+        gl.drawArrays(glMode, 0, geometry.vertices.length);
+      } else {
+        try {
+          gl.drawArraysInstanced(glMode, 0, geometry.vertices.length, count);
+        } catch (e) {
+          console.log(
+            "🌸 p5.js says: Instancing is only supported in WebGL2 mode"
           );
         }
       }
     }
-    generationContext.write(`return ${this.generateExpression(generationContext, dag, rootNodeID)};`);
-  },
-  generateExpression(generationContext, dag, nodeID) {
-    const node = getNodeDataFromID(dag, nodeID);
-    if (generationContext.tempNames?.[nodeID]) {
-      return generationContext.tempNames[nodeID];
-    }
-    switch (node.nodeType) {
-      case NodeType.LITERAL:
-      if (node.baseType === BaseType.FLOAT) {
-        return node.value.toFixed(4);
-      }
-      else {
-        return node.value;
-      }
-      case NodeType.VARIABLE:
-      // Track shared variable usage context
-      if (generationContext.shaderContext && generationContext.strandsContext?.sharedVariables?.has(node.identifier)) {
-        const sharedVar = generationContext.strandsContext.sharedVariables.get(node.identifier);
-        if (generationContext.shaderContext === 'vertex') {
-          sharedVar.usedInVertex = true;
-        } else if (generationContext.shaderContext === 'fragment') {
-          sharedVar.usedInFragment = true;
-        }
-      }
-      return node.identifier;
-      case NodeType.OPERATION:
-      const useParantheses = node.usedBy.length > 0;
-      if (node.opCode === OpCode.Nary.CONSTRUCTOR) {
-        // TODO: differentiate casts and constructors for more efficient codegen.
-        // if (node.dependsOn.length === 1 && node.dimension === 1) {
-        //   return this.generateExpression(generationContext, dag, node.dependsOn[0]);
-        // }
-        if (node.baseType === BaseType.SAMPLER2D) {
-          return this.generateExpression(generationContext, dag, node.dependsOn[0]);
-        }
-        const T = this.getTypeName(node.baseType, node.dimension);
-        const deps = node.dependsOn.map((dep) => this.generateExpression(generationContext, dag, dep));
-        return `${T}(${deps.join(', ')})`;
-      }
-      if (node.opCode === OpCode.Nary.FUNCTION_CALL) {
-        const functionArgs = node.dependsOn.map(arg =>this.generateExpression(generationContext, dag, arg));
-        return `${node.identifier}(${functionArgs.join(', ')})`;
-      }
-      if (node.opCode === OpCode.Binary.MEMBER_ACCESS) {
-        const [lID, rID] = node.dependsOn;
-        const lName = this.generateExpression(generationContext, dag, lID);
-        const rName = this.generateExpression(generationContext, dag, rID);
-        return `${lName}.${rName}`;
-      }
-      if (node.opCode === OpCode.Unary.SWIZZLE) {
-        const parentID = node.dependsOn[0];
-        const parentExpr = this.generateExpression(generationContext, dag, parentID);
-        return `${parentExpr}.${node.swizzle}`;
-      }
-      if (node.dependsOn.length === 2) {
-        const [lID, rID] = node.dependsOn;
-        const left  = this.generateExpression(generationContext, dag, lID);
-        const right = this.generateExpression(generationContext, dag, rID);
-
-        // Special case for modulo: use mod() function for floats in GLSL
-        if (node.opCode === OpCode.Binary.MODULO) {
-          const leftNode = getNodeDataFromID(dag, lID);
-          const rightNode = getNodeDataFromID(dag, rID);
-          // If either operand is float, use mod() function
-          if (leftNode.baseType === BaseType.FLOAT || rightNode.baseType === BaseType.FLOAT) {
-            return `mod(${left}, ${right})`;
-          }
-          // For integers, use % operator
-          return `(${left} % ${right})`;
-        }
-
-        const opSym = OpCodeToSymbol[node.opCode];
-        if (useParantheses) {
-          return `(${left} ${opSym} ${right})`;
-        } else {
-          return `${left} ${opSym} ${right}`;
-        }
-      }
-      if (node.opCode === OpCode.Unary.LOGICAL_NOT
-        || node.opCode === OpCode.Unary.NEGATE
-        || node.opCode === OpCode.Unary.PLUS
-        ) {
-        const [i] = node.dependsOn;
-        const val  = this.generateExpression(generationContext, dag, i);
-        const sym  = OpCodeToSymbol[node.opCode];
-        return `${sym}${val}`;
-      }
-      case NodeType.PHI:
-      // Phi nodes represent conditional merging of values
-      // If this phi node has an identifier (like varying variables), use that
-      if (node.identifier) {
-        return node.identifier;
-      }
-      // Otherwise, they should have been declared as temporary variables
-      // and assigned in the appropriate branches
-      if (generationContext.tempNames?.[nodeID]) {
-        return generationContext.tempNames[nodeID];
-      } else {
-        // If no temp was created, this phi node only has one input
-        // so we can just use that directly
-        const validInputs = node.dependsOn.filter(id => id !== null);
-        if (validInputs.length > 0) {
-          return this.generateExpression(generationContext, dag, validInputs[0]);
-        } else {
-          throw new Error(`No valid inputs for node`)
-        }
-      }
-      case NodeType.ASSIGNMENT:
-      internalError(`ASSIGNMENT nodes should not be used as expressions`);
-      default:
-      internalError(`${NodeTypeToName[node.nodeType]} code generation not implemented yet`);
-    }
-  },
-  generateBlock(blockID, strandsContext, generationContext) {
-    const type = strandsContext.cfg.blockTypes[blockID];
-    const handler = cfgHandlers[type] || cfgHandlers[BlockType.DEFAULT];
-    handler.call(cfgHandlers, blockID, strandsContext, generationContext);
   }
-};
+
+  //////////////////////////////////////////////
+  // Text
+  //////////////////////////////////////////////
+
+  _beforeDrawText() {
+    this.GL.pixelStorei(this.GL.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+  }
+  _afterDrawText() {
+    this.GL.pixelStorei(this.GL.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+  }
+
+  //////////////////////////////////////////////
+  // Setting
+  //////////////////////////////////////////////
+
+  _setAttributeDefaults(pInst) {
+    // See issue #3850, safer to enable AA in Safari
+    const applyAA = navigator.userAgent.toLowerCase().includes("safari");
+    const defaults = {
+      alpha: true,
+      depth: true,
+      stencil: true,
+      antialias: applyAA,
+      premultipliedAlpha: true,
+      preserveDrawingBuffer: true,
+      perPixelLighting: true,
+      version: 2,
+    };
+    if (pInst._glAttributes === null) {
+      pInst._glAttributes = defaults;
+    } else {
+      pInst._glAttributes = Object.assign(defaults, pInst._glAttributes);
+    }
+    return;
+  }
+
+  _setAttributes(key, value) {
+    if (typeof this._pInst._glAttributes === "undefined") {
+      console.log(
+        "You are trying to use setAttributes on a p5.Graphics object " +
+          "that does not use a WEBGL renderer."
+      );
+      return;
+    }
+    let unchanged = true;
+    if (typeof value !== "undefined") {
+      //first time modifying the attributes
+      if (this._pInst._glAttributes === null) {
+        this._pInst._glAttributes = {};
+      }
+      if (this._pInst._glAttributes[key] !== value) {
+        //changing value of previously altered attribute
+        this._pInst._glAttributes[key] = value;
+        unchanged = false;
+      }
+      //setting all attributes with some change
+    } else if (key instanceof Object) {
+      if (this._pInst._glAttributes !== key) {
+        this._pInst._glAttributes = key;
+        unchanged = false;
+      }
+    }
+    //@todo_FES
+    if (!this.isP3D || unchanged) {
+      return;
+    }
+
+    if (!this._pInst._setupDone) {
+      if (this.geometryBufferCache.numCached() > 0) {
+        p5._friendlyError(
+          "Sorry, Could not set the attributes, you need to call setAttributes() " +
+            "before calling the other drawing methods in setup()"
+        );
+        return;
+      }
+    }
+
+    this._resetContext(null, null, RendererGL);
+
+    if (this.states.curCamera) {
+      this.states.curCamera._renderer = this._renderer;
+    }
+  }
+
+  _initContext() {
+    if (this._pInst._glAttributes?.version !== 1) {
+      // Unless WebGL1 is explicitly asked for, try to create a WebGL2 context
+      this.drawingContext = this.canvas.getContext(
+        "webgl2",
+        this._pInst._glAttributes
+      );
+    }
+    this.webglVersion = this.drawingContext
+      ? WEBGL2
+      : WEBGL;
+    // If this is the main canvas, make sure the global `webglVersion` is set
+    this._pInst.webglVersion = this.webglVersion;
+    if (!this.drawingContext) {
+      // If we were unable to create a WebGL2 context (either because it was
+      // disabled via `setAttributes({ version: 1 })` or because the device
+      // doesn't support it), fall back to a WebGL1 context
+      this.drawingContext =
+        this.canvas.getContext("webgl", this._pInst._glAttributes) ||
+        this.canvas.getContext("experimental-webgl", this._pInst._glAttributes);
+    }
+    if (this.drawingContext === null) {
+      throw new Error("Error creating webgl context");
+    } else {
+      const gl = this.drawingContext;
+      gl.enable(gl.DEPTH_TEST);
+      gl.depthFunc(gl.LEQUAL);
+      gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+      // Make sure all images are loaded into the canvas premultiplied so that
+      // they match the way we render colors. This will make framebuffer textures
+      // be encoded the same way as textures from everything else.
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+      this._viewport = this.drawingContext.getParameter(
+        this.drawingContext.VIEWPORT
+      );
+    }
+  }
+
+  _updateSize() {}
+
+  _getMaxTextureSize() {
+    const gl = this.drawingContext;
+    return gl.getParameter(gl.MAX_TEXTURE_SIZE);
+  }
+
+  _adjustDimensions(width, height) {
+    if (!this._maxTextureSize) {
+      this._maxTextureSize = this._getMaxTextureSize();
+    }
+    let maxTextureSize = this._maxTextureSize;
+
+    let maxAllowedPixelDimensions = Math.floor(
+      maxTextureSize / this._pixelDensity
+    );
+    let adjustedWidth = Math.min(width, maxAllowedPixelDimensions);
+    let adjustedHeight = Math.min(height, maxAllowedPixelDimensions);
+
+    if (adjustedWidth !== width || adjustedHeight !== height) {
+      console.warn(
+        "Warning: The requested width/height exceeds hardware limits. " +
+          `Adjusting dimensions to width: ${adjustedWidth}, height: ${adjustedHeight}.`
+      );
+    }
+
+    return { adjustedWidth, adjustedHeight };
+  }
+
+  _resetBuffersBeforeDraw() {
+    this.GL.clearStencil(0);
+    this.GL.clear(this.GL.DEPTH_BUFFER_BIT | this.GL.STENCIL_BUFFER_BIT);
+    if (!this._userEnabledStencil) {
+      this._internalDisable.call(this.GL, this.GL.STENCIL_TEST);
+    }
+  }
+
+  _applyClip() {
+    const gl = this.GL;
+    gl.clearStencil(0);
+    gl.clear(gl.STENCIL_BUFFER_BIT);
+    this._internalEnable.call(gl, gl.STENCIL_TEST);
+    this._stencilTestOn = true;
+    gl.stencilFunc(
+      gl.ALWAYS, // the test
+      1, // reference value
+      0xff // mask
+    );
+    gl.stencilOp(
+      gl.KEEP, // what to do if the stencil test fails
+      gl.KEEP, // what to do if the depth test fails
+      gl.REPLACE // what to do if both tests pass
+    );
+    gl.disable(gl.DEPTH_TEST);
+  }
+
+  _unapplyClip() {
+    const gl = this.GL;
+    gl.stencilOp(
+      gl.KEEP, // what to do if the stencil test fails
+      gl.KEEP, // what to do if the depth test fails
+      gl.KEEP // what to do if both tests pass
+    );
+    gl.stencilFunc(
+      this._clipInvert ? gl.EQUAL : gl.NOTEQUAL, // the test
+      0, // reference value
+      0xff // mask
+    );
+    gl.enable(gl.DEPTH_TEST);
+  }
+
+  _clearClipBuffer() {
+    this.GL.clearStencil(1);
+    this.GL.clear(this.GL.STENCIL_BUFFER_BIT);
+    if (!this._userEnabledStencil) {
+      this._internalDisable.call(this.GL, this.GL.STENCIL_TEST);
+    }
+  }
+
+  // x,y are canvas-relative (pre-scaled by _pixelDensity)
+  _getPixel(x, y) {
+    const gl = this.GL;
+    return readPixelWebGL(
+      gl,
+      null,
+      x,
+      y,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      this._pInst.height * this._pInst.pixelDensity()
+    );
+  }
+
+  /**
+   * Loads the pixels data for this canvas into the pixels[] attribute.
+   * Note that updatePixels() and set() do not work.
+   * Any pixel manipulation must be done directly to the pixels[] array.
+   *
+   * @private
+   */
+  loadPixels() {
+    //@todo_FES
+    if (this._pInst._glAttributes.preserveDrawingBuffer !== true) {
+      console.log(
+        "loadPixels only works in WebGL when preserveDrawingBuffer " +
+          "is true."
+      );
+      return;
+    }
+
+    const pd = this._pixelDensity;
+    const gl = this.GL;
+
+    this.pixels = readPixelsWebGL(
+      this.pixels,
+      gl,
+      null,
+      0,
+      0,
+      this.width * pd,
+      this.height * pd,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      this.height * pd
+    );
+  }
+
+  updatePixels() {
+    const fbo = this._getTempFramebuffer();
+    fbo.pixels = this.pixels;
+    fbo.updatePixels();
+    this.push();
+    this.resetMatrix();
+    this.clear();
+    this.states.setValue("imageMode", CORNER);
+    this.image(
+      fbo,
+      0,
+      0,
+      fbo.width,
+      fbo.height,
+      -fbo.width / 2,
+      -fbo.height / 2,
+      fbo.width,
+      fbo.height
+    );
+    this.pop();
+    this.GL.clearDepth(1);
+    this.GL.clear(this.GL.DEPTH_BUFFER_BIT);
+  }
+
+  zClipRange() {
+    return [-1, 1];
+  }
+  defaultNearScale() {
+    return 0.1;
+  }
+  defaultFarScale() {
+    return 10;
+  }
+
+  viewport(w, h) {
+    this._viewport = [0, 0, w, h];
+    this.GL.viewport(0, 0, w, h);
+  }
+
+  _updateViewport() {
+    this._origViewport = {
+      width: this.GL.drawingBufferWidth,
+      height: this.GL.drawingBufferHeight,
+    };
+    this.viewport(this._origViewport.width, this._origViewport.height);
+  }
+
+  _createPixelsArray() {
+    this.pixels = new Uint8Array(
+      this.GL.drawingBufferWidth * this.GL.drawingBufferHeight * 4
+    );
+  }
+
+  /**
+   * clears color and depth buffers
+   * with r,g,b,a
+   * @private
+   * @param {Number} r normalized red val.
+   * @param {Number} g normalized green val.
+   * @param {Number} b normalized blue val.
+   * @param {Number} a normalized alpha val.
+   */
+  clear(...args) {
+    const _r = args[0] || 0;
+    const _g = args[1] || 0;
+    const _b = args[2] || 0;
+    let _a = args[3] || 0;
+
+    const activeFramebuffer = this.activeFramebuffer();
+    if (
+      activeFramebuffer &&
+      activeFramebuffer.format === UNSIGNED_BYTE &&
+      !activeFramebuffer.antialias &&
+      _a === 0
+    ) {
+      // Drivers on Intel Macs check for 0,0,0,0 exactly when drawing to a
+      // framebuffer and ignore the command if it's the only drawing command to
+      // the framebuffer. To work around it, we can set the alpha to a value so
+      // low that it still rounds down to 0, but that circumvents the buggy
+      // check in the driver.
+      _a = 1e-10;
+    }
+
+    this.GL.clearColor(_r * _a, _g * _a, _b * _a, _a);
+    this.GL.clearDepth(1);
+    this.GL.clear(this.GL.COLOR_BUFFER_BIT | this.GL.DEPTH_BUFFER_BIT);
+  }
+
+  /**
+   * Resets all depth information so that nothing previously drawn will
+   * occlude anything subsequently drawn.
+   */
+  clearDepth(depth = 1) {
+    this.GL.clearDepth(depth);
+    this.GL.clear(this.GL.DEPTH_BUFFER_BIT);
+  }
+
+  _applyStencilTestIfClipping() {
+    const drawTarget = this.drawTarget();
+    if (drawTarget._isClipApplied !== this._stencilTestOn) {
+      if (drawTarget._isClipApplied) {
+        this._internalEnable.call(this.GL, this.GL.STENCIL_TEST);
+        this._stencilTestOn = true;
+      } else {
+        if (!this._userEnabledStencil) {
+          this._internalDisable.call(this.GL, this.GL.STENCIL_TEST);
+        }
+        this._stencilTestOn = false;
+      }
+    }
+  }
+
+
+  //////////////////////////////////////////////
+  // SHADER
+  //////////////////////////////////////////////
+
+  /*
+   * shaders are created and cached on a per-renderer basis,
+   * on the grounds that each renderer will have its own gl context
+   * and the shader must be valid in that context.
+   */
+
+  baseMaterialShader() {
+    if (!this._pInst._glAttributes.perPixelLighting) {
+      throw new Error(
+        "The material shader does not support hooks without perPixelLighting. Try turning it back on."
+      );
+    }
+    return super.baseMaterialShader();
+  }
+
+  _getLightShader() {
+    if (!this._defaultLightShader) {
+      if (this._pInst._glAttributes.perPixelLighting) {
+        this._defaultLightShader = new Shader(
+          this,
+          this._webGL2CompatibilityPrefix("vert", "highp") +
+            defaultShaders.phongVert,
+          this._webGL2CompatibilityPrefix("frag", "highp") +
+            defaultShaders.phongFrag,
+          {
+            vertex: {
+              "void beforeVertex": "() {}",
+              "Vertex getObjectInputs": "(Vertex inputs) { return inputs; }",
+              "Vertex getWorldInputs": "(Vertex inputs) { return inputs; }",
+              "Vertex getCameraInputs": "(Vertex inputs) { return inputs; }",
+              "void afterVertex": "() {}",
+            },
+            fragment: {
+              "void beforeFragment": "() {}",
+              "Inputs getPixelInputs": "(Inputs inputs) { return inputs; }",
+              "vec4 combineColors": `(ColorComponents components) {
+                vec4 color = vec4(0.);
+                color.rgb += components.diffuse * components.baseColor;
+                color.rgb += components.ambient * components.ambientColor;
+                color.rgb += components.specular * components.specularColor;
+                color.rgb += components.emissive;
+                color.a = components.opacity;
+                return color;
+              }`,
+              "vec4 getFinalColor": "(vec4 color) { return color; }",
+              "void afterFragment": "() {}",
+            },
+          }
+        );
+      } else {
+        this._defaultLightShader = new Shader(
+          this,
+          this._webGL2CompatibilityPrefix("vert", "highp") +
+            defaultShaders.lightVert,
+          this._webGL2CompatibilityPrefix("frag", "highp") +
+            defaultShaders.lightTextureFrag
+        );
+      }
+    }
+
+    return this._defaultLightShader;
+  }
+
+  _getNormalShader() {
+    if (!this._defaultNormalShader) {
+      this._defaultNormalShader = new Shader(
+        this,
+        this._webGL2CompatibilityPrefix("vert", "mediump") +
+          defaultShaders.normalVert,
+        this._webGL2CompatibilityPrefix("frag", "mediump") +
+          defaultShaders.normalFrag,
+        {
+          vertex: {
+            "void beforeVertex": "() {}",
+            "Vertex getObjectInputs": "(Vertex inputs) { return inputs; }",
+            "Vertex getWorldInputs": "(Vertex inputs) { return inputs; }",
+            "Vertex getCameraInputs": "(Vertex inputs) { return inputs; }",
+            "void afterVertex": "() {}",
+          },
+          fragment: {
+            "void beforeFragment": "() {}",
+            "vec4 getFinalColor": "(vec4 color) { return color; }",
+            "void afterFragment": "() {}",
+          },
+        }
+      );
+    }
+
+    return this._defaultNormalShader;
+  }
+
+  _getColorShader() {
+    if (!this._defaultColorShader) {
+      this._defaultColorShader = new Shader(
+        this,
+        this._webGL2CompatibilityPrefix("vert", "mediump") +
+          defaultShaders.normalVert,
+        this._webGL2CompatibilityPrefix("frag", "mediump") +
+          defaultShaders.basicFrag,
+        {
+          vertex: {
+            "void beforeVertex": "() {}",
+            "Vertex getObjectInputs": "(Vertex inputs) { return inputs; }",
+            "Vertex getWorldInputs": "(Vertex inputs) { return inputs; }",
+            "Vertex getCameraInputs": "(Vertex inputs) { return inputs; }",
+            "void afterVertex": "() {}",
+          },
+          fragment: {
+            "void beforeFragment": "() {}",
+            "vec4 getFinalColor": "(vec4 color) { return color; }",
+            "void afterFragment": "() {}",
+          },
+        }
+      );
+    }
+
+    return this._defaultColorShader;
+  }
+
+  _getLineShader() {
+    if (!this._defaultLineShader) {
+      this._defaultLineShader = new Shader(
+        this,
+        this._webGL2CompatibilityPrefix("vert", "mediump") +
+          defaultShaders.lineVert,
+        this._webGL2CompatibilityPrefix("frag", "mediump") +
+          defaultShaders.lineFrag,
+        {
+          vertex: {
+            "void beforeVertex": "() {}",
+            "StrokeVertex getObjectInputs":
+              "(StrokeVertex inputs) { return inputs; }",
+            "StrokeVertex getWorldInputs":
+              "(StrokeVertex inputs) { return inputs; }",
+            "StrokeVertex getCameraInputs":
+              "(StrokeVertex inputs) { return inputs; }",
+            "void afterVertex": "() {}",
+          },
+          fragment: {
+            "void beforeFragment": "() {}",
+            "Inputs getPixelInputs": "(Inputs inputs) { return inputs; }",
+            "vec4 getFinalColor": "(vec4 color) { return color; }",
+            "bool shouldDiscard": "(bool outside) { return outside; }",
+            "void afterFragment": "() {}",
+          },
+        }
+      );
+    }
+
+    return this._defaultLineShader;
+  }
+
+  _getFontShader() {
+    if (!this._defaultFontShader) {
+      if (this.webglVersion === WEBGL) {
+        this.GL.getExtension("OES_standard_derivatives");
+      }
+      this._defaultFontShader = new Shader(
+        this,
+        this._webGL2CompatibilityPrefix("vert", "highp") +
+          defaultShaders.fontVert,
+        this._webGL2CompatibilityPrefix("frag", "highp") +
+          defaultShaders.fontFrag
+      );
+    }
+    return this._defaultFontShader;
+  }
+
+  baseFilterShader() {
+    if (!this._baseFilterShader) {
+      this._baseFilterShader = new Shader(
+        this,
+        this._webGL2CompatibilityPrefix("vert", "highp") +
+          defaultShaders.filterBaseVert,
+        this._webGL2CompatibilityPrefix("frag", "highp") +
+          defaultShaders.filterBaseFrag,
+        {
+            vertex: {},
+            fragment: {
+              "vec4 getColor": `(FilterInputs inputs, in sampler2D canvasContent) {
+                return getTexture(canvasContent, inputs.texCoord);
+              }`,
+            },
+          }
+      );
+    }
+    return this._baseFilterShader;
+  }
+
+  _webGL2CompatibilityPrefix(shaderType, floatPrecision) {
+    let code = "";
+    if (this.webglVersion === WEBGL2) {
+      code += "#version 300 es\n#define WEBGL2\n";
+    }
+    if (shaderType === "vert") {
+      code += "#define VERTEX_SHADER\n";
+    } else if (shaderType === "frag") {
+      code += "#define FRAGMENT_SHADER\n";
+    }
+    if (floatPrecision) {
+      code += `precision ${floatPrecision} float;\n`;
+    }
+    return code;
+  }
+
+  /*
+   * WebGL-specific implementation of imageLight shader creation
+   */
+  _createImageLightShader(type) {
+    if (type === 'diffused') {
+      return this._pInst.createShader(
+        defaultShaders.imageLightVert,
+        defaultShaders.imageLightDiffusedFrag
+      );
+    } else if (type === 'specular') {
+      return this._pInst.createShader(
+        defaultShaders.imageLightVert,
+        defaultShaders.imageLightSpecularFrag
+      );
+    }
+    throw new Error(`Unknown imageLight shader type: ${type}`);
+  }
+
+
+  /*
+   * WebGL-specific implementation of mipmap texture creation
+   */
+  _createMipmapTexture(levels) {
+    return new MipmapTexture(this, levels, {});
+  }
+
+  /*
+   * Prepare array to collect ImageData levels for WebGL
+   */
+  _prepareMipmapData(size, mipLevels) {
+    return { levels: [], size, mipLevels };
+  }
+
+  /*
+   * Accumulate ImageData from framebuffer for WebGL
+   */
+  _accumulateMipLevel(framebuffer, mipmapData, mipLevel, width, height) {
+    const imageData = framebuffer.get().drawingContext.getImageData(0, 0, width, height);
+    mipmapData.levels.push(imageData);
+  }
+
+  /*
+   * Create final MipmapTexture from collected ImageData for WebGL
+   */
+  _finalizeMipmapTexture(mipmapData) {
+    return new MipmapTexture(this, mipmapData.levels, {
+      minFilter: LINEAR_MIPMAP,
+      magFilter: LINEAR,
+    });
+  }
+
+  createMipmapTextureHandle({ levels, format, dataType, width, height }) {
+    const gl = this.GL;
+    const texture = gl.createTexture();
+
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // Determine GL format and data type
+    const glFormat = gl.RGBA;
+    const glDataType = gl.UNSIGNED_BYTE;
+
+    for (let level = 0; level < levels.length; level++) {
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        level,
+        glFormat,
+        glFormat,
+        glDataType,
+        levels[level]
+      );
+    }
+
+    // Set mipmap-appropriate filtering
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    return { texture, glFormat, glDataType };
+  }
+
+  /* Binds a buffer to the drawing context
+   * when passed more than two arguments it also updates or initializes
+   * the data associated with the buffer
+   */
+  _bindBuffer(buffer, target, values, type, usage) {
+    const gl = this.GL;
+    if (!target) target = gl.ARRAY_BUFFER;
+    gl.bindBuffer(target, buffer);
+
+    if (values !== undefined) {
+      const data = this._normalizeBufferData(values, type);
+      gl.bufferData(target, data, usage || gl.STATIC_DRAW);
+    }
+  }
+
+  _prepareBuffer(renderBuffer, geometry, shader) {
+    const attributes = shader.attributes;
+    const gl = this.GL;
+    const glBuffers = this._getOrMakeCachedBuffers(geometry);
+
+    // loop through each of the buffer definitions
+    const attr = attributes[renderBuffer.attr];
+    if (!attr) {
+      return;
+    }
+    // check if the geometry has the appropriate source array
+    let buffer = glBuffers[renderBuffer.dst];
+    const src = geometry[renderBuffer.src];
+    if (src && src.length > 0) {
+      // check if we need to create the GL buffer
+      const createBuffer = !buffer;
+      if (createBuffer) {
+        // create and remember the buffer
+        glBuffers[renderBuffer.dst] = buffer = gl.createBuffer();
+      }
+      // bind the buffer
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+      // check if we need to fill the buffer with data
+      if (createBuffer || geometry.dirtyFlags[renderBuffer.src] !== false) {
+        const map = renderBuffer.map;
+        // get the values from the geometry, possibly transformed
+        const values = map ? map(src) : src;
+        // fill the buffer with the values
+        this._bindBuffer(buffer, gl.ARRAY_BUFFER, values);
+        // mark the geometry's source array as clean
+        geometry.dirtyFlags[renderBuffer.src] = false;
+      }
+      // enable the attribute
+      shader.enableAttrib(attr, renderBuffer.size);
+    } else {
+      const loc = attr.location;
+      if (loc === -1 || !this.registerEnabled.has(loc)) {
+        return;
+      }
+      // Disable register corresponding to unused attribute
+      gl.disableVertexAttribArray(loc);
+      // Record register availability
+      this.registerEnabled.delete(loc);
+    }
+  }
+
+  _enableAttrib(_shader, attr, size, type, normalized, stride, offset) {
+    const loc = attr.location;
+    const gl = this.GL;
+    // Enable register even if it is disabled
+    if (!this.registerEnabled.has(loc)) {
+      gl.enableVertexAttribArray(loc);
+      // Record register availability
+      this.registerEnabled.add(loc);
+    }
+    gl.vertexAttribPointer(
+      loc,
+      size,
+      type || gl.FLOAT,
+      normalized || false,
+      stride || 0,
+      offset || 0
+    );
+  }
+
+  _ensureGeometryBuffers(buffers, indices, indexType) {
+    const gl = this.GL;
+
+    if (indices) {
+      let buffer = buffers.indexBuffer;
+      if (!buffer) buffer = gl.createBuffer();
+      this._bindBuffer(buffer, gl.ELEMENT_ARRAY_BUFFER, indices, indexType);
+
+      buffers.indexBuffer = buffer;
+
+      // If we're using a Uint32Array for our indexBuffer we will need to pass a
+      // different enum value to WebGL draw triangles. This happens in
+      // the _drawElements function.
+      buffers.indexBufferType = indexType === Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
+    } else if (buffers.indexBuffer) {
+      // the index buffer is unused, remove it
+      gl.deleteBuffer(buffers.indexBuffer);
+      buffers.indexBuffer = null;
+    }
+  }
+
+  _freeBuffers(buffers) {
+    const gl = this.GL;
+    if (buffers.indexBuffer) {
+      gl.deleteBuffer(buffers.indexBuffer);
+    }
+
+    function freeBuffers(defs) {
+      for (const def of defs) {
+        if (buffers[def.dst]) {
+          gl.deleteBuffer(buffers[def.dst]);
+          buffers[def.dst] = null;
+        }
+      }
+    }
+
+    // free all the buffers
+    freeBuffers(this.buffers.stroke);
+    freeBuffers(this.buffers.fill);
+    freeBuffers(this.buffers.user);
+  }
+
+  _initShader(shader) {
+    const gl = this.GL;
+
+    const vertShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertShader, shader.vertSrc());
+    gl.compileShader(vertShader);
+    if (!gl.getShaderParameter(vertShader, gl.COMPILE_STATUS)) {
+      throw new Error(`Yikes! An error occurred compiling the vertex shader: ${
+        gl.getShaderInfoLog(vertShader)
+      } in:\n\n${shader.vertSrc()}`);
+    }
+
+    const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragShader, shader.fragSrc());
+    gl.compileShader(fragShader);
+    if (!gl.getShaderParameter(fragShader, gl.COMPILE_STATUS)) {
+      throw new Error(`Darn! An error occurred compiling the fragment shader: ${
+        gl.getShaderInfoLog(fragShader)
+      }`);
+    }
+
+    const program = gl.createProgram();
+    gl.attachShader(program, vertShader);
+    gl.attachShader(program, fragShader);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(
+        `Snap! Error linking shader program: ${gl.getProgramInfoLog(program)}`
+      );
+    }
+
+    shader._glProgram = program;
+    shader._vertShader = vertShader;
+    shader._fragShader = fragShader;
+  }
+
+  _finalizeShader() {}
+
+  _getShaderAttributes(shader) {
+    return getWebGLShaderAttributes(shader, this.GL);
+  }
+
+  getUniformMetadata(shader) {
+    return getWebGLUniformMetadata(shader, this.GL);
+  }
+
+  updateUniformValue(shader, uniform, data) {
+    return setWebGLUniformValue(
+      shader,
+      uniform,
+      data,
+      (tex) => this.getTexture(tex),
+      this.GL
+    );
+  }
+
+  _updateTexture(uniform, tex) {
+    const gl = this.GL;
+    gl.activeTexture(gl.TEXTURE0 + uniform.samplerIndex);
+    tex.bindTexture();
+    tex.update();
+    gl.uniform1i(uniform.location, uniform.samplerIndex);
+  }
+
+  bindTexture(tex) {
+    // bind texture using gl context + glTarget and
+    // generated gl texture object
+    this.GL.bindTexture(this.GL.TEXTURE_2D, tex.getTexture().texture);
+  }
+
+  unbindTexture() {
+    // unbind per above, disable texturing on glTarget
+    this.GL.bindTexture(this.GL.TEXTURE_2D, null);
+  }
+
+  _unbindFramebufferTexture(uniform) {
+    // Make sure an empty texture is bound to the slot so that we don't
+    // accidentally leave a framebuffer bound, causing a feedback loop
+    // when something else tries to write to it
+    const gl = this.GL;
+    const empty = this._getEmptyTexture();
+    gl.activeTexture(gl.TEXTURE0 + uniform.samplerIndex);
+    empty.bindTexture();
+    gl.uniform1i(uniform.location, uniform.samplerIndex);
+  }
+
+  createTexture({ width, height, format, dataType }) {
+    const gl = this.GL;
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0,
+                       gl.RGBA, gl.UNSIGNED_BYTE, null);
+    // TODO use format and data type
+    return { texture: tex, glFormat: gl.RGBA, glDataType: gl.UNSIGNED_BYTE };
+  }
+
+  createFramebufferTextureHandle(framebufferTexture) {
+    // For WebGL, framebuffer texture handles are designed to be null
+    return null;
+  }
+
+  uploadTextureFromSource({ texture, glFormat, glDataType }, source) {
+    const gl = this.GL;
+    gl.texImage2D(gl.TEXTURE_2D, 0, glFormat, glFormat, glDataType, source);
+  }
+
+  uploadTextureFromData({ texture, glFormat, glDataType }, data, width, height) {
+    const gl = this.GL;
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      glFormat,
+      width,
+      height,
+      0,
+      glFormat,
+      glDataType,
+      data
+    );
+  }
+
+  getSampler(_texture) {
+    return undefined;
+  }
+
+  bindTextureToShader({ texture }, sampler, uniformName, unit) {
+    const gl = this.GL;
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    const location = gl.getUniformLocation(glProgram, uniformName);
+    gl.uniform1i(location, unit);
+  }
+
+  setTextureParams(texture) {
+    return setWebGLTextureParams(texture, this.GL, this.webglVersion);
+  }
+
+  deleteTexture({ texture }) {
+    this.GL.deleteTexture(texture);
+  }
+
+
+  /**
+   * @private blends colors according to color components.
+   * If alpha value is less than 1, or non-standard blendMode
+   * we need to enable blending on our gl context.
+   * @param  {Number[]} color The currently set color, with values in 0-1 range
+   * @param  {Boolean} [hasTransparency] Whether the shape being drawn has other
+   * transparency internally, e.g. via vertex colors
+   * @return {Number[]}  Normalized numbers array
+   */
+  _applyColorBlend(colors, hasTransparency) {
+    const gl = this.GL;
+
+    const isTexture = this.states.drawMode === TEXTURE;
+    const doBlend =
+      hasTransparency ||
+      this.states.userFillShader ||
+      this.states.userStrokeShader ||
+      isTexture ||
+      this.states.curBlendMode !== BLEND ||
+      colors[colors.length - 1] < 1.0 ||
+      this._isErasing;
+
+    if (doBlend !== this._isBlending) {
+      if (
+        doBlend ||
+        (this.states.curBlendMode !== BLEND &&
+          this.states.curBlendMode !== ADD)
+      ) {
+        gl.enable(gl.BLEND);
+      } else {
+        gl.disable(gl.BLEND);
+      }
+      gl.depthMask(true);
+      this._isBlending = doBlend;
+    }
+    this._applyBlendMode();
+    return colors;
+  }
+
+  //////////////////////////////////////////////
+  // Shader hooks
+  //////////////////////////////////////////////
+  uniformNameFromHookKey(key) {
+    return key.slice(key.indexOf(' ') + 1);
+  }
+  populateHooks(shader, src, shaderType) {
+    return populateGLSLHooks(shader, src, shaderType);
+  }
+
+  getShaderHookTypes(shader, hookName) {
+    return getShaderHookTypes(shader, hookName);
+  }
+
+  //////////////////////////////////////////////
+  // Framebuffer methods
+  //////////////////////////////////////////////
+
+  defaultFramebufferAlpha() {
+    return this._pInst._glAttributes.alpha;
+  }
+
+  defaultFramebufferAntialias() {
+    return this.supportsFramebufferAntialias()
+      ? this._pInst._glAttributes.antialias
+      : false;
+  }
+
+  supportsFramebufferAntialias() {
+    return this.webglVersion === WEBGL2;
+  }
+
+  createFramebufferResources(framebuffer) {
+    const gl = this.GL;
+
+    framebuffer.framebuffer = gl.createFramebuffer();
+    if (!framebuffer.framebuffer) {
+      throw new Error('Unable to create a framebuffer');
+    }
+
+    if (framebuffer.antialias) {
+      framebuffer.aaFramebuffer = gl.createFramebuffer();
+      if (!framebuffer.aaFramebuffer) {
+        throw new Error('Unable to create a framebuffer for antialiasing');
+      }
+    }
+  }
+
+  validateFramebufferFormats(framebuffer) {
+    const gl = this.GL;
+
+    if (
+      framebuffer.useDepth &&
+      this.webglVersion === WEBGL &&
+      !gl.getExtension('WEBGL_depth_texture')
+    ) {
+      console.warn(
+        'Unable to create depth textures in this environment. Falling back ' +
+          'to a framebuffer without depth.'
+      );
+      framebuffer.useDepth = false;
+    }
+
+    if (
+      framebuffer.useDepth &&
+      this.webglVersion === WEBGL &&
+      framebuffer.depthFormat === FLOAT
+    ) {
+      console.warn(
+        'FLOAT depth format is unavailable in WebGL 1. ' +
+          'Defaulting to UNSIGNED_INT.'
+      );
+      framebuffer.depthFormat = UNSIGNED_INT;
+    }
+
+    if (![
+      UNSIGNED_BYTE,
+      FLOAT,
+      HALF_FLOAT
+    ].includes(framebuffer.format)) {
+      console.warn(
+        'Unknown Framebuffer format. ' +
+          'Please use UNSIGNED_BYTE, FLOAT, or HALF_FLOAT. ' +
+          'Defaulting to UNSIGNED_BYTE.'
+      );
+      framebuffer.format = UNSIGNED_BYTE;
+    }
+    if (framebuffer.useDepth && ![
+      UNSIGNED_INT,
+      FLOAT
+    ].includes(framebuffer.depthFormat)) {
+      console.warn(
+        'Unknown Framebuffer depth format. ' +
+          'Please use UNSIGNED_INT or FLOAT. Defaulting to FLOAT.'
+      );
+      framebuffer.depthFormat = FLOAT;
+    }
+
+    const support = checkWebGLCapabilities(this);
+    if (!support.float && framebuffer.format === FLOAT) {
+      console.warn(
+        'This environment does not support FLOAT textures. ' +
+          'Falling back to UNSIGNED_BYTE.'
+      );
+      framebuffer.format = UNSIGNED_BYTE;
+    }
+    if (
+      framebuffer.useDepth &&
+      !support.float &&
+      framebuffer.depthFormat === FLOAT
+    ) {
+      console.warn(
+        'This environment does not support FLOAT depth textures. ' +
+          'Falling back to UNSIGNED_INT.'
+      );
+      framebuffer.depthFormat = UNSIGNED_INT;
+    }
+    if (!support.halfFloat && framebuffer.format === HALF_FLOAT) {
+      console.warn(
+        'This environment does not support HALF_FLOAT textures. ' +
+          'Falling back to UNSIGNED_BYTE.'
+      );
+      framebuffer.format = UNSIGNED_BYTE;
+    }
+
+    if (
+      framebuffer.channels === RGB &&
+      [FLOAT, HALF_FLOAT].includes(framebuffer.format)
+    ) {
+      console.warn(
+        'FLOAT and HALF_FLOAT formats do not work cross-platform with only ' +
+          'RGB channels. Falling back to RGBA.'
+      );
+      framebuffer.channels = RGBA;
+    }
+  }
+
+  recreateFramebufferTextures(framebuffer) {
+    const gl = this.GL;
+
+    const prevBoundTexture = gl.getParameter(gl.TEXTURE_BINDING_2D);
+    const prevBoundFramebuffer = gl.getParameter(gl.FRAMEBUFFER_BINDING);
+
+    const colorTexture = gl.createTexture();
+    if (!colorTexture) {
+      throw new Error('Unable to create color texture');
+    }
+    gl.bindTexture(gl.TEXTURE_2D, colorTexture);
+    const colorFormat = this._getFramebufferColorFormat(framebuffer);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      colorFormat.internalFormat,
+      framebuffer.width * framebuffer.density,
+      framebuffer.height * framebuffer.density,
+      0,
+      colorFormat.format,
+      colorFormat.type,
+      null
+    );
+    framebuffer.colorTexture = colorTexture;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.framebuffer);
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      colorTexture,
+      0
+    );
+
+    if (framebuffer.useDepth) {
+      // Create the depth texture
+      const depthTexture = gl.createTexture();
+      if (!depthTexture) {
+        throw new Error('Unable to create depth texture');
+      }
+      const depthFormat = this._getFramebufferDepthFormat(framebuffer);
+      gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        depthFormat.internalFormat,
+        framebuffer.width * framebuffer.density,
+        framebuffer.height * framebuffer.density,
+        0,
+        depthFormat.format,
+        depthFormat.type,
+        null
+      );
+
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        framebuffer.useStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT,
+        gl.TEXTURE_2D,
+        depthTexture,
+        0
+      );
+      framebuffer.depthTexture = depthTexture;
+    }
+
+    // Create separate framebuffer for antialiasing
+    if (framebuffer.antialias) {
+      framebuffer.colorRenderbuffer = gl.createRenderbuffer();
+      gl.bindRenderbuffer(gl.RENDERBUFFER, framebuffer.colorRenderbuffer);
+      gl.renderbufferStorageMultisample(
+        gl.RENDERBUFFER,
+        Math.max(
+          0,
+          Math.min(framebuffer.antialiasSamples, gl.getParameter(gl.MAX_SAMPLES))
+        ),
+        colorFormat.internalFormat,
+        framebuffer.width * framebuffer.density,
+        framebuffer.height * framebuffer.density
+      );
+
+      if (framebuffer.useDepth) {
+        const depthFormat = this._getFramebufferDepthFormat(framebuffer);
+        framebuffer.depthRenderbuffer = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, framebuffer.depthRenderbuffer);
+        gl.renderbufferStorageMultisample(
+          gl.RENDERBUFFER,
+          Math.max(
+            0,
+            Math.min(framebuffer.antialiasSamples, gl.getParameter(gl.MAX_SAMPLES))
+          ),
+          depthFormat.internalFormat,
+          framebuffer.width * framebuffer.density,
+          framebuffer.height * framebuffer.density
+        );
+      }
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.aaFramebuffer);
+      gl.framebufferRenderbuffer(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0,
+        gl.RENDERBUFFER,
+        framebuffer.colorRenderbuffer
+      );
+      if (framebuffer.useDepth) {
+        gl.framebufferRenderbuffer(
+          gl.FRAMEBUFFER,
+          framebuffer.useStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT,
+          gl.RENDERBUFFER,
+          framebuffer.depthRenderbuffer
+        );
+      }
+    }
+
+    gl.bindTexture(gl.TEXTURE_2D, prevBoundTexture);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, prevBoundFramebuffer);
+  }
+
+  /**
+   * To create a WebGL texture, one needs to supply three pieces of information:
+   * the type (the data type each channel will be stored as, e.g. int or float),
+   * the format (the color channels that will each be stored in the previously
+   * specified type, e.g. rgb or rgba), and the internal format (the specifics
+   * of how data for each channel, in the aforementioned type, will be packed
+   * together, such as how many bits to use, e.g. RGBA32F or RGB565.)
+   *
+   * The format and channels asked for by the user hint at what these values
+   * need to be, and the WebGL version affects what options are avaiable.
+   * This method returns the values for these three properties, given the
+   * framebuffer's settings.
+   *
+   * @private
+   */
+  _getFramebufferColorFormat(framebuffer) {
+    let type, format, internalFormat;
+    const gl = this.GL;
+
+    if (framebuffer.format === FLOAT) {
+      type = gl.FLOAT;
+    } else if (framebuffer.format === HALF_FLOAT) {
+      type = this.webglVersion === WEBGL2
+        ? gl.HALF_FLOAT
+        : gl.getExtension('OES_texture_half_float').HALF_FLOAT_OES;
+    } else {
+      type = gl.UNSIGNED_BYTE;
+    }
+
+    if (framebuffer.channels === RGBA) {
+      format = gl.RGBA;
+    } else {
+      format = gl.RGB;
+    }
+
+    if (this.webglVersion === WEBGL2) {
+      // https://webgl2fundamentals.org/webgl/lessons/webgl-data-textures.html
+      const table = {
+        [gl.FLOAT]: {
+          [gl.RGBA]: gl.RGBA32F
+          // gl.RGB32F is not available in Firefox without an alpha channel
+        },
+        [gl.HALF_FLOAT]: {
+          [gl.RGBA]: gl.RGBA16F
+          // gl.RGB16F is not available in Firefox without an alpha channel
+        },
+        [gl.UNSIGNED_BYTE]: {
+          [gl.RGBA]: gl.RGBA8, // gl.RGBA4
+          [gl.RGB]: gl.RGB8 // gl.RGB565
+        }
+      };
+      internalFormat = table[type][format];
+    } else if (framebuffer.format === HALF_FLOAT) {
+      internalFormat = gl.RGBA;
+    } else {
+      internalFormat = format;
+    }
+
+    return { internalFormat, format, type };
+  }
+
+  /**
+   * To create a WebGL texture, one needs to supply three pieces of information:
+   * the type (the data type each channel will be stored as, e.g. int or float),
+   * the format (the color channels that will each be stored in the previously
+   * specified type, e.g. rgb or rgba), and the internal format (the specifics
+   * of how data for each channel, in the aforementioned type, will be packed
+   * together, such as how many bits to use, e.g. RGBA32F or RGB565.)
+   *
+   * This method takes into account the settings asked for by the user and
+   * returns values for these three properties that can be used for the
+   * texture storing depth information.
+   *
+   * @private
+   */
+  _getFramebufferDepthFormat(framebuffer) {
+    let type, format, internalFormat;
+    const gl = this.GL;
+
+    if (framebuffer.useStencil) {
+      if (framebuffer.depthFormat === FLOAT) {
+        type = gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
+      } else if (this.webglVersion === WEBGL2) {
+        type = gl.UNSIGNED_INT_24_8;
+      } else {
+        type = gl.getExtension('WEBGL_depth_texture').UNSIGNED_INT_24_8_WEBGL;
+      }
+    } else {
+      if (framebuffer.depthFormat === FLOAT) {
+        type = gl.FLOAT;
+      } else {
+        type = gl.UNSIGNED_INT;
+      }
+    }
+
+    if (framebuffer.useStencil) {
+      format = gl.DEPTH_STENCIL;
+    } else {
+      format = gl.DEPTH_COMPONENT;
+    }
+
+    if (framebuffer.useStencil) {
+      if (framebuffer.depthFormat === FLOAT) {
+        internalFormat = gl.DEPTH32F_STENCIL8;
+      } else if (this.webglVersion === WEBGL2) {
+        internalFormat = gl.DEPTH24_STENCIL8;
+      } else {
+        internalFormat = gl.DEPTH_STENCIL;
+      }
+    } else if (this.webglVersion === WEBGL2) {
+      if (framebuffer.depthFormat === FLOAT) {
+        internalFormat = gl.DEPTH_COMPONENT32F;
+      } else {
+        internalFormat = gl.DEPTH_COMPONENT24;
+      }
+    } else {
+      internalFormat = gl.DEPTH_COMPONENT;
+    }
+
+    return { internalFormat, format, type };
+  }
+
+  _deleteFramebufferTexture(texture) {
+    const gl = this.GL;
+    gl.deleteTexture(texture.rawTexture().texture);
+    this.textures.delete(texture);
+  }
+
+  deleteFramebufferTextures(framebuffer) {
+    this._deleteFramebufferTexture(framebuffer.color);
+    if (framebuffer.depth) this._deleteFramebufferTexture(framebuffer.depth);
+    const gl = this.GL;
+    if (framebuffer.colorRenderbuffer) gl.deleteRenderbuffer(framebuffer.colorRenderbuffer);
+    if (framebuffer.depthRenderbuffer) gl.deleteRenderbuffer(framebuffer.depthRenderbuffer);
+  }
+
+  deleteFramebufferResources(framebuffer) {
+    const gl = this.GL;
+    gl.deleteFramebuffer(framebuffer.framebuffer);
+    if (framebuffer.aaFramebuffer) {
+      gl.deleteFramebuffer(framebuffer.aaFramebuffer);
+    }
+    if (framebuffer.depthRenderbuffer) {
+      gl.deleteRenderbuffer(framebuffer.depthRenderbuffer);
+    }
+    if (framebuffer.colorRenderbuffer) {
+      gl.deleteRenderbuffer(framebuffer.colorRenderbuffer);
+    }
+  }
+
+  getFramebufferToBind(framebuffer) {
+    if (framebuffer.antialias) {
+      return framebuffer.aaFramebuffer;
+    } else {
+      return framebuffer.framebuffer;
+    }
+  }
+
+  updateFramebufferTexture(framebuffer, property) {
+    if (framebuffer.antialias) {
+      const gl = this.GL;
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, framebuffer.aaFramebuffer);
+      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, framebuffer.framebuffer);
+      const partsToCopy = {
+        colorTexture: [
+          gl.COLOR_BUFFER_BIT,
+          framebuffer.colorP5Texture.magFilter === LINEAR ? gl.LINEAR : gl.NEAREST
+        ],
+      };
+      if (framebuffer.useDepth) {
+        partsToCopy.depthTexture = [
+          gl.DEPTH_BUFFER_BIT,
+          framebuffer.depthP5Texture.magFilter === LINEAR ? gl.LINEAR : gl.NEAREST
+        ];
+      }
+      const [flag, filter] = partsToCopy[property];
+      gl.blitFramebuffer(
+        0,
+        0,
+        framebuffer.width * framebuffer.density,
+        framebuffer.height * framebuffer.density,
+        0,
+        0,
+        framebuffer.width * framebuffer.density,
+        framebuffer.height * framebuffer.density,
+        flag,
+        filter
+      );
+
+      const activeFbo = this.activeFramebuffer();
+      this.bindFramebuffer(activeFbo);
+    }
+  }
+
+  bindFramebuffer(framebuffer) {
+    const gl = this.GL;
+    gl.bindFramebuffer(
+      gl.FRAMEBUFFER,
+      framebuffer
+        ? this.getFramebufferToBind(framebuffer)
+        : null
+    );
+  }
+
+  framebufferYScale() {
+    // WebGL textures are upside-down compared to textures that come from
+    // images and graphics. Framebuffer cameras need to invert their y
+    // axes when being rendered to so that the texture comes out rightway up
+    // when read in shaders or image().
+    return -1;
+  }
+
+  readFramebufferPixels(framebuffer) {
+    const gl = this.GL;
+    const prevFramebuffer = this.activeFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.framebuffer);
+    const colorFormat = this._getFramebufferColorFormat(framebuffer);
+    const pixels = readPixelsWebGL(
+      framebuffer.pixels,
+      gl,
+      framebuffer.framebuffer,
+      0,
+      0,
+      framebuffer.width * framebuffer.density,
+      framebuffer.height * framebuffer.density,
+      colorFormat.format,
+      colorFormat.type
+    );
+    this.bindFramebuffer(prevFramebuffer);
+    return pixels;
+  }
+
+  readFramebufferPixel(framebuffer, x, y) {
+    const colorFormat = this._getFramebufferColorFormat(framebuffer);
+    return readPixelWebGL(
+      this.GL,
+      framebuffer.framebuffer,
+      x,
+      y,
+      colorFormat.format,
+      colorFormat.type
+    );
+  }
+
+  readFramebufferRegion(framebuffer, x, y, w, h) {
+    const gl = this.GL;
+    const colorFormat = this._getFramebufferColorFormat(framebuffer);
+
+    const rawData = readPixelsWebGL(
+      undefined,
+      gl,
+      framebuffer.framebuffer,
+      x * framebuffer.density,
+      y * framebuffer.density,
+      w * framebuffer.density,
+      h * framebuffer.density,
+      colorFormat.format,
+      colorFormat.type
+    );
+
+    // Framebuffer data might be either a Uint8Array or Float32Array
+    // depending on its format, and it may or may not have an alpha channel.
+    // To turn it into an image, we have to normalize the data into a
+    // Uint8ClampedArray with alpha.
+    const fullData = new Uint8ClampedArray(
+      w * h * framebuffer.density * framebuffer.density * 4
+    );
+    // Default channels that aren't in the framebuffer (e.g. alpha, if the
+    // framebuffer is in RGB mode instead of RGBA) to 255
+    fullData.fill(255);
+
+    const channels = colorFormat.format === gl.RGB ? 3 : 4;
+    for (let yPos = 0; yPos < h * framebuffer.density; yPos++) {
+      for (let xPos = 0; xPos < w * framebuffer.density; xPos++) {
+        for (let channel = 0; channel < 4; channel++) {
+          const idx = (yPos * w * framebuffer.density + xPos) * 4 + channel;
+          if (channel < channels) {
+            // Find the index of this pixel in `rawData`, which might have a
+            // different number of channels
+            const rawDataIdx = channels === 4
+              ? idx
+              : (yPos * w * framebuffer.density + xPos) * channels + channel;
+            fullData[idx] = rawData[rawDataIdx];
+          }
+        }
+      }
+    }
+
+    // Create image from data
+    const region = new Image(w * framebuffer.density, h * framebuffer.density);
+    region.imageData = region.canvas.getContext('2d').createImageData(
+      region.width,
+      region.height
+    );
+    region.imageData.data.set(fullData);
+    region.pixels = region.imageData.data;
+    region.updatePixels();
+    if (framebuffer.density !== 1) {
+      region.pixelDensity(framebuffer.density);
+    }
+    return region;
+  }
+
+  updateFramebufferPixels(framebuffer) {
+    const gl = this.GL;
+    framebuffer.colorP5Texture.bindTexture();
+    const colorFormat = this._getFramebufferColorFormat(framebuffer);
+
+    const channels = colorFormat.format === gl.RGBA ? 4 : 3;
+    const len = framebuffer.width * framebuffer.height * framebuffer.density * framebuffer.density * channels;
+    const TypedArrayClass = colorFormat.type === gl.UNSIGNED_BYTE ? Uint8Array : Float32Array;
+
+    if (!(framebuffer.pixels instanceof TypedArrayClass) || framebuffer.pixels.length !== len) {
+      throw new Error(
+        'The pixels array has not been set correctly. Please call loadPixels() before updatePixels().'
+      );
+    }
+
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      colorFormat.internalFormat,
+      framebuffer.width * framebuffer.density,
+      framebuffer.height * framebuffer.density,
+      0,
+      colorFormat.format,
+      colorFormat.type,
+      framebuffer.pixels
+    );
+    framebuffer.colorP5Texture.unbindTexture();
+    framebuffer.dirty.colorTexture = false;
+
+    const prevFramebuffer = this.activeFramebuffer();
+    if (framebuffer.antialias) {
+      // We need to make sure the antialiased framebuffer also has the updated
+      // pixels so that if more is drawn to it, it goes on top of the updated
+      // pixels instead of replacing them.
+      // We can't blit the framebuffer to the multisampled antialias
+      // framebuffer to leave both in the same state, so instead we have
+      // to use image() to put the framebuffer texture onto the antialiased
+      // framebuffer.
+      framebuffer.begin();
+      this.push();
+      this.states.setValue('imageMode', CORNER);
+      this.setCamera(framebuffer.filterCamera);
+      this.resetMatrix();
+      this.states.setValue('strokeColor', null);
+      this.clear();
+      this._drawingFilter = true;
+      this.image(
+        framebuffer,
+        0, 0,
+        framebuffer.width, framebuffer.height,
+        -this.width / 2, -this.height / 2,
+        this.width, this.height
+      );
+      this._drawingFilter = false;
+      this.pop();
+      if (framebuffer.useDepth) {
+        gl.clearDepth(1);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+      }
+      framebuffer.end();
+    } else {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.framebuffer);
+      if (framebuffer.useDepth) {
+        gl.clearDepth(1);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+      }
+      this.bindFramebuffer(prevFramebuffer);
+    }
+  }
+
+  getNoiseShaderSnippet() {
+    return noiseGLSL;
+  }
+
+}
+
+function rendererGL(p5, fn) {
+  p5.RendererGL = RendererGL;
+
+  /**
+   * @module Rendering
+   * @submodule Rendering
+   * @for p5
+   */
+  /**
+   * Set attributes for the WebGL Drawing context.
+   * This is a way of adjusting how the WebGL
+   * renderer works to fine-tune the display and performance.
+   *
+   * Note that this will reinitialize the drawing context
+   * if called after the WebGL canvas is made.
+   *
+   * If an object is passed as the parameter, all attributes
+   * not declared in the object will be set to defaults.
+   *
+   * The available attributes are:
+   * <br>
+   * alpha - indicates if the canvas contains an alpha buffer
+   * default is true
+   *
+   * depth - indicates whether the drawing buffer has a depth buffer
+   * of at least 16 bits - default is true
+   *
+   * stencil - indicates whether the drawing buffer has a stencil buffer
+   * of at least 8 bits
+   *
+   * antialias - indicates whether or not to perform anti-aliasing
+   * default is false (true in Safari)
+   *
+   * premultipliedAlpha - indicates that the page compositor will assume
+   * the drawing buffer contains colors with pre-multiplied alpha
+   * default is true
+   *
+   * preserveDrawingBuffer - if true the buffers will not be cleared and
+   * and will preserve their values until cleared or overwritten by author
+   * (note that p5 clears automatically on draw loop)
+   * default is true
+   *
+   * perPixelLighting - if true, per-pixel lighting will be used in the
+   * lighting shader otherwise per-vertex lighting is used.
+   * default is true.
+   *
+   * version - either 1 or 2, to specify which WebGL version to ask for. By
+   * default, WebGL 2 will be requested. If WebGL2 is not available, it will
+   * fall back to WebGL 1. You can check what version is used with by looking at
+   * the global `webglVersion` property.
+   *
+   * @method setAttributes
+   * @for p5
+   * @param  {String}  key Name of attribute
+   * @param  {Boolean}        value New value of named attribute
+   * @example
+   * <div>
+   * <code>
+   * function setup() {
+   *   createCanvas(100, 100, WEBGL);
+   * }
+   *
+   * function draw() {
+   *   background(255);
+   *   push();
+   *   rotateZ(frameCount * 0.02);
+   *   rotateX(frameCount * 0.02);
+   *   rotateY(frameCount * 0.02);
+   *   fill(0, 0, 0);
+   *   box(50);
+   *   pop();
+   * }
+   * </code>
+   * </div>
+   *
+   * <div>
+   * <code>
+   *  // Now with the antialias attribute set to true.
+   * function setup() {
+   *   setAttributes('antialias', true);
+   *   createCanvas(100, 100, WEBGL);
+   * }
+   *
+   * function draw() {
+   *   background(255);
+   *   push();
+   *   rotateZ(frameCount * 0.02);
+   *   rotateX(frameCount * 0.02);
+   *   rotateY(frameCount * 0.02);
+   *   fill(0, 0, 0);
+   *   box(50);
+   *   pop();
+   * }
+   * </code>
+   * </div>
+   *
+   * <div>
+   * <code>
+   * // press the mouse button to disable perPixelLighting
+   * function setup() {
+   *   createCanvas(100, 100, WEBGL);
+   *   noStroke();
+   *   fill(255);
+   * }
+   *
+   * let lights = [
+   *   { c: '#f00', t: 1.12, p: 1.91, r: 0.2 },
+   *   { c: '#0f0', t: 1.21, p: 1.31, r: 0.2 },
+   *   { c: '#00f', t: 1.37, p: 1.57, r: 0.2 },
+   *   { c: '#ff0', t: 1.12, p: 1.91, r: 0.7 },
+   *   { c: '#0ff', t: 1.21, p: 1.31, r: 0.7 },
+   *   { c: '#f0f', t: 1.37, p: 1.57, r: 0.7 }
+   * ];
+   *
+   * function draw() {
+   *   let t = millis() / 1000 + 1000;
+   *   background(0);
+   *   directionalLight(color('#222'), 1, 1, 1);
+   *
+   *   for (let i = 0; i < lights.length; i++) {
+   *     let light = lights[i];
+   *     pointLight(
+   *       color(light.c),
+   *       p5.Vector.fromAngles(t * light.t, t * light.p, width * light.r)
+   *     );
+   *   }
+   *
+   *   specularMaterial(255);
+   *   sphere(width * 0.1);
+   *
+   *   rotateX(t * 0.77);
+   *   rotateY(t * 0.83);
+   *   rotateZ(t * 0.91);
+   *   torus(width * 0.3, width * 0.07, 24, 10);
+   * }
+   *
+   * function mousePressed() {
+   *   setAttributes('perPixelLighting', false);
+   *   noStroke();
+   *   fill(255);
+   * }
+   * function mouseReleased() {
+   *   setAttributes('perPixelLighting', true);
+   *   noStroke();
+   *   fill(255);
+   * }
+   * </code>
+   * </div>
+   *
+   * @alt a rotating cube with smoother edges
+   */
+  /**
+   * @method setAttributes
+   * @for p5
+   * @param  {Object}  obj object with key-value pairs
+   */
+  fn.setAttributes = function (key, value) {
+    return this._renderer._setAttributes(key, value);
+  };
+
+  /**
+   * ensures that p5 is using a 3d renderer. throws an error if not.
+   */
+  fn._assert3d = function (name) {
+    if (!this._renderer.isP3D)
+      throw new Error(
+        `${name}() is only supported in WEBGL mode. If you'd like to use 3D graphics and WebGL, see  https://p5js.org/examples/form-3d-primitives.html for more information.`
+      );
+  };
+
+  p5.renderers[WEBGL] = p5.RendererGL;
+  p5.renderers[WEBGL2] = p5.RendererGL;
+}
+
+if (typeof p5 !== "undefined") {
+  rendererGL(p5, p5.prototype);
+}
+
+function webgl(p5){
+  p5.registerAddon(renderer3D);
+  p5.registerAddon(rendererGL);
+  p5.registerAddon(primitives3D);
+  p5.registerAddon(interaction);
+  p5.registerAddon(light);
+  p5.registerAddon(loading$1);
+  p5.registerAddon(material);
+  p5.registerAddon(text);
+  p5.registerAddon(renderBuffer);
+  p5.registerAddon(quat);
+  p5.registerAddon(matrix);
+  p5.registerAddon(geometry);
+  p5.registerAddon(camera);
+  p5.registerAddon(framebuffer);
+  p5.registerAddon(dataArray);
+  p5.registerAddon(texture);
+}
+
+function type(p5){
+  p5.registerAddon(textCore);
+  p5.registerAddon(font);
+}
 
 var escodegen$1 = {};
 
@@ -130311,6 +132456,7 @@ var require$$3 = {
 var escodegen = /*@__PURE__*/getDefaultExportFromCjs(escodegen$1);
 
 let blockVarCounter = 0;
+let loopVarCounter = 0;
 function replaceBinaryOperator(codeSource) {
   switch (codeSource) {
     case '+': return 'add';
@@ -130361,6 +132507,143 @@ function nodeIsVarying(node) {
       )
     );
 }
+
+// Helper function to check if a statement is a variable declaration with strands control flow init
+function statementContainsStrandsControlFlow(stmt) {
+  // Check for variable declarations with strands control flow init
+  if (stmt.type === 'VariableDeclaration') {
+    const match = stmt.declarations.some(decl =>
+      decl.init?.type === 'CallExpression' &&
+      (
+        (
+          decl.init?.callee?.type === 'MemberExpression' &&
+          decl.init?.callee?.object?.type === 'Identifier' &&
+          decl.init?.callee?.object?.name === '__p5' &&
+          (decl.init?.callee?.property?.name === 'strandsFor' ||
+            decl.init?.callee?.property?.name === 'strandsIf')
+        ) ||
+        (
+          decl.init?.callee?.type === 'Identifier' &&
+          (decl.init?.callee?.name === '__p5.strandsFor' ||
+            decl.init?.callee?.name === '__p5.strandsIf')
+        )
+      )
+    );
+    return match
+  }
+  return false;
+}
+
+// Helper function to build property path from MemberExpression
+// e.g., inputs.color -> "inputs.color", vec.x -> "vec.x"
+function isSwizzle(propertyName) {
+  if (!propertyName || typeof propertyName !== 'string') return false;
+  const swizzleSets = [
+    ['x', 'y', 'z', 'w'],
+    ['r', 'g', 'b', 'a'],
+    ['s', 't', 'p', 'q']
+  ];
+  return swizzleSets.some(set =>
+    [...propertyName].every(char => set.includes(char))
+  );
+}
+
+function buildPropertyPath(memberExpr) {
+  const parts = [];
+  let current = memberExpr;
+  while (current.type === 'MemberExpression') {
+    if (current.computed) {
+      return null;
+    }
+    const propName = current.property.name || current.property.value;
+    if (isSwizzle(propName)) {
+      current = current.object;
+      break;
+    }
+    parts.unshift(propName);
+    current = current.object;
+  }
+  if (current.type === 'Identifier') {
+    parts.unshift(current.name);
+  } else {
+    return null;
+  }
+  return parts.join('.');
+}
+
+// Replace all references to original variables with temp variables
+// and wrap literal assignments in strandsNode calls
+function replaceReferences(node, tempVarMap) {
+  const internalReplaceReferences = (node) => {
+    if (!node || typeof node !== 'object') return;
+
+    // Check if this MemberExpression matches a tracked property path
+    if (node.type === 'MemberExpression') {
+      const propName = node.property.name || node.property.value;
+      if (isSwizzle(propName)) {
+        // For swizzles, only replace the object part, keep the swizzle
+        internalReplaceReferences(node.object);
+        return;
+      }
+      const propertyPath = buildPropertyPath(node);
+      if (propertyPath && tempVarMap.has(propertyPath)) {
+        // Replace entire member expression with temp variable
+        Object.assign(node, {
+          type: 'Identifier',
+          name: tempVarMap.get(propertyPath)
+        });
+        return; // Don't recurse into replaced node
+      }
+    }
+
+    // Handle simple identifier replacements
+    if (node.type === 'Identifier' && tempVarMap.has(node.name)) {
+      node.name = tempVarMap.get(node.name);
+    }
+
+    // Handle literal assignments to temp variables
+    if (node.type === 'AssignmentExpression') {
+      let leftPath = null;
+      if (node.left.type === 'Identifier') {
+        leftPath = node.left.name;
+      } else if (node.left.type === 'MemberExpression') {
+        leftPath = buildPropertyPath(node.left);
+      }
+
+      if (leftPath && tempVarMap.has(leftPath) &&
+          (node.right.type === 'Literal' || node.right.type === 'ArrayExpression')) {
+        // Wrap the right hand side in a strandsNode call to make sure
+        // it's not just a literal and has a type
+        node.right = {
+          type: 'CallExpression',
+          callee: {
+            type: 'Identifier',
+            name: '__p5.strandsNode'
+          },
+          arguments: [node.right]
+        };
+      }
+    }
+
+    // Recursively process all properties
+    for (const key in node) {
+      if (node.hasOwnProperty(key) && key !== 'parent') {
+        // Don't recurse into property names of non-computed member expressions
+        if (node.type === 'MemberExpression' && key === 'property' && !node.computed) {
+          continue;
+        }
+        if (Array.isArray(node[key])) {
+          node[key].forEach(internalReplaceReferences);
+        } else if (typeof node[key] === 'object') {
+          internalReplaceReferences(node[key]);
+        }
+      }
+    }
+  };
+
+  internalReplaceReferences(node);
+}
+
 const ASTCallbacks = {
   UnaryExpression(node, _state, ancestors) {
     if (ancestors.some(nodeIsUniform)) { return; }
@@ -130418,41 +132701,53 @@ const ASTCallbacks = {
   VariableDeclarator(node, _state, ancestors) {
     if (ancestors.some(nodeIsUniform)) { return; }
     if (nodeIsUniform(node.init)) {
-      const uniformNameLiteral = {
-        type: 'Literal',
-        value: node.id.name
-      };
-      node.init.arguments.unshift(uniformNameLiteral);
+      // Only inject the variable name if the first argument isn't already a string
+      if (node.init.arguments.length === 0 ||
+          node.init.arguments[0].type !== 'Literal' ||
+          typeof node.init.arguments[0].value !== 'string') {
+        const uniformNameLiteral = {
+          type: 'Literal',
+          value: node.id.name
+        };
+        node.init.arguments.unshift(uniformNameLiteral);
+      }
     }
     if (nodeIsVarying(node.init)) {
-      const varyingNameLiteral = {
-        type: 'Literal',
-        value: node.id.name
-      };
-      node.init.arguments.unshift(varyingNameLiteral);
-      _state.varyings[node.id.name] = varyingNameLiteral;
+      // Only inject the variable name if the first argument isn't already a string
+      if (
+        node.init.arguments.length === 0 ||
+        node.init.arguments[0].type !== 'Literal' ||
+        typeof node.init.arguments[0].value !== 'string'
+      ) {
+        const varyingNameLiteral = {
+          type: 'Literal',
+          value: node.id.name
+        };
+        node.init.arguments.unshift(varyingNameLiteral);
+        _state.varyings[node.id.name] = varyingNameLiteral;
+      } else {
+        // Still track it as a varying even if name wasn't injected
+        _state.varyings[node.id.name] = node.init.arguments[0];
+      }
     }
   },
   Identifier(node, _state, ancestors) {
     if (ancestors.some(nodeIsUniform)) { return; }
     if (_state.varyings[node.name]
       && !ancestors.some(a => a.type === 'AssignmentExpression' && a.left === node)) {
-        node.type = 'ExpressionStatement';
-        node.expression = {
-          type: 'CallExpression',
-          callee: {
-            type: 'MemberExpression',
-            object: {
-              type: 'Identifier',
-              name: node.name
-            },
-            property: {
-              type: 'Identifier',
-              name: 'getValue'
-            },
+        node.type = 'CallExpression';
+        node.callee = {
+          type: 'MemberExpression',
+          object: {
+            type: 'Identifier',
+            name: node.name
           },
-          arguments: [],
+          property: {
+            type: 'Identifier',
+            name: 'getValue'
+          },
         };
+        node.arguments = [];
       }
     },
     // The callbacks for AssignmentExpression and BinaryExpression handle
@@ -130469,13 +132764,23 @@ const ASTCallbacks = {
     },
     AssignmentExpression(node, _state, ancestors) {
       if (ancestors.some(nodeIsUniform)) { return; }
+      const unsafeTypes = ['Literal', 'ArrayExpression', 'Identifier'];
       if (node.operator !== '=') {
         const methodName = replaceBinaryOperator(node.operator.replace('=',''));
         const rightReplacementNode = {
           type: 'CallExpression',
           callee: {
             type: 'MemberExpression',
-            object: node.left,
+            object: unsafeTypes.includes(node.left.type)
+              ? {
+                  type: 'CallExpression',
+                  callee: {
+                    type: 'Identifier',
+                    name: '__p5.strandsNode',
+                  },
+                  arguments: [node.left]
+                }
+              : node.left,
             property: {
               type: 'Identifier',
               name: methodName,
@@ -130515,13 +132820,12 @@ const ASTCallbacks = {
           varyingName = node.left.object.name;
         }
         // Check if it's a getValue() call: myVarying.getValue().xyz
-        else if (node.left.object.type === 'ExpressionStatement' &&
-                 node.left.object.expression?.type === 'CallExpression' &&
-                 node.left.object.expression.callee?.type === 'MemberExpression' &&
-                 node.left.object.expression.callee.property?.name === 'getValue' &&
-                 node.left.object.expression.callee.object?.type === 'Identifier' &&
-                 _state.varyings[node.left.object.expression.callee.object.name]) {
-          varyingName = node.left.object.expression.callee.object.name;
+        else if (node.left.object.type === 'CallExpression' &&
+                 node.left.object.callee?.type === 'MemberExpression' &&
+                 node.left.object.callee.property?.name === 'getValue' &&
+                 node.left.object.callee.object?.type === 'Identifier' &&
+                 _state.varyings[node.left.object.callee.object.name]) {
+          varyingName = node.left.object.callee.object.name;
         }
 
         if (varyingName) {
@@ -130571,6 +132875,37 @@ const ASTCallbacks = {
       }
       // Replace the binary operator with a call expression
       // in other words a call to BaseNode.mult(), .div() etc.
+      node.type = 'CallExpression';
+      node.callee = {
+        type: 'MemberExpression',
+        object: node.left,
+        property: {
+          type: 'Identifier',
+          name: replaceBinaryOperator(node.operator),
+        },
+      };
+      node.arguments = [node.right];
+    },
+    LogicalExpression(node, _state, ancestors) {
+      // Don't convert uniform default values to node methods, as
+      // they should be evaluated at runtime, not compiled.
+      if (ancestors.some(nodeIsUniform)) { return; }
+      // If the left hand side of an expression is one of these types,
+      // we should construct a node from it.
+      const unsafeTypes = ['Literal', 'ArrayExpression', 'Identifier'];
+      if (unsafeTypes.includes(node.left.type)) {
+        const leftReplacementNode = {
+          type: 'CallExpression',
+          callee: {
+            type: 'Identifier',
+            name: '__p5.strandsNode',
+          },
+          arguments: [node.left]
+        };
+        node.left = leftReplacementNode;
+      }
+      // Replace the logical operator with a call expression
+      // in other words a call to BaseNode.or(), .and() etc.
       node.type = 'CallExpression';
       node.callee = {
         type: 'MemberExpression',
@@ -130640,58 +132975,76 @@ const ASTCallbacks = {
         },
         arguments: [elseFunction]
       };
+
       // Analyze which outer scope variables are assigned in any branch
       const assignedVars = new Set();
-      const analyzeBlock = (body) => {
-        if (body.type !== 'BlockStatement') return;
-        // First pass: collect variable declarations within this block
+
+      const analyzeBranch = (functionBody) => {
+        // First pass: collect all variable declarations in the branch
         const localVars = new Set();
-        for (const stmt of body.body) {
-          if (stmt.type === 'VariableDeclaration') {
-            for (const decl of stmt.declarations) {
-              if (decl.id.type === 'Identifier') {
-                localVars.add(decl.id.name);
-              }
+        ancestor(functionBody, {
+          VariableDeclarator(node, ancestors) {
+            // Skip if we're inside a block that contains strands control flow
+            if (ancestors.some(statementContainsStrandsControlFlow)) return;
+            if (node.id.type === 'Identifier') {
+              localVars.add(node.id.name);
             }
           }
-        }
-        // Second pass: find assignments to non-local variables
-        for (const stmt of body.body) {
-          if (stmt.type === 'ExpressionStatement' &&
-              stmt.expression.type === 'AssignmentExpression') {
-            const left = stmt.expression.left;
+        });
+
+        // Second pass: find assignments to non-local variables using acorn-walk
+        ancestor(functionBody, {
+          AssignmentExpression(node, ancestors) {
+            // Skip if we're inside a block that contains strands control flow
+            if (ancestors.some(statementContainsStrandsControlFlow)) return;
+
+            const left = node.left;
             if (left.type === 'Identifier') {
               // Direct variable assignment: x = value
               if (!localVars.has(left.name)) {
                 assignedVars.add(left.name);
               }
-            } else if (left.type === 'MemberExpression' &&
-                       left.object.type === 'Identifier') {
-              // Property assignment: obj.prop = value
-              if (!localVars.has(left.object.name)) {
-                assignedVars.add(left.object.name);
+            } else if (left.type === 'MemberExpression') {
+              // Property assignment: obj.prop = value or obj.a.b = value
+              const propertyPath = buildPropertyPath(left);
+              if (propertyPath) {
+                const baseName = propertyPath.split('.')[0];
+                if (!localVars.has(baseName)) {
+                  assignedVars.add(propertyPath);
+                }
               }
             }
-          } else if (stmt.type === 'BlockStatement') {
-            // Recursively analyze nested block statements
-            analyzeBlock(stmt);
           }
-        }
+        });
       };
+
       // Analyze all branches for assignments to outer scope variables
-      analyzeBlock(thenFunction.body);
-      analyzeBlock(elseFunction.body);
+      analyzeBranch(thenFunction.body);
+      analyzeBranch(elseFunction.body);
       if (assignedVars.size > 0) {
         // Add copying, reference replacement, and return statements to branch functions
         const addCopyingAndReturn = (functionBody, varsToReturn) => {
           if (functionBody.type === 'BlockStatement') {
             // Create temporary variables and copy statements
-            const tempVarMap = new Map(); // original name -> temp name
+            const tempVarMap = new Map(); // property path -> temp name
             const copyStatements = [];
-            for (const varName of varsToReturn) {
-              const tempName = `__copy_${varName}_${blockVarCounter++}`;
-              tempVarMap.set(varName, tempName);
-              // let tempName = originalVar.copy()
+            for (const varPath of varsToReturn) {
+              const parts = varPath.split('.');
+              const tempName = `__copy_${parts.join('_')}_${blockVarCounter++}`;
+              tempVarMap.set(varPath, tempName);
+
+              // Build the member expression for the property path
+              let sourceExpr = { type: 'Identifier', name: parts[0] };
+              for (let i = 1; i < parts.length; i++) {
+                sourceExpr = {
+                  type: 'MemberExpression',
+                  object: sourceExpr,
+                  property: { type: 'Identifier', name: parts[i] },
+                  computed: false
+                };
+              }
+
+              // let tempName = propertyPath.copy()
               copyStatements.push({
                 type: 'VariableDeclaration',
                 declarations: [{
@@ -130701,7 +133054,7 @@ const ASTCallbacks = {
                     type: 'CallExpression',
                     callee: {
                       type: 'MemberExpression',
-                      object: { type: 'Identifier', name: varName },
+                      object: sourceExpr,
                       property: { type: 'Identifier', name: 'copy' },
                       computed: false
                     },
@@ -130711,55 +133064,17 @@ const ASTCallbacks = {
                 kind: 'let'
               });
             }
-            // Replace all references to original variables with temp variables
-            // and wrap literal assignments in strandsNode calls
-            const replaceReferences = (node) => {
-              if (!node || typeof node !== 'object') return;
-              if (node.type === 'Identifier' && tempVarMap.has(node.name)) {
-                node.name = tempVarMap.get(node.name);
-              } else if (node.type === 'MemberExpression' &&
-                         node.object.type === 'Identifier' &&
-                         tempVarMap.has(node.object.name)) {
-                node.object.name = tempVarMap.get(node.object.name);
-              }
-              // Handle literal assignments to temp variables
-              if (node.type === 'AssignmentExpression' &&
-                  node.left.type === 'Identifier' &&
-                  tempVarMap.has(node.left.name) &&
-                  (node.right.type === 'Literal' || node.right.type === 'ArrayExpression')) {
-                // Wrap the right hand side in a strandsNode call to make sure
-                // it's not just a literal and has a type
-                node.right = {
-                  type: 'CallExpression',
-                  callee: {
-                    type: 'Identifier',
-                    name: '__p5.strandsNode'
-                  },
-                  arguments: [node.right]
-                };
-              }
-              // Recursively process all properties
-              for (const key in node) {
-                if (node.hasOwnProperty(key) && key !== 'parent') {
-                  if (Array.isArray(node[key])) {
-                    node[key].forEach(replaceReferences);
-                  } else if (typeof node[key] === 'object') {
-                    replaceReferences(node[key]);
-                  }
-                }
-              }
-            };
             // Apply reference replacement to all statements
-            functionBody.body.forEach(replaceReferences);
+            functionBody.body.forEach(node => replaceReferences(node, tempVarMap));
             // Insert copy statements at the beginning
             functionBody.body.unshift(...copyStatements);
-            // Add return statement with temp variable names
+            // Add return statement with flat object using property paths as keys
             const returnObj = {
               type: 'ObjectExpression',
-              properties: Array.from(varsToReturn).map(varName => ({
+              properties: Array.from(varsToReturn).map(varPath => ({
                 type: 'Property',
-                key: { type: 'Identifier', name: varName },
-                value: { type: 'Identifier', name: tempVarMap.get(varName) },
+                key: { type: 'Literal', value: varPath },
+                value: { type: 'Identifier', name: tempVarMap.get(varPath) },
                 kind: 'init',
                 computed: false,
                 shorthand: false
@@ -130778,17 +133093,41 @@ const ASTCallbacks = {
         // Replace with a block statement
         const statements = [];
         // Make sure every assigned variable starts as a node
-        for (const varName of assignedVars) {
+        for (const varPath of assignedVars) {
+          const parts = varPath.split('.');
+
+          // Build left side: inputs.color or just x
+          let leftExpr = { type: 'Identifier', name: parts[0] };
+          for (let i = 1; i < parts.length; i++) {
+            leftExpr = {
+              type: 'MemberExpression',
+              object: leftExpr,
+              property: { type: 'Identifier', name: parts[i] },
+              computed: false
+            };
+          }
+
+          // Build right side - same as left for strandsNode wrapping
+          let rightArgExpr = { type: 'Identifier', name: parts[0] };
+          for (let i = 1; i < parts.length; i++) {
+            rightArgExpr = {
+              type: 'MemberExpression',
+              object: rightArgExpr,
+              property: { type: 'Identifier', name: parts[i] },
+              computed: false
+            };
+          }
+
           statements.push({
             type: 'ExpressionStatement',
             expression: {
               type: 'AssignmentExpression',
               operator: '=',
-              left: { type: 'Identifier', name: varName },
+              left: leftExpr,
               right: {
                 type: 'CallExpression',
                 callee: { type: 'Identifier', name: '__p5.strandsNode' },
-                arguments: [{ type: 'Identifier', name: varName }],
+                arguments: [rightArgExpr],
               }
             }
           });
@@ -130803,19 +133142,35 @@ const ASTCallbacks = {
           kind: 'const'
         });
         // 2. Assignments for each modified variable
-        for (const varName of assignedVars) {
+        for (const varPath of assignedVars) {
+          const parts = varPath.split('.');
+
+          // Build left side: inputs.color or just x
+          let leftExpr = { type: 'Identifier', name: parts[0] };
+          for (let i = 1; i < parts.length; i++) {
+            leftExpr = {
+              type: 'MemberExpression',
+              object: leftExpr,
+              property: { type: 'Identifier', name: parts[i] },
+              computed: false
+            };
+          }
+
+          // Build right side: __block_2['inputs.color'] or __block_2['x']
+          const rightExpr = {
+            type: 'MemberExpression',
+            object: { type: 'Identifier', name: blockVar },
+            property: { type: 'Literal', value: varPath },
+            computed: true
+          };
+
           statements.push({
             type: 'ExpressionStatement',
             expression: {
               type: 'AssignmentExpression',
               operator: '=',
-              left: { type: 'Identifier', name: varName },
-              right: {
-                type: 'MemberExpression',
-                object: { type: 'Identifier', name: blockVar },
-                property: { type: 'Identifier', name: varName },
-                computed: false
-              }
+              left: leftExpr,
+              right: rightExpr
             }
           });
         }
@@ -130872,6 +133227,9 @@ const ASTCallbacks = {
       // Transform for statement into strandsFor() call
       // for (init; test; update) body -> strandsFor(initCb, conditionCb, updateCb, bodyCb, initialVars)
 
+      // Generate unique loop variable name
+      const uniqueLoopVar = `loopVar${loopVarCounter++}`;
+
       // Create the initial callback from the for loop's init
       let initialFunction;
       if (node.init && node.init.type === 'VariableDeclaration') {
@@ -130916,14 +133274,14 @@ const ASTCallbacks = {
       // Replace loop variable references with the parameter
       if (node.init?.type === 'VariableDeclaration') {
         const loopVarName = node.init.declarations[0].id.name;
-        conditionBody = this.replaceIdentifierReferences(conditionBody, loopVarName, 'loopVar');
+        conditionBody = this.replaceIdentifierReferences(conditionBody, loopVarName, uniqueLoopVar);
       }
       const conditionAst = { body: [{ type: 'ExpressionStatement', expression: conditionBody }] };
       conditionBody = conditionAst.body[0].expression;
 
       const conditionFunction = {
         type: 'ArrowFunctionExpression',
-        params: [{ type: 'Identifier', name: 'loopVar' }],
+        params: [{ type: 'Identifier', name: uniqueLoopVar }],
         body: conditionBody
       };
 
@@ -130934,14 +133292,14 @@ const ASTCallbacks = {
         // Replace loop variable references with the parameter
         if (node.init?.type === 'VariableDeclaration') {
           const loopVarName = node.init.declarations[0].id.name;
-          updateExpr = this.replaceIdentifierReferences(updateExpr, loopVarName, 'loopVar');
+          updateExpr = this.replaceIdentifierReferences(updateExpr, loopVarName, uniqueLoopVar);
         }
         const updateAst = { body: [{ type: 'ExpressionStatement', expression: updateExpr }] };
         updateExpr = updateAst.body[0].expression;
 
         updateFunction = {
           type: 'ArrowFunctionExpression',
-          params: [{ type: 'Identifier', name: 'loopVar' }],
+          params: [{ type: 'Identifier', name: uniqueLoopVar }],
           body: {
             type: 'BlockStatement',
             body: [{
@@ -130953,12 +133311,12 @@ const ASTCallbacks = {
       } else {
         updateFunction = {
           type: 'ArrowFunctionExpression',
-          params: [{ type: 'Identifier', name: 'loopVar' }],
+          params: [{ type: 'Identifier', name: uniqueLoopVar }],
           body: {
             type: 'BlockStatement',
             body: [{
               type: 'ReturnStatement',
-              argument: { type: 'Identifier', name: 'loopVar' }
+              argument: { type: 'Identifier', name: uniqueLoopVar }
             }]
           }
         };
@@ -130973,13 +133331,13 @@ const ASTCallbacks = {
       // Replace loop variable references in the body
       if (node.init?.type === 'VariableDeclaration') {
         const loopVarName = node.init.declarations[0].id.name;
-        bodyBlock = this.replaceIdentifierReferences(bodyBlock, loopVarName, 'loopVar');
+        bodyBlock = this.replaceIdentifierReferences(bodyBlock, loopVarName, uniqueLoopVar);
       }
 
       const bodyFunction = {
         type: 'ArrowFunctionExpression',
         params: [
-          { type: 'Identifier', name: 'loopVar' },
+          { type: 'Identifier', name: uniqueLoopVar },
           { type: 'Identifier', name: 'vars' }
         ],
         body: bodyBlock
@@ -130987,46 +133345,45 @@ const ASTCallbacks = {
 
       // Analyze which outer scope variables are assigned in the loop body
       const assignedVars = new Set();
-      const analyzeBlock = (body, parentLocalVars = new Set()) => {
-        if (body.type !== 'BlockStatement') return;
 
-        // First pass: collect variable declarations within this block
-        const localVars = new Set([...parentLocalVars]);
-        for (const stmt of body.body) {
-          if (stmt.type === 'VariableDeclaration') {
-            for (const decl of stmt.declarations) {
-              if (decl.id.type === 'Identifier') {
-                localVars.add(decl.id.name);
+      // First pass: collect all variable declarations in the body
+      const localVars = new Set();
+      ancestor(bodyFunction.body, {
+        VariableDeclarator(node, ancestors) {
+          // Skip if we're inside a block that contains strands control flow
+          if (ancestors.some(statementContainsStrandsControlFlow)) return;
+          if (node.id.type === 'Identifier') {
+            localVars.add(node.id.name);
+          }
+        }
+      });
+
+      // Second pass: find assignments to non-local variables using acorn-walk
+      ancestor(bodyFunction.body, {
+        AssignmentExpression(node, ancestors) {
+          // Skip if we're inside a block that contains strands control flow
+          if (ancestors.some(statementContainsStrandsControlFlow)) {
+            return
+          }
+
+          const left = node.left;
+          if (left.type === 'Identifier') {
+            // Direct variable assignment: x = value
+            if (!localVars.has(left.name)) {
+              assignedVars.add(left.name);
+            }
+          } else if (left.type === 'MemberExpression') {
+            // Property assignment: obj.prop = value or obj.a.b = value
+            const propertyPath = buildPropertyPath(left);
+            if (propertyPath) {
+              const baseName = propertyPath.split('.')[0];
+              if (!localVars.has(baseName)) {
+                assignedVars.add(propertyPath);
               }
             }
           }
         }
-
-        // Second pass: find assignments to non-local variables
-        for (const stmt of body.body) {
-          if (stmt.type === 'ExpressionStatement' &&
-              stmt.expression.type === 'AssignmentExpression') {
-            const left = stmt.expression.left;
-            if (left.type === 'Identifier') {
-              // Direct variable assignment: x = value
-              if (!localVars.has(left.name)) {
-                assignedVars.add(left.name);
-              }
-            } else if (left.type === 'MemberExpression' &&
-                       left.object.type === 'Identifier') {
-              // Property assignment: obj.prop = value (includes swizzles)
-              if (!localVars.has(left.object.name)) {
-                assignedVars.add(left.object.name);
-              }
-            }
-          } else if (stmt.type === 'BlockStatement') {
-            // Recursively analyze nested block statements, passing down local vars
-            analyzeBlock(stmt, localVars);
-          }
-        }
-      };
-
-      analyzeBlock(bodyFunction.body);
+      });
 
       if (assignedVars.size > 0) {
         // Add copying, reference replacement, and return statements similar to if statements
@@ -131035,9 +133392,22 @@ const ASTCallbacks = {
             const tempVarMap = new Map();
             const copyStatements = [];
 
-            for (const varName of varsToReturn) {
-              const tempName = `__copy_${varName}_${blockVarCounter++}`;
-              tempVarMap.set(varName, tempName);
+            for (const varPath of varsToReturn) {
+              const parts = varPath.split('.');
+              const tempName = `__copy_${parts.join('_')}_${blockVarCounter++}`;
+              tempVarMap.set(varPath, tempName);
+
+              // Build the member expression for vars.propertyPath
+              // e.g., vars.inputs.color or vars.x
+              let sourceExpr = { type: 'Identifier', name: 'vars' };
+              for (const part of parts) {
+                sourceExpr = {
+                  type: 'MemberExpression',
+                  object: sourceExpr,
+                  property: { type: 'Identifier', name: part },
+                  computed: false
+                };
+              }
 
               copyStatements.push({
                 type: 'VariableDeclaration',
@@ -131048,12 +133418,7 @@ const ASTCallbacks = {
                     type: 'CallExpression',
                     callee: {
                       type: 'MemberExpression',
-                      object: {
-                        type: 'MemberExpression',
-                        object: { type: 'Identifier', name: 'vars' },
-                        property: { type: 'Identifier', name: varName },
-                        computed: false
-                      },
+                      object: sourceExpr,
                       property: { type: 'Identifier', name: 'copy' },
                       computed: false
                     },
@@ -131064,34 +133429,16 @@ const ASTCallbacks = {
               });
             }
 
-            // Replace references to original variables with temp variables
-            const replaceReferences = (node) => {
-              if (!node || typeof node !== 'object') return;
-              if (node.type === 'Identifier' && tempVarMap.has(node.name)) {
-                node.name = tempVarMap.get(node.name);
-              }
-
-              for (const key in node) {
-                if (node.hasOwnProperty(key) && key !== 'parent') {
-                  if (Array.isArray(node[key])) {
-                    node[key].forEach(replaceReferences);
-                  } else if (typeof node[key] === 'object') {
-                    replaceReferences(node[key]);
-                  }
-                }
-              }
-            };
-
-            functionBody.body.forEach(replaceReferences);
+            functionBody.body.forEach(node => replaceReferences(node, tempVarMap));
             functionBody.body.unshift(...copyStatements);
 
-            // Add return statement
+            // Add return statement with flat object using property paths as keys
             const returnObj = {
               type: 'ObjectExpression',
-              properties: Array.from(varsToReturn).map(varName => ({
+              properties: Array.from(varsToReturn).map(varPath => ({
                 type: 'Property',
-                key: { type: 'Identifier', name: varName },
-                value: { type: 'Identifier', name: tempVarMap.get(varName) },
+                key: { type: 'Literal', value: varPath },
+                value: { type: 'Identifier', name: tempVarMap.get(varPath) },
                 kind: 'init',
                 computed: false,
                 shorthand: false
@@ -131111,32 +133458,33 @@ const ASTCallbacks = {
         const blockVar = `__block_${blockVarCounter++}`;
         const statements = [];
 
-        // Create initial vars object from assigned variables
-        const initialVarsProperties = [];
-        for (const varName of assignedVars) {
-          initialVarsProperties.push({
-            type: 'Property',
-            key: { type: 'Identifier', name: varName },
-            value: {
-              type: 'CallExpression',
-              callee: {
-                type: 'Identifier',
-                name: '__p5.strandsNode',
-              },
-              arguments: [
-                { type: 'Identifier', name: varName },
-              ],
-            },
-            kind: 'init',
-            method: false,
-            shorthand: false,
-            computed: false
-          });
-        }
-
         const initialVarsObject = {
           type: 'ObjectExpression',
-          properties: initialVarsProperties
+          properties: Array.from(assignedVars).map(varPath => {
+            const parts = varPath.split('.');
+            let expr = { type: 'Identifier', name: parts[0] };
+            for (let i = 1; i < parts.length; i++) {
+              expr = {
+                type: 'MemberExpression',
+                object: expr,
+                property: { type: 'Identifier', name: parts[i] },
+                computed: false
+              };
+            }
+            const wrappedExpr = {
+              type: 'CallExpression',
+              callee: { type: 'Identifier', name: '__p5.strandsNode' },
+              arguments: [expr]
+            };
+            return {
+              type: 'Property',
+              key: { type: 'Literal', value: varPath },
+              value: wrappedExpr,
+              kind: 'init',
+              computed: false,
+              shorthand: false
+            };
+          })
         };
 
         // Create the strandsFor call
@@ -131160,19 +133508,38 @@ const ASTCallbacks = {
         });
 
         // Add assignments back to original variables
-        for (const varName of assignedVars) {
+        for (const varPath of assignedVars) {
+          const parts = varPath.split('.');
+
+          // Build left side: inputs.color or just x
+          let leftExpr = { type: 'Identifier', name: parts[0] };
+          for (let i = 1; i < parts.length; i++) {
+            leftExpr = {
+              type: 'MemberExpression',
+              object: leftExpr,
+              property: { type: 'Identifier', name: parts[i] },
+              computed: false
+            };
+          }
+
+          // Build right side: __block_2.inputs.color or __block_2.x
+          let rightExpr = { type: 'Identifier', name: blockVar };
+          for (const part of parts) {
+            rightExpr = {
+              type: 'MemberExpression',
+              object: rightExpr,
+              property: { type: 'Identifier', name: part },
+              computed: false
+            };
+          }
+
           statements.push({
             type: 'ExpressionStatement',
             expression: {
               type: 'AssignmentExpression',
               operator: '=',
-              left: { type: 'Identifier', name: varName },
-              right: {
-                type: 'MemberExpression',
-                object: { type: 'Identifier', name: blockVar },
-                property: { type: 'Identifier', name: varName },
-                computed: false
-              }
+              left: leftExpr,
+              right: rightExpr
             }
           });
         }
@@ -131229,6 +133596,10 @@ const ASTCallbacks = {
     }
   };
   function transpileStrandsToJS(p5, sourceString, srcLocations, scope) {
+    // Reset counters at the start of each transpilation
+    blockVarCounter = 0;
+    loopVarCounter = 0;
+
     const ast = parse(sourceString, {
       ecmaVersion: 2021,
       locations: srcLocations
@@ -131241,14 +133612,17 @@ const ASTCallbacks = {
     // Second pass: transform if/for statements in post-order using recursive traversal
     const postOrderControlFlowTransform = {
       IfStatement(node, state, c) {
+        state.inControlFlow++;
         // First recursively process children
         if (node.test) c(node.test, state);
         if (node.consequent) c(node.consequent, state);
         if (node.alternate) c(node.alternate, state);
         // Then apply the transformation to this node
         ASTCallbacks.IfStatement(node, state, []);
+        state.inControlFlow--;
       },
       ForStatement(node, state, c) {
+        state.inControlFlow++;
         // First recursively process children
         if (node.init) c(node.init, state);
         if (node.test) c(node.test, state);
@@ -131256,104 +133630,60 @@ const ASTCallbacks = {
         if (node.body) c(node.body, state);
         // Then apply the transformation to this node
         ASTCallbacks.ForStatement(node, state, []);
+        state.inControlFlow--;
+      },
+      ReturnStatement(node, state, c) {
+        if (!state.inControlFlow) return;
+        // Convert return statement to strandsEarlyReturn call
+        node.type = 'ExpressionStatement';
+        node.expression = {
+          type: 'CallExpression',
+          callee: {
+            type: 'Identifier',
+            name: '__p5.strandsEarlyReturn'
+          },
+          arguments: node.argument ? [node.argument] : []
+        };
+        delete node.argument;
       }
     };
-    recursive(ast, { varyings: {} }, postOrderControlFlowTransform);
+    recursive(ast, { varyings: {}, inControlFlow: 0 }, postOrderControlFlowTransform);
     const transpiledSource = escodegen.generate(ast);
     const scopeKeys = Object.keys(scope);
-    const internalStrandsCallback = new Function(
-        // Create a parameter called __p5, not just p5, because users of instance mode
-        // may pass in a variable called p5 as a scope variable. If we rely on a variable called
-        // p5, then the scope variable called p5 might accidentally override internal function
-        // calls to p5 static methods.
-      '__p5',
-      ...scopeKeys,
-      transpiledSource
-      .slice(
-        transpiledSource.indexOf('{') + 1,
-        transpiledSource.lastIndexOf('}')
-      ).replaceAll(';', '')
-    );
-    return () => internalStrandsCallback(p5, ...scopeKeys.map(key => scope[key]));
-  }
-
-// Todo: remove edges to simplify. Block order is always ordered already.
-
-function createControlFlowGraph() {
-  return {
-    // graph structure
-    blockTypes: [],
-    incomingEdges: [],
-    outgoingEdges: [],
-    blockInstructions: [],
-    // runtime data for constructing graph
-    nextID: 0,
-    blockStack: [],
-    blockOrder: [],
-    blockConditions: {},
-    currentBlock: -1,
-  };
-}
-
-function pushBlock(graph, blockID) {
-  graph.blockStack.push(blockID);
-  graph.blockOrder.push(blockID);
-  graph.currentBlock = blockID;
-}
-
-function popBlock(graph) {
-  graph.blockStack.pop();
-  const len = graph.blockStack.length;
-  graph.currentBlock = graph.blockStack[len-1];
-}
-
-function pushBlockForModification(graph, blockID) {
-  graph.blockStack.push(blockID);
-  graph.currentBlock = blockID;
-}
-
-function createBasicBlock(graph, blockType) {
-  const id = graph.nextID++;
-  graph.blockTypes[id] = blockType;
-  graph.incomingEdges[id] = [];
-  graph.outgoingEdges[id] = [];
-  graph.blockInstructions[id]= [];
-  return id;
-}
-
-function addEdge(graph, from, to) {
-  graph.outgoingEdges[from].push(to);
-  graph.incomingEdges[to].push(from);
-}
-
-function recordInBasicBlock(graph, blockID, nodeID) {
-  if (nodeID === undefined) {
-    internalError('undefined nodeID in `recordInBasicBlock()`');
-  }
-  if (blockID === undefined) {
-    internalError('undefined blockID in `recordInBasicBlock()');
-  }
-  graph.blockInstructions[blockID] = graph.blockInstructions[blockID] || [];
-  graph.blockInstructions[blockID].push(nodeID);
-}
-
-function sortCFG(adjacencyList, start) {
-  const visited = new Set();
-  const postOrder = [];
-  function dfs(v) {
-    if (visited.has(v)) {
-      return;
+    const match = /\(?\s*(?:function)?\s*\w*\s*\(([^)]*)\)\s*(?:=>)?\s*{((?:.|\n)*)}\s*;?\s*\)?/
+      .exec(transpiledSource);
+    if (!match) {
+      console.log(transpiledSource);
+      throw new Error('Could not parse p5.strands function!');
     }
-    visited.add(v);
-    for (let w of adjacencyList[v].sort((a, b) => b-a) || []) {
-      dfs(w);
+    const params = match[1].split(/,\s*/).filter(param => !!param.trim());
+    let paramVals, paramNames;
+    if (params.length > 0) {
+      paramNames = params;
+      paramVals = [scope];
+    } else {
+      paramNames = scopeKeys;
+      paramVals = scopeKeys.map(key => scope[key]);
     }
-    postOrder.push(v);
+    const body = match[2];
+    try {
+      const internalStrandsCallback = new Function(
+          // Create a parameter called __p5, not just p5, because users of instance mode
+          // may pass in a variable called p5 as a scope variable. If we rely on a variable called
+          // p5, then the scope variable called p5 might accidentally override internal function
+          // calls to p5 static methods.
+        '__p5',
+        ...paramNames,
+        body,
+      );
+      return () => internalStrandsCallback(p5, ...paramVals);
+    } catch (e) {
+      console.error(e);
+      console.log(paramNames);
+      console.log(body);
+      throw new Error('Error transpiling p5.strands callback!');
+    }
   }
-
-  dfs(start);
-  return postOrder.reverse();
-}
 
 function generateShaderCode(strandsContext) {
   const {
@@ -131365,11 +133695,19 @@ function generateShaderCode(strandsContext) {
 
   const hooksObj = {
     uniforms: {},
+    varyingVariables: [],
   };
 
   for (const {name, typeInfo, defaultValue} of strandsContext.uniforms) {
-    const declaration = backend.generateUniformDeclaration(name, typeInfo);
-    hooksObj.uniforms[declaration] = defaultValue;
+    const key = backend.generateHookUniformKey(name, typeInfo);
+    if (key !== null) {
+      hooksObj.uniforms[key] = defaultValue;
+    }
+  }
+
+  // Add texture bindings to declarations for WebGPU backend
+  if (backend.addTextureBindingsToDeclarations) {
+    backend.addTextureBindingsToDeclarations(strandsContext);
   }
 
   for (const { hookType, rootNodeID, entryBlockID, shaderContext } of strandsContext.hooks) {
@@ -131405,10 +133743,19 @@ function generateShaderCode(strandsContext) {
     strandsContext.globalAssignments = [];
 
     const firstLine = backend.hookEntry(hookType);
-    let returnType = hookType.returnType.properties
-      ? structType(hookType.returnType)
-      : TypeInfoFromGLSLName[hookType.returnType.typeName];
-    backend.generateReturnStatement(strandsContext, generationContext, rootNodeID, returnType);
+    let returnType;
+    if (hookType.returnType.properties) {
+      returnType = structType(hookType.returnType);
+    } else {
+      if (!hookType.returnType.dataType) {
+        throw new Error(`Missing dataType for return type ${hookType.returnType.typeName}`);
+      }
+      returnType = hookType.returnType.dataType;
+    }
+
+    if (rootNodeID) {
+      backend.generateReturnStatement(strandsContext, generationContext, rootNodeID, returnType);
+    }
     hooksObj[`${hookType.returnType.typeName} ${hookType.name}`] = [firstLine, ...generationContext.codeLines, '}'].join('\n');
   }
 
@@ -131416,15 +133763,14 @@ function generateShaderCode(strandsContext) {
   if (strandsContext.sharedVariables) {
     for (const [varName, varInfo] of strandsContext.sharedVariables) {
       if (varInfo.usedInVertex && varInfo.usedInFragment) {
-        // Used in both shaders - declare as varying
-        vertexDeclarations.add(`OUT ${varInfo.typeInfo.fnName} ${varName};`);
-        fragmentDeclarations.add(`IN ${varInfo.typeInfo.fnName} ${varName};`);
+        // Used in both shaders - this is a true varying variable
+        hooksObj.varyingVariables.push(backend.generateVaryingVariable(varName, varInfo.typeInfo));
       } else if (varInfo.usedInVertex) {
         // Only used in vertex shader - declare as local variable
-        vertexDeclarations.add(`${varInfo.typeInfo.fnName} ${varName};`);
+        vertexDeclarations.add(backend.generateLocalDeclaration(varName, varInfo.typeInfo));
       } else if (varInfo.usedInFragment) {
         // Only used in fragment shader - declare as local variable
-        fragmentDeclarations.add(`${varInfo.typeInfo.fnName} ${varName};`);
+        fragmentDeclarations.add(backend.generateLocalDeclaration(varName, varInfo.typeInfo));
       }
       // If not used anywhere, don't declare it
     }
@@ -131436,812 +133782,6 @@ function generateShaderCode(strandsContext) {
   return hooksObj;
 }
 
-class StrandsNode {
-  constructor(id, dimension, strandsContext) {
-    this.id = id;
-    this.strandsContext = strandsContext;
-    this.dimension = dimension;
-
-    // Store original identifier for varying variables
-    const dag = this.strandsContext.dag;
-    const nodeData = getNodeDataFromID(dag, this.id);
-    if (nodeData && nodeData.identifier) {
-      this._originalIdentifier = nodeData.identifier;
-      this._originalBaseType = nodeData.baseType;
-      this._originalDimension = nodeData.dimension;
-    }
-  }
-  copy() {
-    return createStrandsNode(this.id, this.dimension, this.strandsContext);
-  }
-  bridge(value) {
-    const { dag, cfg } = this.strandsContext;
-    const orig = getNodeDataFromID(dag, this.id);
-    const baseType = orig?.baseType ?? BaseType.FLOAT;
-
-    let newValueID;
-    if (value instanceof StrandsNode) {
-      newValueID = value.id;
-    } else {
-      const newVal = primitiveConstructorNode(
-        this.strandsContext, 
-        { baseType, dimension: this.dimension }, 
-        value
-      );
-      newValueID = newVal.id;
-    }
-
-    // For varying variables, we need both assignment generation AND a way to reference by identifier
-    if (this._originalIdentifier) {
-      // Create a variable node for the target (the varying variable)
-      const { id: targetVarID } = variableNode(
-        this.strandsContext,
-        { baseType: this._originalBaseType, dimension: this._originalDimension },
-        this._originalIdentifier
-      );
-
-      // Create assignment node for GLSL generation
-      const assignmentNode = createNodeData({
-        nodeType: NodeType.ASSIGNMENT,
-        dependsOn: [targetVarID, newValueID],
-        phiBlocks: []
-      });
-      const assignmentID = getOrCreateNode(dag, assignmentNode);
-      recordInBasicBlock(cfg, cfg.currentBlock, assignmentID);
-
-      // Track for global assignments processing
-      this.strandsContext.globalAssignments.push(assignmentID);
-
-      // Simply update this node to be a variable node with the identifier
-      // This ensures it always generates the variable name in expressions
-      const variableNodeData = createNodeData({
-        nodeType: NodeType.VARIABLE,
-        baseType: this._originalBaseType,
-        dimension: this._originalDimension,
-        identifier: this._originalIdentifier
-      });
-      const variableID = getOrCreateNode(dag, variableNodeData);
-
-      this.id = variableID; // Point to the variable node for expression generation
-    } else {
-      this.id = newValueID; // For non-varying variables, just update to new value
-    }
-
-    return this;
-  }
-  bridgeSwizzle(swizzlePattern, value) {
-    const { dag, cfg } = this.strandsContext;
-    const orig = getNodeDataFromID(dag, this.id);
-    const baseType = orig?.baseType ?? BaseType.FLOAT;
-
-    let newValueID;
-    if (value instanceof StrandsNode) {
-      newValueID = value.id;
-    } else {
-      const newVal = primitiveConstructorNode(
-        this.strandsContext, 
-        { baseType, dimension: this.dimension }, 
-        value
-      );
-      newValueID = newVal.id;
-    }
-
-    // For varying variables, create swizzle assignment
-    if (this._originalIdentifier) {
-      // Create a variable node for the target with swizzle
-      const { id: targetVarID } = variableNode(
-        this.strandsContext,
-        { baseType: this._originalBaseType, dimension: this._originalDimension },
-        this._originalIdentifier
-      );
-
-      // Create a swizzle node for the target (myVarying.xyz)
-      const swizzleNode = createNodeData({
-        nodeType: NodeType.OPERATION,
-        opCode: OpCode.Unary.SWIZZLE,
-        baseType: this._originalBaseType,
-        dimension: swizzlePattern.length, // xyz = 3, xy = 2, etc.
-        swizzle: swizzlePattern,
-        dependsOn: [targetVarID]
-      });
-      const swizzleID = getOrCreateNode(dag, swizzleNode);
-
-      // Create assignment node: myVarying.xyz = value
-      const assignmentNode = createNodeData({
-        nodeType: NodeType.ASSIGNMENT,
-        dependsOn: [swizzleID, newValueID],
-        phiBlocks: []
-      });
-      const assignmentID = getOrCreateNode(dag, assignmentNode);
-      recordInBasicBlock(cfg, cfg.currentBlock, assignmentID);
-
-      // Track for global assignments processing in the current hook context
-      this.strandsContext.globalAssignments.push(assignmentID);
-
-      // Simply update this node to be a variable node with the identifier
-      // This ensures it always generates the variable name in expressions
-      const variableNodeData = createNodeData({
-        nodeType: NodeType.VARIABLE,
-        baseType: this._originalBaseType,
-        dimension: this._originalDimension,
-        identifier: this._originalIdentifier
-      });
-      const variableID = getOrCreateNode(dag, variableNodeData);
-
-      this.id = variableID; // Point to the variable node, not the assignment node
-    } else {
-      this.id = newValueID; // For non-varying variables, just update to new value
-    }
-
-    return this;
-  }
-  getValue() {
-    if (this._originalIdentifier) {
-      const { id, dimension } = variableNode(
-        this.strandsContext,
-        { baseType: this._originalBaseType, dimension: this._originalDimension },
-        this._originalIdentifier
-      );
-      return createStrandsNode(id, dimension, this.strandsContext);
-    }
-
-    return this;
-  }
-}
-function createStrandsNode(id, dimension, strandsContext, onRebind) {
-  return new Proxy(
-    new StrandsNode(id, dimension, strandsContext),
-    swizzleTrap(id, dimension, strandsContext, onRebind)
-  );
-}
-
-// Need the .js extension because we also import this from a Node script.
-// Try to keep this file minimal because of that.
-
-// GLSL Built in functions
-// https://docs.gl/el3/abs
-const builtInGLSLFunctions = {
-  //////////// Trigonometry //////////
-  acos: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  acosh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  asin: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  asinh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  atan: [
-    { params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
-    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
-  ],
-  atanh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  cos: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  cosh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  degrees: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  radians: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  sin: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT , isp5Function: true}],
-  sinh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  tan: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  tanh: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-
-  ////////// Mathematics //////////
-  abs: [
-    { params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
-    { params: [GenType.FLOAT], returnType: GenType.INT, isp5Function: true}
-  ],
-  ceil: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  clamp: [
-    { params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
-    { params: [GenType.FLOAT,DataType.float1,DataType.float1], returnType: GenType.FLOAT, isp5Function: false},
-    { params: [GenType.INT, GenType.INT, GenType.INT], returnType: GenType.INT, isp5Function: false},
-    { params: [GenType.INT, DataType.int1, DataType.int1], returnType: GenType.INT, isp5Function: false},
-  ],
-  dFdx: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  dFdy: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  exp: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  exp2: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  floor: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  fma: [{ params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  fract: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  fwidth: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  inversesqrt: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  // "isinf": [{}],
-  // "isnan": [{}],
-  log: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  log2: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  max: [
-    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
-    { params: [GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: true},
-    { params: [GenType.INT, GenType.INT], returnType: GenType.INT, isp5Function: true},
-    { params: [GenType.INT, DataType.int1], returnType: GenType.INT, isp5Function: true},
-  ],
-  min: [
-    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
-    { params: [GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: true},
-    { params: [GenType.INT, GenType.INT], returnType: GenType.INT, isp5Function: true},
-    { params: [GenType.INT, DataType.int1], returnType: GenType.INT, isp5Function: true},
-  ],
-  mix: [
-    { params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
-    { params: [GenType.FLOAT, GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: false},
-    { params: [GenType.FLOAT, GenType.FLOAT, GenType.BOOL], returnType: GenType.FLOAT, isp5Function: false},
-  ],
-  mod: [
-    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true},
-    { params: [GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: true},
-  ],
-  // "modf": [{}],
-  pow: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  round: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  roundEven: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  sign: [
-    { params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
-    { params: [GenType.INT], returnType: GenType.INT, isp5Function: false},
-  ],
-  smoothstep: [
-    { params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
-    { params: [ DataType.float1,DataType.float1, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false},
-  ],
-  sqrt: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  step: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  trunc: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-
-  ////////// Vector //////////
-  cross: [{ params: [DataType.float3, DataType.float3], returnType: DataType.float3, isp5Function: true}],
-  distance: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType:DataType.float1, isp5Function: true}],
-  dot: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType:DataType.float1, isp5Function: true}],
-  equal: [
-    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.BOOL, isp5Function: false},
-    { params: [GenType.INT, GenType.INT], returnType: GenType.BOOL, isp5Function: false},
-    { params: [GenType.BOOL, GenType.BOOL], returnType: GenType.BOOL, isp5Function: false},
-  ],
-  faceforward: [{ params: [GenType.FLOAT, GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  length: [{ params: [GenType.FLOAT], returnType:DataType.float1, isp5Function: false}],
-  normalize: [{ params: [GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: true}],
-  notEqual: [
-    { params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.BOOL, isp5Function: false},
-    { params: [GenType.INT, GenType.INT], returnType: GenType.BOOL, isp5Function: false},
-    { params: [GenType.BOOL, GenType.BOOL], returnType: GenType.BOOL, isp5Function: false},
-  ],
-  reflect: [{ params: [GenType.FLOAT, GenType.FLOAT], returnType: GenType.FLOAT, isp5Function: false}],
-  refract: [{ params: [GenType.FLOAT, GenType.FLOAT,DataType.float1], returnType: GenType.FLOAT, isp5Function: false}],
-
-  ////////// Texture sampling //////////
-  texture: [{params: [DataType.sampler2D, DataType.float2], returnType: DataType.float4, isp5Function: true}],
-  getTexture: [{params: [DataType.sampler2D, DataType.float2], returnType: DataType.float4, isp5Function: true}]
-};
-
-const strandsBuiltinFunctions = {
-  ...builtInGLSLFunctions,
-};
-
-//////////////////////////////////////////////
-// Builders for node graphs
-//////////////////////////////////////////////
-function scalarLiteralNode(strandsContext, typeInfo, value) {
-  const { cfg, dag } = strandsContext;
-  let { dimension, baseType } = typeInfo;
-  if (dimension !== 1) {
-    internalError('Created a scalar literal node with dimension > 1.');
-  }
-  const nodeData = createNodeData({
-    nodeType: NodeType.LITERAL,
-    dimension,
-    baseType,
-    value
-  });
-  const id = getOrCreateNode(dag, nodeData);
-  recordInBasicBlock(cfg, cfg.currentBlock, id);
-  return { id, dimension };
-}
-
-function variableNode(strandsContext, typeInfo, identifier) {
-  const { cfg, dag } = strandsContext;
-  const { dimension, baseType } = typeInfo;
-  const nodeData = createNodeData({
-    nodeType: NodeType.VARIABLE,
-    dimension,
-    baseType,
-    identifier
-  });
-  const id = getOrCreateNode(dag, nodeData);
-  recordInBasicBlock(cfg, cfg.currentBlock, id);
-  return { id, dimension };
-}
-
-function unaryOpNode(strandsContext, nodeOrValue, opCode) {
-  const { dag, cfg } = strandsContext;
-  let dependsOn;
-  let node;
-  if (nodeOrValue instanceof StrandsNode) {
-    node = nodeOrValue;
-  } else {
-    const { id, dimension } = primitiveConstructorNode(strandsContext, { baseType: BaseType.FLOAT, dimension: null }, nodeOrValue);
-    node = createStrandsNode(id, dimension, strandsContext);
-  }
-  dependsOn = [node.id];
-  const nodeData = createNodeData({
-    nodeType: NodeType.OPERATION,
-    opCode,
-    dependsOn,
-    baseType: dag.baseTypes[node.id],
-    dimension: node.dimension
-  });
-  const id = getOrCreateNode(dag, nodeData);
-  recordInBasicBlock(cfg, cfg.currentBlock, id);
-  return { id, dimension: node.dimension };
-}
-
-function binaryOpNode(strandsContext, leftStrandsNode, rightArg, opCode) {
-  const { dag, cfg } = strandsContext;
-  // Construct a node for right if its just an array or number etc.
-  let rightStrandsNode;
-  if (rightArg[0] instanceof StrandsNode && rightArg.length === 1) {
-    rightStrandsNode = rightArg[0];
-  } else {
-    const { id, dimension } = primitiveConstructorNode(strandsContext, { baseType: BaseType.FLOAT, dimension: null }, rightArg);
-    rightStrandsNode = createStrandsNode(id, dimension, strandsContext);
-  }
-  let finalLeftNodeID = leftStrandsNode.id;
-  let finalRightNodeID = rightStrandsNode.id;
-
-  // Check if we have to cast either node
-  const leftType = extractNodeTypeInfo(dag, leftStrandsNode.id);
-  const rightType = extractNodeTypeInfo(dag, rightStrandsNode.id);
-  const cast = { node: null, toType: leftType };
-  const bothDeferred = leftType.baseType === rightType.baseType && leftType.baseType === BaseType.DEFER;
-  if (bothDeferred) {
-    cast.toType.baseType = BaseType.FLOAT;
-    if (leftType.dimension === rightType.dimension) {
-      cast.toType.dimension = leftType.dimension;
-    }
-    else if (leftType.dimension === 1 && rightType.dimension > 1) {
-      cast.toType.dimension = rightType.dimension;
-    }
-    else if (rightType.dimension === 1 && leftType.dimension > 1) {
-      cast.toType.dimension = leftType.dimension;
-    }
-    else {
-      userError("type error", `You have tried to perform a binary operation:\n`+
-        `${leftType.baseType+leftType.dimension} ${OpCodeToSymbol[opCode]} ${rightType.baseType+rightType.dimension}\n` +
-        `It's only possible to operate on two nodes with the same dimension, or a scalar value and a vector.`
-      );
-    }
-    const l = primitiveConstructorNode(strandsContext, cast.toType, leftStrandsNode);
-    const r = primitiveConstructorNode(strandsContext, cast.toType, rightStrandsNode);
-    finalLeftNodeID = l.id;
-    finalRightNodeID = r.id;
-  }
-  else if (leftType.baseType !== rightType.baseType ||
-    leftType.dimension !== rightType.dimension) {
-
-    if (leftType.dimension === 1 && rightType.dimension > 1) {
-      cast.node = leftStrandsNode;
-      cast.toType = rightType;
-    }
-    else if (rightType.dimension === 1 && leftType.dimension > 1) {
-      cast.node = rightStrandsNode;
-      cast.toType = leftType;
-    }
-    else if (leftType.priority > rightType.priority) {
-      // e.g. op(float vector, int vector): cast priority is float > int > bool
-      cast.node = rightStrandsNode;
-      cast.toType = leftType;
-    }
-    else if (rightType.priority > leftType.priority) {
-      cast.node = leftStrandsNode;
-      cast.toType = rightType;
-    }
-    else {
-      userError('type error', `A vector of length ${leftType.dimension} operated with a vector of length ${rightType.dimension} is not allowed.`);
-    }
-
-    const casted = primitiveConstructorNode(strandsContext, cast.toType, cast.node);
-
-    if (cast.node === leftStrandsNode) {
-      leftStrandsNode = createStrandsNode(casted.id, casted.dimension, strandsContext);
-      finalLeftNodeID = leftStrandsNode.id;
-    } else {
-      rightStrandsNode = createStrandsNode(casted.id, casted.dimension, strandsContext);
-      finalRightNodeID = rightStrandsNode.id;
-    }
-  }
-
-  const nodeData = createNodeData({
-    nodeType: NodeType.OPERATION,
-    opCode,
-    dependsOn: [finalLeftNodeID, finalRightNodeID],
-    baseType: cast.toType.baseType,
-    dimension: cast.toType.dimension,
-  });
-  const id = getOrCreateNode(dag, nodeData);
-  recordInBasicBlock(cfg, cfg.currentBlock, id);
-  return { id, dimension: nodeData.dimension };
-}
-
-function structInstanceNode(strandsContext, structTypeInfo, identifier, dependsOn) {
-  const { cfg, dag, } = strandsContext;
-  if (dependsOn.length === 0) {
-    for (const prop of structTypeInfo.properties) {
-      const typeInfo = prop.dataType;
-      const nodeData = createNodeData({
-        nodeType: NodeType.VARIABLE,
-        baseType: typeInfo.baseType,
-        dimension: typeInfo.dimension,
-        identifier: `${identifier}.${prop.name}`,
-      });
-      const componentID = getOrCreateNode(dag, nodeData);
-      recordInBasicBlock(cfg, cfg.currentBlock, componentID);
-      dependsOn.push(componentID);
-    }
-  }
-
-  const nodeData = createNodeData({
-    nodeType: NodeType.VARIABLE,
-    dimension: structTypeInfo.properties.length,
-    baseType: structTypeInfo.typeName,
-    identifier,
-    dependsOn
-  });
-  const structID = getOrCreateNode(dag, nodeData);
-  recordInBasicBlock(cfg, cfg.currentBlock, structID);
-
-  return { id: structID, dimension: 0, components: dependsOn };
-}
-
-function mapPrimitiveDepsToIDs(strandsContext, typeInfo, dependsOn) {
-  const inputs = Array.isArray(dependsOn) ? dependsOn : [dependsOn];
-  const mappedDependencies = [];
-  let { dimension, baseType } = typeInfo;
-
-  const dag = strandsContext.dag;
-  let calculatedDimensions = 0;
-  let originalNodeID = null;
-  for (const dep of inputs.flat(Infinity)) {
-    if (dep instanceof StrandsNode) {
-      const node = getNodeDataFromID(dag, dep.id);
-      originalNodeID = dep.id;
-      baseType = node.baseType;
-
-      if (node.opCode === OpCode.Nary.CONSTRUCTOR) {
-        for (const inner of node.dependsOn) {
-          mappedDependencies.push(inner);
-        }
-      } else {
-        mappedDependencies.push(dep.id);
-      }
-
-      calculatedDimensions += node.dimension;
-      continue;
-    }
-    else if (typeof dep === 'number') {
-      const { id, dimension } = scalarLiteralNode(strandsContext, { dimension: 1, baseType }, dep);
-      mappedDependencies.push(id);
-      calculatedDimensions += dimension;
-      continue;
-    }
-    else {
-      userError('type error', `You've tried to construct a scalar or vector type with a non-numeric value: ${dep}`);
-    }
-  }
-  if (dimension === null) {
-    dimension = calculatedDimensions;
-  } else if (dimension > calculatedDimensions && calculatedDimensions === 1) {
-    calculatedDimensions = dimension;
-  } else if(calculatedDimensions !== 1 && calculatedDimensions !== dimension) {
-    userError('type error', `You've tried to construct a ${baseType + dimension} with ${calculatedDimensions} components`);
-  }
-  const inferredTypeInfo = {
-    dimension,
-    baseType,
-    priority: BasePriority[baseType],
-  };
-  return { originalNodeID, mappedDependencies, inferredTypeInfo };
-}
-
-function constructTypeFromIDs(strandsContext, typeInfo, strandsNodesArray) {
-  const nodeData = createNodeData({
-    nodeType: NodeType.OPERATION,
-    opCode: OpCode.Nary.CONSTRUCTOR,
-    dimension: typeInfo.dimension,
-    baseType: typeInfo.baseType,
-    dependsOn: strandsNodesArray
-  });
-  const id = getOrCreateNode(strandsContext.dag, nodeData);
-  return id;
-}
-
-function primitiveConstructorNode(strandsContext, typeInfo, dependsOn) {
-  const cfg = strandsContext.cfg;
-  const { mappedDependencies, inferredTypeInfo } = mapPrimitiveDepsToIDs(strandsContext, typeInfo, dependsOn);
-
-  const finalType = {
-    baseType: typeInfo.baseType,
-    dimension: inferredTypeInfo.dimension
-  };
-
-  const id = constructTypeFromIDs(strandsContext, finalType, mappedDependencies);
-  if (typeInfo.baseType !== BaseType.DEFER) {
-    recordInBasicBlock(cfg, cfg.currentBlock, id);
-  }
-
-  return { id, dimension: finalType.dimension, components: mappedDependencies };
-}
-
-function structConstructorNode(strandsContext, structTypeInfo, rawUserArgs) {
-  const { cfg, dag } = strandsContext;
-  const { properties } = structTypeInfo;
-
-  if (!(rawUserArgs.length === properties.length)) {
-    userError('type error',
-      `You've tried to construct a ${structTypeInfo.typeName} struct with ${rawUserArgs.length} properties, but it expects ${properties.length} properties.\n` +
-      `The properties it expects are:\n` +
-      `${properties.map(prop => prop.name + ' ' + prop.DataType.baseType + prop.DataType.dimension)}`
-    );
-  }
-
-  const dependsOn = [];
-  for (let i = 0; i < properties.length; i++) {
-    const expectedProperty = properties[i];
-    const { originalNodeID, mappedDependencies } = mapPrimitiveDepsToIDs(strandsContext, expectedProperty.dataType, rawUserArgs[i]);
-    if (originalNodeID) {
-      dependsOn.push(originalNodeID);
-    }
-    else {
-      dependsOn.push(
-        constructTypeFromIDs(strandsContext, expectedProperty.dataType, mappedDependencies)
-      );
-    }
-  }
-
-  const nodeData = createNodeData({
-    nodeType: NodeType.OPERATION,
-    opCode: OpCode.Nary.CONSTRUCTOR,
-    dimension: properties.length,
-    baseType: structTypeInfo.typeName ,
-    dependsOn
-  });
-  const id = getOrCreateNode(dag, nodeData);
-  recordInBasicBlock(cfg, cfg.currentBlock, id);
-  return { id, dimension: properties.length, components: structTypeInfo.components };
-}
-
-function functionCallNode(
-  strandsContext,
-  functionName,
-  rawUserArgs,
-  { overloads: rawOverloads } = {},
-) {
-  const { cfg, dag } = strandsContext;
-  const overloads = rawOverloads || strandsBuiltinFunctions[functionName];
-
-  const preprocessedArgs = rawUserArgs.map((rawUserArg) => mapPrimitiveDepsToIDs(strandsContext, DataType.defer, rawUserArg));
-  const matchingArgsCounts = overloads.filter(overload => overload.params.length === preprocessedArgs.length);
-  if (matchingArgsCounts.length === 0) {
-    const argsLengthSet = new Set();
-    const argsLengthArr = [];
-    overloads.forEach((overload) => argsLengthSet.add(overload.params.length));
-    argsLengthSet.forEach((len) => argsLengthArr.push(`${len}`));
-    const argsLengthStr = argsLengthArr.join(', or ');
-    userError("parameter validation error",`Function '${functionName}' has ${overloads.length} variants which expect ${argsLengthStr} arguments, but ${preprocessedArgs.length} arguments were provided.`);
-  }
-
-  const isGeneric = (T) => T.dimension === null;
-  let bestOverload = null;
-  let bestScore = 0;
-  let inferredReturnType = null;
-  let inferredDimension = null;
-
-  for (const overload of matchingArgsCounts) {
-    let isValid = true;
-    let similarity = 0;
-
-    for (let i = 0; i < preprocessedArgs.length; i++) {
-      const preArg = preprocessedArgs[i];
-      const argType = preArg.inferredTypeInfo;
-      const expectedType = overload.params[i];
-      let dimension = expectedType.dimension;
-
-      if (isGeneric(expectedType)) {
-        if (inferredDimension === null || inferredDimension === 1) {
-          inferredDimension = argType.dimension;
-        }
-
-        if (inferredDimension !== argType.dimension &&
-          !(argType.dimension === 1 && inferredDimension >= 1)
-          ) {
-          isValid = false;
-        }
-        dimension = inferredDimension;
-      }
-      else {
-        if (argType.dimension > dimension) {
-          isValid = false;
-        }
-      }
-
-      if (argType.baseType === expectedType.baseType) {
-        similarity += 2;
-      }
-      else if(expectedType.priority > argType.priority) {
-        similarity += 1;
-      }
-
-    }
-
-    if (isValid && (!bestOverload || similarity > bestScore)) {
-      bestOverload = overload;
-      bestScore = similarity;
-      inferredReturnType =  {...overload.returnType };
-      if (isGeneric(inferredReturnType)) {
-        inferredReturnType.dimension = inferredDimension;
-      }
-    }
-  }
-
-  if (bestOverload === null) {
-    userError('parameter validation', `No matching overload for ${functionName} was found!`);
-  }
-
-  let dependsOn = [];
-  for (let i = 0; i < bestOverload.params.length; i++) {
-    const arg = preprocessedArgs[i];
-    const paramType = { ...bestOverload.params[i] };
-    if (isGeneric(paramType)) {
-      paramType.dimension = inferredDimension;
-    }
-    if (arg.originalNodeID && typeEquals(arg.inferredTypeInfo, paramType)) {
-      dependsOn.push(arg.originalNodeID);
-    }
-    else {
-      const castedArgID = constructTypeFromIDs(strandsContext, paramType, arg.mappedDependencies);
-      recordInBasicBlock(cfg, cfg.currentBlock, castedArgID);
-      dependsOn.push(castedArgID);
-    }
-  }
-
-  const nodeData = createNodeData({
-    nodeType: NodeType.OPERATION,
-    opCode: OpCode.Nary.FUNCTION_CALL,
-    identifier: functionName,
-    dependsOn,
-    baseType: inferredReturnType.baseType,
-    dimension: inferredReturnType.dimension
-  });
-  const id = getOrCreateNode(dag, nodeData);
-  recordInBasicBlock(cfg, cfg.currentBlock, id);
-  return { id, dimension: inferredReturnType.dimension  };
-}
-
-function statementNode(strandsContext, statementType) {
-  const { dag, cfg } = strandsContext;
-  const nodeData = createNodeData({
-    nodeType: NodeType.STATEMENT,
-    statementType
-  });
-  const id = getOrCreateNode(dag, nodeData);
-  recordInBasicBlock(cfg, cfg.currentBlock, id);
-  return id;
-}
-
-function swizzleNode(strandsContext, parentNode, swizzle) {
-  const { dag, cfg } = strandsContext;
-  const baseType = dag.baseTypes[parentNode.id];
-  const nodeData = createNodeData({
-    nodeType: NodeType.OPERATION,
-    baseType,
-    dimension: swizzle.length,
-    opCode: OpCode.Unary.SWIZZLE,
-    dependsOn: [parentNode.id],
-    swizzle,
-  });
-  const id = getOrCreateNode(dag, nodeData);
-  recordInBasicBlock(cfg, cfg.currentBlock, id);
-  return { id, dimension: swizzle.length };
-}
-
-function swizzleTrap(id, dimension, strandsContext, onRebind) {
-    const swizzleSets = [
-      ['x', 'y', 'z', 'w'],
-      ['r', 'g', 'b', 'a'],
-      ['s', 't', 'p', 'q']
-    ].map(s => s.slice(0, dimension));
-    const trap = {
-      get(target, property, receiver) {
-        if (property in target) {
-          return Reflect.get(...arguments);
-        } else {
-          for (const set of swizzleSets) {
-            if ([...property.toString()].every(char => set.includes(char))) {
-              const swizzle = [...property].map(char => {
-                const index = set.indexOf(char);
-                return swizzleSets[0][index];
-              }).join('');
-              const node = swizzleNode(strandsContext, target, swizzle);
-              return createStrandsNode(node.id, node.dimension, strandsContext);
-            }
-          }
-        }
-    },
-  set(target, property, value, receiver) {
-    for (const swizzleSet of swizzleSets) {
-      const chars = [...property];
-      const valid =
-        chars.every(c => swizzleSet.includes(c)) &&
-        new Set(chars).size === chars.length &&
-        target.dimension >= chars.length;
-      if (!valid) continue;
-
-      const dim = target.dimension;
-
-      // lanes are the underlying values of the target vector
-      //  e.g. lane 0 holds the value aliased by 'x', 'r', and 's'
-      // the lanes array is in the 'correct' order
-      const lanes = new Array(dim);
-      for (let i = 0; i < dim; i++) {
-        const { id, dimension } = swizzleNode(strandsContext, target, 'xyzw'[i]);
-        lanes[i] = createStrandsNode(id, dimension, strandsContext);
-      }
-
-      // The scalars array contains the individual components of the users values.
-      // This may not be the most efficient way, as we swizzle each component individually,
-      // so that .xyz becomes .x, .y, .z
-      let scalars = [];
-      if (value instanceof StrandsNode) {
-        if (value.dimension === 1) {
-          scalars = Array(chars.length).fill(value);
-        } else if (value.dimension === chars.length) {
-          for (let k = 0; k < chars.length; k++) {
-            const { id, dimension } = swizzleNode(strandsContext, value, 'xyzw'[k]);
-            scalars.push(createStrandsNode(id, dimension, strandsContext));
-          }
-        } else {
-          userError('type error', `Swizzle assignment: RHS vector does not match LHS vector (need ${chars.length}, got ${value.dimension}).`);
-        }
-      } else if (Array.isArray(value)) {
-        const flat = value.flat(Infinity);
-        if (flat.length === 1) {
-          scalars = Array(chars.length).fill(flat[0]);
-        } else if (flat.length === chars.length) {
-          scalars = flat;
-        } else {
-          userError('type error', `Swizzle assignment: RHS length ${flat.length} does not match ${chars.length}.`);
-        }
-      } else if (typeof value === 'number') {
-        scalars = Array(chars.length).fill(value);
-      } else {
-        userError('type error', `Unsupported RHS for swizzle assignment: ${value}`);
-      }
-
-      // The canonical index refers to the actual value's position in the vector lanes
-      // i.e. we are finding (3,2,1) from .zyx
-      // We set the correct value in the lanes array
-      for (let j = 0; j < chars.length; j++) {
-        const canonicalIndex = swizzleSet.indexOf(chars[j]);
-        lanes[canonicalIndex] = scalars[j];
-      }
-
-      const orig = getNodeDataFromID(strandsContext.dag, target.id);
-      const baseType = orig?.baseType ?? BaseType.FLOAT;
-      const { id: newID } = primitiveConstructorNode(
-        strandsContext,
-        { baseType, dimension: dim },
-        lanes
-      );
-
-      target.id = newID;
-
-      // If we swizzle assign on a struct component i.e.
-      //   inputs.position.rg = [1, 2]
-      // The onRebind callback will update the structs components so that it refers to the new values,
-      // and make a new ID for the struct with these new values
-      if (typeof onRebind === 'function') {
-        onRebind(newID);
-      }
-      return true;
-    }
-    return Reflect.set(...arguments);
-  }
-  };
-  return trap;
-}
-
 function createPhiNode(strandsContext, phiInputs, varName) {
   // Determine the proper dimension and baseType from the inputs
   const validInputs = phiInputs.filter(input => input.value.id !== null);
@@ -132249,7 +133789,10 @@ function createPhiNode(strandsContext, phiInputs, varName) {
     throw new Error(`No valid inputs for phi node for variable ${varName}`);
   }
   // Get dimension and baseType from first valid input
-  const firstInput = getNodeDataFromID(strandsContext.dag, validInputs[0].value.id);
+  let firstInput = validInputs
+    .map((input) => getNodeDataFromID(strandsContext.dag, input.value.id))
+    .find((input) => input.dimension) ??
+      getNodeDataFromID(strandsContext.dag, validInputs[0].value.id);
   const dimension = firstInput.dimension;
   const baseType = firstInput.baseType;
   const nodeData = {
@@ -132332,6 +133875,9 @@ function buildConditional(strandsContext, conditional) {
     addEdge(cfg, scopeStartBlock, branchContentBlock);
     pushBlock(cfg, branchContentBlock);
     const branchResults = branchCallback();
+    for (const key in branchResults) {
+      branchResults[key] = strandsContext.p5.strandsNode(branchResults[key]);
+    }
     for (const key in branchResults) {
       if (!phiBlockDependencies[key]) {
         phiBlockDependencies[key] = [{ value: branchResults[key], blockId: branchContentBlock }];
@@ -132626,8 +134172,12 @@ class StrandsFor {
     addEdge(cfg, breakCheckBlock, breakConditionBlock);
     cfg.blockConditions[breakConditionBlock] = negatedCondition.id;
 
+    // Add scope start block for break statement
+    const breakScopeStartBlock = createBasicBlock(cfg, BlockType.SCOPE_START);
+    addEdge(cfg, breakConditionBlock, breakScopeStartBlock);
+
     const breakStatementBlock = createBasicBlock(cfg, BlockType.DEFAULT);
-    addEdge(cfg, breakConditionBlock, breakStatementBlock);
+    addEdge(cfg, breakScopeStartBlock, breakStatementBlock);
 
     // Create the break statement in the break statement block
     pushBlock(cfg, breakStatementBlock);
@@ -132641,8 +134191,12 @@ class StrandsFor {
     recordInBasicBlock(cfg, breakStatementBlock, breakStatementID);
     popBlock(cfg);
 
-    // The break statement block leads to the merge block (exits the loop)
-    addEdge(cfg, breakStatementBlock, mergeBlock);
+    // Add scope end block for break statement
+    const breakScopeEndBlock = createBasicBlock(cfg, BlockType.SCOPE_END);
+    addEdge(cfg, breakStatementBlock, breakScopeEndBlock);
+
+    // The break scope end block leads to the merge block (exits the loop)
+    addEdge(cfg, breakScopeEndBlock, mergeBlock);
 
     popBlock(cfg);
 
@@ -132669,8 +134223,8 @@ class StrandsFor {
     const scopeEndBlock = createBasicBlock(cfg, BlockType.SCOPE_END);
     addEdge(cfg, updateBlock, scopeEndBlock);
 
-    // Loop back to break check
-    addEdge(cfg, scopeEndBlock, breakCheckBlock);
+    // Connect end of for loop to the merge agter the loop
+    addEdge(cfg, scopeEndBlock, mergeBlock);
 
     // Break condition exits to merge
     addEdge(cfg, breakCheckBlock, mergeBlock);
@@ -132731,7 +134285,10 @@ class StrandsFor {
     popBlock(cfg);
 
     const loopVarNode = createStrandsNode(phiNode.id, phiNode.dimension, this.strandsContext);
-    this.bodyResults = this.bodyCb(loopVarNode, phiVars);
+    this.bodyResults = this.bodyCb(loopVarNode, phiVars) || {};
+    for (const key in this.bodyResults) {
+      this.bodyResults[key] = this.strandsContext.p5.strandsNode(this.bodyResults[key]);
+    }
     this.phiNodesForBody = phiNodesForBody;
     // Capture the final block after body execution before popping
     this.finalBodyBlock = cfg.currentBlock;
@@ -132805,8 +134362,6 @@ class StrandsFor {
   }
 }
 
-var noiseGLSL = "// Based on https://github.com/stegu/webgl-noise/blob/22434e04d7753f7e949e8d724ab3da2864c17a0f/src/noise3D.glsl\n// MIT licensed, adapted for p5.strands\n\nvec3 mod289(vec3 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 mod289(vec4 x) {\n  return x - floor(x * (1.0 / 289.0)) * 289.0;\n}\n\nvec4 permute(vec4 x) {\n  return mod289(((x*34.0)+10.0)*x);\n}\n\nvec4 taylorInvSqrt(vec4 r)\n{\n  return 1.79284291400159 - 0.85373472095314 * r;\n}\n\nfloat baseNoise(vec3 v)\n{\n  const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;\n  const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);\n\n  // First corner\n  vec3 i  = floor(v + dot(v, C.yyy) );\n  vec3 x0 =   v - i + dot(i, C.xxx) ;\n\n  // Other corners\n  vec3 g = step(x0.yzx, x0.xyz);\n  vec3 l = 1.0 - g;\n  vec3 i1 = min( g.xyz, l.zxy );\n  vec3 i2 = max( g.xyz, l.zxy );\n\n  //   x0 = x0 - 0.0 + 0.0 * C.xxx;\n  //   x1 = x0 - i1  + 1.0 * C.xxx;\n  //   x2 = x0 - i2  + 2.0 * C.xxx;\n  //   x3 = x0 - 1.0 + 3.0 * C.xxx;\n  vec3 x1 = x0 - i1 + C.xxx;\n  vec3 x2 = x0 - i2 + C.yyy; // 2.0*C.x = 1/3 = C.y\n  vec3 x3 = x0 - D.yyy;      // -1.0+3.0*C.x = -0.5 = -D.y\n\n  // Permutations\n  i = mod289(i);\n  vec4 p = permute( permute( permute(\n          i.z + vec4(0.0, i1.z, i2.z, 1.0 ))\n        + i.y + vec4(0.0, i1.y, i2.y, 1.0 ))\n      + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));\n\n  // Gradients: 7x7 points over a square, mapped onto an octahedron.\n  // The ring size 17*17 = 289 is close to a multiple of 49 (49*6 = 294)\n  float n_ = 0.142857142857; // 1.0/7.0\n  vec3  ns = n_ * D.wyz - D.xzx;\n\n  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);  //  mod(p,7*7)\n\n  vec4 x_ = floor(j * ns.z);\n  vec4 y_ = floor(j - 7.0 * x_ );    // mod(j,N)\n\n  vec4 x = x_ *ns.x + ns.yyyy;\n  vec4 y = y_ *ns.x + ns.yyyy;\n  vec4 h = 1.0 - abs(x) - abs(y);\n\n  vec4 b0 = vec4( x.xy, y.xy );\n  vec4 b1 = vec4( x.zw, y.zw );\n\n  //vec4 s0 = vec4(lessThan(b0,0.0))*2.0 - 1.0;\n  //vec4 s1 = vec4(lessThan(b1,0.0))*2.0 - 1.0;\n  vec4 s0 = floor(b0)*2.0 + 1.0;\n  vec4 s1 = floor(b1)*2.0 + 1.0;\n  vec4 sh = -step(h, vec4(0.0));\n\n  vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;\n  vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;\n\n  vec3 p0 = vec3(a0.xy,h.x);\n  vec3 p1 = vec3(a0.zw,h.y);\n  vec3 p2 = vec3(a1.xy,h.z);\n  vec3 p3 = vec3(a1.zw,h.w);\n\n  //Normalise gradients\n  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));\n  p0 *= norm.x;\n  p1 *= norm.y;\n  p2 *= norm.z;\n  p3 *= norm.w;\n\n  // Mix final noise value\n  vec4 m = max(0.5 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);\n  m = m * m;\n  return 105.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1),\n        dot(p2,x2), dot(p3,x3) ) );\n}\n\nfloat noise(vec3 st) {\n  float result = 0.0;\n  float amplitude = 1.0;\n  float frequency = 1.0;\n\n  for (int i = 0; i < 4; i++) {\n    result += amplitude * baseNoise(st * frequency);\n    frequency *= 2.0;\n    amplitude *= 0.5;\n  }\n\n  return result;\n}\n";
-
 //////////////////////////////////////////////
 // User nodes
 //////////////////////////////////////////////
@@ -132838,7 +134393,7 @@ function initGlobalStrandsAPI(p5, fn, strandsContext) {
   };
   p5.break = fn.break;
   fn.instanceID = function() {
-    const node = variableNode(strandsContext, { baseType: BaseType.INT, dimension: 1 }, 'gl_InstanceID');
+    const node = variableNode(strandsContext, { baseType: BaseType.INT, dimension: 1 }, strandsContext.backend.instanceIdReference());
     return createStrandsNode(node.id, node.dimension, strandsContext);
   };
   // Internal methods use p5 static methods; user-facing methods use fn.
@@ -132851,6 +134406,39 @@ function initGlobalStrandsAPI(p5, fn, strandsContext) {
     return new StrandsFor(strandsContext, initialCb, conditionCb, updateCb, bodyCb, initialVars).build();
   };
   fn.strandsFor = p5.strandsFor;
+  p5.strandsEarlyReturn = function(value) {
+    const { dag, cfg } = strandsContext;
+
+    // Ensure we're inside a hook
+    if (!strandsContext.activeHook) {
+      throw new Error('strandsEarlyReturn can only be used inside a hook callback');
+    }
+
+    // Convert value to a StrandsNode if it isn't already
+    const valueNode = value instanceof StrandsNode ? value : p5.strandsNode(value);
+
+    // Create a new CFG block for the early return
+    const earlyReturnBlockID = createBasicBlock(cfg, BlockType.DEFAULT);
+    addEdge(cfg, cfg.currentBlock, earlyReturnBlockID);
+    pushBlock(cfg, earlyReturnBlockID);
+
+    // Create the early return statement node
+    const nodeData = createNodeData({
+      nodeType: NodeType.STATEMENT,
+      statementType: StatementType.EARLY_RETURN,
+      dependsOn: [valueNode.id]
+    });
+    const earlyReturnID = getOrCreateNode(dag, nodeData);
+    recordInBasicBlock(cfg, cfg.currentBlock, earlyReturnID);
+
+    // Add the value to the hook's earlyReturns array for later type checking
+    strandsContext.activeHook.earlyReturns.push({ earlyReturnID, valueNode });
+
+    popBlock(cfg);
+
+    return valueNode;
+  };
+  fn.strandsEarlyReturn = p5.strandsEarlyReturn;
   p5.strandsNode = function(...args) {
     if (args.length === 1 && args[0] instanceof StrandsNode) {
       return args[0];
@@ -132889,17 +134477,55 @@ function initGlobalStrandsAPI(p5, fn, strandsContext) {
       };
     }
   }
-  // Add GLSL noise. TODO: Replace this with a backend-agnostic implementation
+
+  fn.getTexture = function (...rawArgs) {
+    if (strandsContext.active) {
+      const { id, dimension } = strandsContext.backend.createGetTextureCall(strandsContext, rawArgs);
+      return createStrandsNode(id, dimension, strandsContext);
+    } else {
+      p5._friendlyError(
+        `It looks like you've called getTexture outside of a shader's modify() function.`
+      );
+    }
+  };
+
+  // Add texture function as alias for getTexture with p5 fallback
+  const originalTexture = fn.texture;
+  fn.texture = function (...args) {
+    if (strandsContext.active) {
+      return this.getTexture(...args);
+    } else {
+      return originalTexture.apply(this, args);
+    }
+  };
+
+  // Add noise function with backend-agnostic implementation
   const originalNoise = fn.noise;
+  const originalNoiseDetail = fn.noiseDetail;
+
+  strandsContext._noiseOctaves = null;
+  strandsContext._noiseAmpFalloff = null;
+
+  fn.noiseDetail = function (lod, falloff) {
+    if (!strandsContext.active) {
+      return originalNoiseDetail.apply(this, arguments);
+    }
+
+    strandsContext._noiseOctaves = lod;
+    strandsContext._noiseAmpFalloff = falloff;
+  };
+
   fn.noise = function (...args) {
     if (!strandsContext.active) {
       return originalNoise.apply(this, args); // fallback to regular p5.js noise
     }
-    strandsContext.vertexDeclarations.add(noiseGLSL);
-    strandsContext.fragmentDeclarations.add(noiseGLSL);
+    // Get noise shader snippet from the current renderer
+    const noiseSnippet = this._renderer.getNoiseShaderSnippet();
+    strandsContext.vertexDeclarations.add(noiseSnippet);
+    strandsContext.fragmentDeclarations.add(noiseSnippet);
 
     // Make each input into a strands node so that we can check their dimensions
-    const strandsArgs = args.map(arg => p5.strandsNode(arg));
+    const strandsArgs = args.flat().map(arg => p5.strandsNode(arg));
     let nodeArgs;
     if (strandsArgs.length === 3) {
       nodeArgs = [fn.vec3(strandsArgs[0], strandsArgs[1], strandsArgs[2])];
@@ -132918,9 +134544,20 @@ function initGlobalStrandsAPI(p5, fn, strandsContext) {
         `It looks like you've called noise() with ${args.length} arguments. It only supports 1D to 3D input.`
       );
     }
+
+    const octaves = strandsContext._noiseOctaves !== null
+      ? strandsContext._noiseOctaves
+      : fn._getNoiseOctaves();
+    const falloff = strandsContext._noiseAmpFalloff !== null
+      ? strandsContext._noiseAmpFalloff
+      : fn._getNoiseAmpFalloff();
+
+    nodeArgs.push(octaves);
+    nodeArgs.push(falloff);
+
     const { id, dimension } = functionCallNode(strandsContext, 'noise', nodeArgs, {
       overloads: [{
-        params: [DataType.float3],
+        params: [DataType.float3, DataType.int1, DataType.float1],
         returnType: DataType.float1,
       }]
     });
@@ -132932,7 +134569,7 @@ function initGlobalStrandsAPI(p5, fn, strandsContext) {
   // variant or also one more directly translated from GLSL, or to be more compatible with
   // APIs we documented at the release of 2.x and have to continue supporting.
   for (const type in DataType) {
-    if (type === BaseType.DEFER) {
+    if (type === BaseType.DEFER || type === 'sampler') {
       continue;
     }
     const typeInfo = DataType[type];
@@ -132992,8 +134629,24 @@ function initGlobalStrandsAPI(p5, fn, strandsContext) {
     const originalp5Fn = fn[typeInfo.fnName];
     fn[typeInfo.fnName] = function(...args) {
       if (strandsContext.active) {
-        const { id, dimension } = primitiveConstructorNode(strandsContext, typeInfo, args);
-        return createStrandsNode(id, dimension, strandsContext);
+        if (args.length === 1 && args[0].dimension && args[0].dimension === typeInfo.dimension) {
+          const { id, dimension } = functionCallNode(strandsContext, typeInfo.fnName, args, {
+            overloads: [{
+              params: [args[0].typeInfo()],
+              returnType: typeInfo,
+            }]
+          });
+          return createStrandsNode(id, dimension, strandsContext);
+        } else {
+          // For vector types with a single argument, repeat it for each component
+          if (typeInfo.dimension > 1 && args.length === 1 && !Array.isArray(args[0]) &&
+              !(args[0] instanceof StrandsNode && args[0].dimension > 1) &&
+              (typeInfo.baseType === BaseType.FLOAT || typeInfo.baseType === BaseType.INT || typeInfo.baseType === BaseType.BOOL)) {
+            args = Array(typeInfo.dimension).fill(args[0]);
+          }
+          const { id, dimension } = primitiveConstructorNode(strandsContext, typeInfo, args);
+          return createStrandsNode(id, dimension, strandsContext);
+        }
       } else if (originalp5Fn) {
         return originalp5Fn.apply(this, args);
       } else {
@@ -133011,7 +134664,7 @@ function createHookArguments(strandsContext, parameters){
   const args = [];
   const dag = strandsContext.dag;
   for (const param of parameters) {
-    if(isStructType(param.type.typeName)) {
+    if(isStructType(param.type)) {
       const structTypeInfo = structType(param);
       const { id, dimension } = structInstanceNode(strandsContext, structTypeInfo, param.name, []);
       const structNode = createStrandsNode(id, dimension, strandsContext);
@@ -133053,7 +134706,14 @@ function createHookArguments(strandsContext, parameters){
       args.push(structNode);
     }
     else /*if(isNativeType(paramType.typeName))*/ {
-      const typeInfo = TypeInfoFromGLSLName[param.type.typeName];
+      // Skip sampler parameters - they don't need strands nodes
+      if (param.type.typeName === 'sampler') {
+        continue;
+      }
+      if (!param.type.dataType) {
+        throw new Error(`Missing dataType for parameter ${param.name} of type ${param.type.typeName}`);
+      }
+      const typeInfo = param.type.dataType;
       const { id, dimension } = variableNode(strandsContext, typeInfo, param.name);
       const arg = createStrandsNode(id, dimension, strandsContext);
       args.push(arg);
@@ -133119,50 +134779,62 @@ function createShaderHooksFunctions(strandsContext, fn, shader) {
       addEdge(cfg, cfg.currentBlock, entryBlockID);
       pushBlock(cfg, entryBlockID);
       const args = createHookArguments(strandsContext, hookType.parameters);
+      strandsContext.activeHook = hookImplementation;
       const userReturned = hookUserCallback(...args);
+      strandsContext.activeHook = undefined;
       const expectedReturnType = hookType.returnType;
       let rootNodeID = null;
-      if(isStructType(expectedReturnType.typeName)) {
-        const expectedStructType = structType(expectedReturnType);
-        if (userReturned instanceof StrandsNode) {
-          const returnedNode = getNodeDataFromID(strandsContext.dag, userReturned.id);
-          if (returnedNode.baseType !== expectedStructType.typeName) {
-            userError("type error", `You have returned a ${userReturned.baseType} from ${hookType.name} when a ${expectedStructType.typeName} was expected.`);
-          }
-          const newDeps = returnedNode.dependsOn.slice();
-          for (let i = 0; i < expectedStructType.properties.length; i++) {
-            const expectedType = expectedStructType.properties[i].dataType;
-            const receivedNode = createStrandsNode(returnedNode.dependsOn[i], dag.dependsOn[userReturned.id], strandsContext);
-            newDeps[i] = enforceReturnTypeMatch(strandsContext, expectedType, receivedNode, hookType.name);
-          }
-          dag.dependsOn[userReturned.id] = newDeps;
-          rootNodeID = userReturned.id;
-        }
-        else {
-          const expectedProperties = expectedStructType.properties;
-          const newStructDependencies = [];
-          for (let i = 0; i < expectedProperties.length; i++) {
-            const expectedProp = expectedProperties[i];
-            const propName = expectedProp.name;
-            const receivedValue = userReturned[propName];
-            if (receivedValue === undefined) {
-              userError('type error', `You've returned an incomplete struct from ${hookType.name}.\n` +
-                `Expected: { ${expectedReturnType.properties.map(p => p.name).join(', ')} }\n` +
-                `Received: { ${Object.keys(userReturned).join(', ')} }\n` +
-                `All of the properties are required!`);
+      const handleRetVal = (retNode) => {
+        if(isStructType(expectedReturnType)) {
+          const expectedStructType = structType(expectedReturnType);
+          if (retNode instanceof StrandsNode) {
+            const returnedNode = getNodeDataFromID(strandsContext.dag, retNode.id);
+            if (returnedNode.baseType !== expectedStructType.typeName) {
+              userError("type error", `You have returned a ${retNode.baseType} from ${hookType.name} when a ${expectedStructType.typeName} was expected.`);
             }
-            const expectedTypeInfo = expectedProp.dataType;
-            const returnedPropID = enforceReturnTypeMatch(strandsContext, expectedTypeInfo, receivedValue, hookType.name);
-            newStructDependencies.push(returnedPropID);
+            const newDeps = returnedNode.dependsOn.slice();
+            for (let i = 0; i < expectedStructType.properties.length; i++) {
+              const expectedType = expectedStructType.properties[i].dataType;
+              const receivedNode = createStrandsNode(returnedNode.dependsOn[i], dag.dependsOn[retNode.id], strandsContext);
+              newDeps[i] = enforceReturnTypeMatch(strandsContext, expectedType, receivedNode, hookType.name);
+            }
+            dag.dependsOn[retNode.id] = newDeps;
+            return retNode.id;
           }
-          const newStruct = structConstructorNode(strandsContext, expectedStructType, newStructDependencies);
-          rootNodeID = newStruct.id;
+          else {
+            const expectedProperties = expectedStructType.properties;
+            const newStructDependencies = [];
+            for (let i = 0; i < expectedProperties.length; i++) {
+              const expectedProp = expectedProperties[i];
+              const propName = expectedProp.name;
+              const receivedValue = retNode[propName];
+              if (receivedValue === undefined) {
+                userError('type error', `You've returned an incomplete struct from ${hookType.name}.\n` +
+                  `Expected: { ${expectedReturnType.properties.map(p => p.name).join(', ')} }\n` +
+                  `Received: { ${Object.keys(retNode).join(', ')} }\n` +
+                  `All of the properties are required!`);
+              }
+              const expectedTypeInfo = expectedProp.dataType;
+              const returnedPropID = enforceReturnTypeMatch(strandsContext, expectedTypeInfo, receivedValue, hookType.name);
+              newStructDependencies.push(returnedPropID);
+            }
+            const newStruct = structConstructorNode(strandsContext, expectedStructType, newStructDependencies);
+            return newStruct.id;
+          }
         }
+        else /*if(isNativeType(expectedReturnType.typeName))*/ {
+          if (!expectedReturnType.dataType) {
+            throw new Error(`Missing dataType for return type ${expectedReturnType.typeName}`);
+          }
+          const expectedTypeInfo = expectedReturnType.dataType;
+          return enforceReturnTypeMatch(strandsContext, expectedTypeInfo, retNode, hookType.name);
+        }
+      };
+      for (const { valueNode, earlyReturnID } of hookImplementation.earlyReturns) {
+        const id = handleRetVal(valueNode);
+        dag.dependsOn[earlyReturnID] = [id];
       }
-      else /*if(isNativeType(expectedReturnType.typeName))*/ {
-        const expectedTypeInfo = TypeInfoFromGLSLName[expectedReturnType.typeName];
-        rootNodeID = enforceReturnTypeMatch(strandsContext, expectedTypeInfo, userReturned, hookType.name);
-      }
+      rootNodeID = userReturned ? handleRetVal(userReturned) : undefined;
       const fullHookName = `${hookType.returnType.typeName} ${hookType.name}`;
       const hookInfo = availableHooks[fullHookName];
       strandsContext.hooks.push({
@@ -133173,6 +134845,7 @@ function createShaderHooksFunctions(strandsContext, fn, shader) {
       });
       popBlock(cfg);
     };
+    hookImplementation.earlyReturns = [];
     strandsContext.windowOverrides[hookType.name] = window[hookType.name];
     strandsContext.fnOverrides[hookType.name] = fn[hookType.name];
     window[hookType.name] = hookImplementation;
@@ -133181,17 +134854,18 @@ function createShaderHooksFunctions(strandsContext, fn, shader) {
 }
 
 /**
-* @module 3D
-* @submodule strands
-* @for p5
-* @requires core
-*/
+ * @module 3D
+ * @submodule strands
+ * @for p5
+ * @requires core
+ */
+
 
 function strands(p5, fn) {
   //////////////////////////////////////////////
   // Global Runtime
   //////////////////////////////////////////////
-  function initStrandsContext(ctx, backend, { active = false } = {}) {
+  function initStrandsContext(ctx, backend, { active = false, renderer = null, baseShader = null } = {}) {
     ctx.dag = createDirectedAcyclicGraph();
     ctx.cfg = createControlFlowGraph();
     ctx.uniforms = [];
@@ -133201,12 +134875,15 @@ function strands(p5, fn) {
     ctx.globalAssignments = [];
     ctx.backend = backend;
     ctx.active = active;
+    ctx.renderer = renderer;
+    ctx.baseShader = baseShader;
     ctx.previousFES = p5.disableFriendlyErrors;
     ctx.windowOverrides = {};
     ctx.fnOverrides = {};
     if (active) {
       p5.disableFriendlyErrors = true;
     }
+    ctx.p5 = p5;
   }
 
   function deinitStrandsContext(ctx) {
@@ -133236,47 +134913,62 @@ function strands(p5, fn) {
   //////////////////////////////////////////////
   const oldModify = p5.Shader.prototype.modify;
 
-  p5.Shader.prototype.modify = function(shaderModifier, scope = {}) {
-    if (shaderModifier instanceof Function) {
-      // Reset the context object every time modify is called;
-      // const backend = glslBackend;
-      initStrandsContext(strandsContext, glslBackend, { active: true });
-      createShaderHooksFunctions(strandsContext, fn, this);
-      // TODO: expose this, is internal for debugging for now.
-      const options = { srcLocations: false };
+  p5.Shader.prototype.modify = function (shaderModifier, scope = {}) {
+    try {
+      if (shaderModifier instanceof Function || typeof shaderModifier === 'string') {
+        // Reset the context object every time modify is called;
+        // const backend = glslBackend;
+        initStrandsContext(strandsContext, this._renderer.strandsBackend, {
+          active: true,
+          renderer: this._renderer,
+          baseShader: this,
+        });
+        createShaderHooksFunctions(strandsContext, fn, this);
+        // TODO: expose this, is internal for debugging for now.
+        const options = { srcLocations: false };
 
-      // 1. Transpile from strands DSL to JS
-      let strandsCallback;
-      {
-        // #7955 Wrap function declaration code in brackets so anonymous functions are not top level statements, which causes an error in acorn when parsing
-        // https://github.com/acornjs/acorn/issues/1385
-        const sourceString = `(${shaderModifier.toString()})`;
-        strandsCallback = transpileStrandsToJS(p5, sourceString, options.srcLocations, scope);
+        // 1. Transpile from strands DSL to JS
+        let strandsCallback;
+        {
+          // #7955 Wrap function declaration code in brackets so anonymous functions are not top level statements, which causes an error in acorn when parsing
+          // https://github.com/acornjs/acorn/issues/1385
+          const sourceString = typeof shaderModifier === 'string'
+            ? `(${shaderModifier})`
+            : `(${shaderModifier.toString()})`;
+          strandsCallback = transpileStrandsToJS(
+            p5,
+            sourceString,
+            options.srcLocations,
+            scope,
+          );
+        }
+
+        // 2. Build the IR from JavaScript API
+        const globalScope = createBasicBlock(
+          strandsContext.cfg,
+          BlockType.GLOBAL,
+        );
+        pushBlock(strandsContext.cfg, globalScope);
+        strandsCallback();
+        popBlock(strandsContext.cfg);
+
+        // 3. Generate shader code hooks object from the IR
+        // .......
+        const hooksObject = generateShaderCode(strandsContext);
+
+        // Call modify with the generated hooks object
+        return oldModify.call(this, hooksObject);
+      } else {
+        return oldModify.call(this, shaderModifier);
       }
-
-      // 2. Build the IR from JavaScript API
-      const globalScope = createBasicBlock(strandsContext.cfg, BlockType.GLOBAL);
-      pushBlock(strandsContext.cfg, globalScope);
-      strandsCallback();
-      popBlock(strandsContext.cfg);
-
-      // 3. Generate shader code hooks object from the IR
-      // .......
-      const hooksObject = generateShaderCode(strandsContext);
-
+    } finally {
       // Reset the strands runtime context
       deinitStrandsContext(strandsContext);
-
-      // Call modify with the generated hooks object
-      return oldModify.call(this, hooksObject);
-    }
-    else {
-      return oldModify.call(this, shaderModifier)
     }
   };
 }
 
-if (typeof p5 !== 'undefined') {
+if (typeof p5 !== "undefined") {
   p5.registerAddon(strands);
 }
 
@@ -133312,7 +135004,7 @@ if (typeof p5 !== 'undefined') {
  *     getWorldInputs(inputs => {
  *       // Move the vertex up and down in a wave in world space
  *       // In world space, moving the object (e.g., with translate()) will affect these coordinates
-*       // The sphere is ~50 units tall here, so 20 gives a noticeable wave
+ *       // The sphere is ~50 units tall here, so 20 gives a noticeable wave
  *       inputs.position.y += 20 * sin(t * 0.001 + inputs.position.x * 0.05);
  *       return inputs;
  *     });
@@ -133784,31 +135476,6 @@ if (typeof p5 !== 'undefined') {
  * </div>
  */
 
-function webgl(p5){
-  rendererGL(p5, p5.prototype);
-  primitives3D(p5, p5.prototype);
-  interaction(p5, p5.prototype);
-  light(p5, p5.prototype);
-  loading$1(p5, p5.prototype);
-  material(p5, p5.prototype);
-  text(p5);
-  renderBuffer(p5);
-  quat(p5);
-  matrix(p5);
-  geometry(p5);
-  camera(p5, p5.prototype);
-  framebuffer(p5);
-  dataArray(p5);
-  shader(p5);
-  texture(p5);
-  strands(p5, p5.prototype);
-}
-
-function type(p5){
-  p5.registerAddon(textCore);
-  p5.registerAddon(font);
-}
-
 /**
  * This file setup global mode automatic instantiation
  *
@@ -133879,6 +135546,8 @@ math(p5$2);
 utilities(p5$2);
 webgl(p5$2);
 type(p5$2);
+p5$2.registerAddon(shader);
+p5$2.registerAddon(strands);
 Promise.all([waitForDocumentReady(), waitingForTranslator]).then(_globalInit);
 
 export { p5$2 as default };
