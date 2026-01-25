@@ -221,7 +221,7 @@ main {
   position: absolute;
   float: left;
   top: 1.2em;
-  left: 50%;
+  left: calc((100vw - var(--tp-width)) / 2);
   transform: translateX(-50%);
   font-size: var(--fs-base);
   font-weight: 400;
