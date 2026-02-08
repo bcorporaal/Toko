@@ -1,0 +1,26 @@
+---
+description: Cross-variant p5.js compatibility (adapter, registration, getVariant)
+globs: src/toko-library/**/*.js, src/toko-wrapper/**/*.js
+alwaysApply: false
+---
+
+# Cross-Variant Compatibility
+
+**Adapter Pattern**:
+
+- All p5.js extensions must work through the adapter system
+- Use `libraryState.x5` to access the current p5.js/q5.js object (libraryState is an internal object to track variables across methods and classes)
+- Never directly modify `p5.prototype` - use the registration system
+- Test functions across all supported variants (v1, v2, Q5)
+
+**Version Detection**:
+
+- Use the detector system and the 'getVariant' function to identify p5.js variants
+- Provide fallbacks for missing features
+- Handle the different lifecycle hook systems appropriately
+
+**Function Registration**:
+
+- Use `registerLibraryFunctions()` and `registerLibraryClasses()`
+- Prevent duplicate registrations with proper guards
+- Maintain consistent API across all variants

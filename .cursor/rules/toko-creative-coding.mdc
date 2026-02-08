@@ -1,0 +1,37 @@
+---
+description: Algorithm design and UX for creative coding; visual output priority
+alwaysApply: true
+---
+
+# Creative Coding Patterns
+
+**Mathematical Functions**:
+
+- Use descriptive names that reflect mathematical concepts (`openSimplexNoise`, `cubicBezier`)
+- Provide clear parameter documentation with units and ranges
+- Handle edge cases gracefully (division by zero, invalid ranges)
+
+**Algorithm Implementation**:
+
+- Break complex algorithms into composable functions
+- Use functional programming patterns where appropriate
+- Provide both simple and advanced usage examples
+- Include performance characteristics in documentation
+
+# Creative Coding Best Practices
+
+**Algorithm Design**:
+
+- Start with simple, working implementations
+- Optimize only after functionality is confirmed
+- Provide multiple complexity levels (simple/advanced)
+- Include randomization and variation options
+
+**User Experience**:
+
+- Provide immediate visual feedback
+- Include intuitive parameter controls
+- Support real-time parameter adjustment
+- Include helpful tooltips and documentation
+
+Remember: In creative coding, the visual output is more important than the code quality. Write code that creates beautiful, performant, and unique visuals.
