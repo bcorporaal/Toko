@@ -4,6 +4,8 @@ import allPalettes from '../../color-palettes/index.js';
 import { easeLinear } from '../math/easing.js';
 import { logDebug, logError, logWarn } from '../utils/logging.js';
 import chroma from '../../../../assets/js/chroma/3.2.0/chroma.min.cjs';
+import { RNG } from '../../classes/rng.js';
+import { cubicBezier } from '../../classes/cubicBezier.js';
 
 export var COLOR_COLLECTIONS = [];
 export var COLOR_PALETTES = allPalettes;
@@ -36,13 +38,13 @@ export function initColor () {
 //  validate incoming color options
 //
 export function _validateColorOptions (colorOptions) {
-  // merge with default options
-  constants.DEFAULT_COLOR_OPTIONS.easing = easeLinear;
-  colorOptions = Object.assign({}, constants.DEFAULT_COLOR_OPTIONS, colorOptions);
+  // merge with default options (copy defaults to avoid mutating the shared object)
+  let defaults = Object.assign({}, constants.DEFAULT_COLOR_OPTIONS, { easing: easeLinear });
+  colorOptions = Object.assign({}, defaults, colorOptions);
 
   // add a new RNG if none was defined
   if (colorOptions.rng == undefined) {
-    colorOptions.rng = new Toko.RNG();
+    colorOptions.rng = new RNG();
   }
 
   // set the options validated, so it is not needlessly checked multiple times
@@ -105,7 +107,7 @@ export function _createColorScale (colorSet, colorOptions, extraColors) {
   // set easing function for the scale
   if (colorOptions.useEasing) {
     let par = colorOptions.easingParameters;
-    o.easing = Toko.cubicBezier(par[0], par[1], par[2], par[3]);
+    o.easing = cubicBezier(par[0], par[1], par[2], par[3]);
   } else {
     o.easing = i => {
       return i;
@@ -207,6 +209,11 @@ export function _getColorScale (inPalette, colorOptions) {
   } else if (typeof inPalette === 'string') {
     p = findPaletteByName(inPalette);
 
+    if (!p) {
+      logError('Toko: palette not found: ' + inPalette);
+      return o;
+    }
+
     //
     //  TO DO - currently this does not work
     //
@@ -278,9 +285,11 @@ export function _getPaletteListRaw (paletteType = 'all', justPrimary = true, sor
   if (!libraryState.initColorDone) {
     initColor();
   }
-  let filtered; // = COLOR_PALETTES;
+  let filtered;
   if (paletteType !== 'all') {
     filtered = COLOR_PALETTES.filter(p => p.type === paletteType);
+  } else {
+    filtered = [...COLOR_PALETTES];
   }
 
   if (justPrimary) {

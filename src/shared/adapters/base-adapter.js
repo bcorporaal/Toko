@@ -84,6 +84,12 @@ export class BaseAdapter {
 
     const { p5, fn, lifecycles } = params;
 
+    // Validate required parameters
+    if (!p5 || !fn || !lifecycles) {
+      logWarn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
+      return false;
+    }
+
     // Set the prototype reference
     this.libraryState.p5 = p5;
     this.libraryState.x5 = fn;

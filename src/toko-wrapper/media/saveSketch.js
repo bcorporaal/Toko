@@ -23,7 +23,12 @@ export function saveSketch () {
   let isCanvas = null;
   let isSVG = null;
 
-  let sketchElement = document.getElementById(libraryState.options.sketchElementId).firstChild;
+  let sketchContainer = document.getElementById(libraryState.options.sketchElementId);
+  if (!sketchContainer || !sketchContainer.firstChild) {
+    logWarn('Toko - saveSketch: sketch element not found');
+    return;
+  }
+  let sketchElement = sketchContainer.firstChild;
   isCanvas = sketchElement instanceof HTMLCanvasElement;
   if (sketchElement.firstChild != null) {
     isSVG = sketchElement.firstChild.nodeName == 'svg';

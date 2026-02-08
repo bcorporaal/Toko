@@ -324,8 +324,10 @@ export class QuadTree {
       this.southeast.deleteInRange(range);
     }
 
-    // Delete points with range
-    this.points = this.points.filter(point => !range.contains(point));
+    // Delete points within range (points is null when subdivided)
+    if (this.points) {
+      this.points = this.points.filter(point => !range.contains(point));
+    }
   }
 
   /**
@@ -390,7 +392,7 @@ export class QuadTree {
 
     return {
       found: found.sort((a, b) => a.sqDistanceFrom(searchPoint) - b.sqDistanceFrom(searchPoint)).slice(0, maxCount),
-      furthestSqDistance: Math.sqrt(furthestSqDistance),
+      furthestSqDistance: furthestSqDistance,
     };
   }
 

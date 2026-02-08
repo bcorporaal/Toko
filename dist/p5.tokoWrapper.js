@@ -337,11 +337,15 @@
     if (typeof p5 !== 'undefined' || (typeof window !== 'undefined' && typeof window.p5 !== 'undefined')) {
       const p5Instance = typeof p5 !== 'undefined' ? p5 : window.p5;
 
+      if (!p5Instance) {
+        return LIBRARY_UNKNOWN;
+      }
+
       // Quick v2 detection
       if (typeof p5Instance.VERSION === 'string' && p5Instance.VERSION.startsWith('2.')) {
         return LIBRARY_P5V2;
       }
-      if (p5Instance && typeof p5Instance.Graphics2D !== 'undefined') {
+      if (typeof p5Instance.Graphics2D !== 'undefined') {
         return LIBRARY_P5V2; // Beta version of p5.js with Graphics2D feature
       }
       return LIBRARY_P5V1;
@@ -521,6 +525,12 @@
 
       const { p5, fn, lifecycles } = params;
 
+      // Validate required parameters
+      if (!p5 || !fn || !lifecycles) {
+        logWarn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
+        return false;
+      }
+
       // Set the prototype reference
       this.libraryState.p5 = p5;
       this.libraryState.x5 = fn;
@@ -626,7 +636,10 @@
       sketchTitle += ' - ' + libraryState.variant + ' - ' + libraryState.options.renderMode;
     }
 
-    document.getElementById('sketch-title').innerText = sketchTitle;
+    const sketchTitleElement = document.getElementById('sketch-title');
+    if (sketchTitleElement) {
+      sketchTitleElement.innerText = sketchTitle;
+    }
     document.title = sketchTitle;
     //
     //  listen to resizes
@@ -640,6 +653,11 @@
    * @param {Object} inSize - Size configuration object with width, height, and other properties
    */
   function setCanvasSize (inSize) {
+    if (!inSize) {
+      logError('TokoWrapper: setCanvasSize called with null or undefined size configuration');
+      return;
+    }
+
     const MARGIN = 80;
     const DISPLAY_FACTOR = inSize.pixelDensity / 2;
     let zoomFactor = 1;
@@ -685,8 +703,10 @@
 
     resizeCanvas(inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
 
-    libraryState.p5Canvas.canvas.style.width = newWidthString;
-    libraryState.p5Canvas.canvas.style.height = newHeightString;
+    if (libraryState.p5Canvas && libraryState.p5Canvas.canvas) {
+      libraryState.p5Canvas.canvas.style.width = newWidthString;
+      libraryState.p5Canvas.canvas.style.height = newHeightString;
+    }
   }
 
   /**
@@ -694,10 +714,14 @@
    * Checks if the sketch element dimensions have changed and triggers canvas resize if needed
    */
   function windowResized () {
-    let sketchElementId = libraryState.options.sketchElementId;
+    let sketchElementId = libraryState.options?.sketchElementId;
+    if (!sketchElementId) return;
 
-    let newWidth = document.getElementById(sketchElementId).offsetWidth;
-    let newHeight = document.getElementById(sketchElementId).offsetHeight;
+    let sketchElement = document.getElementById(sketchElementId);
+    if (!sketchElement) return;
+
+    let newWidth = sketchElement.offsetWidth;
+    let newHeight = sketchElement.offsetHeight;
 
     if (newWidth != width || newHeight != height) {
       canvasResized();
@@ -939,7 +963,12 @@
     let isCanvas = null;
     let isSVG = null;
 
-    let sketchElement = document.getElementById(libraryState.options.sketchElementId).firstChild;
+    let sketchContainer = document.getElementById(libraryState.options.sketchElementId);
+    if (!sketchContainer || !sketchContainer.firstChild) {
+      logWarn('Toko - saveSketch: sketch element not found');
+      return;
+    }
+    let sketchElement = sketchContainer.firstChild;
     isCanvas = sketchElement instanceof HTMLCanvasElement;
     if (sketchElement.firstChild != null) {
       isSVG = sketchElement.firstChild.nodeName == 'svg';
@@ -1026,18 +1055,27 @@
   function setUpCapture () {
     libraryState.currentlyCapturing = false;
 
-    P5Capture.setDefaultOptions(libraryState.options.captureOptions);
-    hideP5CaptureControls();
+    if (typeof P5Capture !== 'undefined') {
+      P5Capture.setDefaultOptions(libraryState.options.captureOptions);
+      hideP5CaptureControls();
+    }
   }
 
   function hideP5CaptureControls () {
-    document.querySelector('.p5c-container').style.display = 'none';
+    const container = document.querySelector('.p5c-container');
+    if (container) {
+      container.style.display = 'none';
+    }
   }
 
   //
   //  called when the capture is started
   //
   function initCapture () {
+    if (typeof P5Capture === 'undefined') {
+      console.warn('TokoWrapper: P5Capture is not loaded. Capture functionality is unavailable.');
+      return;
+    }
     libraryState.capturer = P5Capture.getInstance();
 
     //  just in case the duration was not set properly
@@ -1449,13 +1487,17 @@
    * @returns {void}
    */
   function setUpTweakpane () {
-    // Create the main Tweakpane panel if enabled
-    if (libraryState.options.useParameterPanel) {
-      basePane = new Tweakpane.Pane({
-        container: document.getElementById(TWEAKPANE_CONTAINER_ID),
-        title: 'Sketch options',
-      });
+    // Skip Tweakpane setup entirely when the parameter panel is disabled
+    if (!libraryState.options.useParameterPanel) {
+      libraryState.tweakpane = null;
+      return;
     }
+
+    // Create the main Tweakpane panel
+    basePane = new Tweakpane.Pane({
+      container: document.getElementById(TWEAKPANE_CONTAINER_ID),
+      title: 'Sketch options',
+    });
 
     // Build array of tabs to add based on configuration
     const tabs = buildTabList();
@@ -2041,7 +2083,8 @@
    * Initializes the wrapper state and logs version information
    */
   function preSetupHook () {
-    logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${libraryState.options.renderMode})`);
+    const renderMode = libraryState.options?.renderMode ?? 'unknown';
+    logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${renderMode})`);
     logDebug('tokoWrapper - preSetupHook');
     libraryState.initialized = true;
   }
@@ -2072,7 +2115,7 @@
     //
     //  shift the canvas for webgl if enabled
     //
-    if (libraryState.options.shiftCanvasForWebGL) {
+    if (libraryState.options?.shiftCanvasForWebGL) {
       const isP5AndWebGL =
         (libraryState.variant === LIBRARY_P5V1 || libraryState.variant === LIBRARY_P5V2) &&
         libraryState.options.renderMode === RENDER_MODES.WEBGL;
@@ -2169,6 +2212,10 @@
    * @param {Object} inSize - Size object with name and dimensions
    */
   function addCanvasSize (inSize) {
+    if (!inSize || !inSize.name) {
+      console.warn('TokoWrapper: addCanvasSize requires a size object with a name property.');
+      return;
+    }
     SIZES.push(inSize);
     SIZES_LIST[inSize.name] = inSize.name;
   }
@@ -2187,6 +2234,11 @@
    * @param {Object} options - User-provided options to merge with defaults
    */
   function parseOptions (options) {
+    // Guard against null/undefined options
+    if (options == null) {
+      options = {};
+    }
+
     if (libraryState.options != null) {
       libraryState.options = { ...libraryState.options, ...options };
     } else {
@@ -2208,7 +2260,7 @@
     };
 
     // Handle canvas-specific options if they exist
-    if (options.additionalCanvasSizes != undefined && options.additionalCanvasSizes.length != 0) {
+    if (options && options.additionalCanvasSizes != undefined && options.additionalCanvasSizes.length != 0) {
       parseAdditionalCanvasSizes(options);
     }
   }
@@ -2227,6 +2279,9 @@
    * @note SVG render mode is automatically converted to P2D when using Q5 variant
    */
   function parseUrlParameters (options) {
+    if (typeof document === 'undefined' || !document.location) {
+      return options;
+    }
     const params = new URLSearchParams(document.location.search);
     const renderModeParam = params.get('r');
 

@@ -10,11 +10,22 @@
 import { libraryState } from '../../core/state';
 
 /**
+ * Ensure the global RNG is initialized before use
+ * @private
+ */
+function _ensureRNG () {
+  if (!libraryState.RNG) {
+    throw new Error('Toko: RNG is not initialized. Make sure toko.init() has been called before using random functions.');
+  }
+}
+
+/**
  * Reset the global RNG with a new seed
  * @param {string} [seed] - New seed string. If not provided, a random seed is generated
  * @returns {string} The validated seed string
  */
 export function resetRNG (seed) {
+  _ensureRNG();
   libraryState.RNG.reset(seed);
 }
 
@@ -23,6 +34,7 @@ export function resetRNG (seed) {
  * @param {string} seed - New seed string
  */
 export function setSeed (seed) {
+  _ensureRNG();
   libraryState.RNG.seed = seed;
 }
 
@@ -31,6 +43,7 @@ export function setSeed (seed) {
  * @returns {string} Current seed string
  */
 export function getSeed () {
+  _ensureRNG();
   return libraryState.RNG.seed;
 }
 
@@ -39,6 +52,7 @@ export function getSeed () {
  * @returns {string} The next seed string
  */
 export function nextSeed () {
+  _ensureRNG();
   return libraryState.RNG.nextSeed();
 }
 
@@ -47,6 +61,7 @@ export function nextSeed () {
  * @returns {string} The previous seed string
  */
 export function previousSeed () {
+  _ensureRNG();
   return libraryState.RNG.previousSeed();
 }
 
@@ -55,6 +70,7 @@ export function previousSeed () {
  * @returns {string} The new random seed string
  */
 export function randomSeed () {
+  _ensureRNG();
   return libraryState.RNG.randomSeed();
 }
 
@@ -63,6 +79,7 @@ export function randomSeed () {
  * @returns {string} The current seed string
  */
 export function resetSeed () {
+  _ensureRNG();
   return libraryState.RNG.resetSeed();
 }
 
@@ -73,6 +90,7 @@ export function resetSeed () {
  * @returns {number|*} Random number or array element
  */
 export function random (min, max) {
+  _ensureRNG();
   return libraryState.RNG.random(min, max);
 }
 
@@ -83,6 +101,7 @@ export function random (min, max) {
  * @returns {number} Random integer
  */
 export function intRange (min = 0, max = 100) {
+  _ensureRNG();
   return libraryState.RNG.intRange(min, max);
 }
 
@@ -91,6 +110,7 @@ export function intRange (min = 0, max = 100) {
  * @returns {boolean} Random true or false
  */
 export function randomBool () {
+  _ensureRNG();
   return libraryState.RNG.randomBool();
 }
 
@@ -100,6 +120,7 @@ export function randomBool () {
  * @returns {string} Random character
  */
 export function randomChar (inString = 'abcdefghijklmnopqrstuvwxyz') {
+  _ensureRNG();
   return libraryState.RNG.randomChar(inString);
 }
 
@@ -110,6 +131,7 @@ export function randomChar (inString = 'abcdefghijklmnopqrstuvwxyz') {
  * @returns {string} Random string
  */
 export function randomString (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+  _ensureRNG();
   return libraryState.RNG.randomString(count, inString);
 }
 
@@ -121,6 +143,7 @@ export function randomString (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz'
  * @returns {number} Random number snapped to steps
  */
 export function steppedRandom (min = 0, max = 1, step = 0.1) {
+  _ensureRNG();
   return libraryState.RNG.steppedRandom(min, max, step);
 }
 
@@ -130,6 +153,7 @@ export function steppedRandom (min = 0, max = 1, step = 0.1) {
  * @returns {Array} The shuffled array (same reference)
  */
 export function shuffle (inArray) {
+  _ensureRNG();
   return libraryState.RNG.shuffle(inArray);
 }
 
@@ -140,6 +164,7 @@ export function shuffle (inArray) {
  * @returns {number[]} Array of integers in random order
  */
 export function intSequence (min = 0, max = 100) {
+  _ensureRNG();
   return libraryState.RNG.intSequence(min, max);
 }
 
@@ -148,6 +173,7 @@ export function intSequence (min = 0, max = 100) {
  * @returns {p5.Vector} Random 2D unit vector
  */
 export function random2DVector () {
+  _ensureRNG();
   return libraryState.RNG.random2DVector();
 }
 
@@ -161,5 +187,6 @@ export function random2DVector () {
  * @returns {p5.Vector[]} Array of randomly distributed points
  */
 export function poissonDisk (inWidth, inHeight, inRadius) {
+  _ensureRNG();
   return libraryState.RNG.poissonDisk(inWidth, inHeight, inRadius);
 }

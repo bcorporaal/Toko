@@ -20,7 +20,8 @@ export function initHook () {
  * Initializes the wrapper state and logs version information
  */
 export function preSetupHook () {
-  logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${libraryState.options.renderMode})`);
+  const renderMode = libraryState.options?.renderMode ?? 'unknown';
+  logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${renderMode})`);
   logDebug('tokoWrapper - preSetupHook');
   libraryState.initialized = true;
 }
@@ -51,7 +52,7 @@ export function preDrawHook () {
   //
   //  shift the canvas for webgl if enabled
   //
-  if (libraryState.options.shiftCanvasForWebGL) {
+  if (libraryState.options?.shiftCanvasForWebGL) {
     const isP5AndWebGL =
       (libraryState.variant === LIBRARY_P5V1 || libraryState.variant === LIBRARY_P5V2) &&
       libraryState.options.renderMode === RENDER_MODES.WEBGL;

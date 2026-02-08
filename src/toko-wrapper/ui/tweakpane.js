@@ -44,13 +44,17 @@ let basePane, basePaneTab;
  * @returns {void}
  */
 export function setUpTweakpane () {
-  // Create the main Tweakpane panel if enabled
-  if (libraryState.options.useParameterPanel) {
-    basePane = new Tweakpane.Pane({
-      container: document.getElementById(TWEAKPANE_CONTAINER_ID),
-      title: 'Sketch options',
-    });
+  // Skip Tweakpane setup entirely when the parameter panel is disabled
+  if (!libraryState.options.useParameterPanel) {
+    libraryState.tweakpane = null;
+    return;
   }
+
+  // Create the main Tweakpane panel
+  basePane = new Tweakpane.Pane({
+    container: document.getElementById(TWEAKPANE_CONTAINER_ID),
+    title: 'Sketch options',
+  });
 
   // Build array of tabs to add based on configuration
   const tabs = buildTabList();

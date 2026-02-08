@@ -21,11 +21,15 @@ export function detectP5Variant () {
   if (typeof p5 !== 'undefined' || (typeof window !== 'undefined' && typeof window.p5 !== 'undefined')) {
     const p5Instance = typeof p5 !== 'undefined' ? p5 : window.p5;
 
+    if (!p5Instance) {
+      return LIBRARY_UNKNOWN;
+    }
+
     // Quick v2 detection
     if (typeof p5Instance.VERSION === 'string' && p5Instance.VERSION.startsWith('2.')) {
       return LIBRARY_P5V2;
     }
-    if (p5Instance && typeof p5Instance.Graphics2D !== 'undefined') {
+    if (typeof p5Instance.Graphics2D !== 'undefined') {
       return LIBRARY_P5V2; // Beta version of p5.js with Graphics2D feature
     }
     return LIBRARY_P5V1;

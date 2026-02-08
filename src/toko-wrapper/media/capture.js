@@ -8,18 +8,27 @@ import { saveSettings } from './saveSketch';
 export function setUpCapture () {
   libraryState.currentlyCapturing = false;
 
-  P5Capture.setDefaultOptions(libraryState.options.captureOptions);
-  hideP5CaptureControls();
+  if (typeof P5Capture !== 'undefined') {
+    P5Capture.setDefaultOptions(libraryState.options.captureOptions);
+    hideP5CaptureControls();
+  }
 }
 
 export function hideP5CaptureControls () {
-  document.querySelector('.p5c-container').style.display = 'none';
+  const container = document.querySelector('.p5c-container');
+  if (container) {
+    container.style.display = 'none';
+  }
 }
 
 //
 //  called when the capture is started
 //
 export function initCapture () {
+  if (typeof P5Capture === 'undefined') {
+    console.warn('TokoWrapper: P5Capture is not loaded. Capture functionality is unavailable.');
+    return;
+  }
   libraryState.capturer = P5Capture.getInstance();
 
   //  just in case the duration was not set properly

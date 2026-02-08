@@ -17,10 +17,15 @@ let prototypeClassesRegistered = false;
  * registerLibraryFunctions({ myFunction: () => {} }, libraryState);
  */
 export function registerLibraryFunctions (libraryFunctions, libraryState) {
-  const x5 = libraryState.x5;
+  if (!libraryFunctions) {
+    console.error('Toko: registerLibraryFunctions called with null or undefined libraryFunctions.');
+    return;
+  }
+
+  const x5 = libraryState?.x5;
 
   if (!libraryState || !x5) {
-    console.error('Error: libraryState.x5 is undefined or null.');
+    console.error('Toko: libraryState.x5 is undefined or null.');
     return;
   }
 
@@ -60,10 +65,15 @@ export function registerLibraryFunctions (libraryFunctions, libraryState) {
  * registerLibraryClasses({ Grid: GridClass }, libraryState);
  */
 export function registerLibraryClasses (libraryClasses, libraryState) {
-  const x5 = libraryState.x5;
+  if (!libraryClasses) {
+    console.error('Toko: registerLibraryClasses called with null or undefined libraryClasses.');
+    return;
+  }
+
+  const x5 = libraryState?.x5;
 
   if (!libraryState || !x5) {
-    console.error('Error: libraryState.x5 is undefined or null.');
+    console.error('Toko: libraryState.x5 is undefined or null.');
     return;
   }
 

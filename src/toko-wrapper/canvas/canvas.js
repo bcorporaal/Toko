@@ -34,7 +34,10 @@ export function setUpCanvas () {
     sketchTitle += ' - ' + libraryState.variant + ' - ' + libraryState.options.renderMode;
   }
 
-  document.getElementById('sketch-title').innerText = sketchTitle;
+  const sketchTitleElement = document.getElementById('sketch-title');
+  if (sketchTitleElement) {
+    sketchTitleElement.innerText = sketchTitle;
+  }
   document.title = sketchTitle;
   //
   //  listen to resizes
@@ -48,6 +51,11 @@ export function setUpCanvas () {
  * @param {Object} inSize - Size configuration object with width, height, and other properties
  */
 export function setCanvasSize (inSize) {
+  if (!inSize) {
+    logError('TokoWrapper: setCanvasSize called with null or undefined size configuration');
+    return;
+  }
+
   const MARGIN = 80;
   const DISPLAY_FACTOR = inSize.pixelDensity / 2;
   let zoomFactor = 1;
@@ -93,8 +101,10 @@ export function setCanvasSize (inSize) {
 
   resizeCanvas(inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
 
-  libraryState.p5Canvas.canvas.style.width = newWidthString;
-  libraryState.p5Canvas.canvas.style.height = newHeightString;
+  if (libraryState.p5Canvas && libraryState.p5Canvas.canvas) {
+    libraryState.p5Canvas.canvas.style.width = newWidthString;
+    libraryState.p5Canvas.canvas.style.height = newHeightString;
+  }
 }
 
 /**
@@ -102,10 +112,14 @@ export function setCanvasSize (inSize) {
  * Checks if the sketch element dimensions have changed and triggers canvas resize if needed
  */
 export function windowResized () {
-  let sketchElementId = libraryState.options.sketchElementId;
+  let sketchElementId = libraryState.options?.sketchElementId;
+  if (!sketchElementId) return;
 
-  let newWidth = document.getElementById(sketchElementId).offsetWidth;
-  let newHeight = document.getElementById(sketchElementId).offsetHeight;
+  let sketchElement = document.getElementById(sketchElementId);
+  if (!sketchElement) return;
+
+  let newWidth = sketchElement.offsetWidth;
+  let newHeight = sketchElement.offsetHeight;
 
   if (newWidth != width || newHeight != height) {
     canvasResized();

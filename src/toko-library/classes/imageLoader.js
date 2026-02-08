@@ -51,6 +51,10 @@ export class ImageLoader {
    * ]);
    */
   constructor (items) {
+    if (!Array.isArray(items)) {
+      console.warn('Toko: ImageLoader expects an array of items. Defaulting to empty array.');
+      items = [];
+    }
     this.items = items;
     this.images = new Map();
     this.loadedCount = 0;
