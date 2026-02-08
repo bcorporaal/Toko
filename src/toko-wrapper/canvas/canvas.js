@@ -18,6 +18,8 @@ import {
   FULLWINDOW_CLASS,
 } from '../../shared/constants/wrapper';
 
+let resizeListenerAttached = false;
+
 /**
  * Set up the canvas with initial configuration
  * Sets canvas size, document title, and window resize listener
@@ -43,7 +45,17 @@ export function setUpCanvas () {
   //
   //  listen to resizes
   //
-  window.addEventListener('resize', windowResized);
+  if (!resizeListenerAttached) {
+    window.addEventListener('resize', windowResized);
+    resizeListenerAttached = true;
+  }
+}
+
+export function tearDownCanvas () {
+  if (resizeListenerAttached) {
+    window.removeEventListener('resize', windowResized);
+    resizeListenerAttached = false;
+  }
 }
 
 /**
@@ -57,14 +69,28 @@ export function setCanvasSize (inSize) {
     return;
   }
 
+  const pixelDensity = Number(inSize.pixelDensity);
+  if (!Number.isFinite(pixelDensity) || pixelDensity <= 0) {
+    logError('TokoWrapper: setCanvasSize called with invalid pixelDensity');
+    return;
+  }
+  if (!Number.isFinite(inSize.width) || !Number.isFinite(inSize.height) || inSize.width <= 0 || inSize.height <= 0) {
+    logError('TokoWrapper: setCanvasSize called with invalid width/height');
+    return;
+  }
+
   const MARGIN = 80;
-  const DISPLAY_FACTOR = inSize.pixelDensity / 2;
+  const DISPLAY_FACTOR = pixelDensity / 2;
   let zoomFactor = 1;
   let newWidthString = '',
     newHeightString = '';
 
   if (typeof window.innerWidth === 'undefined' || typeof window.innerHeight === 'undefined') {
     logError('window.innerWidth or window.innerHeight is not defined');
+    return;
+  }
+  if (window.innerWidth <= 0 || window.innerHeight <= 0) {
+    logError('window.innerWidth or window.innerHeight is invalid');
     return;
   }
 
@@ -110,7 +136,13 @@ export function setCanvasSize (inSize) {
     labels?.classList.add(FULLWINDOW_CLASS);
   }
 
-  resizeCanvas(inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
+  const resizeFn = libraryState.p5Canvas?.resizeCanvas ?? (typeof window !== 'undefined' ? window.resizeCanvas : null);
+  if (typeof resizeFn === 'function') {
+    resizeFn.call(libraryState.p5Canvas ?? window, inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
+  } else {
+    logError('TokoWrapper: resizeCanvas is not available');
+    return;
+  }
 
   if (libraryState.p5Canvas && libraryState.p5Canvas.canvas) {
     const canvasEl = libraryState.p5Canvas.canvas;
@@ -152,6 +184,8 @@ export function setCanvasSize (inSize) {
  * when the window is resized (works for all variants including Q5).
  */
 export function windowResized () {
+  if (!libraryState.p5Canvas) return;
+
   const sketchElementId = libraryState.options?.sketchElementId;
   if (!sketchElementId) return;
 
@@ -161,7 +195,12 @@ export function windowResized () {
   const newWidth = sketchElement.offsetWidth;
   const newHeight = sketchElement.offsetHeight;
 
-  if (newWidth !== width || newHeight !== height) {
+  const hasGlobalSize = typeof width === 'number' && typeof height === 'number';
+  const currentWidth = hasGlobalSize ? width : (libraryState.p5Canvas?.width ?? null);
+  const currentHeight = hasGlobalSize ? height : (libraryState.p5Canvas?.height ?? null);
+  if (currentWidth === null || currentHeight === null) return;
+
+  if (newWidth !== currentWidth || newHeight !== currentHeight) {
     // Re-run setCanvasSize so zoomFactor and display dimensions are recalculated
     // for the new window size, keeping the canvas proportional.
     setCanvasSize(libraryState.options.canvasSize);
@@ -189,5 +228,21 @@ export function canvasResized () {
  * recenterCanvas();
  */
 export function recenterCanvas () {
-  translate(-width / 2, -height / 2);
+  const hasGlobalSize = typeof width === 'number' && typeof height === 'number';
+  const currentWidth = hasGlobalSize ? width : (libraryState.p5Canvas?.width ?? null);
+  const currentHeight = hasGlobalSize ? height : (libraryState.p5Canvas?.height ?? null);
+  const translateFn = hasGlobalSize && typeof translate === 'function'
+    ? translate
+    : (libraryState.p5Canvas?.translate ?? null);
+
+  if (currentWidth === null || currentHeight === null || typeof translateFn !== 'function') {
+    logError('TokoWrapper: recenterCanvas requires a valid drawing context');
+    return;
+  }
+
+  if (hasGlobalSize && typeof translate === 'function') {
+    translate(-currentWidth / 2, -currentHeight / 2);
+  } else {
+    libraryState.p5Canvas.translate(-currentWidth / 2, -currentHeight / 2);
+  }
 }

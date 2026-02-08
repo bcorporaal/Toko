@@ -39,18 +39,27 @@ export function saveSketch () {
     //  save canvas as png
     //
     let filename = libraryState.toko.generateFilename('png');
-    saveCanvas(filename, 'png');
+    const saveCanvasFn = libraryState.p5Canvas?.saveCanvas ?? (typeof saveCanvas === 'function' ? saveCanvas : null);
+    if (typeof saveCanvasFn !== 'function') {
+      logWarn('Toko - saveSketch: saveCanvas is not available');
+      return;
+    }
+    saveCanvasFn.call(libraryState.p5Canvas ?? window, filename, 'png');
     return filename;
   } else if (isSVG) {
     //
     // add attributes to ensure proper preview of the SVG file in the Finder
     //
-    let svgTemp = document.getElementById('sketch-canvas').firstChild.firstChild.firstChild;
-    svgTemp.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-    svgTemp.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    const svgElement = sketchContainer.querySelector('svg');
+    if (!svgElement) {
+      logWarn('Toko - saveSketch: SVG element not found');
+      return;
+    }
+    svgElement.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
     let filename = libraryState.toko.generateFilename('svg');
-    let svgString = document.getElementById(libraryState.options.sketchElementId).firstChild.innerHTML;
+    let svgString = svgElement.outerHTML;
 
     let blob = new Blob([svgString], { type: 'image/svg+xml' });
     let url = window.URL.createObjectURL(blob);
@@ -79,6 +88,9 @@ export function saveSketch () {
  */
 export function saveSketchAndSettings () {
   let filename = saveSketch();
+  if (!filename || typeof filename !== 'string') {
+    return;
+  }
   //
   //  strip the extension of the filename so we can reuse it.
   //
@@ -106,5 +118,10 @@ export function saveSettings (filename = 'default') {
   const settings = _stateToPreset(state);
 
   // save with p5.js native saver
-  saveJSON(settings, filename);
+  const saveJsonFn = libraryState.p5Canvas?.saveJSON ?? (typeof saveJSON === 'function' ? saveJSON : null);
+  if (typeof saveJsonFn !== 'function') {
+    logWarn('Toko - saveSettings: saveJSON is not available');
+    return;
+  }
+  saveJsonFn.call(libraryState.p5Canvas ?? window, settings, filename);
 }

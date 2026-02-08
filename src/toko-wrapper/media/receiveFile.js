@@ -23,6 +23,11 @@ export function setUpReceiveFile () {
   }
 }
 
+let nativeDropElement = null;
+let dragOverHandler = null;
+let dragEnterHandler = null;
+let dropHandler = null;
+
 /**
  * Set up native drag and drop event listeners
  * Used as fallback when p5.js drop() method is not available (e.g., p5v2 SVG, Q5)
@@ -66,18 +71,25 @@ function setUpNativeDrop () {
     return;
   }
 
+  if (nativeDropElement) {
+    tearDownReceiveFile();
+  }
+  nativeDropElement = canvasElement;
+
   // Prevent default drag behaviors
-  canvasElement.addEventListener('dragover', e => {
+  dragOverHandler = e => {
     e.preventDefault();
     e.stopPropagation();
-  });
+  };
+  canvasElement.addEventListener('dragover', dragOverHandler);
 
-  canvasElement.addEventListener('dragenter', e => {
+  dragEnterHandler = e => {
     e.preventDefault();
     e.stopPropagation();
-  });
+  };
+  canvasElement.addEventListener('dragenter', dragEnterHandler);
 
-  canvasElement.addEventListener('drop', e => {
+  dropHandler = e => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -86,7 +98,25 @@ function setUpNativeDrop () {
       const file = files[0];
       processDroppedFile(file);
     }
-  });
+  };
+  canvasElement.addEventListener('drop', dropHandler);
+}
+
+export function tearDownReceiveFile () {
+  if (!nativeDropElement) return;
+  if (dragOverHandler) {
+    nativeDropElement.removeEventListener('dragover', dragOverHandler);
+  }
+  if (dragEnterHandler) {
+    nativeDropElement.removeEventListener('dragenter', dragEnterHandler);
+  }
+  if (dropHandler) {
+    nativeDropElement.removeEventListener('drop', dropHandler);
+  }
+  nativeDropElement = null;
+  dragOverHandler = null;
+  dragEnterHandler = null;
+  dropHandler = null;
 }
 
 /**

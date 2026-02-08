@@ -25,11 +25,16 @@ import { Toko } from './core/toko.js';
   // Create the main Toko instance
   const tokoInstance = new Toko();
   let initializationAttempted = false;
+  let domReadyHandler = null;
 
   function autoInit () {
     // Prevent multiple initialization attempts
     if (initializationAttempted) {
       return;
+    }
+    if (domReadyHandler && typeof document !== 'undefined') {
+      document.removeEventListener('DOMContentLoaded', domReadyHandler);
+      domReadyHandler = null;
     }
 
     // Check for both global and window-attached variables
@@ -78,7 +83,14 @@ import { Toko } from './core/toko.js';
     if (typeof Q5 !== 'undefined' || (typeof window !== 'undefined' && typeof window.Q5 !== 'undefined')) {
       autoInit();
     } else if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', autoInit);
+      if (!domReadyHandler) {
+        domReadyHandler = () => {
+          document.removeEventListener('DOMContentLoaded', domReadyHandler);
+          domReadyHandler = null;
+          autoInit();
+        };
+      }
+      document.addEventListener('DOMContentLoaded', domReadyHandler);
     } else {
       autoInit();
     }

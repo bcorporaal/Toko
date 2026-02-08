@@ -37,7 +37,7 @@ export function registerLibraryFunctions (libraryFunctions, libraryState) {
   // Register functions on prototype
   Object.entries(libraryFunctions).forEach(([name, value]) => {
     if (typeof value === 'function' || typeof value === 'string') {
-      if (!Object.hasOwn(x5, name)) {
+      if (!Object.prototype.hasOwnProperty.call(x5, name)) {
         x5[name] = value;
       }
     }
@@ -47,7 +47,7 @@ export function registerLibraryFunctions (libraryFunctions, libraryState) {
   const globalObj = getGlobalObject();
   Object.entries(libraryFunctions).forEach(([name, value]) => {
     if (typeof value === 'string') {
-      if (!Object.hasOwn(globalObj, name)) {
+      if (!Object.prototype.hasOwnProperty.call(globalObj, name)) {
         globalObj[name] = value;
       }
     }
@@ -84,7 +84,7 @@ export function registerLibraryClasses (libraryClasses, libraryState) {
 
   // Register classes on prototype for this.Grid access in sketches
   Object.entries(libraryClasses).forEach(([name, ClassConstructor]) => {
-    if (!Object.hasOwn(x5, name)) {
+    if (!Object.prototype.hasOwnProperty.call(x5, name)) {
       x5[name] = ClassConstructor;
     }
   });

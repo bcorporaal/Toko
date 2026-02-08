@@ -89,7 +89,9 @@ function parseUrlParameters (options) {
       case 'webgl':
         if (libraryState.toko?.variant === LIBRARY_Q5) {
           renderMode = RENDER_MODES.WEBGPU;
-          Q5.WebGPU();
+          if (typeof Q5 !== 'undefined' && typeof Q5.WebGPU === 'function') {
+            Q5.WebGPU();
+          }
         } else {
           renderMode = RENDER_MODES.WEBGL;
         }
@@ -97,7 +99,9 @@ function parseUrlParameters (options) {
       case 'webgpu':
         if (libraryState.toko?.variant === LIBRARY_Q5) {
           renderMode = RENDER_MODES.WEBGPU;
-          Q5.WebGPU();
+          if (typeof Q5 !== 'undefined' && typeof Q5.WebGPU === 'function') {
+            Q5.WebGPU();
+          }
         } else {
           renderMode = RENDER_MODES.WEBGL;
         }

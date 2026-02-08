@@ -441,6 +441,7 @@
 
     // Last resort - return an empty object
     // This should rarely happen in practice
+    console.warn('Toko: Unable to determine global object; falling back to empty object');
     return {};
   }
 
@@ -481,7 +482,7 @@
     // Register functions on prototype
     Object.entries(libraryFunctions).forEach(([name, value]) => {
       if (typeof value === 'function' || typeof value === 'string') {
-        if (!Object.hasOwn(x5, name)) {
+        if (!Object.prototype.hasOwnProperty.call(x5, name)) {
           x5[name] = value;
         }
       }
@@ -491,7 +492,7 @@
     const globalObj = getGlobalObject();
     Object.entries(libraryFunctions).forEach(([name, value]) => {
       if (typeof value === 'string') {
-        if (!Object.hasOwn(globalObj, name)) {
+        if (!Object.prototype.hasOwnProperty.call(globalObj, name)) {
           globalObj[name] = value;
         }
       }
@@ -528,7 +529,7 @@
 
     // Register classes on prototype for this.Grid access in sketches
     Object.entries(libraryClasses).forEach(([name, ClassConstructor]) => {
-      if (!Object.hasOwn(x5, name)) {
+      if (!Object.prototype.hasOwnProperty.call(x5, name)) {
         x5[name] = ClassConstructor;
       }
     });
@@ -8825,7 +8826,7 @@
      * @returns {this} Returns this grid for method chaining
      */
     packGrid (columns, rows, cellShapes, fillEmptySpaces = true, snapToPixel = true) {
-      this._pointsAreValid = false;
+      this._pointsAreUpdated = false;
       this._cells = [];
       let cw, rh;
       if (snapToPixel) {
@@ -9502,8 +9503,14 @@
 
       let qt = new QuadTree(new QuadTreeRectangle(x, y, w, h), capacity, depth);
 
-      qt.points = obj.points ?? null;
-      qt.divided = qt.points === null; // points are set to null on subdivide
+      const hasChildren = 'ne' in obj || 'nw' in obj || 'se' in obj || 'sw' in obj;
+      if (hasChildren) {
+        qt.points = null; // points are set to null on subdivide
+        qt.divided = true;
+      } else {
+        qt.points = Array.isArray(obj.points) ? obj.points : [];
+        qt.divided = false;
+      }
 
       if ('ne' in obj || 'nw' in obj || 'se' in obj || 'sw' in obj) {
         const x = qt.boundary.x;
@@ -10153,7 +10160,7 @@
      * @returns {*} The property value or default
      */
     getData (key, defaultValue = undefined) {
-      return Object.hasOwn(this.data, key) ? this.data[key] : defaultValue;
+      return Object.prototype.hasOwnProperty.call(this.data, key) ? this.data[key] : defaultValue;
     }
 
     /**
@@ -10162,7 +10169,7 @@
      * @returns {boolean} True if property exists
      */
     hasData (key) {
-      return Object.hasOwn(this.data, key);
+      return Object.prototype.hasOwnProperty.call(this.data, key);
     }
 
     /**
@@ -10171,7 +10178,7 @@
      * @returns {boolean} True if property was removed
      */
     removeData (key) {
-      if (Object.hasOwn(this.data, key)) {
+      if (Object.prototype.hasOwnProperty.call(this.data, key)) {
         delete this.data[key];
         return true;
       }
@@ -10576,10 +10583,6 @@
      * @param {HexPoint} origin - Origin point of the grid in pixel coordinates
      */
     constructor (orientation = 'pointy', size = new HexPoint(100, 100), origin = new HexPoint(0, 0)) {
-      // statics
-      HexGrid.ORIENTATION_POINTY = 'pointy';
-      HexGrid.ORIENTATION_FLAT = 'flat';
-
       if (orientation !== HexGrid.ORIENTATION_POINTY && orientation !== HexGrid.ORIENTATION_FLAT) {
         throw new Error('Orientation must be "pointy" or "flat"');
       }
@@ -11575,6 +11578,9 @@
     }
   }
 
+  HexGrid.ORIENTATION_POINTY = 'pointy';
+  HexGrid.ORIENTATION_FLAT = 'flat';
+
   // Static orientation configurations
   HexGrid.POINTY = new Orientation(
     Math.sqrt(3.0),
@@ -12055,6 +12061,13 @@
       const currentItem = item;
       const loadType = this._determineLoadType(currentItem);
       const p5Context = ContextManager.getCurrentContext();
+      const finalizeItem = () => {
+        this.loadedCount++;
+        if (this.loadedCount === this.totalCount) {
+          this.isDone = true;
+          if (onComplete) onComplete();
+        }
+      };
 
       // Increment preload counter if available (manual tracking - Option 2)
       // This works regardless of where preloadAll() is called
@@ -12064,6 +12077,14 @@
       }
 
       if (loadType === ImageLoader.SVG) {
+        if (typeof loadSVG !== 'function') {
+          if (p5Context && typeof p5Context._decrementPreload === 'function') {
+            p5Context._decrementPreload();
+          }
+          console.warn('Toko: loadSVG is not available');
+          finalizeItem();
+          return;
+        }
         loadSVG(
           currentItem.url,
           svg => {
@@ -12072,11 +12093,7 @@
             if (p5Context && typeof p5Context._decrementPreload === 'function') {
               p5Context._decrementPreload();
             }
-            this.loadedCount++;
-            if (this.loadedCount === this.totalCount) {
-              this.isDone = true;
-              if (onComplete) onComplete();
-            }
+            finalizeItem();
           },
           event => {
             // Decrement preload counter on error (critical - must always be called)
@@ -12084,9 +12101,18 @@
               p5Context._decrementPreload();
             }
             console.log('SVG load failure', event);
+            finalizeItem();
           },
         );
       } else {
+        if (typeof loadImage !== 'function') {
+          if (p5Context && typeof p5Context._decrementPreload === 'function') {
+            p5Context._decrementPreload();
+          }
+          console.warn('Toko: loadImage is not available');
+          finalizeItem();
+          return;
+        }
         loadImage(
           currentItem.url,
           img => {
@@ -12095,11 +12121,7 @@
             if (p5Context && typeof p5Context._decrementPreload === 'function') {
               p5Context._decrementPreload();
             }
-            this.loadedCount++;
-            if (this.loadedCount === this.totalCount) {
-              this.isDone = true;
-              if (onComplete) onComplete();
-            }
+            finalizeItem();
           },
           event => {
             // Decrement preload counter on error (critical - must always be called)
@@ -12107,6 +12129,7 @@
               p5Context._decrementPreload();
             }
             console.log('Image load failure', event);
+            finalizeItem();
           },
         );
       }
@@ -12446,11 +12469,16 @@
     // Create the main Toko instance
     const tokoInstance = new Toko$1();
     let initializationAttempted = false;
+    let domReadyHandler = null;
 
     function autoInit () {
       // Prevent multiple initialization attempts
       if (initializationAttempted) {
         return;
+      }
+      if (domReadyHandler && typeof document !== 'undefined') {
+        document.removeEventListener('DOMContentLoaded', domReadyHandler);
+        domReadyHandler = null;
       }
 
       // Check for both global and window-attached variables
@@ -12499,7 +12527,14 @@
       if (typeof Q5 !== 'undefined' || (typeof window !== 'undefined' && typeof window.Q5 !== 'undefined')) {
         autoInit();
       } else if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', autoInit);
+        if (!domReadyHandler) {
+          domReadyHandler = () => {
+            document.removeEventListener('DOMContentLoaded', domReadyHandler);
+            domReadyHandler = null;
+            autoInit();
+          };
+        }
+        document.addEventListener('DOMContentLoaded', domReadyHandler);
       } else {
         autoInit();
       }

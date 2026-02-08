@@ -3,7 +3,10 @@ import { LIBRARY_P5V1, LIBRARY_P5V2, LIBRARY_Q5 } from '../../shared/constants/c
 import { libraryState } from '../core/state.js';
 import { setUpWrapper } from '../core/setup.js';
 import { logInfo, logDebug } from '../util/logging.js';
-import { recenterCanvas } from '../canvas/canvas.js';
+import { recenterCanvas, tearDownCanvas } from '../canvas/canvas.js';
+import { removePaneToggle } from '../ui/tweakpane.js';
+import { removeFPSToggle } from '../ui/fps.js';
+import { tearDownReceiveFile } from '../media/receiveFile.js';
 
 /**
  * Initialize hook for wrapper - called when p5.js/Q5.js initializes
@@ -95,5 +98,9 @@ export function postRefreshHook () {
  */
 export function removeHook () {
   logDebug(`${LIBRARY_NAME} - Cleanup on sketch removal`);
+  tearDownCanvas();
+  removePaneToggle();
+  removeFPSToggle();
+  tearDownReceiveFile();
   libraryState.initialized = false;
 }

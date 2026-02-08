@@ -145,6 +145,13 @@ export class ImageLoader {
     const currentItem = item;
     const loadType = this._determineLoadType(currentItem);
     const p5Context = ContextManager.getCurrentContext();
+    const finalizeItem = () => {
+      this.loadedCount++;
+      if (this.loadedCount === this.totalCount) {
+        this.isDone = true;
+        if (onComplete) onComplete();
+      }
+    };
 
     // Increment preload counter if available (manual tracking - Option 2)
     // This works regardless of where preloadAll() is called
@@ -154,6 +161,14 @@ export class ImageLoader {
     }
 
     if (loadType === ImageLoader.SVG) {
+      if (typeof loadSVG !== 'function') {
+        if (p5Context && typeof p5Context._decrementPreload === 'function') {
+          p5Context._decrementPreload();
+        }
+        console.warn('Toko: loadSVG is not available');
+        finalizeItem();
+        return;
+      }
       loadSVG(
         currentItem.url,
         svg => {
@@ -162,11 +177,7 @@ export class ImageLoader {
           if (p5Context && typeof p5Context._decrementPreload === 'function') {
             p5Context._decrementPreload();
           }
-          this.loadedCount++;
-          if (this.loadedCount === this.totalCount) {
-            this.isDone = true;
-            if (onComplete) onComplete();
-          }
+          finalizeItem();
         },
         event => {
           // Decrement preload counter on error (critical - must always be called)
@@ -174,9 +185,18 @@ export class ImageLoader {
             p5Context._decrementPreload();
           }
           console.log('SVG load failure', event);
+          finalizeItem();
         },
       );
     } else {
+      if (typeof loadImage !== 'function') {
+        if (p5Context && typeof p5Context._decrementPreload === 'function') {
+          p5Context._decrementPreload();
+        }
+        console.warn('Toko: loadImage is not available');
+        finalizeItem();
+        return;
+      }
       loadImage(
         currentItem.url,
         img => {
@@ -185,11 +205,7 @@ export class ImageLoader {
           if (p5Context && typeof p5Context._decrementPreload === 'function') {
             p5Context._decrementPreload();
           }
-          this.loadedCount++;
-          if (this.loadedCount === this.totalCount) {
-            this.isDone = true;
-            if (onComplete) onComplete();
-          }
+          finalizeItem();
         },
         event => {
           // Decrement preload counter on error (critical - must always be called)
@@ -197,6 +213,7 @@ export class ImageLoader {
             p5Context._decrementPreload();
           }
           console.log('Image load failure', event);
+          finalizeItem();
         },
       );
     }

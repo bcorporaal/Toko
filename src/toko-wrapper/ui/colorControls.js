@@ -1,5 +1,6 @@
 import { libraryState } from '../core/state';
 import { addPaneNavButtons } from './tweakpaneUtil';
+import { logWarn } from '../util/logging';
 
 /**
  * Add a color palette selector to a Tweakpane panel
@@ -24,18 +25,43 @@ export function addPaletteSelector (paneRef, pObject, incomingOptions) {
     justPrimary: true,
     sorted: true,
     navButtons: true,
+    collectionKey: 'collection',
+    paletteKey: 'palette',
+    collectionsListKey: 'collections',
   };
 
   // merge incoming with default options
   o = Object.assign({}, o, incomingOptions);
+
+  if (!paneRef || !pObject) {
+    logWarn('Toko - addPaletteSelector: paneRef or pObject is missing');
+    return;
+  }
 
   // store references
   o.paneRef = paneRef;
   o.pObject = pObject;
 
   // get the data for the controls
+  if (!o.collectionKey || !o.paletteKey || !o.collectionsListKey) {
+    logWarn('Toko - addPaletteSelector: missing required option keys');
+    return;
+  }
+  if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionKey)) {
+    logWarn('Toko - addPaletteSelector: collectionKey not found on parameter object');
+    return;
+  }
+  if (!Object.prototype.hasOwnProperty.call(o.pObject, o.paletteKey)) {
+    logWarn('Toko - addPaletteSelector: paletteKey not found on parameter object');
+    return;
+  }
+  if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionsListKey)) {
+    logWarn('Toko - addPaletteSelector: collectionsListKey not found on parameter object');
+    return;
+  }
+
   o.colorPalettes = libraryState.toko.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
-  o.collectionsList = libraryState.toko.formatForTweakpane(o.pObject[o.collectionsList]);
+  o.collectionsList = libraryState.toko.formatForTweakpane(o.pObject[o.collectionsListKey]);
 
   // add the collection control
   o.collectionInput = o.paneRef
@@ -77,10 +103,12 @@ export function addPaletteSelector (paneRef, pObject, incomingOptions) {
  * updatePaletteSelector('warm', 'sunset');
  */
 export function updatePaletteSelector (receivedCollection, receivedPalette) {
-  let o;
-
   // get references to the controls
-  o = libraryState.paletteSelectorData;
+  const o = libraryState.paletteSelectorData;
+  if (!o || !o.paneRef || !o.pObject) {
+    logWarn('Toko - updatePaletteSelector: palette selector not initialized');
+    return;
+  }
 
   // get the palettes for the selected collection
   o.colorPalettes = libraryState.toko.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);

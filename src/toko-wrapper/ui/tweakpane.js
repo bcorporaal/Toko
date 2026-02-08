@@ -37,6 +37,7 @@ import { LIBRARY_NAME } from '../config/constants.js';
 
 // Global references to the main Tweakpane panel and tab container
 let basePane, basePaneTab;
+let paneToggleHandler = null;
 
 /**
  * Initializes the Tweakpane UI panel with tabs and controls based on configuration options
@@ -175,11 +176,19 @@ function initializePanelState () {
  * @returns {void}
  */
 export function addPaneToggle () {
-  document.addEventListener('keydown', function (event) {
+  if (paneToggleHandler) return;
+  paneToggleHandler = function (event) {
     if (event.key.toLowerCase() === 'p') {
       togglePaneVisibility();
     }
-  });
+  };
+  document.addEventListener('keydown', paneToggleHandler);
+}
+
+export function removePaneToggle () {
+  if (!paneToggleHandler) return;
+  document.removeEventListener('keydown', paneToggleHandler);
+  paneToggleHandler = null;
 }
 
 /**

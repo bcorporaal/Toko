@@ -619,6 +619,8 @@
    * @namespace Canvas
    */
 
+  let resizeListenerAttached = false;
+
   /**
    * Set up the canvas with initial configuration
    * Sets canvas size, document title, and window resize listener
@@ -644,7 +646,17 @@
     //
     //  listen to resizes
     //
-    window.addEventListener('resize', windowResized);
+    if (!resizeListenerAttached) {
+      window.addEventListener('resize', windowResized);
+      resizeListenerAttached = true;
+    }
+  }
+
+  function tearDownCanvas () {
+    if (resizeListenerAttached) {
+      window.removeEventListener('resize', windowResized);
+      resizeListenerAttached = false;
+    }
   }
 
   /**
@@ -658,14 +670,28 @@
       return;
     }
 
+    const pixelDensity = Number(inSize.pixelDensity);
+    if (!Number.isFinite(pixelDensity) || pixelDensity <= 0) {
+      logError('TokoWrapper: setCanvasSize called with invalid pixelDensity');
+      return;
+    }
+    if (!Number.isFinite(inSize.width) || !Number.isFinite(inSize.height) || inSize.width <= 0 || inSize.height <= 0) {
+      logError('TokoWrapper: setCanvasSize called with invalid width/height');
+      return;
+    }
+
     const MARGIN = 80;
-    const DISPLAY_FACTOR = inSize.pixelDensity / 2;
+    const DISPLAY_FACTOR = pixelDensity / 2;
     let zoomFactor = 1;
     let newWidthString = '',
       newHeightString = '';
 
     if (typeof window.innerWidth === 'undefined' || typeof window.innerHeight === 'undefined') {
       logError('window.innerWidth or window.innerHeight is not defined');
+      return;
+    }
+    if (window.innerWidth <= 0 || window.innerHeight <= 0) {
+      logError('window.innerWidth or window.innerHeight is invalid');
       return;
     }
 
@@ -711,7 +737,13 @@
       labels?.classList.add(FULLWINDOW_CLASS);
     }
 
-    resizeCanvas(inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
+    const resizeFn = libraryState.p5Canvas?.resizeCanvas ?? (typeof window !== 'undefined' ? window.resizeCanvas : null);
+    if (typeof resizeFn === 'function') {
+      resizeFn.call(libraryState.p5Canvas ?? window, inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
+    } else {
+      logError('TokoWrapper: resizeCanvas is not available');
+      return;
+    }
 
     if (libraryState.p5Canvas && libraryState.p5Canvas.canvas) {
       const canvasEl = libraryState.p5Canvas.canvas;
@@ -753,6 +785,8 @@
    * when the window is resized (works for all variants including Q5).
    */
   function windowResized () {
+    if (!libraryState.p5Canvas) return;
+
     const sketchElementId = libraryState.options?.sketchElementId;
     if (!sketchElementId) return;
 
@@ -762,7 +796,12 @@
     const newWidth = sketchElement.offsetWidth;
     const newHeight = sketchElement.offsetHeight;
 
-    if (newWidth !== width || newHeight !== height) {
+    const hasGlobalSize = typeof width === 'number' && typeof height === 'number';
+    const currentWidth = hasGlobalSize ? width : (libraryState.p5Canvas?.width ?? null);
+    const currentHeight = hasGlobalSize ? height : (libraryState.p5Canvas?.height ?? null);
+    if (currentWidth === null || currentHeight === null) return;
+
+    if (newWidth !== currentWidth || newHeight !== currentHeight) {
       // Re-run setCanvasSize so zoomFactor and display dimensions are recalculated
       // for the new window size, keeping the canvas proportional.
       setCanvasSize(libraryState.options.canvasSize);
@@ -790,7 +829,23 @@
    * recenterCanvas();
    */
   function recenterCanvas () {
-    translate(-width / 2, -height / 2);
+    const hasGlobalSize = typeof width === 'number' && typeof height === 'number';
+    const currentWidth = hasGlobalSize ? width : (libraryState.p5Canvas?.width ?? null);
+    const currentHeight = hasGlobalSize ? height : (libraryState.p5Canvas?.height ?? null);
+    const translateFn = hasGlobalSize && typeof translate === 'function'
+      ? translate
+      : (libraryState.p5Canvas?.translate ?? null);
+
+    if (currentWidth === null || currentHeight === null || typeof translateFn !== 'function') {
+      logError('TokoWrapper: recenterCanvas requires a valid drawing context');
+      return;
+    }
+
+    if (hasGlobalSize && typeof translate === 'function') {
+      translate(-currentWidth / 2, -currentHeight / 2);
+    } else {
+      libraryState.p5Canvas.translate(-currentWidth / 2, -currentHeight / 2);
+    }
   }
 
   /**
@@ -808,7 +863,7 @@
 
     function traverse (obj) {
       for (const key in obj) {
-        if (Object.hasOwn(obj, key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           // check if the current property is 'binding' and an object
           if (key === 'binding' && typeof obj[key] === 'object') {
             // if it is, extract the key value combination and add it to the presets
@@ -845,11 +900,11 @@
 
     function traverse (obj) {
       for (const key in obj) {
-        if (Object.hasOwn(obj, key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           // check if the current property is 'binding' and an object
           if (key === 'binding' && typeof obj[key] === 'object') {
             // update the 'binding' object with values from newPreset
-            if (Object.hasOwn(presetObject, obj[key].key)) {
+            if (Object.prototype.hasOwnProperty.call(presetObject, obj[key].key)) {
               obj[key].value = presetObject[obj[key].key];
             }
           } else if (typeof obj[key] === 'object') {
@@ -1021,18 +1076,27 @@
       //  save canvas as png
       //
       let filename = libraryState.toko.generateFilename('png');
-      saveCanvas(filename, 'png');
+      const saveCanvasFn = libraryState.p5Canvas?.saveCanvas ?? (typeof saveCanvas === 'function' ? saveCanvas : null);
+      if (typeof saveCanvasFn !== 'function') {
+        logWarn('Toko - saveSketch: saveCanvas is not available');
+        return;
+      }
+      saveCanvasFn.call(libraryState.p5Canvas ?? window, filename, 'png');
       return filename;
     } else if (isSVG) {
       //
       // add attributes to ensure proper preview of the SVG file in the Finder
       //
-      let svgTemp = document.getElementById('sketch-canvas').firstChild.firstChild.firstChild;
-      svgTemp.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-      svgTemp.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      const svgElement = sketchContainer.querySelector('svg');
+      if (!svgElement) {
+        logWarn('Toko - saveSketch: SVG element not found');
+        return;
+      }
+      svgElement.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+      svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
       let filename = libraryState.toko.generateFilename('svg');
-      let svgString = document.getElementById(libraryState.options.sketchElementId).firstChild.innerHTML;
+      let svgString = svgElement.outerHTML;
 
       let blob = new Blob([svgString], { type: 'image/svg+xml' });
       let url = window.URL.createObjectURL(blob);
@@ -1061,6 +1125,9 @@
    */
   function saveSketchAndSettings () {
     let filename = saveSketch();
+    if (!filename || typeof filename !== 'string') {
+      return;
+    }
     //
     //  strip the extension of the filename so we can reuse it.
     //
@@ -1088,7 +1155,12 @@
     const settings = _stateToPreset(state);
 
     // save with p5.js native saver
-    saveJSON(settings, filename);
+    const saveJsonFn = libraryState.p5Canvas?.saveJSON ?? (typeof saveJSON === 'function' ? saveJSON : null);
+    if (typeof saveJsonFn !== 'function') {
+      logWarn('Toko - saveSettings: saveJSON is not available');
+      return;
+    }
+    saveJsonFn.call(libraryState.p5Canvas ?? window, settings, filename);
   }
 
   //
@@ -1132,7 +1204,11 @@
 
     //  refresh the sketch before capture
     if (libraryState.options.captureOptions.refreshBeforeCapture) {
-      refresh();
+      if (typeof window.refresh === 'function') {
+        window.refresh();
+      } else if (typeof window.tokoWrapper === 'function' && window.tokoWrapper()) {
+        window.tokoWrapper().updateParameters();
+      }
     }
   }
 
@@ -1263,18 +1339,43 @@
       justPrimary: true,
       sorted: true,
       navButtons: true,
+      collectionKey: 'collection',
+      paletteKey: 'palette',
+      collectionsListKey: 'collections',
     };
 
     // merge incoming with default options
     o = Object.assign({}, o, incomingOptions);
+
+    if (!paneRef || !pObject) {
+      logWarn('Toko - addPaletteSelector: paneRef or pObject is missing');
+      return;
+    }
 
     // store references
     o.paneRef = paneRef;
     o.pObject = pObject;
 
     // get the data for the controls
+    if (!o.collectionKey || !o.paletteKey || !o.collectionsListKey) {
+      logWarn('Toko - addPaletteSelector: missing required option keys');
+      return;
+    }
+    if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionKey)) {
+      logWarn('Toko - addPaletteSelector: collectionKey not found on parameter object');
+      return;
+    }
+    if (!Object.prototype.hasOwnProperty.call(o.pObject, o.paletteKey)) {
+      logWarn('Toko - addPaletteSelector: paletteKey not found on parameter object');
+      return;
+    }
+    if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionsListKey)) {
+      logWarn('Toko - addPaletteSelector: collectionsListKey not found on parameter object');
+      return;
+    }
+
     o.colorPalettes = libraryState.toko.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
-    o.collectionsList = libraryState.toko.formatForTweakpane(o.pObject[o.collectionsList]);
+    o.collectionsList = libraryState.toko.formatForTweakpane(o.pObject[o.collectionsListKey]);
 
     // add the collection control
     o.collectionInput = o.paneRef
@@ -1316,10 +1417,12 @@
    * updatePaletteSelector('warm', 'sunset');
    */
   function updatePaletteSelector (receivedCollection, receivedPalette) {
-    let o;
-
     // get references to the controls
-    o = libraryState.paletteSelectorData;
+    const o = libraryState.paletteSelectorData;
+    if (!o || !o.paneRef || !o.pObject) {
+      logWarn('Toko - updatePaletteSelector: palette selector not initialized');
+      return;
+    }
 
     // get the palettes for the selected collection
     o.colorPalettes = libraryState.toko.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);
@@ -1522,6 +1625,7 @@
 
   // Global references to the main Tweakpane panel and tab container
   let basePane, basePaneTab;
+  let paneToggleHandler = null;
 
   /**
    * Initializes the Tweakpane UI panel with tabs and controls based on configuration options
@@ -1660,11 +1764,19 @@
    * @returns {void}
    */
   function addPaneToggle () {
-    document.addEventListener('keydown', function (event) {
+    if (paneToggleHandler) return;
+    paneToggleHandler = function (event) {
       if (event.key.toLowerCase() === 'p') {
         togglePaneVisibility();
       }
-    });
+    };
+    document.addEventListener('keydown', paneToggleHandler);
+  }
+
+  function removePaneToggle () {
+    if (!paneToggleHandler) return;
+    document.removeEventListener('keydown', paneToggleHandler);
+    paneToggleHandler = null;
   }
 
   /**
@@ -1916,6 +2028,11 @@
     }
   }
 
+  let nativeDropElement = null;
+  let dragOverHandler = null;
+  let dragEnterHandler = null;
+  let dropHandler = null;
+
   /**
    * Set up native drag and drop event listeners
    * Used as fallback when p5.js drop() method is not available (e.g., p5v2 SVG, Q5)
@@ -1959,18 +2076,25 @@
       return;
     }
 
+    if (nativeDropElement) {
+      tearDownReceiveFile();
+    }
+    nativeDropElement = canvasElement;
+
     // Prevent default drag behaviors
-    canvasElement.addEventListener('dragover', e => {
+    dragOverHandler = e => {
       e.preventDefault();
       e.stopPropagation();
-    });
+    };
+    canvasElement.addEventListener('dragover', dragOverHandler);
 
-    canvasElement.addEventListener('dragenter', e => {
+    dragEnterHandler = e => {
       e.preventDefault();
       e.stopPropagation();
-    });
+    };
+    canvasElement.addEventListener('dragenter', dragEnterHandler);
 
-    canvasElement.addEventListener('drop', e => {
+    dropHandler = e => {
       e.preventDefault();
       e.stopPropagation();
 
@@ -1979,7 +2103,25 @@
         const file = files[0];
         processDroppedFile(file);
       }
-    });
+    };
+    canvasElement.addEventListener('drop', dropHandler);
+  }
+
+  function tearDownReceiveFile () {
+    if (!nativeDropElement) return;
+    if (dragOverHandler) {
+      nativeDropElement.removeEventListener('dragover', dragOverHandler);
+    }
+    if (dragEnterHandler) {
+      nativeDropElement.removeEventListener('dragenter', dragEnterHandler);
+    }
+    if (dropHandler) {
+      nativeDropElement.removeEventListener('drop', dropHandler);
+    }
+    nativeDropElement = null;
+    dragOverHandler = null;
+    dragEnterHandler = null;
+    dropHandler = null;
   }
 
   /**
@@ -2087,12 +2229,22 @@
     addFPSToggle();
   }
 
+  let fpsToggleHandler = null;
+
   function addFPSToggle () {
-    document.addEventListener('keydown', function (event) {
+    if (fpsToggleHandler) return;
+    fpsToggleHandler = function (event) {
       if (event.key.toLowerCase() === 'f') {
         libraryState.toko.toggleFPS();
       }
-    });
+    };
+    document.addEventListener('keydown', fpsToggleHandler);
+  }
+
+  function removeFPSToggle () {
+    if (!fpsToggleHandler) return;
+    document.removeEventListener('keydown', fpsToggleHandler);
+    fpsToggleHandler = null;
   }
 
   /**
@@ -2184,6 +2336,10 @@
    */
   function removeHook () {
     logDebug(`${LIBRARY_NAME} - Cleanup on sketch removal`);
+    tearDownCanvas();
+    removePaneToggle();
+    removeFPSToggle();
+    tearDownReceiveFile();
     libraryState.initialized = false;
   }
 
@@ -2345,7 +2501,9 @@
         case 'webgl':
           if (libraryState.toko?.variant === LIBRARY_Q5) {
             renderMode = RENDER_MODES.WEBGPU;
-            Q5.WebGPU();
+            if (typeof Q5 !== 'undefined' && typeof Q5.WebGPU === 'function') {
+              Q5.WebGPU();
+            }
           } else {
             renderMode = RENDER_MODES.WEBGL;
           }
@@ -2353,7 +2511,9 @@
         case 'webgpu':
           if (libraryState.toko?.variant === LIBRARY_Q5) {
             renderMode = RENDER_MODES.WEBGPU;
-            Q5.WebGPU();
+            if (typeof Q5 !== 'undefined' && typeof Q5.WebGPU === 'function') {
+              Q5.WebGPU();
+            }
           } else {
             renderMode = RENDER_MODES.WEBGL;
           }
@@ -2595,7 +2755,7 @@
         if (typeof window !== 'undefined') {
           if (mode === RENDER_MODES.P2D && typeof window.P2D !== 'undefined') return window.P2D;
           if (mode === RENDER_MODES.WEBGL && typeof window.WEBGL !== 'undefined') return window.WEBGL;
-          if (mode === RENDER_MODES.WEBGPU && typeof window.WEBGL !== 'undefined') return window.WEBGL;
+          if (mode === RENDER_MODES.WEBGPU && typeof window.WEBGPU !== 'undefined') return window.WEBGPU;
           if (mode === RENDER_MODES.SVG && typeof window.SVG !== 'undefined') return window.SVG;
         }
         return mode;

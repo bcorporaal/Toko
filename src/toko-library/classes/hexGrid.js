@@ -71,10 +71,6 @@ export class HexGrid {
    * @param {HexPoint} origin - Origin point of the grid in pixel coordinates
    */
   constructor (orientation = 'pointy', size = new HexPoint(100, 100), origin = new HexPoint(0, 0)) {
-    // statics
-    HexGrid.ORIENTATION_POINTY = 'pointy';
-    HexGrid.ORIENTATION_FLAT = 'flat';
-
     if (orientation !== HexGrid.ORIENTATION_POINTY && orientation !== HexGrid.ORIENTATION_FLAT) {
       throw new Error('Orientation must be "pointy" or "flat"');
     }
@@ -1069,6 +1065,9 @@ export class HexGrid {
     return horizontalSpan || verticalSpan;
   }
 }
+
+HexGrid.ORIENTATION_POINTY = 'pointy';
+HexGrid.ORIENTATION_FLAT = 'flat';
 
 // Static orientation configurations
 HexGrid.POINTY = new Orientation(

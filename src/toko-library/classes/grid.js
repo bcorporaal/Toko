@@ -121,7 +121,7 @@ export class Grid {
    * @returns {this} Returns this grid for method chaining
    */
   packGrid (columns, rows, cellShapes, fillEmptySpaces = true, snapToPixel = true) {
-    this._pointsAreValid = false;
+    this._pointsAreUpdated = false;
     this._cells = [];
     let cw, rh;
     if (snapToPixel) {

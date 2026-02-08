@@ -43,7 +43,11 @@ export function initCapture () {
 
   //  refresh the sketch before capture
   if (libraryState.options.captureOptions.refreshBeforeCapture) {
-    refresh();
+    if (typeof window.refresh === 'function') {
+      window.refresh();
+    } else if (typeof window.tokoWrapper === 'function' && window.tokoWrapper()) {
+      window.tokoWrapper().updateParameters();
+    }
   }
 }
 
