@@ -549,11 +549,21 @@
   };
 
   //
+  //  Render modes
+  //
+  const RENDER_MODES = {
+    P2D: 'p2d',
+    WEBGL: 'webgl',
+    SVG: 'svg',
+    WEBGPU: 'webgpu',
+  };
+
+  //
   //	Default options for setup
   //
   const DEFAULT_OPTIONS = {
     sketchElementId: 'sketch-canvas',
-    renderMode: 'P2D',
+    renderMode: RENDER_MODES.P2D,
     title: 'untitled sketch',
     addInfoToTitle: false,
     showSaveSketchButton: false,

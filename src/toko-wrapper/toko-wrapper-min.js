@@ -186,8 +186,21 @@ import { initializeP5Variant } from '../shared/util/initialization.js';
       libraryState.options.sketchElementId = value;
     }
 
+    /**
+     * Returns the renderer value for use with createCanvas().
+     * Resolves internal render mode string to the p5/Q5 renderer constant when available,
+     * so createCanvas(w, h, tokoWrapper.renderMode) works with p5.js and extensions (e.g. p5.svg).
+     * @returns {Object|string} p5 renderer constant (P2D, WEBGL, SVG) or internal string if not yet available
+     */
     get renderMode () {
-      return libraryState.options.renderMode;
+      const mode = libraryState.options.renderMode;
+      if (typeof window !== 'undefined') {
+        if (mode === RENDER_MODES.P2D && typeof window.P2D !== 'undefined') return window.P2D;
+        if (mode === RENDER_MODES.WEBGL && typeof window.WEBGL !== 'undefined') return window.WEBGL;
+        if (mode === RENDER_MODES.WEBGPU && typeof window.WEBGL !== 'undefined') return window.WEBGL;
+        if (mode === RENDER_MODES.SVG && typeof window.SVG !== 'undefined') return window.SVG;
+      }
+      return mode;
     }
 
     // set renderMode (value) {
