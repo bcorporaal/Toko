@@ -687,12 +687,17 @@
 
   /**
    * Handle canvas resize events
-   * Called when the canvas dimensions need to be updated
-   * @todo Determine how to best call the appropriate resize function
+   * Called when the canvas dimensions have been updated (e.g. after window resize).
+   * Calls refresh() and redraw() so that noLoop() sketches redraw with the new size;
+   * p5v1/p5v2 with P2D do not auto-redraw on resize, unlike Q5 and WebGL/WebGPU/SVG.
    */
   function canvasResized () {
-    // TO DO - determine how to best call the right function
-    console.log('TokoWrapper - canvasResized');
+    if (typeof window !== 'undefined' && typeof window.refresh === 'function') {
+      window.refresh();
+    }
+    if (typeof window !== 'undefined' && typeof window.redraw === 'function') {
+      window.redraw();
+    }
   }
 
   /**
