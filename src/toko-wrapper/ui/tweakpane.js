@@ -32,7 +32,7 @@ import {
 import { addPaletteSelector, addBlendModeSelector } from './colorControls';
 import { addRandomSeedControl } from './rngControls';
 import { addEasingSelector } from './easingControls';
-import { logDebug, logError } from '../util/logging';
+import { isDebugLogEnabled } from '../../shared/util/debug.js';
 import { LIBRARY_NAME } from '../config/constants.js';
 
 // Global references to the main Tweakpane panel and tab container
@@ -157,7 +157,7 @@ function addEventHandlers () {
 
   // Call user-defined setup function if available
   if (typeof window.setupPanelControls === 'function') {
-    logDebug(`${LIBRARY_NAME} - setupPanelControls`);
+    if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - setupPanelControls`);
     window.setupPanelControls(libraryState.tweakpane);
   }
 }
@@ -223,7 +223,7 @@ export function addRefreshHandler () {
       if (typeof window.tokoWrapper === 'function' && window.tokoWrapper()) {
         window.tokoWrapper().updateParameters();
       } else {
-        logError('tokoWrapper instance not available to update parameters');
+        console.error('tokoWrapper instance not available to update parameters');
       }
     }, libraryState.debounceDelay);
   };

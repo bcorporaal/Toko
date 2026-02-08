@@ -7,7 +7,6 @@
  * const preset = _stateToPreset(tweakpaneState);
  */
 
-import { logWarn } from '../util/logging';
 //
 //  turn the long Tweakpane state into a more compact set of values
 
@@ -126,7 +125,7 @@ export function addPaneNavButtons (
         break;
 
       default:
-        logWarn('a non-existing button was pressed:', ev.index[0]);
+        console.warn('a non-existing button was pressed:', ev.index[0]);
         break;
     }
     libraryState.tweakpane.base.refresh();

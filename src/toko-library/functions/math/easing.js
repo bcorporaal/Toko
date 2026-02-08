@@ -12,7 +12,6 @@
 /**
  * @namespace Easing
  */
-import { logError } from '../utils/logging.js';
 import { EASE_LINEAR, EASE_SMOOTH, EASE_QUAD, EASE_IN_OUT } from '../../../shared/constants/common.js';
 
 /**
@@ -586,7 +585,7 @@ export function getEasingFunction (easeType = EASE_QUAD, easeDirection = EASE_IN
   if (typeof f === 'function') {
     return f;
   } else {
-    logError(`${easeFunction} is not a function.`);
+    console.error(`${easeFunction} is not a function.`);
     return null;
   }
 }

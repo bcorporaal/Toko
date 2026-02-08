@@ -5,7 +5,7 @@
 
 import { detectP5Variant } from '../detector.js';
 import { LIBRARY_P5V1, LIBRARY_P5V2, LIBRARY_Q5 } from '../constants/common.js';
-import { logWarn, logDebug } from '../util/logging.js';
+import { isDebugLogEnabled } from '../util/debug.js';
 
 /**
  * Base adapter class with common functionality
@@ -36,7 +36,7 @@ export class BaseAdapter {
       case LIBRARY_Q5:
         return this.initializeQ5();
       default:
-        logWarn(`Unsupported p5.js variant: ${this.variant}`);
+        console.warn(`Unsupported p5.js variant: ${this.variant}`);
         return false;
     }
   }
@@ -73,7 +73,7 @@ export class BaseAdapter {
    * @param {Object} [params.lifecycles] - lifecycles object for v2
    */
   initializeP5v2 (params = null) {
-    logDebug('shared-adapter - initializeP5v2');
+    if (isDebugLogEnabled(this.libraryState)) console.log('shared-adapter - initializeP5v2');
 
     // If no parameters provided, return the adapter function for later use
     if (!params) {
@@ -86,7 +86,7 @@ export class BaseAdapter {
 
     // Validate required parameters
     if (!p5 || !fn || !lifecycles) {
-      logWarn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
+      console.warn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
       return false;
     }
 

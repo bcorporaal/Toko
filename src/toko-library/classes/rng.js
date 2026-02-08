@@ -17,7 +17,8 @@
  *
  */
 
-import { logDebug } from '../functions/utils/logging.js';
+import { libraryState } from '../core/state.js';
+import { isDebugLogEnabled } from '../../shared/util/debug.js';
 
 export class RNG {
   /**
@@ -36,8 +37,10 @@ export class RNG {
    * @returns {void}
    */
   _dump () {
-    logDebug(this._seedString, this._currentSeed);
-    logDebug(this._seedHistory, this._seedHistoryIndex);
+    if (isDebugLogEnabled(libraryState)) {
+      console.log(this._seedString, this._currentSeed);
+      console.log(this._seedHistory, this._seedHistoryIndex);
+    }
   }
 
   /**

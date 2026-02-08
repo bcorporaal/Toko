@@ -1,6 +1,5 @@
 import { libraryState } from '../core/state';
 import { addPaneNavButtons } from './tweakpaneUtil';
-import { logWarn } from '../util/logging';
 
 /**
  * Add a color palette selector to a Tweakpane panel
@@ -34,7 +33,7 @@ export function addPaletteSelector (paneRef, pObject, incomingOptions) {
   o = Object.assign({}, o, incomingOptions);
 
   if (!paneRef || !pObject) {
-    logWarn('Toko - addPaletteSelector: paneRef or pObject is missing');
+    console.warn('Toko - addPaletteSelector: paneRef or pObject is missing');
     return;
   }
 
@@ -44,19 +43,19 @@ export function addPaletteSelector (paneRef, pObject, incomingOptions) {
 
   // get the data for the controls
   if (!o.collectionKey || !o.paletteKey || !o.collectionsListKey) {
-    logWarn('Toko - addPaletteSelector: missing required option keys');
+    console.warn('Toko - addPaletteSelector: missing required option keys');
     return;
   }
   if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionKey)) {
-    logWarn('Toko - addPaletteSelector: collectionKey not found on parameter object');
+    console.warn('Toko - addPaletteSelector: collectionKey not found on parameter object');
     return;
   }
   if (!Object.prototype.hasOwnProperty.call(o.pObject, o.paletteKey)) {
-    logWarn('Toko - addPaletteSelector: paletteKey not found on parameter object');
+    console.warn('Toko - addPaletteSelector: paletteKey not found on parameter object');
     return;
   }
   if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionsListKey)) {
-    logWarn('Toko - addPaletteSelector: collectionsListKey not found on parameter object');
+    console.warn('Toko - addPaletteSelector: collectionsListKey not found on parameter object');
     return;
   }
 
@@ -106,7 +105,7 @@ export function updatePaletteSelector (receivedCollection, receivedPalette) {
   // get references to the controls
   const o = libraryState.paletteSelectorData;
   if (!o || !o.paneRef || !o.pObject) {
-    logWarn('Toko - updatePaletteSelector: palette selector not initialized');
+    console.warn('Toko - updatePaletteSelector: palette selector not initialized');
     return;
   }
 

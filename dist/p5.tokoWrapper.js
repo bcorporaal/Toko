@@ -234,47 +234,6 @@
   const RECORD_BUTTON_LABEL_FRAMES = 'frames';
   const RECORD_BUTTON_LABEL_SETTINGS = ' & settings';
 
-  /**
-   * Logging level constants and utilities
-   *
-   * Provides standard logging levels with numeric hierarchy for comparison.
-   * Levels are ordered from most critical (error) to least critical (debug).
-   */
-
-  // Log level constants with numeric values for comparison
-  const LOG_LEVELS = {
-    ERROR: 'error',
-    WARN: 'warn',
-    INFO: 'info',
-    DEBUG: 'debug',
-  };
-
-  // Numeric hierarchy for level comparison (higher number = more verbose)
-  const LOG_LEVEL_VALUES = {
-    [LOG_LEVELS.ERROR]: 0,
-    [LOG_LEVELS.WARN]: 1,
-    [LOG_LEVELS.INFO]: 2,
-    [LOG_LEVELS.DEBUG]: 3,
-  };
-
-  /**
-   * Check if a log level should be output based on current configuration
-   * @param {string} level - The log level to check
-   * @param {boolean} loggingEnabled - Master logging switch
-   * @param {string} currentLogLevel - Current minimum log level setting
-   * @returns {boolean} True if the level should be logged
-   */
-  function shouldLog (level, loggingEnabled, currentLogLevel) {
-    if (!loggingEnabled) {
-      return false;
-    }
-
-    const levelValue = LOG_LEVEL_VALUES[level];
-    const currentValue = LOG_LEVEL_VALUES[currentLogLevel];
-
-    return levelValue !== undefined && currentValue !== undefined && levelValue <= currentValue;
-  }
-
   //
   //	Default options for setup
   //
@@ -296,7 +255,7 @@
     seedString: '',
     debounceDelay: 100,
     loggingEnabled: true,
-    logLevel: LOG_LEVELS.INFO,
+    logLevel: 'info',
     showCaptureOptions: false,
     showFPS: false,
     shiftCanvasForWebGL: true,
@@ -355,92 +314,12 @@
   }
 
   /**
-   * Shared logging utility for Toko
-   *
-   * Provides level-based logging functions that work across toko-library and toko-wrapper.
-   * Supports standard log levels: error, warn, info, debug with configurable filtering.
+   * Debug logging helper - only used to gate console.log when debug flag is set.
+   * @param {Object} state - Library state with options.loggingEnabled and options.logLevel
+   * @returns {boolean} True when debug logging is enabled
    */
-
-  /**
-   * Get the current library state for logging configuration
-   * This function will be overridden by each library to provide their specific state
-   * @returns {Object} Library state with options.loggingEnabled and options.logLevel
-   */
-  let getLibraryState = () => ({ options: { loggingEnabled: true, logLevel: LOG_LEVELS.INFO } });
-
-  /**
-   * Set the library state getter function
-   * @param {Function} stateGetter - Function that returns the current library state
-   * @returns {void}
-   * @example
-   * setLibraryStateGetter(() => libraryState);
-   */
-  function setLibraryStateGetter (stateGetter) {
-    getLibraryState = stateGetter;
-  }
-
-  /**
-   * Log an error message
-   * @param {string} message - The error message to log
-   * @returns {void}
-   * @example
-   * logError('Failed to initialize canvas');
-   */
-  function logError (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.ERROR, loggingEnabled, logLevel)) {
-      console.error(message);
-    }
-  }
-
-  /**
-   * Log a warning message
-   * @param {string} message - The warning message to log
-   * @returns {void}
-   * @example
-   * logWarn('Canvas size exceeds recommended limits');
-   */
-  function logWarn (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.WARN, loggingEnabled, logLevel)) {
-      console.warn(message);
-    }
-  }
-
-  /**
-   * Log an info message
-   * @param {string} message - The info message to log
-   * @returns {void}
-   * @example
-   * logInfo('Library initialized successfully');
-   */
-  function logInfo (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.INFO, loggingEnabled, logLevel)) {
-      console.log(message);
-    }
-  }
-
-  /**
-   * Log a debug message
-   * @param {string} message - The debug message to log
-   * @returns {void}
-   * @example
-   * logDebug('Processing frame 42');
-   */
-  function logDebug (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.DEBUG, loggingEnabled, logLevel)) {
-      console.log(message);
-    }
+  function isDebugLogEnabled (state) {
+    return !!(state?.options?.loggingEnabled && state?.options?.logLevel === 'debug');
   }
 
   /**
@@ -477,7 +356,7 @@
         case LIBRARY_Q5:
           return this.initializeQ5();
         default:
-          logWarn(`Unsupported p5.js variant: ${this.variant}`);
+          console.warn(`Unsupported p5.js variant: ${this.variant}`);
           return false;
       }
     }
@@ -514,7 +393,7 @@
      * @param {Object} [params.lifecycles] - lifecycles object for v2
      */
     initializeP5v2 (params = null) {
-      logDebug('shared-adapter - initializeP5v2');
+      if (isDebugLogEnabled(this.libraryState)) console.log('shared-adapter - initializeP5v2');
 
       // If no parameters provided, return the adapter function for later use
       if (!params) {
@@ -527,7 +406,7 @@
 
       // Validate required parameters
       if (!p5 || !fn || !lifecycles) {
-        logWarn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
+        console.warn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
         return false;
       }
 
@@ -607,9 +486,6 @@
     // prototypeFunctionsRegistered: false,
   };
 
-  // Set up the library state getter for the shared logging system
-  setLibraryStateGetter(() => libraryState);
-
   /**
    * Canvas management for TokoWrapper
    *
@@ -666,17 +542,17 @@
    */
   function setCanvasSize (inSize) {
     if (!inSize) {
-      logError('TokoWrapper: setCanvasSize called with null or undefined size configuration');
+      console.error('TokoWrapper: setCanvasSize called with null or undefined size configuration');
       return;
     }
 
     const pixelDensity = Number(inSize.pixelDensity);
     if (!Number.isFinite(pixelDensity) || pixelDensity <= 0) {
-      logError('TokoWrapper: setCanvasSize called with invalid pixelDensity');
+      console.error('TokoWrapper: setCanvasSize called with invalid pixelDensity');
       return;
     }
     if (!Number.isFinite(inSize.width) || !Number.isFinite(inSize.height) || inSize.width <= 0 || inSize.height <= 0) {
-      logError('TokoWrapper: setCanvasSize called with invalid width/height');
+      console.error('TokoWrapper: setCanvasSize called with invalid width/height');
       return;
     }
 
@@ -687,11 +563,11 @@
       newHeightString = '';
 
     if (typeof window.innerWidth === 'undefined' || typeof window.innerHeight === 'undefined') {
-      logError('window.innerWidth or window.innerHeight is not defined');
+      console.error('window.innerWidth or window.innerHeight is not defined');
       return;
     }
     if (window.innerWidth <= 0 || window.innerHeight <= 0) {
-      logError('window.innerWidth or window.innerHeight is invalid');
+      console.error('window.innerWidth or window.innerHeight is invalid');
       return;
     }
 
@@ -741,7 +617,7 @@
     if (typeof resizeFn === 'function') {
       resizeFn.call(libraryState.p5Canvas ?? window, inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
     } else {
-      logError('TokoWrapper: resizeCanvas is not available');
+      console.error('TokoWrapper: resizeCanvas is not available');
       return;
     }
 
@@ -816,7 +692,7 @@
    */
   function canvasResized () {
     // TO DO - determine how to best call the right function
-    logInfo('TokoWrapper - canvasResized');
+    console.log('TokoWrapper - canvasResized');
   }
 
   /**
@@ -837,7 +713,7 @@
       : (libraryState.p5Canvas?.translate ?? null);
 
     if (currentWidth === null || currentHeight === null || typeof translateFn !== 'function') {
-      logError('TokoWrapper: recenterCanvas requires a valid drawing context');
+      console.error('TokoWrapper: recenterCanvas requires a valid drawing context');
       return;
     }
 
@@ -970,7 +846,7 @@
           break;
 
         default:
-          logWarn('a non-existing button was pressed:', ev.index[0]);
+          console.warn('a non-existing button was pressed:', ev.index[0]);
           break;
       }
       libraryState.tweakpane.base.refresh();
@@ -1062,7 +938,7 @@
 
     let sketchContainer = document.getElementById(libraryState.options.sketchElementId);
     if (!sketchContainer || !sketchContainer.firstChild) {
-      logWarn('Toko - saveSketch: sketch element not found');
+      console.warn('Toko - saveSketch: sketch element not found');
       return;
     }
     let sketchElement = sketchContainer.firstChild;
@@ -1078,7 +954,7 @@
       let filename = libraryState.toko.generateFilename('png');
       const saveCanvasFn = libraryState.p5Canvas?.saveCanvas ?? (typeof saveCanvas === 'function' ? saveCanvas : null);
       if (typeof saveCanvasFn !== 'function') {
-        logWarn('Toko - saveSketch: saveCanvas is not available');
+        console.warn('Toko - saveSketch: saveCanvas is not available');
         return;
       }
       saveCanvasFn.call(libraryState.p5Canvas ?? window, filename, 'png');
@@ -1089,7 +965,7 @@
       //
       const svgElement = sketchContainer.querySelector('svg');
       if (!svgElement) {
-        logWarn('Toko - saveSketch: SVG element not found');
+        console.warn('Toko - saveSketch: SVG element not found');
         return;
       }
       svgElement.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
@@ -1114,7 +990,7 @@
 
       return filename;
     } else {
-      logWarn('Toko - saveSketch: unknown type');
+      console.warn('Toko - saveSketch: unknown type');
       return;
     }
   }
@@ -1157,7 +1033,7 @@
     // save with p5.js native saver
     const saveJsonFn = libraryState.p5Canvas?.saveJSON ?? (typeof saveJSON === 'function' ? saveJSON : null);
     if (typeof saveJsonFn !== 'function') {
-      logWarn('Toko - saveSettings: saveJSON is not available');
+      console.warn('Toko - saveSettings: saveJSON is not available');
       return;
     }
     saveJsonFn.call(libraryState.p5Canvas ?? window, settings, filename);
@@ -1348,7 +1224,7 @@
     o = Object.assign({}, o, incomingOptions);
 
     if (!paneRef || !pObject) {
-      logWarn('Toko - addPaletteSelector: paneRef or pObject is missing');
+      console.warn('Toko - addPaletteSelector: paneRef or pObject is missing');
       return;
     }
 
@@ -1358,19 +1234,19 @@
 
     // get the data for the controls
     if (!o.collectionKey || !o.paletteKey || !o.collectionsListKey) {
-      logWarn('Toko - addPaletteSelector: missing required option keys');
+      console.warn('Toko - addPaletteSelector: missing required option keys');
       return;
     }
     if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionKey)) {
-      logWarn('Toko - addPaletteSelector: collectionKey not found on parameter object');
+      console.warn('Toko - addPaletteSelector: collectionKey not found on parameter object');
       return;
     }
     if (!Object.prototype.hasOwnProperty.call(o.pObject, o.paletteKey)) {
-      logWarn('Toko - addPaletteSelector: paletteKey not found on parameter object');
+      console.warn('Toko - addPaletteSelector: paletteKey not found on parameter object');
       return;
     }
     if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionsListKey)) {
-      logWarn('Toko - addPaletteSelector: collectionsListKey not found on parameter object');
+      console.warn('Toko - addPaletteSelector: collectionsListKey not found on parameter object');
       return;
     }
 
@@ -1420,7 +1296,7 @@
     // get references to the controls
     const o = libraryState.paletteSelectorData;
     if (!o || !o.paneRef || !o.pObject) {
-      logWarn('Toko - updatePaletteSelector: palette selector not initialized');
+      console.warn('Toko - updatePaletteSelector: palette selector not initialized');
       return;
     }
 
@@ -1565,7 +1441,7 @@
           pObject[o.seedStringKey] = o.rng.randomSeed();
           break;
         default:
-          logWarn('a non-existing button was pressed:', ev.index[0]);
+          console.warn('a non-existing button was pressed:', ev.index[0]);
           break;
       }
 
@@ -1745,7 +1621,7 @@
 
     // Call user-defined setup function if available
     if (typeof window.setupPanelControls === 'function') {
-      logDebug(`${LIBRARY_NAME} - setupPanelControls`);
+      if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - setupPanelControls`);
       window.setupPanelControls(libraryState.tweakpane);
     }
   }
@@ -1811,7 +1687,7 @@
         if (typeof window.tokoWrapper === 'function' && window.tokoWrapper()) {
           window.tokoWrapper().updateParameters();
         } else {
-          logError('tokoWrapper instance not available to update parameters');
+          console.error('tokoWrapper instance not available to update parameters');
         }
       }, libraryState.debounceDelay);
     };
@@ -2039,7 +1915,7 @@
    */
   function setUpNativeDrop () {
     if (!libraryState.p5Canvas) {
-      logWarn('Cannot set up file drop: canvas not available');
+      console.warn('Cannot set up file drop: canvas not available');
       return;
     }
 
@@ -2072,7 +1948,7 @@
     }
 
     if (!canvasElement) {
-      logWarn('Cannot set up file drop: canvas element not found');
+      console.warn('Cannot set up file drop: canvas element not found');
       return;
     }
 
@@ -2142,7 +2018,7 @@
         try {
           fileData = JSON.parse(fileData);
         } catch (error) {
-          logWarn('Failed to parse JSON file: ' + error.message);
+          console.warn('Failed to parse JSON file: ' + error.message);
           return;
         }
       }
@@ -2161,7 +2037,7 @@
     };
 
     reader.onerror = function () {
-      logWarn('Failed to read dropped file');
+      console.warn('Failed to read dropped file');
     };
 
     // Read file as text for JSON, or as data URL for images
@@ -2278,8 +2154,8 @@
    */
   function preSetupHook () {
     const renderMode = libraryState.options?.renderMode ?? 'unknown';
-    logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${renderMode})`);
-    logDebug('tokoWrapper - preSetupHook');
+    console.log(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${renderMode})`);
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - preSetupHook');
     libraryState.initialized = true;
   }
 
@@ -2289,7 +2165,7 @@
    */
   function postSetupHook () {
     // window.createCanvasNow(); // = createCanvasNow;
-    logDebug('tokoWrapper - postSetupHook');
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - postSetupHook');
     setUpWrapper();
 
     // Call refresh() if available, otherwise call tokoWrapper updateParameters
@@ -2305,7 +2181,7 @@
    * Currently logs debug information
    */
   function preDrawHook () {
-    logDebug('tokoWrapper - preDrawHook');
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - preDrawHook');
     //
     //  shift the canvas for webgl if enabled
     //
@@ -2327,7 +2203,7 @@
    * Currently unused but available for per-frame tasks
    */
   function postDrawHook () {
-    logDebug('tokoWrapper - postDrawHook');
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - postDrawHook');
   }
 
   /**
@@ -2335,7 +2211,7 @@
    * Performs cleanup tasks and resets wrapper state
    */
   function removeHook () {
-    logDebug(`${LIBRARY_NAME} - Cleanup on sketch removal`);
+    if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - Cleanup on sketch removal`);
     tearDownCanvas();
     removePaneToggle();
     removeFPSToggle();
@@ -2367,7 +2243,7 @@
   }
 
   const p5v2Adapter = function (p5, fn, lifecycles) {
-    logDebug('tokoWrapper - shared-adapter - p5v2Adapter');
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - shared-adapter - p5v2Adapter', libraryState);
     return adapter.initialize({ p5, fn, lifecycles });
   };
 
@@ -2617,12 +2493,12 @@
 
     // Save sketch functions (simplified)
     function saveSketchWrapper () {
-      logDebug('saveSketch');
+      if (isDebugLogEnabled(libraryState)) console.log('saveSketch');
       // Implementation would go here
     }
 
     function saveSketchAndSettingsWrapper () {
-      logDebug('saveSketchAndSettings');
+      if (isDebugLogEnabled(libraryState)) console.log('saveSketchAndSettings');
       // Implementation would go here
     }
 
@@ -2652,10 +2528,12 @@
         this.saveSketch = this.saveSketch.bind(this);
         this.saveSketchAndSettings = this.saveSketchAndSettings.bind(this);
         this.updateParameters = this.updateParameters.bind(this);
-        this.logError = logError.bind(this);
-        this.logWarn = logWarn.bind(this);
-        this.logInfo = logInfo.bind(this);
-        this.logDebug = logDebug.bind(this);
+        this.logError = console.error.bind(console);
+        this.logWarn = console.warn.bind(console);
+        this.logInfo = console.log.bind(console);
+        this.logDebug = function (msg) {
+          if (isDebugLogEnabled(libraryState)) console.log(msg);
+        };
       }
 
       bindClasses () {
@@ -2701,7 +2579,7 @@
       initializeLibrary () {
         // Prevent multiple initializations
         if (this.initialized) {
-          logWarn(`${this.name}: Already initialized`);
+          console.warn(`${this.name}: Already initialized`);
           return this;
         }
 
@@ -2711,7 +2589,7 @@
           initializeP5v1,
           initializeQ5,
           p5v2Adapter,
-          logWarn,
+          logWarn: console.warn.bind(console),
           libraryName: LIBRARY_NAME,
         });
         this.variant = variant;
@@ -2766,22 +2644,22 @@
       // }
 
       test () {
-        logDebug('testing');
+        if (isDebugLogEnabled(libraryState)) console.log('testing');
       }
 
       saveSketch () {
-        logDebug('saveSketch');
+        if (isDebugLogEnabled(libraryState)) console.log('saveSketch');
         saveSketchWrapper();
       }
 
       saveSketchAndSettings () {
-        logDebug('saveSketchAndSettings');
+        if (isDebugLogEnabled(libraryState)) console.log('saveSketchAndSettings');
         saveSketchAndSettingsWrapper();
       }
 
       // Called by the UI to update the parameters
       updateParameters () {
-        logDebug('tokoWrapper - updateParameters');
+        if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - updateParameters');
 
         // Call refresh() if available to parse the parameters
         if (typeof window.refresh === 'function') {

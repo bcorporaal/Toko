@@ -10,7 +10,7 @@ let seedHistory = [],
   gridRNG,
   g;
 
-let tokoWrapper = new TokoWrapper({
+var tokoWrapper = new TokoWrapper({
   title: 'Grid',
   addInfoToTitle: true,
   showCanvasSizeOptions: true,

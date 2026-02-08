@@ -2,7 +2,7 @@ import { LIBRARY_NAME, RENDER_MODES, VERSION } from '../config/constants.js';
 import { LIBRARY_P5V1, LIBRARY_P5V2, LIBRARY_Q5 } from '../../shared/constants/common.js';
 import { libraryState } from '../core/state.js';
 import { setUpWrapper } from '../core/setup.js';
-import { logInfo, logDebug } from '../util/logging.js';
+import { isDebugLogEnabled } from '../../shared/util/debug.js';
 import { recenterCanvas, tearDownCanvas } from '../canvas/canvas.js';
 import { removePaneToggle } from '../ui/tweakpane.js';
 import { removeFPSToggle } from '../ui/fps.js';
@@ -24,8 +24,8 @@ export function initHook () {
  */
 export function preSetupHook () {
   const renderMode = libraryState.options?.renderMode ?? 'unknown';
-  logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${renderMode})`);
-  logDebug('tokoWrapper - preSetupHook');
+  console.log(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${renderMode})`);
+  if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - preSetupHook');
   libraryState.initialized = true;
 }
 
@@ -35,7 +35,7 @@ export function preSetupHook () {
  */
 export function postSetupHook () {
   // window.createCanvasNow(); // = createCanvasNow;
-  logDebug('tokoWrapper - postSetupHook');
+  if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - postSetupHook');
   setUpWrapper();
 
   // Call refresh() if available, otherwise call tokoWrapper updateParameters
@@ -51,7 +51,7 @@ export function postSetupHook () {
  * Currently logs debug information
  */
 export function preDrawHook () {
-  logDebug('tokoWrapper - preDrawHook');
+  if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - preDrawHook');
   //
   //  shift the canvas for webgl if enabled
   //
@@ -73,7 +73,7 @@ export function preDrawHook () {
  * Currently unused but available for per-frame tasks
  */
 export function postDrawHook () {
-  logDebug('tokoWrapper - postDrawHook');
+  if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - postDrawHook');
 }
 
 /**
@@ -81,7 +81,7 @@ export function postDrawHook () {
  * Currently logs debug information
  */
 export function preRefreshHook () {
-  logDebug('tokoWrapper - preRefreshHook');
+  if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - preRefreshHook');
 }
 
 /**
@@ -89,7 +89,7 @@ export function preRefreshHook () {
  * Currently logs debug information
  */
 export function postRefreshHook () {
-  logDebug('tokoWrapper - postRefreshHook');
+  if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - postRefreshHook');
 }
 
 /**
@@ -97,7 +97,7 @@ export function postRefreshHook () {
  * Performs cleanup tasks and resets wrapper state
  */
 export function removeHook () {
-  logDebug(`${LIBRARY_NAME} - Cleanup on sketch removal`);
+  if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - Cleanup on sketch removal`);
   tearDownCanvas();
   removePaneToggle();
   removeFPSToggle();

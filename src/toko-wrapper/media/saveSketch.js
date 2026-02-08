@@ -8,7 +8,6 @@
  */
 
 import { libraryState } from '../core/state';
-import { logWarn } from '../util/logging';
 import { _stateToPreset } from '../ui/tweakpaneUtil';
 
 /**
@@ -25,7 +24,7 @@ export function saveSketch () {
 
   let sketchContainer = document.getElementById(libraryState.options.sketchElementId);
   if (!sketchContainer || !sketchContainer.firstChild) {
-    logWarn('Toko - saveSketch: sketch element not found');
+    console.warn('Toko - saveSketch: sketch element not found');
     return;
   }
   let sketchElement = sketchContainer.firstChild;
@@ -41,7 +40,7 @@ export function saveSketch () {
     let filename = libraryState.toko.generateFilename('png');
     const saveCanvasFn = libraryState.p5Canvas?.saveCanvas ?? (typeof saveCanvas === 'function' ? saveCanvas : null);
     if (typeof saveCanvasFn !== 'function') {
-      logWarn('Toko - saveSketch: saveCanvas is not available');
+      console.warn('Toko - saveSketch: saveCanvas is not available');
       return;
     }
     saveCanvasFn.call(libraryState.p5Canvas ?? window, filename, 'png');
@@ -52,7 +51,7 @@ export function saveSketch () {
     //
     const svgElement = sketchContainer.querySelector('svg');
     if (!svgElement) {
-      logWarn('Toko - saveSketch: SVG element not found');
+      console.warn('Toko - saveSketch: SVG element not found');
       return;
     }
     svgElement.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
@@ -77,7 +76,7 @@ export function saveSketch () {
 
     return filename;
   } else {
-    logWarn('Toko - saveSketch: unknown type');
+    console.warn('Toko - saveSketch: unknown type');
     return;
   }
 }
@@ -120,7 +119,7 @@ export function saveSettings (filename = 'default') {
   // save with p5.js native saver
   const saveJsonFn = libraryState.p5Canvas?.saveJSON ?? (typeof saveJSON === 'function' ? saveJSON : null);
   if (typeof saveJsonFn !== 'function') {
-    logWarn('Toko - saveSettings: saveJSON is not available');
+    console.warn('Toko - saveSettings: saveJSON is not available');
     return;
   }
   saveJsonFn.call(libraryState.p5Canvas ?? window, settings, filename);

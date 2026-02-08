@@ -2,8 +2,6 @@ import { libraryState } from '../core/state';
 import { LIBRARY_Q5 } from '../config/constants';
 import { _presetToState } from '../ui/tweakpaneUtil';
 import { updatePaletteSelector } from '../ui/colorControls';
-import { logWarn } from '../util/logging';
-
 /**
  * Set up file receiving functionality for drag and drop
  * @returns {void}
@@ -34,7 +32,7 @@ let dropHandler = null;
  */
 function setUpNativeDrop () {
   if (!libraryState.p5Canvas) {
-    logWarn('Cannot set up file drop: canvas not available');
+    console.warn('Cannot set up file drop: canvas not available');
     return;
   }
 
@@ -67,7 +65,7 @@ function setUpNativeDrop () {
   }
 
   if (!canvasElement) {
-    logWarn('Cannot set up file drop: canvas element not found');
+    console.warn('Cannot set up file drop: canvas element not found');
     return;
   }
 
@@ -137,7 +135,7 @@ function processDroppedFile (file) {
       try {
         fileData = JSON.parse(fileData);
       } catch (error) {
-        logWarn('Failed to parse JSON file: ' + error.message);
+        console.warn('Failed to parse JSON file: ' + error.message);
         return;
       }
     }
@@ -156,7 +154,7 @@ function processDroppedFile (file) {
   };
 
   reader.onerror = function () {
-    logWarn('Failed to read dropped file');
+    console.warn('Failed to read dropped file');
   };
 
   // Read file as text for JSON, or as data URL for images

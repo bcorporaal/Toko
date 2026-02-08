@@ -2,7 +2,7 @@ import { libraryState } from '../../core/state.js';
 import * as constants from '../../config/constants.js';
 import allPalettes from '../../color-palettes/index.js';
 import { easeLinear } from '../math/easing.js';
-import { logDebug, logError, logWarn } from '../utils/logging.js';
+import { isDebugLogEnabled } from '../../../shared/util/debug.js';
 import chroma from '../../../../assets/js/chroma/3.2.0/chroma.min.cjs';
 import { RNG } from '../../classes/rng.js';
 import { cubicBezier } from '../../classes/cubicBezier.js';
@@ -210,7 +210,7 @@ export function _getColorScale (inPalette, colorOptions) {
     p = findPaletteByName(inPalette);
 
     if (!p) {
-      logError('Toko: palette not found: ' + inPalette);
+      console.error('Toko: palette not found: ' + inPalette);
       return o;
     }
 
@@ -218,7 +218,7 @@ export function _getColorScale (inPalette, colorOptions) {
     //  TO DO - currently this does not work
     //
     if ('sortOrder' in p && colorOptions.useSortOrder) {
-      logDebug('sorting because sortOrder is available and sort is true');
+      if (isDebugLogEnabled(libraryState)) console.log('sorting because sortOrder is available and sort is true');
       colorSet = [p.colors.length];
       for (let i = 0; i < p.colors.length; i++) {
         colorSet[i] = p.colors[p.sortOrder[i] - 1];
@@ -234,7 +234,7 @@ export function _getColorScale (inPalette, colorOptions) {
       extraColors.push(p.background);
     }
   } else {
-    logError('ERROR: palette should be a string or an array');
+    console.error('ERROR: palette should be a string or an array');
   }
   o = _createColorScale(colorSet, colorOptions, extraColors);
 
@@ -248,7 +248,7 @@ export function _getAnotherPalette (inPalette, paletteType = 'all', justPrimary 
   let tempPaletteList = _getPaletteListRaw(paletteType, justPrimary);
   var i = tempPaletteList.findIndex(p => p.name === inPalette);
   if (i === -1) {
-    logWarn('palette not found: ' + inPalette);
+    console.warn('palette not found: ' + inPalette);
     return inPalette;
   } else {
     i += direction;
@@ -669,7 +669,7 @@ export function findPaletteByName (paletteName) {
   }
   var p = COLOR_PALETTES.filter(p => p.name === paletteName)[0];
   if (p === undefined) {
-    logWarn('palette not found: ' + paletteName);
+    console.warn('palette not found: ' + paletteName);
   }
   return p;
 }

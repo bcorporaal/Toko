@@ -124,144 +124,12 @@
   }
 
   /**
-   * Logging level constants and utilities
-   *
-   * Provides standard logging levels with numeric hierarchy for comparison.
-   * Levels are ordered from most critical (error) to least critical (debug).
+   * Debug logging helper - only used to gate console.log when debug flag is set.
+   * @param {Object} state - Library state with options.loggingEnabled and options.logLevel
+   * @returns {boolean} True when debug logging is enabled
    */
-
-  // Log level constants with numeric values for comparison
-  const LOG_LEVELS = {
-    ERROR: 'error',
-    WARN: 'warn',
-    INFO: 'info',
-    DEBUG: 'debug',
-  };
-
-  // Numeric hierarchy for level comparison (higher number = more verbose)
-  const LOG_LEVEL_VALUES = {
-    [LOG_LEVELS.ERROR]: 0,
-    [LOG_LEVELS.WARN]: 1,
-    [LOG_LEVELS.INFO]: 2,
-    [LOG_LEVELS.DEBUG]: 3,
-  };
-
-  /**
-   * Check if a log level should be output based on current configuration
-   * @param {string} level - The log level to check
-   * @param {boolean} loggingEnabled - Master logging switch
-   * @param {string} currentLogLevel - Current minimum log level setting
-   * @returns {boolean} True if the level should be logged
-   */
-  function shouldLog (level, loggingEnabled, currentLogLevel) {
-    if (!loggingEnabled) {
-      return false;
-    }
-
-    const levelValue = LOG_LEVEL_VALUES[level];
-    const currentValue = LOG_LEVEL_VALUES[currentLogLevel];
-
-    return levelValue !== undefined && currentValue !== undefined && levelValue <= currentValue;
-  }
-
-  /**
-   * Shared logging utility for Toko
-   *
-   * Provides level-based logging functions that work across toko-library and toko-wrapper.
-   * Supports standard log levels: error, warn, info, debug with configurable filtering.
-   */
-
-  /**
-   * Get the current library state for logging configuration
-   * This function will be overridden by each library to provide their specific state
-   * @returns {Object} Library state with options.loggingEnabled and options.logLevel
-   */
-  let getLibraryState = () => ({ options: { loggingEnabled: true, logLevel: LOG_LEVELS.INFO } });
-
-  /**
-   * Set the library state getter function
-   * @param {Function} stateGetter - Function that returns the current library state
-   * @returns {void}
-   * @example
-   * setLibraryStateGetter(() => libraryState);
-   */
-  function setLibraryStateGetter (stateGetter) {
-    getLibraryState = stateGetter;
-  }
-
-  /**
-   * Log an error message
-   * @param {string} message - The error message to log
-   * @returns {void}
-   * @example
-   * logError('Failed to initialize canvas');
-   */
-  function logError (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.ERROR, loggingEnabled, logLevel)) {
-      console.error(message);
-    }
-  }
-
-  /**
-   * Log a warning message
-   * @param {string} message - The warning message to log
-   * @returns {void}
-   * @example
-   * logWarn('Canvas size exceeds recommended limits');
-   */
-  function logWarn (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.WARN, loggingEnabled, logLevel)) {
-      console.warn(message);
-    }
-  }
-
-  /**
-   * Log an info message
-   * @param {string} message - The info message to log
-   * @returns {void}
-   * @example
-   * logInfo('Library initialized successfully');
-   */
-  function logInfo (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.INFO, loggingEnabled, logLevel)) {
-      console.log(message);
-    }
-  }
-
-  /**
-   * Log a debug message
-   * @param {string} message - The debug message to log
-   * @returns {void}
-   * @example
-   * logDebug('Processing frame 42');
-   */
-  function logDebug (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.DEBUG, loggingEnabled, logLevel)) {
-      console.log(message);
-    }
-  }
-
-  /**
-   * Log a message with default info level (backward compatibility)
-   * @param {string} message - The message to log
-   * @returns {void}
-   * @example
-   * log('Processing complete');
-   */
-  function log$1 (message) {
-    logInfo(message);
+  function isDebugLogEnabled (state) {
+    return !!(state?.options?.loggingEnabled && state?.options?.logLevel === 'debug');
   }
 
   /**
@@ -298,7 +166,7 @@
         case LIBRARY_Q5:
           return this.initializeQ5();
         default:
-          logWarn(`Unsupported p5.js variant: ${this.variant}`);
+          console.warn(`Unsupported p5.js variant: ${this.variant}`);
           return false;
       }
     }
@@ -335,7 +203,7 @@
      * @param {Object} [params.lifecycles] - lifecycles object for v2
      */
     initializeP5v2 (params = null) {
-      logDebug('shared-adapter - initializeP5v2');
+      if (isDebugLogEnabled(this.libraryState)) console.log('shared-adapter - initializeP5v2');
 
       // If no parameters provided, return the adapter function for later use
       if (!params) {
@@ -348,7 +216,7 @@
 
       // Validate required parameters
       if (!p5 || !fn || !lifecycles) {
-        logWarn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
+        console.warn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
         return false;
       }
 
@@ -535,75 +403,6 @@
     });
 
     prototypeClassesRegistered = true;
-  }
-
-  // Wrapper-specific constants
-
-  //
-  //  Set of standard sizes for the canvas and exports
-  //
-  const SIZE_DEFAULT = {
-    name: 'default',
-    width: 800,
-    height: 800,
-    pixelDensity: 2,
-  };
-
-  //
-  //  Render modes
-  //
-  const RENDER_MODES = {
-    P2D: 'p2d',
-    WEBGL: 'webgl',
-    SVG: 'svg',
-    WEBGPU: 'webgpu',
-  };
-
-  //
-  //	Default options for setup
-  //
-  const DEFAULT_OPTIONS = {
-    sketchElementId: 'sketch-canvas',
-    renderMode: RENDER_MODES.P2D,
-    title: 'untitled sketch',
-    addInfoToTitle: false,
-    showSaveSketchButton: false,
-    saveSettingsWithSketch: false,
-    acceptDroppedSettings: false,
-    acceptDroppedFiles: false,
-    useParameterPanel: true,
-    hideParameterPanelOnStart: false,
-    showCanvasSizeOptions: false,
-    additionalCanvasSizes: [],
-    captureFrames: false,
-    canvasSize: SIZE_DEFAULT,
-    seedString: '',
-    debounceDelay: 100,
-    loggingEnabled: true,
-    logLevel: LOG_LEVELS.INFO,
-    showCaptureOptions: false,
-    showFPS: false,
-    shiftCanvasForWebGL: true,
-  };
-
-  const libraryState = {
-    initialized: false,
-    variant: LIBRARY_UNKNOWN,
-    x5: null,
-    globalFunctionsRegistered: false,
-    prototypeFunctionsRegistered: false,
-    initColorDone: false,
-    initialDrawDone: false,
-    options: { ...DEFAULT_OPTIONS },
-    fps: null,
-  };
-
-  // Set up the library state getter for the shared logging system
-  setLibraryStateGetter(() => libraryState);
-
-  // Backward compatible log function
-  function log (message) {
-    log$1(message);
   }
 
   /**
@@ -1188,7 +987,7 @@
     if (typeof f === 'function') {
       return f;
     } else {
-      logError(`${easeFunction} is not a function.`);
+      console.error(`${easeFunction} is not a function.`);
       return null;
     }
   }
@@ -1543,6 +1342,67 @@
     };
     return API;
   }
+
+  // Wrapper-specific constants
+
+  //
+  //  Set of standard sizes for the canvas and exports
+  //
+  const SIZE_DEFAULT = {
+    name: 'default',
+    width: 800,
+    height: 800,
+    pixelDensity: 2,
+  };
+
+  //
+  //  Render modes
+  //
+  const RENDER_MODES = {
+    P2D: 'p2d',
+    WEBGL: 'webgl',
+    SVG: 'svg',
+    WEBGPU: 'webgpu',
+  };
+
+  //
+  //	Default options for setup
+  //
+  const DEFAULT_OPTIONS = {
+    sketchElementId: 'sketch-canvas',
+    renderMode: RENDER_MODES.P2D,
+    title: 'untitled sketch',
+    addInfoToTitle: false,
+    showSaveSketchButton: false,
+    saveSettingsWithSketch: false,
+    acceptDroppedSettings: false,
+    acceptDroppedFiles: false,
+    useParameterPanel: true,
+    hideParameterPanelOnStart: false,
+    showCanvasSizeOptions: false,
+    additionalCanvasSizes: [],
+    captureFrames: false,
+    canvasSize: SIZE_DEFAULT,
+    seedString: '',
+    debounceDelay: 100,
+    loggingEnabled: true,
+    logLevel: 'info',
+    showCaptureOptions: false,
+    showFPS: false,
+    shiftCanvasForWebGL: true,
+  };
+
+  const libraryState = {
+    initialized: false,
+    variant: LIBRARY_UNKNOWN,
+    x5: null,
+    globalFunctionsRegistered: false,
+    prototypeFunctionsRegistered: false,
+    initColorDone: false,
+    initialDrawDone: false,
+    options: { ...DEFAULT_OPTIONS },
+    fps: null,
+  };
 
   /**
    * Random number generation functions
@@ -6195,8 +6055,10 @@
      * @returns {void}
      */
     _dump () {
-      logDebug(this._seedString, this._currentSeed);
-      logDebug(this._seedHistory, this._seedHistoryIndex);
+      if (isDebugLogEnabled(libraryState)) {
+        console.log(this._seedString, this._currentSeed);
+        console.log(this._seedHistory, this._seedHistoryIndex);
+      }
     }
 
     /**
@@ -7012,7 +6874,7 @@
       p = findPaletteByName(inPalette);
 
       if (!p) {
-        logError('Toko: palette not found: ' + inPalette);
+        console.error('Toko: palette not found: ' + inPalette);
         return o;
       }
 
@@ -7020,7 +6882,7 @@
       //  TO DO - currently this does not work
       //
       if ('sortOrder' in p && colorOptions.useSortOrder) {
-        logDebug('sorting because sortOrder is available and sort is true');
+        if (isDebugLogEnabled(libraryState)) console.log('sorting because sortOrder is available and sort is true');
         colorSet = [p.colors.length];
         for (let i = 0; i < p.colors.length; i++) {
           colorSet[i] = p.colors[p.sortOrder[i] - 1];
@@ -7036,7 +6898,7 @@
         extraColors.push(p.background);
       }
     } else {
-      logError('ERROR: palette should be a string or an array');
+      console.error('ERROR: palette should be a string or an array');
     }
     o = _createColorScale(colorSet, colorOptions, extraColors);
 
@@ -7050,7 +6912,7 @@
     let tempPaletteList = _getPaletteListRaw(paletteType, justPrimary);
     var i = tempPaletteList.findIndex(p => p.name === inPalette);
     if (i === -1) {
-      logWarn('palette not found: ' + inPalette);
+      console.warn('palette not found: ' + inPalette);
       return inPalette;
     } else {
       i += direction;
@@ -7471,7 +7333,7 @@
     }
     var p = COLOR_PALETTES.filter(p => p.name === paletteName)[0];
     if (p === undefined) {
-      logWarn('palette not found: ' + paletteName);
+      console.warn('palette not found: ' + paletteName);
     }
     return p;
   }
@@ -8664,11 +8526,6 @@
     isFPSVisible: isFPSVisible,
     lerpCoordinates: lerpCoordinates,
     linearGradient: linearGradient,
-    log: log,
-    logDebug: logDebug,
-    logError: logError,
-    logInfo: logInfo,
-    logWarn: logWarn,
     makeGradientStops: makeGradientStops,
     nextSeed: nextSeed,
     numDigits: numDigits,
@@ -12191,7 +12048,7 @@
    * Initializes the library state and color system
    */
   function preSetupHook () {
-    logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant})`);
+    console.log(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant})`);
     libraryState.initialized = true;
     initColor();
   }
@@ -12231,7 +12088,7 @@
    * Performs cleanup tasks and resets library state
    */
   function removeHook () {
-    logDebug(`${LIBRARY_NAME} - Cleanup on sketch removal`);
+    if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - Cleanup on sketch removal`);
     libraryState.initialized = false;
   }
 
@@ -12392,7 +12249,7 @@
     initializeLibrary () {
       // Prevent multiple initializations
       if (this.initialized) {
-        logWarn(`${LIBRARY_NAME}: Already initialized`);
+        console.warn(`${LIBRARY_NAME}: Already initialized`);
         return this;
       }
 
@@ -12405,7 +12262,7 @@
         initializeP5v1,
         initializeQ5,
         p5v2Adapter,
-        logWarn,
+        logWarn: console.warn.bind(console),
         libraryName: LIBRARY_NAME,
       });
       this.variant = variant;
