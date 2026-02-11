@@ -14,7 +14,7 @@
    * @property {String} VERSION
    * @final
    */
-  const VERSION = '2.2.0';
+  const VERSION = '2.2.1';
 
   // GRAPHICS RENDERER
   /**
@@ -149,8 +149,6 @@
    * @final
    *
    * @example
-   * <div>
-   * <code>
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -161,11 +159,8 @@
    *
    *   describe('The bottom-right quarter of a circle drawn in white on a gray background.');
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -185,11 +180,8 @@
    *
    *   describe('Two black lines on a gray background. One line extends from the center to the right. The other line extends from the center to the bottom.');
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -219,8 +211,6 @@
    *   fill(0, 0, 255);
    *   circle(x2, 0, 20);
    * }
-   * </code>
-   * </div>
    */
   const HALF_PI = _PI / 2;
 
@@ -238,8 +228,6 @@
    * @final
    *
    * @example
-   * <div>
-   * <code>
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -250,11 +238,8 @@
    *
    *   describe('The bottom half of a circle drawn in white on a gray background.');
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -274,11 +259,8 @@
    *
    *   describe('A horizontal black line on a gray background.');
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -308,8 +290,6 @@
    *   fill(0, 0, 255);
    *   circle(x2, 0, 20);
    * }
-   * </code>
-   * </div>
    */
   const PI = _PI;
 
@@ -328,8 +308,6 @@
    * @final
    *
    * @example
-   * <div>
-   * <code>
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -340,11 +318,8 @@
    *
    *   describe('A one-eighth slice of a circle drawn in white on a gray background.');
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -364,11 +339,8 @@
    *
    *   describe('Two black lines that form a "V" opening towards the bottom-right corner of a gray square.');
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -398,8 +370,6 @@
    *   fill(0, 0, 255);
    *   circle(x2, 0, 20);
    * }
-   * </code>
-   * </div>
    */
   const QUARTER_PI = _PI / 4;
 
@@ -418,8 +388,6 @@
    * @final
    *
    * @example
-   * <div>
-   * <code>
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -430,11 +398,8 @@
    *
    *   describe('A white circle drawn on a gray background.');
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -459,11 +424,8 @@
    *     'Two horizontal black lines on a gray background. A thick line extends from the center toward the right. A thin line extends from the end of the thick line.'
    *   );
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -493,8 +455,6 @@
    *   fill(0, 0, 255);
    *   circle(x2, 0, 10);
    * }
-   * </code>
-   * </div>
    */
   const TAU = _PI * 2;
 
@@ -513,8 +473,6 @@
    * @final
    *
    * @example
-   * <div>
-   * <code>
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -525,11 +483,8 @@
    *
    *   describe('A white circle drawn on a gray background.');
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -554,11 +509,8 @@
    *     'Two horizontal black lines on a gray background. A thick line extends from the center toward the right. A thin line extends from the end of the thick line.'
    *   );
    * }
-   * </code>
-   * </div>
    *
-   * <div>
-   * <code>
+   * @example
    * function setup() {
    *   createCanvas(100, 100);
    *
@@ -588,8 +540,6 @@
    *   fill(0, 0, 255);
    *   circle(x2, 0, 10);
    * }
-   * </code>
-   * </div>
    */
   const TWO_PI = _PI * 2;
 
@@ -1628,22 +1578,33 @@
     Object.entries(BlockType).map(([key, val]) => [val, key])
   );
 
-  const uniforms$4 = `
-struct Uniforms {
+  const uniforms$5 = `
+// Group 0: Material Properties
+struct MaterialUniforms {
+  uUseVertexColor: u32,
+}
+
+// Group 1: Model Transform
+struct ModelUniforms {
 // @p5 ifdef Vertex getWorldInputs
   uModelMatrix: mat4x4<f32>,
-  uViewMatrix: mat4x4<f32>,
   uModelNormalMatrix: mat3x3<f32>,
-  uCameraNormalMatrix: mat3x3<f32>,
 // @p5 endif
 // @p5 ifndef Vertex getWorldInputs
   uModelViewMatrix: mat4x4<f32>,
   uNormalMatrix: mat3x3<f32>,
 // @p5 endif
-  uProjectionMatrix: mat4x4<f32>,
   uMaterialColor: vec4<f32>,
-  uUseVertexColor: u32,
-};
+}
+
+// Group 2: Camera and Projection
+struct CameraUniforms {
+  uProjectionMatrix: mat4x4<f32>,
+// @p5 ifdef Vertex getWorldInputs
+  uViewMatrix: mat4x4<f32>,
+// @p5 endif
+  uCameraNormalMatrix: mat3x3<f32>,
+}
 `;
 
   const colorVertexShader = `
@@ -1661,8 +1622,10 @@ struct VertexOutput {
   @location(2) vColor: vec4<f32>,
 };
 
-${uniforms$4}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+${uniforms$5}
+@group(0) @binding(0) var<uniform> material: MaterialUniforms;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> camera: CameraUniforms;
 
 struct Vertex {
   position: vec3<f32>,
@@ -1676,12 +1639,12 @@ fn main(input: VertexInput) -> VertexOutput {
   HOOK_beforeVertex();
   var output: VertexOutput;
 
-  let useVertexColor = (uniforms.uUseVertexColor != 0 && input.aVertexColor.x >= 0.0);
+  let useVertexColor = (material.uUseVertexColor != 0 && input.aVertexColor.x >= 0.0);
   var inputs = Vertex(
     input.aPosition,
     input.aNormal,
     input.aTexCoord,
-    select(uniforms.uMaterialColor, input.aVertexColor, useVertexColor)
+    select(model.uMaterialColor, input.aVertexColor, useVertexColor)
   );
 
 // @p5 ifdef Vertex getObjectInputs
@@ -1689,20 +1652,20 @@ fn main(input: VertexInput) -> VertexOutput {
 // @p5 endif
 
 // @p5 ifdef Vertex getWorldInputs
-  inputs.position = (uniforms.uModelMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
-  inputs.normal = uniforms.uModelNormalMatrix * inputs.normal;
+  inputs.position = (model.uModelMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
+  inputs.normal = model.uModelNormalMatrix * inputs.normal;
   inputs = HOOK_getWorldInputs(inputs);
 // @p5 endif
 
 // @p5 ifdef Vertex getWorldInputs
   // Already multiplied by the model matrix, just apply view
-  inputs.position = (uniforms.uViewMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
-  inputs.normal = uniforms.uCameraNormalMatrix * inputs.normal;
+  inputs.position = (camera.uViewMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
+  inputs.normal = camera.uCameraNormalMatrix * inputs.normal;
 // @p5 endif
 // @p5 ifndef Vertex getWorldInputs
   // Apply both at once
-  inputs.position = (uniforms.uModelViewMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
-  inputs.normal = uniforms.uNormalMatrix * inputs.normal;
+  inputs.position = (model.uModelViewMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
+  inputs.normal = model.uNormalMatrix * inputs.normal;
 // @p5 endif
 
 // @p5 ifdef Vertex getCameraInputs
@@ -1713,7 +1676,7 @@ fn main(input: VertexInput) -> VertexOutput {
   output.vVertexNormal = normalize(inputs.normal);
   output.vColor = inputs.color;
 
-  output.Position = uniforms.uProjectionMatrix * vec4<f32>(inputs.position, 1.0);
+  output.Position = camera.uProjectionMatrix * vec4<f32>(inputs.position, 1.0);
 
   HOOK_afterVertex();
   return output;
@@ -1727,8 +1690,10 @@ struct FragmentInput {
   @location(2) vColor: vec4<f32>,
 };
 
-${uniforms$4}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+${uniforms$5}
+@group(0) @binding(0) var<uniform> material: MaterialUniforms;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> camera: CameraUniforms;
 
 
 @fragment
@@ -1741,8 +1706,18 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 }
 `;
 
-  const uniforms$3 = `
-struct Uniforms {
+  const uniforms$4 = `
+// Group 0: Stroke Properties
+struct StrokeUniforms {
+  uStrokeWeight: f32,
+  uUseLineColor: f32,
+  uSimpleLines: f32,
+  uStrokeCap: u32,
+  uStrokeJoin: u32,
+}
+
+// Group 1: Model Transform
+struct ModelUniforms {
 // @p5 ifdef StrokeVertex getWorldInputs
   uModelMatrix: mat4x4<f32>,
   uViewMatrix: mat4x4<f32>,
@@ -1751,15 +1726,15 @@ struct Uniforms {
   uModelViewMatrix: mat4x4<f32>,
 // @p5 endif
   uMaterialColor: vec4<f32>,
+}
+
+// Group 2: Camera and Projection
+struct CameraUniforms {
   uProjectionMatrix: mat4x4<f32>,
-  uStrokeWeight: f32,
-  uUseLineColor: f32,
-  uSimpleLines: f32,
   uViewport: vec4<f32>,
   uPerspective: u32,
-  uStrokeCap: u32,
-  uStrokeJoin: u32,
-}`;
+}
+`;
 
   const lineVertexShader = `
 struct StrokeVertexInput {
@@ -1782,8 +1757,10 @@ struct StrokeVertexOutput {
   @location(7) vStrokeWeight: f32,
 };
 
-${uniforms$3}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+${uniforms$4}
+@group(0) @binding(0) var<uniform> stroke: StrokeUniforms;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> camera: CameraUniforms;
 
 struct StrokeVertex {
   position: vec3<f32>,
@@ -1816,7 +1793,7 @@ fn lineIntersection(aPoint: vec2f, aDir: vec2f, bPoint: vec2f, bDir: vec2f) -> v
 fn main(input: StrokeVertexInput) -> StrokeVertexOutput {
   HOOK_beforeVertex();
   var output: StrokeVertexOutput;
-  let simpleLines = (uniforms.uSimpleLines != 0.);
+  let simpleLines = (stroke.uSimpleLines != 0.);
   if (!simpleLines) {
     if (all(input.aTangentIn == vec3<f32>()) != all(input.aTangentOut == vec3<f32>())) {
       output.vCap = 1.;
@@ -1833,17 +1810,17 @@ fn main(input: StrokeVertexInput) -> StrokeVertexOutput {
     }
   }
   var lineColor: vec4<f32>;
-  if (uniforms.uUseLineColor != 0.) {
+  if (stroke.uUseLineColor != 0.) {
     lineColor = input.aVertexColor;
   } else {
-    lineColor = uniforms.uMaterialColor;
+    lineColor = model.uMaterialColor;
   }
   var inputs = StrokeVertex(
     input.aPosition.xyz,
     input.aTangentIn,
     input.aTangentOut,
     lineColor,
-    uniforms.uStrokeWeight
+    stroke.uStrokeWeight
   );
 
 // @p5 ifdef StrokeVertex getObjectInputs
@@ -1851,23 +1828,23 @@ fn main(input: StrokeVertexInput) -> StrokeVertexOutput {
 // @p5 endif
 
 // @p5 ifdef StrokeVertex getWorldInputs
-  inputs.position = (uniforms.uModelMatrix * vec4<f32>(inputs.position, 1.)).xyz;
-  inputs.tangentIn = (uniforms.uModelMatrix * vec4<f32>(input.aTangentIn, 1.)).xyz;
-  inputs.tangentOut = (uniforms.uModelMatrix * vec4<f32>(input.aTangentOut, 1.)).xyz;
+  inputs.position = (model.uModelMatrix * vec4<f32>(inputs.position, 1.)).xyz;
+  inputs.tangentIn = (model.uModelMatrix * vec4<f32>(input.aTangentIn, 1.)).xyz;
+  inputs.tangentOut = (model.uModelMatrix * vec4<f32>(input.aTangentOut, 1.)).xyz;
   inputs = HOOK_getWorldInputs(inputs);
 // @p5 endif
 
 // @p5 ifdef StrokeVertex getWorldInputs
   // Already multiplied by the model matrix, just apply view
-  inputs.position = (uniforms.uViewMatrix * vec4<f32>(inputs.position, 1.)).xyz;
-  inputs.tangentIn = (uniforms.uViewMatrix * vec4<f32>(input.aTangentIn, 0.)).xyz;
-  inputs.tangentOut = (uniforms.uViewMatrix * vec4<f32>(input.aTangentOut, 0.)).xyz;
+  inputs.position = (model.uViewMatrix * vec4<f32>(inputs.position, 1.)).xyz;
+  inputs.tangentIn = (model.uViewMatrix * vec4<f32>(input.aTangentIn, 0.)).xyz;
+  inputs.tangentOut = (model.uViewMatrix * vec4<f32>(input.aTangentOut, 0.)).xyz;
 // @p5 endif
 // @p5 ifndef StrokeVertex getWorldInputs
   // Apply both at once
-  inputs.position = (uniforms.uModelViewMatrix * vec4<f32>(inputs.position, 1.)).xyz;
-  inputs.tangentIn = (uniforms.uModelViewMatrix * vec4<f32>(input.aTangentIn, 0.)).xyz;
-  inputs.tangentOut = (uniforms.uModelViewMatrix * vec4<f32>(input.aTangentOut, 0.)).xyz;
+  inputs.position = (model.uModelViewMatrix * vec4<f32>(inputs.position, 1.)).xyz;
+  inputs.tangentIn = (model.uModelViewMatrix * vec4<f32>(input.aTangentIn, 0.)).xyz;
+  inputs.tangentOut = (model.uModelViewMatrix * vec4<f32>(input.aTangentOut, 0.)).xyz;
 // @p5 endif
 // @p5 ifdef StrokeVertex getCameraInputs
   inputs = HOOK_getCameraInputs(inputs);
@@ -1917,27 +1894,27 @@ fn main(input: StrokeVertexInput) -> StrokeVertexOutput {
   posqIn.z -= dynamicZAdjustment;
   posqOut.z -= dynamicZAdjustment;
 
-  var p = uniforms.uProjectionMatrix * posp;
-  var qIn = uniforms.uProjectionMatrix * posqIn;
-  var qOut = uniforms.uProjectionMatrix * posqOut;
+  var p = camera.uProjectionMatrix * posp;
+  var qIn = camera.uProjectionMatrix * posqIn;
+  var qOut = camera.uProjectionMatrix * posqOut;
 
-  var tangentIn = normalize((qIn.xy * p.w - p.xy * qIn.w) * uniforms.uViewport.zw);
-  var tangentOut = normalize((qOut.xy * p.w - p.xy * qOut.w) * uniforms.uViewport.zw);
+  var tangentIn = normalize((qIn.xy * p.w - p.xy * qIn.w) * camera.uViewport.zw);
+  var tangentOut = normalize((qOut.xy * p.w - p.xy * qOut.w) * camera.uViewport.zw);
 
   var curPerspScale = vec2<f32>();
-  if (uniforms.uPerspective == 1) {
+  if (camera.uPerspective == 1) {
     // Perspective ---
     // convert from world to clip by multiplying with projection scaling factor
     // to get the right thickness (see https://github.com/processing/processing/issues/5182)
 
     // The y value of the projection matrix may be flipped if rendering to a Framebuffer.
     // Multiplying again by its sign here negates the flip to get just the scale.
-    curPerspScale = (uniforms.uProjectionMatrix * vec4(1., sign(uniforms.uProjectionMatrix[1][1]), 0., 0.)).xy;
+    curPerspScale = (camera.uProjectionMatrix * vec4(1., sign(camera.uProjectionMatrix[1][1]), 0., 0.)).xy;
   } else {
     // No Perspective ---
     // multiply by W (to cancel out division by W later in the pipeline) and
     // convert from screen to clip (derived from clip to screen above)
-    curPerspScale = p.w / (0.5 * uniforms.uViewport.zw);
+    curPerspScale = p.w / (0.5 * camera.uViewport.zw);
   }
 
   var offset = vec2<f32>();
@@ -1960,7 +1937,7 @@ fn main(input: StrokeVertexInput) -> StrokeVertexOutput {
       if (sideEnum == 2.) {
         // Calculate the position + tangent on either side of the join, and
         // find where the lines intersect to find the elbow of the join
-        var c = (posp.xy / posp.w + vec2<f32>(1.)) * 0.5 * uniforms.uViewport.zw;
+        var c = (posp.xy / posp.w + vec2<f32>(1.)) * 0.5 * camera.uViewport.zw;
 
         var intersection = lineIntersection(
           c + (side * normalIn * inputs.weight / 2.),
@@ -1986,7 +1963,7 @@ fn main(input: StrokeVertexInput) -> StrokeVertexOutput {
           offset = side * normalOut * inputs.weight / 2.;
       }
     }
-    if (uniforms.uStrokeJoin == 2) {
+    if (stroke.uStrokeJoin == 2) {
       var avgNormal = vec2<f32>(-output.vTangent.y, output.vTangent.x);
       output.vMaxDist = abs(dot(avgNormal, normalIn * inputs.weight / 2.));
     } else {
@@ -2034,8 +2011,10 @@ struct StrokeFragmentInput {
   @location(7) vStrokeWeight: f32,
 }
 
-${uniforms$3}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+${uniforms$4}
+@group(0) @binding(0) var<uniform> stroke: StrokeUniforms;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> camera: CameraUniforms;
 
 
 fn distSquared(a: vec2<f32>, b: vec2<f32>) -> f32 {
@@ -2064,12 +2043,12 @@ fn main(input: StrokeFragmentInput) -> @location(0) vec4<f32> {
 
   if (input.vCap > 0.) {
     if (
-      uniforms.uStrokeCap == STROKE_CAP_ROUND &&
+      stroke.uStrokeCap == STROKE_CAP_ROUND &&
       HOOK_shouldDiscard(distSquared(inputs.position, inputs.center) > inputs.strokeWeight * inputs.strokeWeight * 0.25)
     ) {
       discard;
     } else if (
-      uniforms.uStrokeCap == STROKE_CAP_SQUARE &&
+      stroke.uStrokeCap == STROKE_CAP_SQUARE &&
       HOOK_shouldDiscard(dot(inputs.position - inputs.center, inputs.tangent) > 0.)
     ) {
       discard;
@@ -2078,11 +2057,11 @@ fn main(input: StrokeFragmentInput) -> @location(0) vec4<f32> {
     }
   } else if (input.vJoin > 0.) {
     if (
-      uniforms.uStrokeJoin == STROKE_JOIN_ROUND &&
+      stroke.uStrokeJoin == STROKE_JOIN_ROUND &&
       HOOK_shouldDiscard(distSquared(inputs.position, inputs.center) > inputs.strokeWeight * inputs.strokeWeight * 0.25)
     ) {
       discard;
-    } else if (uniforms.uStrokeJoin == STROKE_JOIN_BEVEL) {
+    } else if (stroke.uStrokeJoin == STROKE_JOIN_BEVEL) {
       let normal = vec2<f32>(-inputs.tangent.y, -inputs.tangent.x);
       if (HOOK_shouldDiscard(abs(dot(inputs.position - inputs.center, normal)) > input.vMaxDist)) {
         discard;
@@ -2098,43 +2077,32 @@ fn main(input: StrokeFragmentInput) -> @location(0) vec4<f32> {
 }
 `;
 
-  const uniforms$2 = `
-struct Uniforms {
-// @p5 ifdef Vertex getWorldInputs
-  uModelMatrix: mat4x4<f32>,
-  uModelNormalMatrix: mat3x3<f32>,
-  uCameraNormalMatrix: mat3x3<f32>,
-// @p5 endif
-// @p5 ifndef Vertex getWorldInputs
-  uModelViewMatrix: mat4x4<f32>,
-  uNormalMatrix: mat3x3<f32>,
-// @p5 endif
-  uViewMatrix: mat4x4<f32>,
-  uProjectionMatrix: mat4x4<f32>,
-  uMaterialColor: vec4<f32>,
+  const uniforms$3 = `
+// Group 0: Material Properties
+struct MaterialUniforms {
   uUseVertexColor: u32,
-
   uHasSetAmbient: u32,
   uAmbientColor: vec3<f32>,
   uSpecularMatColor: vec4<f32>,
   uAmbientMatColor: vec4<f32>,
   uEmissiveMatColor: vec4<f32>,
-
   uTint: vec4<f32>,
   isTexture: u32,
+  uSpecular: u32,
+  uShininess: f32,
+  uMetallic: f32,
+}
 
-  uCameraRotation: mat3x3<f32>,
-
+// Group 0: Lighting
+struct LightingUniforms {
   uDirectionalLightCount: i32,
   uLightingDirection: array<vec3<f32>, 5>,
   uDirectionalDiffuseColors: array<vec3<f32>, 5>,
   uDirectionalSpecularColors: array<vec3<f32>, 5>,
-
   uPointLightCount: i32,
   uPointLightLocation: array<vec3<f32>, 5>,
   uPointLightDiffuseColors: array<vec3<f32>, 5>,
   uPointLightSpecularColors: array<vec3<f32>, 5>,
-
   uSpotLightCount: i32,
   uSpotLightAngle: vec4<f32>,
   uSpotLightConc: vec4<f32>,
@@ -2142,18 +2110,32 @@ struct Uniforms {
   uSpotLightSpecularColors: array<vec3<f32>, 4>,
   uSpotLightLocation: array<vec3<f32>, 4>,
   uSpotLightDirection: array<vec3<f32>, 4>,
-
-  uSpecular: u32,
-  uShininess: f32,
-  uMetallic: f32,
-
   uConstantAttenuation: f32,
   uLinearAttenuation: f32,
   uQuadraticAttenuation: f32,
-
   uUseImageLight: u32,
   uUseLighting: u32,
-};
+}
+
+// Group 1: Model Transform
+struct ModelUniforms {
+// @p5 ifdef Vertex getWorldInputs
+  uModelMatrix: mat4x4<f32>,
+  uModelNormalMatrix: mat3x3<f32>,
+// @p5 endif
+// @p5 ifndef Vertex getWorldInputs
+  uModelViewMatrix: mat4x4<f32>,
+  uNormalMatrix: mat3x3<f32>,
+// @p5 endif
+  uMaterialColor: vec4<f32>,
+}
+
+// Group 2: Camera and Projection
+struct CameraUniforms {
+  uViewMatrix: mat4x4<f32>,
+  uProjectionMatrix: mat4x4<f32>,
+  uCameraNormalMatrix: mat3x3<f32>,
+}
 `;
 
   const materialVertexShader = `
@@ -2172,8 +2154,11 @@ struct VertexOutput {
   @location(4) vColor: vec4<f32>,
 };
 
-${uniforms$2}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+${uniforms$3}
+@group(0) @binding(0) var<uniform> material: MaterialUniforms;
+@group(0) @binding(1) var<uniform> lighting: LightingUniforms;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> camera: CameraUniforms;
 
 struct Vertex {
   position: vec3<f32>,
@@ -2187,12 +2172,12 @@ fn main(input: VertexInput) -> VertexOutput {
   HOOK_beforeVertex();
   var output: VertexOutput;
 
-  let useVertexColor = (uniforms.uUseVertexColor != 0 && input.aVertexColor.x >= 0.0);
+  let useVertexColor = (material.uUseVertexColor != 0 && input.aVertexColor.x >= 0.0);
   var inputs = Vertex(
     input.aPosition,
     input.aNormal,
     input.aTexCoord,
-    select(uniforms.uMaterialColor, input.aVertexColor, useVertexColor)
+    select(model.uMaterialColor, input.aVertexColor, useVertexColor)
   );
 
 // @p5 ifdef Vertex getObjectInputs
@@ -2200,20 +2185,20 @@ fn main(input: VertexInput) -> VertexOutput {
 // @p5 endif
 
 // @p5 ifdef Vertex getWorldInputs
-  inputs.position = (uniforms.uModelMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
-  inputs.normal = uniforms.uModelNormalMatrix * inputs.normal;
+  inputs.position = (model.uModelMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
+  inputs.normal = model.uModelNormalMatrix * inputs.normal;
   inputs = HOOK_getWorldInputs(inputs);
 // @p5 endif
 
 // @p5 ifdef Vertex getWorldInputs
   // Already multiplied by the model matrix, just apply view
-  inputs.position = (uniforms.uViewMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
-  inputs.normal = uniforms.uCameraNormalMatrix * inputs.normal;
+  inputs.position = (camera.uViewMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
+  inputs.normal = camera.uCameraNormalMatrix * inputs.normal;
 // @p5 endif
 // @p5 ifndef Vertex getWorldInputs
   // Apply both at once
-  inputs.position = (uniforms.uModelViewMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
-  inputs.normal = uniforms.uNormalMatrix * inputs.normal;
+  inputs.position = (model.uModelViewMatrix * vec4<f32>(inputs.position, 1.0)).xyz;
+  inputs.normal = model.uNormalMatrix * inputs.normal;
 // @p5 endif
 
 // @p5 ifdef Vertex getCameraInputs
@@ -2225,7 +2210,7 @@ fn main(input: VertexInput) -> VertexOutput {
   output.vNormal = normalize(inputs.normal);
   output.vColor = inputs.color;
 
-  output.Position = uniforms.uProjectionMatrix * vec4<f32>(inputs.position, 1.0);
+  output.Position = camera.uProjectionMatrix * vec4<f32>(inputs.position, 1.0);
 
   HOOK_afterVertex();
   return output;
@@ -2240,16 +2225,17 @@ struct FragmentInput {
   @location(4) vColor: vec4<f32>,
 };
 
-${uniforms$2}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
-
-@group(0) @binding(1) var uSampler: texture_2d<f32>;
-@group(0) @binding(2) var uSampler_sampler: sampler;
-
-@group(0) @binding(3) var environmentMapDiffused: texture_2d<f32>;
-@group(0) @binding(4) var environmentMapDiffused_sampler: sampler;
-@group(0) @binding(5) var environmentMapSpecular: texture_2d<f32>;
-@group(0) @binding(6) var environmentMapSpecular_sampler: sampler;
+${uniforms$3}
+@group(0) @binding(0) var<uniform> material: MaterialUniforms;
+@group(0) @binding(1) var<uniform> lighting: LightingUniforms;
+@group(0) @binding(2) var uSampler: texture_2d<f32>;
+@group(0) @binding(3) var uSampler_sampler: sampler;
+@group(0) @binding(4) var environmentMapDiffused: texture_2d<f32>;
+@group(0) @binding(5) var environmentMapDiffused_sampler: sampler;
+@group(0) @binding(6) var environmentMapSpecular: texture_2d<f32>;
+@group(0) @binding(7) var environmentMapSpecular_sampler: sampler;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> camera: CameraUniforms;
 
 struct ColorComponents {
   baseColor: vec3<f32>,
@@ -2312,7 +2298,7 @@ fn mapTextureToNormal(v: vec3<f32>) -> vec2<f32> {
 fn calculateImageDiffuse(vNormal: vec3<f32>, vViewPosition: vec3<f32>, metallic: f32) -> vec3<f32> {
   // make 2 seperate builds
   let worldCameraPosition = vec3<f32>(0.0, 0.0, 0.0);  // hardcoded world camera position
-  let worldNormal = normalize(vNormal * uniforms.uCameraRotation);
+  let worldNormal = normalize(vNormal * camera.uCameraNormalMatrix);
   let newTexCoord = mapTextureToNormal(worldNormal);
   let texture = textureSample(environmentMapDiffused, environmentMapDiffused_sampler, newTexCoord);
   // this is to make the darker sections more dark
@@ -2324,7 +2310,7 @@ fn calculateImageSpecular(vNormal: vec3<f32>, vViewPosition: vec3<f32>, shinines
   let worldCameraPosition = vec3<f32>(0.0, 0.0, 0.0);
   let worldNormal = normalize(vNormal);
   let lightDirection = normalize(vViewPosition - worldCameraPosition);
-  let R = reflect(lightDirection, worldNormal) * uniforms.uCameraRotation;
+  let R = reflect(lightDirection, worldNormal) * camera.uCameraNormalMatrix;
   let newTexCoord = mapTextureToNormal(R);
 
   // In p5js the range of shininess is >= 1,
@@ -2373,7 +2359,7 @@ fn singleLight(
   let specular = select(
     0.,
     phongSpecular(lightDir, viewDirection, normal, shininess) * specularIntensity,
-    uniforms.uSpecular == 1
+    material.uSpecular == 1
   );
   return LightIntensityResult(diffuse, specular);
 }
@@ -2387,69 +2373,69 @@ fn totalLight(
   var totalSpecular = vec3<f32>(0.0, 0.0, 0.0);
   var totalDiffuse = vec3<f32>(0.0, 0.0, 0.0);
 
-  if (uniforms.uUseLighting == 0) {
+  if (lighting.uUseLighting == 0) {
     return LightResult(vec3<f32>(1.0, 1.0, 1.0), totalSpecular);
   }
 
   let viewDirection = normalize(-modelPosition);
 
   for (var j = 0; j < 5; j++) {
-    if (j < uniforms.uDirectionalLightCount) {
-      let lightVector = (uniforms.uViewMatrix * vec4<f32>(
-        uniforms.uLightingDirection[j],
+    if (j < lighting.uDirectionalLightCount) {
+      let lightVector = (camera.uViewMatrix * vec4<f32>(
+        lighting.uLightingDirection[j],
         0.0
       )).xyz;
-      let lightColor = uniforms.uDirectionalDiffuseColors[j];
-      let specularColor = uniforms.uDirectionalSpecularColors[j];
+      let lightColor = lighting.uDirectionalDiffuseColors[j];
+      let specularColor = lighting.uDirectionalSpecularColors[j];
       let result = singleLight(viewDirection, normal, lightVector, shininess, metallic);
       totalDiffuse += result.diffuse * lightColor;
       totalSpecular += result.specular * specularColor;
     }
 
-    if (j < uniforms.uPointLightCount) {
-      let lightPosition = (uniforms.uViewMatrix * vec4<f32>(
-        uniforms.uPointLightLocation[j],
+    if (j < lighting.uPointLightCount) {
+      let lightPosition = (camera.uViewMatrix * vec4<f32>(
+        lighting.uPointLightLocation[j],
         1.0
       )).xyz;
       let lightVector = modelPosition - lightPosition;
       let lightDistance = length(lightVector);
       let lightFalloff = 1.0 / (
-        uniforms.uConstantAttenuation +
-        lightDistance * uniforms.uLinearAttenuation +
-        lightDistance * lightDistance * uniforms.uQuadraticAttenuation
+        lighting.uConstantAttenuation +
+        lightDistance * lighting.uLinearAttenuation +
+        lightDistance * lightDistance * lighting.uQuadraticAttenuation
       );
-      let lightColor = uniforms.uPointLightDiffuseColors[j] * lightFalloff;
-      let specularColor = uniforms.uPointLightSpecularColors[j] * lightFalloff;
+      let lightColor = lighting.uPointLightDiffuseColors[j] * lightFalloff;
+      let specularColor = lighting.uPointLightSpecularColors[j] * lightFalloff;
       let result = singleLight(viewDirection, normal, lightVector, shininess, metallic);
       totalDiffuse += result.diffuse * lightColor;
       totalSpecular += result.specular * specularColor;
     }
 
-    if (j < uniforms.uSpotLightCount) {
-      let lightPosition = (uniforms.uViewMatrix * vec4<f32>(
-        uniforms.uSpotLightLocation[j],
+    if (j < lighting.uSpotLightCount) {
+      let lightPosition = (camera.uViewMatrix * vec4<f32>(
+        lighting.uSpotLightLocation[j],
         1.0
       )).xyz;
       let lightVector = modelPosition - lightPosition;
       let lightDistance = length(lightVector);
       var lightFalloff = 1.0 / (
-        uniforms.uConstantAttenuation +
-        lightDistance * uniforms.uLinearAttenuation +
-        lightDistance * lightDistance * uniforms.uQuadraticAttenuation
+        lighting.uConstantAttenuation +
+        lightDistance * lighting.uLinearAttenuation +
+        lightDistance * lightDistance * lighting.uQuadraticAttenuation
       );
-      let lightDirection = (uniforms.uViewMatrix * vec4<f32>(
-        uniforms.uSpotLightDirection[j],
+      let lightDirection = (camera.uViewMatrix * vec4<f32>(
+        lighting.uSpotLightDirection[j],
         0.0
       )).xyz;
       let spotDot = dot(normalize(lightVector), normalize(lightDirection));
       let spotFalloff = select(
         0.0,
-        pow(spotDot, uniforms.uSpotLightConc[j]),
-        spotDot < uniforms.uSpotLightAngle[j]
+        pow(spotDot, lighting.uSpotLightConc[j]),
+        spotDot < lighting.uSpotLightAngle[j]
       );
       lightFalloff *= spotFalloff;
-      let lightColor = uniforms.uSpotLightDiffuseColors[j];
-      let specularColor = uniforms.uSpotLightSpecularColors[j];
+      let lightColor = lighting.uSpotLightDiffuseColors[j];
+      let specularColor = lighting.uSpotLightSpecularColors[j];
       let result = singleLight(viewDirection, normal, lightVector, shininess, metallic);
       totalDiffuse += result.diffuse * lightColor;
       totalSpecular += result.specular * specularColor;
@@ -2457,7 +2443,7 @@ fn totalLight(
   }
 
   // Image light contribution
-  if (uniforms.uUseImageLight != 0) {
+  if (lighting.uUseImageLight != 0) {
     totalDiffuse += calculateImageDiffuse(normal, modelPosition, metallic);
     totalSpecular += calculateImageSpecular(normal, modelPosition, shininess, metallic);
   }
@@ -2474,19 +2460,19 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 
   let color = select(
     input.vColor,
-    textureSample(uSampler, uSampler_sampler, input.vTexCoord) * (uniforms.uTint/255.0),
-    uniforms.isTexture == 1
+    textureSample(uSampler, uSampler_sampler, input.vTexCoord) * (material.uTint/255.0),
+    material.isTexture == 1
   ); // TODO: check isTexture and apply tint
   var inputs = Inputs(
     normalize(input.vNormal),
     input.vTexCoord,
-    uniforms.uAmbientColor,
-    select(color.rgb, uniforms.uAmbientMatColor.rgb, uniforms.uHasSetAmbient == 1),
-    uniforms.uSpecularMatColor.rgb,
-    uniforms.uEmissiveMatColor.rgb,
+    material.uAmbientColor,
+    select(color.rgb, material.uAmbientMatColor.rgb, material.uHasSetAmbient == 1),
+    material.uSpecularMatColor.rgb,
+    material.uEmissiveMatColor.rgb,
     color,
-    uniforms.uShininess,
-    uniforms.uMetallic
+    material.uShininess,
+    material.uMetallic
   );
   inputs = HOOK_getPixelInputs(inputs);
 
@@ -2518,10 +2504,9 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 }
 `;
 
-  const uniforms$1 = `
-struct Uniforms {
-  uModelViewMatrix: mat4x4<f32>,
-  uProjectionMatrix: mat4x4<f32>,
+  const uniforms$2 = `
+// Group 0: Font Properties
+struct FontUniforms {
   uStrokeImageSize: vec2<i32>,
   uCellsImageSize: vec2<i32>,
   uGridImageSize: vec2<i32>,
@@ -2530,7 +2515,17 @@ struct Uniforms {
   uGlyphRect: vec4<f32>,
   uGlyphOffset: f32,
   uMaterialColor: vec4<f32>,
-};
+}
+
+// Group 1: Model Transform
+struct ModelUniforms {
+  uModelViewMatrix: mat4x4<f32>,
+}
+
+// Group 2: Camera and Projection
+struct CameraUniforms {
+  uProjectionMatrix: mat4x4<f32>,
+}
 `;
 
   const fontVertexShader = `
@@ -2544,8 +2539,10 @@ struct VertexOutput {
   @location(0) vTexCoord: vec2<f32>,
 };
 
-${uniforms$1}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+${uniforms$2}
+@group(0) @binding(0) var<uniform> font: FontUniforms;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> camera: CameraUniforms;
 
 @vertex
 fn main(input: VertexInput) -> VertexOutput {
@@ -2553,35 +2550,35 @@ fn main(input: VertexInput) -> VertexOutput {
   var positionVec4 = vec4<f32>(input.aPosition, 1.0);
 
   // scale by the size of the glyph's rectangle
-  positionVec4.x = positionVec4.x * (uniforms.uGlyphRect.z - uniforms.uGlyphRect.x);
-  positionVec4.y = positionVec4.y * (uniforms.uGlyphRect.w - uniforms.uGlyphRect.y);
+  positionVec4.x = positionVec4.x * (font.uGlyphRect.z - font.uGlyphRect.x);
+  positionVec4.y = positionVec4.y * (font.uGlyphRect.w - font.uGlyphRect.y);
 
   // Expand glyph bounding boxes by 1px on each side to give a bit of room
   // for antialiasing
-  let newOrigin = (uniforms.uModelViewMatrix * vec4<f32>(0.0, 0.0, 0.0, 1.0)).xyz;
-  let newDX = (uniforms.uModelViewMatrix * vec4<f32>(1.0, 0.0, 0.0, 1.0)).xyz;
-  let newDY = (uniforms.uModelViewMatrix * vec4<f32>(0.0, 1.0, 0.0, 1.0)).xyz;
+  let newOrigin = (model.uModelViewMatrix * vec4<f32>(0.0, 0.0, 0.0, 1.0)).xyz;
+  let newDX = (model.uModelViewMatrix * vec4<f32>(1.0, 0.0, 0.0, 1.0)).xyz;
+  let newDY = (model.uModelViewMatrix * vec4<f32>(0.0, 1.0, 0.0, 1.0)).xyz;
   let pixelScale = vec2<f32>(
     1.0 / length(newOrigin - newDX),
     1.0 / length(newOrigin - newDY)
   );
   let offset = pixelScale * normalize(input.aTexCoord - vec2<f32>(0.5, 0.5));
   let textureOffset = offset * (1.0 / vec2<f32>(
-    uniforms.uGlyphRect.z - uniforms.uGlyphRect.x,
-    uniforms.uGlyphRect.w - uniforms.uGlyphRect.y
+    font.uGlyphRect.z - font.uGlyphRect.x,
+    font.uGlyphRect.w - font.uGlyphRect.y
   ));
 
   // move to the corner of the glyph
-  positionVec4.x = positionVec4.x + uniforms.uGlyphRect.x;
-  positionVec4.y = positionVec4.y + uniforms.uGlyphRect.y;
+  positionVec4.x = positionVec4.x + font.uGlyphRect.x;
+  positionVec4.y = positionVec4.y + font.uGlyphRect.y;
 
   // move to the letter's line offset
-  positionVec4.x = positionVec4.x + uniforms.uGlyphOffset;
+  positionVec4.x = positionVec4.x + font.uGlyphOffset;
 
   positionVec4.x = positionVec4.x + offset.x;
   positionVec4.y = positionVec4.y + offset.y;
 
-  output.Position = uniforms.uProjectionMatrix * uniforms.uModelViewMatrix * positionVec4;
+  output.Position = camera.uProjectionMatrix * model.uModelViewMatrix * positionVec4;
   output.vTexCoord = input.aTexCoord + textureOffset;
 
   return output;
@@ -2593,19 +2590,20 @@ struct FragmentInput {
   @location(0) vTexCoord: vec2<f32>,
 };
 
-${uniforms$1}
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
-
-@group(1) @binding(0) var uSamplerStrokes: texture_2d<f32>;
-@group(1) @binding(1) var uSamplerStrokes_sampler: sampler;
-@group(1) @binding(2) var uSamplerRowStrokes: texture_2d<f32>;
-@group(1) @binding(3) var uSamplerRowStrokes_sampler: sampler;
-@group(1) @binding(4) var uSamplerRows: texture_2d<f32>;
-@group(1) @binding(5) var uSamplerRows_sampler: sampler;
-@group(1) @binding(6) var uSamplerColStrokes: texture_2d<f32>;
-@group(1) @binding(7) var uSamplerColStrokes_sampler: sampler;
-@group(1) @binding(8) var uSamplerCols: texture_2d<f32>;
-@group(1) @binding(9) var uSamplerCols_sampler: sampler;
+${uniforms$2}
+@group(0) @binding(0) var<uniform> font: FontUniforms;
+@group(0) @binding(1) var uSamplerStrokes: texture_2d<f32>;
+@group(0) @binding(2) var uSamplerStrokes_sampler: sampler;
+@group(0) @binding(3) var uSamplerRowStrokes: texture_2d<f32>;
+@group(0) @binding(4) var uSamplerRowStrokes_sampler: sampler;
+@group(0) @binding(5) var uSamplerRows: texture_2d<f32>;
+@group(0) @binding(6) var uSamplerRows_sampler: sampler;
+@group(0) @binding(7) var uSamplerColStrokes: texture_2d<f32>;
+@group(0) @binding(8) var uSamplerColStrokes_sampler: sampler;
+@group(0) @binding(9) var uSamplerCols: texture_2d<f32>;
+@group(0) @binding(10) var uSamplerCols_sampler: sampler;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> camera: CameraUniforms;
 
 // some helper functions
 fn ROUND_f32(v: f32) -> i32 { return i32(floor(v + 0.5)); }
@@ -2737,14 +2735,14 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
   let pixelScale = hardness / fwidth(input.vTexCoord);
 
   // which grid cell is this pixel in?
-  let gridCoord = vec2<i32>(floor(input.vTexCoord * vec2<f32>(uniforms.uGridSize)));
+  let gridCoord = vec2<i32>(floor(input.vTexCoord * vec2<f32>(font.uGridSize)));
 
   // intersect curves in this row
   {
     // the index into the row info bitmap
-    let rowIndex = gridCoord.y + uniforms.uGridOffset.y;
+    let rowIndex = gridCoord.y + font.uGridOffset.y;
     // fetch the info texel
-    let rowInfo = getTexel(uSamplerRows, uSamplerRows_sampler, rowIndex, uniforms.uGridImageSize);
+    let rowInfo = getTexel(uSamplerRows, uSamplerRows_sampler, rowIndex, font.uGridImageSize);
     // unpack the rowInfo
     let rowStrokeIndex = getInt16(rowInfo.xy);
     let rowStrokeCount = getInt16(rowInfo.zw);
@@ -2757,14 +2755,14 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       // each stroke is made up of 3 points: the start and control point
       // and the start of the next curve.
       // fetch the indices of this pair of strokes:
-      let strokeIndices = getTexel(uSamplerRowStrokes, uSamplerRowStrokes_sampler, rowStrokeIndex + iRowStroke, uniforms.uCellsImageSize);
+      let strokeIndices = getTexel(uSamplerRowStrokes, uSamplerRowStrokes_sampler, rowStrokeIndex + iRowStroke, font.uCellsImageSize);
 
       // unpack the stroke index
       let strokePos = getInt16(strokeIndices.xy);
 
       // fetch the two strokes
-      let stroke0 = getTexel(uSamplerStrokes, uSamplerStrokes_sampler, strokePos + 0, uniforms.uStrokeImageSize);
-      let stroke1 = getTexel(uSamplerStrokes, uSamplerStrokes_sampler, strokePos + 1, uniforms.uStrokeImageSize);
+      let stroke0 = getTexel(uSamplerStrokes, uSamplerStrokes_sampler, strokePos + 0, font.uStrokeImageSize);
+      let stroke1 = getTexel(uSamplerStrokes, uSamplerStrokes_sampler, strokePos + 1, font.uStrokeImageSize);
 
       // calculate the coverage
       coverageX(stroke0.xy, stroke0.zw, stroke1.xy, input.vTexCoord, pixelScale, &coverage, &weight);
@@ -2773,8 +2771,8 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 
   // intersect curves in this column
   {
-    let colIndex = gridCoord.x + uniforms.uGridOffset.x;
-    let colInfo = getTexel(uSamplerCols, uSamplerCols_sampler, colIndex, uniforms.uGridImageSize);
+    let colIndex = gridCoord.x + font.uGridOffset.x;
+    let colInfo = getTexel(uSamplerCols, uSamplerCols_sampler, colIndex, font.uGridImageSize);
     let colStrokeIndex = getInt16(colInfo.xy);
     let colStrokeCount = getInt16(colInfo.zw);
 
@@ -2783,11 +2781,11 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         break;
       }
 
-      let strokeIndices = getTexel(uSamplerColStrokes, uSamplerColStrokes_sampler, colStrokeIndex + iColStroke, uniforms.uCellsImageSize);
+      let strokeIndices = getTexel(uSamplerColStrokes, uSamplerColStrokes_sampler, colStrokeIndex + iColStroke, font.uCellsImageSize);
 
       let strokePos = getInt16(strokeIndices.xy);
-      let stroke0 = getTexel(uSamplerStrokes, uSamplerStrokes_sampler, strokePos + 0, uniforms.uStrokeImageSize);
-      let stroke1 = getTexel(uSamplerStrokes, uSamplerStrokes_sampler, strokePos + 1, uniforms.uStrokeImageSize);
+      let stroke0 = getTexel(uSamplerStrokes, uSamplerStrokes_sampler, strokePos + 0, font.uStrokeImageSize);
+      let stroke1 = getTexel(uSamplerStrokes, uSamplerStrokes_sampler, strokePos + 1, font.uStrokeImageSize);
       coverageY(stroke0.xy, stroke0.zw, stroke1.xy, input.vTexCoord, pixelScale, &coverage, &weight);
     }
   }
@@ -2796,9 +2794,58 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
   let distance = max(weight.x + weight.y, minDistance); // manhattan approx.
   let antialias = abs(dot(coverage, weight) / distance);
   let cover = min(abs(coverage.x), abs(coverage.y));
-  var outColor = vec4<f32>(uniforms.uMaterialColor.rgb, 1.0) * uniforms.uMaterialColor.a;
+  var outColor = vec4<f32>(font.uMaterialColor.rgb, 1.0) * font.uMaterialColor.a;
   outColor = outColor * saturate_f32(max(antialias, cover));
   return outColor;
+}
+`;
+
+  const uniforms$1 = `
+struct Uniforms {
+  uModelViewMatrix: mat4x4<f32>,
+  uProjectionMatrix: mat4x4<f32>,
+};
+`;
+
+  const blitVertexShader = `
+struct VertexInput {
+  @location(0) aPosition: vec3<f32>,
+  @location(1) aNormal: vec3<f32>,
+  @location(2) aTexCoord: vec2<f32>,
+  @location(3) aVertexColor: vec4<f32>,
+};
+
+struct VertexOutput {
+  @builtin(position) Position: vec4<f32>,
+  @location(0) vTexCoord: vec2<f32>,
+};
+
+${uniforms$1}
+@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+
+@vertex
+fn main(input: VertexInput) -> VertexOutput {
+  var output: VertexOutput;
+  output.vTexCoord = input.aTexCoord;
+  let positionVec4 = vec4<f32>(input.aPosition, 1.0);
+  output.Position = uniforms.uProjectionMatrix * uniforms.uModelViewMatrix * positionVec4;
+  return output;
+}
+`;
+
+  const blitFragmentShader = `
+struct FragmentInput {
+  @location(0) vTexCoord: vec2<f32>,
+};
+
+${uniforms$1}
+@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+@group(0) @binding(1) var uSampler: texture_2d<f32>;
+@group(0) @binding(2) var uSampler_sampler: sampler;
+
+@fragment
+fn main(input: FragmentInput) -> @location(0) vec4<f32> {
+  return textureSample(uSampler, uSampler_sampler, input.vTexCoord);
 }
 `;
 
@@ -2930,6 +2977,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       this.id = id;
       this.strandsContext = strandsContext;
       this.dimension = dimension;
+      this.structProperties = null;
       this.isStrandsNode = true;
 
       // Store original identifier for varying variables
@@ -2942,6 +2990,10 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         this._originalBaseType = nodeData.baseType;
         this._originalDimension = nodeData.dimension;
       }
+    }
+    withStructProperties(properties) {
+      this.structProperties = properties;
+      return this;
     }
     copy() {
       return createStrandsNode(this.id, this.dimension, this.strandsContext);
@@ -3732,7 +3784,10 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       if (!strandsContext.renderer || !strandsContext.baseShader) return;
 
       // Get the next available binding index from the renderer
-      let bindingIndex = strandsContext.renderer.getNextBindingIndex(strandsContext.baseShader);
+      let bindingIndex = strandsContext.renderer.getNextBindingIndex({
+        vert: strandsContext.baseShader.vertSrc(),
+        frag: strandsContext.baseShader.fragSrc(),
+      });
 
       for (const {name, typeInfo} of strandsContext.uniforms) {
         if (typeInfo.baseType === 'sampler2D') {
@@ -3901,7 +3956,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         // Check if this is a uniform variable (but not a texture)
         const uniform = generationContext.strandsContext?.uniforms?.find(uniform => uniform.name === node.identifier);
         if (uniform && uniform.typeInfo.baseType !== 'sampler2D') {
-          return `uniforms.${node.identifier}`;
+          return `hooks.${node.identifier}`;
         }
 
         return node.identifier;
@@ -4147,21 +4202,31 @@ fn noise(st: vec3<f32>, octaves: i32, ampFalloff: f32) -> f32 {
     frequency *= 2.0;
     amplitude *= ampFalloff;
   }
-
-  return result;
+  return (result + 1.0) * 0.5;
 }`;
 
   const filterUniforms = `
-struct Uniforms {
-  uModelViewMatrix: mat4x4<f32>,
-  uProjectionMatrix: mat4x4<f32>,
+// Group 0: Filter Properties
+struct FilterUniforms {
   canvasSize: vec2<f32>,
   texelSize: vec2<f32>,
 }
 
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+// Group 1: Model Transform
+struct ModelUniforms {
+  uModelViewMatrix: mat4x4<f32>,
+}
+
+// Group 2: Camera and Projection
+struct CameraUniforms {
+  uProjectionMatrix: mat4x4<f32>,
+}
+
+@group(0) @binding(0) var<uniform> filterParams: FilterUniforms;
 @group(0) @binding(1) var tex0: texture_2d<f32>;
 @group(0) @binding(2) var tex0_sampler: sampler;
+@group(1) @binding(0) var<uniform> model: ModelUniforms;
+@group(2) @binding(0) var<uniform> camera: CameraUniforms;
 `;
 
   const baseFilterVertexShader = filterUniforms + `
@@ -4186,7 +4251,7 @@ fn main(input: VertexInput) -> VertexOutput {
   let positionVec4 = vec4<f32>(input.aPosition, 1.0);
 
   // project to 3D space
-  output.position = uniforms.uProjectionMatrix * uniforms.uModelViewMatrix * positionVec4;
+  output.position = camera.uProjectionMatrix * model.uModelViewMatrix * positionVec4;
 
   return output;
 }
@@ -4212,8 +4277,8 @@ fn main(input: FragmentInput) -> FragmentOutput {
   var output: FragmentOutput;
   var inputs: FilterInputs;
   inputs.texCoord = input.vTexCoord;
-  inputs.canvasSize = uniforms.canvasSize;
-  inputs.texelSize = uniforms.texelSize;
+  inputs.canvasSize = filterParams.canvasSize;
+  inputs.texelSize = filterParams.texelSize;
 
   var outColor = HOOK_getColor(inputs, tex0, tex0_sampler);
   outColor = vec4<f32>(outColor.rgb * outColor.a, outColor.a);
@@ -4450,6 +4515,12 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 }
 `;
 
+  const FRAME_STATE = {
+    PENDING: 0,
+    UNPROMOTED: 1,
+    PROMOTED: 2
+  };
+
   function rendererWebGPU(p5, fn) {
     const { lineDefs } = getStrokeDefs((n, v, t) => `const ${n}: ${t} = ${v};\n`);
 
@@ -4469,9 +4540,30 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       constructor(pInst, w, h, isMainCanvas, elt) {
         super(pInst, w, h, isMainCanvas, elt);
 
-        this.renderPass = {};
+        // Used to group draws into one big render pass
+        this.activeRenderPass = null;
+        this.activeRenderPassEncoder = null;
+        this.activeShaderOptions = null;
+        this.activeShader = null;
 
         this.samplers = new Map();
+
+        // Some uniforms update every frame, like model matrices and sometimes colors.
+        // The fastest way to handle these is to use mapped memory. We'll batch those
+        // into bigger buffers with dynamic offsets, separate from the usual system
+        // where bind groups have their own little buffers that get cached when they
+        // are unchanged
+        this.uniformBufferAlignment = 256;
+        this.activeUniformBuffers = [];
+        this.currentUniformBuffer = undefined;
+        this.uniformBufferPool = [];
+        this.resettingUniformBuffers = [];
+
+        this.dynamicEntryOffsets = new Uint32Array(64);
+
+        // Cache for current frame's canvas texture view
+        this.currentCanvasColorTexture = null;
+        this.currentCanvasColorTextureView = null;
 
         // Single reusable staging buffer for pixel reading
         this.pixelReadBuffer = null;
@@ -4489,6 +4581,9 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         this._hasPendingDraws = false;
         this._pendingCommandEncoders = [];
 
+        // Queue of callbacks to run after next submit (mainly for safe texture deletion)
+        this._postSubmitCallbacks = [];
+
         // Retired buffers to destroy at end of frame
         this._retiredBuffers = [];
 
@@ -4496,6 +4591,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         this._pixelReadCanvas = null;
         this._pixelReadCtx = null;
         this.mainFramebuffer = null;
+        this._frameState = FRAME_STATE.PENDING;
 
         this.finalCamera = new Camera(this);
         this.finalCamera._computeCameraDefaultSettings();
@@ -4541,9 +4637,10 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 
         // TODO disablable stencil
         this.depthFormat = 'depth24plus-stencil8';
-        this.mainFramebuffer = this.createFramebuffer();
+        this.mainFramebuffer = this.createFramebuffer({ _useCanvasFormat: true });
         this._updateSize();
         this._update();
+        this.flushDraw();
       }
 
       async _setAttributes(key, value) {
@@ -4597,7 +4694,10 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 
       _updateSize() {
         if (this.depthTexture && this.depthTexture.destroy) {
-          this.depthTexture.destroy();
+          this.flushDraw();
+          const textureToDestroy = this.depthTexture;
+          this._postSubmitCallbacks.push(() => textureToDestroy.destroy());
+          this.depthTextureView = null;
         }
         this.depthTexture = this.device.createTexture({
           size: {
@@ -4606,11 +4706,84 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
             depthOrArrayLayers: 1,
           },
           format: this.depthFormat,
-          usage: GPUTextureUsage.RENDER_ATTACHMENT,
+          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC,
         });
+        this.depthTextureView = this.depthTexture.createView();
 
         // Clear the main canvas after resize
         this.clear();
+      }
+
+      _getCanvasColorTextureView() {
+        const canvasTexture = this.drawingContext.getCurrentTexture();
+        // If texture changed (new frame), update cache
+        if (this.currentCanvasColorTexture !== canvasTexture) {
+          this.currentCanvasColorTexture = canvasTexture;
+          this.currentCanvasColorTextureView = canvasTexture.createView();
+        }
+        return this.currentCanvasColorTextureView;
+      }
+
+      _beginActiveRenderPass() {
+        if (this.activeRenderPass) return;
+
+        // Use framebuffer texture if active, otherwise use canvas texture
+        const activeFramebuffer = this.activeFramebuffer();
+
+        const colorAttachment = {
+          view: activeFramebuffer
+            ? (activeFramebuffer.aaColorTexture
+                ? activeFramebuffer.aaColorTextureView
+                : activeFramebuffer.colorTextureView)
+            : this._getCanvasColorTextureView(),
+          loadOp: "load",
+          storeOp: "store",
+          // If using multisampled texture, resolve to non-multisampled texture
+          resolveTarget: activeFramebuffer && activeFramebuffer.aaColorTexture
+            ? activeFramebuffer.colorTextureView
+            : undefined,
+        };
+
+        // Use framebuffer depth texture if active, otherwise use canvas depth texture
+        const depthTextureView = activeFramebuffer
+          ? (activeFramebuffer.aaDepthTexture
+              ? activeFramebuffer.aaDepthTextureView
+              : activeFramebuffer.depthTextureView)
+          : this.depthTextureView;
+        const renderPassDescriptor = {
+          colorAttachments: [colorAttachment],
+          depthStencilAttachment: depthTextureView
+            ? {
+                view: depthTextureView,
+                depthLoadOp: "load",
+                depthStoreOp: "store",
+                depthClearValue: 1.0,
+                stencilLoadOp: "load",
+                stencilStoreOp: "store",
+                depthReadOnly: false,
+                stencilReadOnly: false,
+              }
+            : undefined,
+        };
+        const commandEncoder = this.device.createCommandEncoder();
+        const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+        this.activeRenderPassEncoder = commandEncoder;
+        this.activeRenderPass = passEncoder;
+      }
+
+      _finishActiveRenderPass() {
+        if (!this.activeRenderPass) return;
+
+        const commandEncoder = this.activeRenderPassEncoder;
+        const passEncoder = this.activeRenderPass;
+        passEncoder.end();
+
+        // Store the command encoder for later submission
+        this._pendingCommandEncoders.push(commandEncoder.finish());
+        this.activeRenderPassEncoder = null;
+        this.activeRenderPass = null;
+        this.activeShader = null;
+        this.activeShaderOptions = null;
       }
 
       clear(...args) {
@@ -4619,29 +4792,39 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         const _b = args[2] || 0;
         const _a = args[3] || 0;
 
+        // If PENDING and no custom framebuffer, clear means stay UNPROMOTED
+        if (this._frameState === FRAME_STATE.PENDING && !this.activeFramebuffer()) {
+          this._frameState = FRAME_STATE.UNPROMOTED;
+        }
+
+        this._finishActiveRenderPass();
+
         const commandEncoder = this.device.createCommandEncoder();
 
         // Use framebuffer texture if active, otherwise use canvas texture
         const activeFramebuffer = this.activeFramebuffer();
-        const colorTexture = activeFramebuffer ?
-          (activeFramebuffer.aaColorTexture || activeFramebuffer.colorTexture) :
-          this.drawingContext.getCurrentTexture();
 
         const colorAttachment = {
-          view: colorTexture.createView(),
+          view: activeFramebuffer
+            ? (activeFramebuffer.aaColorTexture
+                ? activeFramebuffer.aaColorTextureView
+                : activeFramebuffer.colorTextureView)
+            : this._getCanvasColorTextureView(),
           clearValue: { r: _r * _a, g: _g * _a, b: _b * _a, a: _a },
           loadOp: 'clear',
           storeOp: 'store',
           // If using multisampled texture, resolve to non-multisampled texture
-          resolveTarget: activeFramebuffer && activeFramebuffer.aaColorTexture ?
-            activeFramebuffer.colorTexture.createView() : undefined,
+          resolveTarget: activeFramebuffer && activeFramebuffer.aaColorTexture
+            ? activeFramebuffer.colorTextureView
+            : undefined,
         };
 
         // Use framebuffer depth texture if active, otherwise use canvas depth texture
-        const depthTexture = activeFramebuffer ?
-          (activeFramebuffer.aaDepthTexture || activeFramebuffer.depthTexture) :
-          this.depthTexture;
-        const depthTextureView = depthTexture?.createView();
+        const depthTextureView = activeFramebuffer
+          ? (activeFramebuffer.aaDepthTexture
+              ? activeFramebuffer.aaDepthTextureView
+              : activeFramebuffer.depthTextureView)
+          : this.depthTextureView;
         const depthAttachment = depthTextureView
           ? {
             view: depthTextureView,
@@ -4670,16 +4853,18 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
        * occlude anything subsequently drawn.
        */
       clearDepth(depth = 1) {
+        this._finishActiveRenderPass();
         const commandEncoder = this.device.createCommandEncoder();
 
         // Use framebuffer texture if active, otherwise use canvas texture
         const activeFramebuffer = this.activeFramebuffer();
 
         // Use framebuffer depth texture if active, otherwise use canvas depth texture
-        const depthTexture = activeFramebuffer ?
-          (activeFramebuffer.aaDepthTexture || activeFramebuffer.depthTexture) :
-          this.depthTexture;
-        const depthTextureView = depthTexture?.createView();
+        const depthTextureView = activeFramebuffer
+          ? (activeFramebuffer.aaDepthTexture
+              ? activeFramebuffer.aaDepthTextureView
+              : activeFramebuffer.depthTextureView)
+          : this.depthTextureView;
 
         if (!depthTextureView) {
           // No depth buffer to clear
@@ -4759,7 +4944,6 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         const loc = attr.location;
         if (!this.registerEnabled.has(loc)) {
           // TODO
-          // this.renderPass.setVertexBuffer(loc, buffer);
           this.registerEnabled.add(loc);
         }
       }
@@ -4820,7 +5004,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 
         const requestedSampleCount = activeFramebuffer ?
           (activeFramebuffer.antialias ? activeFramebuffer.antialiasSamples : 1) :
-          (this.antialias || 1);
+          1;  // No MSAA needed when blitting already-antialiased textures to canvas
         const sampleCount = this._getValidSampleCount(requestedSampleCount);
 
         const depthFormat = activeFramebuffer && activeFramebuffer.useDepth ?
@@ -4840,6 +5024,14 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
           clipping,
           clipApplied,
         }
+      }
+
+      _shaderOptionsDifferent(newOptions) {
+        if (!this.activeShaderOptions) return true;
+        for (const key in this.activeShaderOptions) {
+          if (this.activeShaderOptions[key] !== newOptions[key]) return true;
+        }
+        return false;
       }
 
       _initShader(shader) {
@@ -4896,39 +5088,39 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       _finalizeShader(shader) {
-        const rawSize = Math.max(
-          0,
-          ...Object.values(shader.uniforms).filter(u => !u.isSampler).map(u => u.offsetEnd)
-        );
-        const alignedSize = Math.ceil(rawSize / 16) * 16;
-        shader._uniformData = new Float32Array(alignedSize / 4);
-        shader._uniformDataView = new DataView(shader._uniformData.buffer);
+        // Per-group buffer pools. We will pull from these when we draw multiple
+        // times using the shader in a render pass. These are per group instead of
+        // global so that we can reuse the last used buffer when uniform values
+        // don't change.
+        shader._uniformBufferGroups = [];
+        shader.buffersDirty = new Set();
 
-        // Create pools for uniform buffers (both GPU buffers and data arrays.) This
-        // is so that we can queue up multiple things to be able to be drawn and have
-        // the GPU go through them as fast as possible. If we're overwriting the same
-        // data again and again, we would have to wait for the GPU after each primitive
-        // that we draw.
-        shader._uniformBufferPool = [];
-        shader._uniformBuffersInUse = [];
-        shader._uniformBufferSize = alignedSize;
+        for (const group of shader._uniformGroups) {
+          // Calculate the size needed for this group's uniforms
+          const groupUniforms = Object.values(group.uniforms);
+          const rawSize = Math.max(
+            0,
+            ...groupUniforms.map(u => u.offsetEnd)
+          );
+          const alignedSize = Math.ceil(rawSize / 16) * 16;
 
-        // Create the first buffer for the pool
-        const firstGPUBuffer = this.device.createBuffer({
-          size: alignedSize,
-          usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
-        const firstData = new Float32Array(alignedSize / 4);
-        const firstDataView = new DataView(firstData.buffer);
+          shader._uniformBufferGroups.push({
+            group: group.group,
+            binding: group.binding,
+            cacheKey: group.group * 1000 + group.binding,
+            varName: group.varName,
+            structType: group.structType,
+            uniforms: groupUniforms,
+            size: alignedSize,
 
-        shader._uniformBufferPool.push({
-          buffer: firstGPUBuffer,
-          data: firstData,
-          dataView: firstDataView
-        });
+            bufferPool: [],
+            nextBufferPool: [],
 
-        // Keep backward compatibility reference
-        shader._uniformBuffer = firstGPUBuffer;
+            dynamic: groupUniforms.some(u => u.name.startsWith('uModel')),
+            buffersInUse: new Set(),
+            currentBuffer: null, // For caching
+          });
+        }
 
         // Register this shader in our registry for pool cleanup
         this._shadersWithPools.push(shader);
@@ -4936,12 +5128,22 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         const bindGroupLayouts = new Map(); // group index -> bindGroupLayout
         const groupEntries = new Map(); // group index -> array of entries
 
-        // We're enforcing that every shader have a single uniform struct in binding 0
-        groupEntries.set(0, [{
-          binding: 0,
-          visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-          buffer: { type: 'uniform' },
-        }]);
+        // Add all uniform group bindings to group 0
+        const structEntries = new Map();
+        for (const bufferGroup of shader._uniformBufferGroups) {
+          const entries = structEntries.get(bufferGroup.group) || [];
+          entries.push({
+            bufferGroup,
+            binding: bufferGroup.binding,
+            visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+            buffer: { type: 'uniform', hasDynamicOffset: bufferGroup.dynamic },
+          });
+          structEntries.set(bufferGroup.group, entries);
+        }
+        for (const [group, entries] of structEntries.entries()) {
+          entries.sort((a, b) => a.binding - b.binding);
+          groupEntries.set(group, entries);
+        }
 
         // Add the variable amount of samplers and texture bindings that can come after
         for (const sampler of shader.samplers) {
@@ -4963,17 +5165,25 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
             uniform: sampler,
           });
 
+          entries.sort((a, b) => a.binding - b.binding);
           groupEntries.set(group, entries);
         }
 
         // Create layouts and bind groups
+        const groupEntriesArr = [];
         for (const [group, entries] of groupEntries) {
           const layout = this.device.createBindGroupLayout({ entries });
           bindGroupLayouts.set(group, layout);
+          groupEntriesArr.push([group, entries]);
         }
 
-        shader._groupEntries = groupEntries;
+        shader._groupEntries = groupEntriesArr;
         shader._bindGroupLayouts = [...bindGroupLayouts.values()];
+        // Reuse bind groups if they don't change
+        shader._cachedBindGroup = {};
+        // Remember which dynamic buffer we last used, so that we can
+        // possibly cache bind groups if unchanged
+        shader._lastDynamicBuffer = {};
         shader._pipelineLayout = this.device.createPipelineLayout({
           bindGroupLayouts: shader._bindGroupLayouts,
         });
@@ -5162,22 +5372,25 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       _getVertexBuffers(shader) {
-        const buffers = [];
+        if (!shader._vertexBuffers) {
+          const buffers = [];
 
-        for (const attrName in shader.attributes) {
-          const attr = shader.attributes[attrName];
-          if (!attr || attr.location === -1) continue;
+          for (const attrName in shader.attributes) {
+            const attr = shader.attributes[attrName];
+            if (!attr || attr.location === -1) continue;
 
-          // Get the vertex buffer info associated with this attribute
-          const renderBuffer =
-            this.buffers[shader.shaderType].find(buf => buf.attr === attrName) ||
-            this.buffers.user.find(buf => buf.attr === attrName);
-          if (!renderBuffer) continue;
+            // Get the vertex buffer info associated with this attribute
+            const renderBuffer =
+              this.buffers[shader.shaderType].find(buf => buf.attr === attrName) ||
+              this.buffers.user.find(buf => buf.attr === attrName);
+            if (!renderBuffer) continue;
 
-          buffers.push(renderBuffer);
+            buffers.push(renderBuffer);
+          }
+          shader._vertexBuffers = buffers;
         }
 
-        return buffers;
+        return shader._vertexBuffers;
       }
 
       _getFormatFromSize(size) {
@@ -5219,33 +5432,147 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       _resetBuffersBeforeDraw() {
-        if (!this.activeFramebuffer()) {
-          this.mainFramebuffer.begin();
-        }
+        this._finishActiveRenderPass();
+        // Set state to PENDING - we'll decide on first draw
+        this._frameState = FRAME_STATE.PENDING;
+
+        // Clear depth buffer but DON'T start any render pass yet
+        const activeFramebuffer = this.activeFramebuffer();
         const commandEncoder = this.device.createCommandEncoder();
 
-        const depthTextureView = this.depthTexture?.createView();
-        const depthAttachment = depthTextureView
-          ? {
+        const depthTextureView = activeFramebuffer
+          ? (activeFramebuffer.aaDepthTexture
+              ? activeFramebuffer.aaDepthTextureView
+              : activeFramebuffer.depthTextureView)
+          : this.depthTextureView;
+
+        if (depthTextureView) {
+          const depthAttachment = {
             view: depthTextureView,
             depthClearValue: 1.0,
             depthLoadOp: 'clear',
             depthStoreOp: 'store',
             stencilLoadOp: 'load',
-            stencilStoreOp: "store",
+            stencilStoreOp: 'store',
+          };
+          const renderPassDescriptor = {
+            colorAttachments: [],
+            depthStencilAttachment: depthAttachment,
+          };
+          const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+          passEncoder.end();
+          this._pendingCommandEncoders.push(commandEncoder.finish());
+          this._hasPendingDraws = true;
+        }
+      }
+
+      /**
+       * Promotes the current frame to use mainFramebuffer.
+       * Copies current canvas content to mainFramebuffer, then switches to rendering there.
+       * @private
+       */
+      _promoteToFramebuffer() {
+        // Already promoted this frame
+        if (this._frameState === FRAME_STATE.PROMOTED) {
+          return;
+        }
+
+        // Already drawing to a custom framebuffer, no promotion needed
+        if (this.activeFramebuffer()) {
+          return;
+        }
+
+        // Flush any pending draws to canvas first
+        this.flushDraw();
+
+        // Mark as promoted
+        this._frameState = FRAME_STATE.PROMOTED;
+
+        // Get current canvas texture
+        const canvasTexture = this.drawingContext.getCurrentTexture();
+
+        // Ensure mainFramebuffer matches canvas size
+        if (this.mainFramebuffer.width !== this.width ||
+            this.mainFramebuffer.height !== this.height) {
+          this.mainFramebuffer.resize(this.width, this.height);
+        }
+
+        // Copy canvas textures to mainFramebuffer
+        const commandEncoder = this.device.createCommandEncoder();
+
+        // Copy color texture
+        commandEncoder.copyTextureToTexture(
+          {
+            texture: canvasTexture,
+            origin: { x: 0, y: 0, z: 0 },
+            mipLevel: 0,
+          },
+          {
+            texture: this.mainFramebuffer.colorTexture,
+            origin: { x: 0, y: 0, z: 0 },
+            mipLevel: 0,
+          },
+          {
+            width: Math.ceil(this.width * this._pixelDensity),
+            height: Math.ceil(this.height * this._pixelDensity),
+            depthOrArrayLayers: 1,
           }
-          : undefined;
+        );
 
-        const renderPassDescriptor = {
-          colorAttachments: [],
-          ...(depthAttachment ? { depthStencilAttachment: depthAttachment } : {}),
-        };
-
-        const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
-        passEncoder.end();
+        // Copy depth texture
+        commandEncoder.copyTextureToTexture(
+          {
+            texture: this.depthTexture,
+            origin: { x: 0, y: 0, z: 0 },
+            mipLevel: 0,
+          },
+          {
+            texture: this.mainFramebuffer.depthTexture,
+            origin: { x: 0, y: 0, z: 0 },
+            mipLevel: 0,
+          },
+          {
+            width: Math.ceil(this.width * this._pixelDensity),
+            height: Math.ceil(this.height * this._pixelDensity),
+            depthOrArrayLayers: 1,
+          }
+        );
 
         this._pendingCommandEncoders.push(commandEncoder.finish());
         this._hasPendingDraws = true;
+
+        // We want to make sure the transformation state is the same
+        // once we're drawing to the framebuffer, because normally
+        // those are reset.
+        const savedModelMatrix = this.states.uModelMatrix.copy();
+        this.mainFramebuffer.defaultCamera.set(this.states.curCamera);
+
+        this.mainFramebuffer.begin();
+
+        this.states.uModelMatrix.set(savedModelMatrix);
+      }
+
+      _promoteToFramebufferWithoutCopy() {
+        // Ensure mainFramebuffer matches canvas size
+        if (this.mainFramebuffer.width !== this.width ||
+            this.mainFramebuffer.height !== this.height) {
+          this.mainFramebuffer.resize(this.width, this.height);
+        }
+
+        // Mark as promoted WITHOUT copying canvas content
+        this._frameState = FRAME_STATE.PROMOTED;
+
+        // Flush any pending draws first
+        this.flushDraw();
+
+        // Preserve transformation state
+        const savedModelMatrix = this.states.uModelMatrix.copy();
+        this.mainFramebuffer.defaultCamera.set(this.states.curCamera);
+
+        // Begin rendering to mainFramebuffer
+        this.mainFramebuffer.begin();
+
+        this.states.uModelMatrix.set(savedModelMatrix);
       }
 
       //////////////////////////////////////////////
@@ -5359,59 +5686,162 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       // Uniform buffer pool management
       //////////////////////////////////////////////
 
-      _getUniformBufferFromPool(shader) {
+      _getUniformBufferFromPool(bufferGroup) {
         // Try to get a buffer from the pool
-        if (shader._uniformBufferPool.length > 0) {
-          const bufferInfo = shader._uniformBufferPool.pop();
-          shader._uniformBuffersInUse.push(bufferInfo);
+        if (bufferGroup.bufferPool.length > 0) {
+          const bufferInfo = bufferGroup.bufferPool.pop();
+          bufferGroup.buffersInUse.add(bufferInfo);
           return bufferInfo;
         }
 
         // No buffers available, create a new one
         const newBuffer = this.device.createBuffer({
-          size: shader._uniformBufferSize,
+          size: bufferGroup.size,
           usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
-        const newData = new Float32Array(shader._uniformBufferSize / 4);
+        const newData = new Float32Array(bufferGroup.size / 4);
         const newDataView = new DataView(newData.buffer);
-
         const bufferInfo = {
           buffer: newBuffer,
           data: newData,
           dataView: newDataView
         };
 
-        shader._uniformBuffersInUse.push(bufferInfo);
+        bufferGroup.buffersInUse.add(bufferInfo);
         return bufferInfo;
+      }
+
+      _getDynamicUniformBufferFromPool(bufferGroup) {
+        //
+        let buffer;
+        if (
+          this.currentUniformBuffer &&
+          this.currentUniformBuffer.offset + bufferGroup.size < this.currentUniformBuffer.size
+        ) {
+          // We can fit this next block of uniforms into the current active memory chunk
+          buffer = this.currentUniformBuffer;
+        } else if (this.uniformBufferPool.length > 0) {
+          buffer = this.uniformBufferPool.pop();
+          this.activeUniformBuffers.push(buffer);
+        } else {
+          // Kinda arbitrary. Each dynamic offset has to be in groups of 256, but then
+          // we can choose how many things we want to be able to fit into a block.
+          // There's some overhead to each block so if we're drawing a lot of stuff,
+          // bigger is better. But it's also a lot of wasted memory if we AREN'T drawing
+          // a lot of stuff. So.... right now it's 40. Feel free to update this if
+          // a better balance can be achieved.
+          const size = 256 * 40;
+          buffer = {
+            dynamic: true,
+            lastOffset: 0,
+            offset: 0,
+            size,
+            buffer: this.device.createBuffer({
+              size,
+              usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
+              mappedAtCreation: true,
+            }),
+            uniformBuffer: this.device.createBuffer({
+              size,
+              usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+            }),
+          };
+
+          buffer.data = new Float32Array(buffer.buffer.getMappedRange());
+          buffer.dataView = new DataView(buffer.data.buffer);
+
+          this.activeUniformBuffers.push(buffer);
+        }
+
+        this.currentUniformBuffer = buffer;
+
+        return buffer;
       }
 
       _returnUniformBuffersToPool() {
         // Return all used buffers back to their pools for all registered shaders
         for (const shader of this._shadersWithPools) {
-          if (shader._uniformBuffersInUse && shader._uniformBuffersInUse.length > 0) {
-            this._returnShaderBuffersToPool(shader);
-          }
+          this._returnShaderBuffersToPool(shader);
         }
       }
 
       _returnShaderBuffersToPool(shader) {
-        // Move all buffers from inUse back to pool
-        while (shader._uniformBuffersInUse.length > 0) {
-          const bufferInfo = shader._uniformBuffersInUse.pop();
-          shader._uniformBufferPool.push(bufferInfo);
+        if (shader._uniformBufferGroups) {
+          for (const bufferGroup of shader._uniformBufferGroups) {
+            while (bufferGroup.nextBufferPool.length > 0) {
+              bufferGroup.bufferPool.push(bufferGroup.nextBufferPool.pop());
+            }
+            for (const bufferInfo of bufferGroup.buffersInUse.keys()) {
+              if (bufferInfo !== bufferGroup.currentBuffer) {
+                bufferGroup.nextBufferPool.push(bufferInfo);
+              }
+            }
+            bufferGroup.buffersInUse.clear();
+            if (bufferGroup.currentBuffer) {
+              bufferGroup.buffersInUse.add(bufferGroup.currentBuffer);
+            }
+          }
         }
       }
 
       flushDraw() {
+        this._finishActiveRenderPass();
         // Only submit if we actually had any draws
         if (this._hasPendingDraws) {
           // Create a copy of pending command encoders
-          const commandsToSubmit = this._pendingCommandEncoders.slice();
+          const commandsToSubmit = this._pendingCommandEncoders;
           this._pendingCommandEncoders = [];
           this._hasPendingDraws = false;
 
+          if (this.activeUniformBuffers.length > 0) {
+            const encoder = this.device.createCommandEncoder();
+            for (const bufferInfo of this.activeUniformBuffers) {
+              bufferInfo.buffer.unmap();
+              encoder.copyBufferToBuffer(
+                bufferInfo.buffer,
+                bufferInfo.uniformBuffer,
+              );
+            }
+            commandsToSubmit.unshift(encoder.finish());
+          }
+
           // Submit the commands
           this.queue.submit(commandsToSubmit);
+
+          for (const buf of this.activeUniformBuffers) {
+            // buf.buffer = this.device.createBuffer({
+              // size: buf.size,
+              // usage: GPUBufferUsage.MAP_WRITE | GPUBufferUsage.COPY_SRC,
+              // mappedAtCreation: true,
+            // });
+            buf.offset = 0;
+            buf.lastOffset = 0;
+            // this.resettingUniformBuffers.push(
+              buf.buffer.mapAsync(GPUMapMode.WRITE).then(() => {
+                buf.data = new Float32Array(buf.buffer.getMappedRange());
+                buf.dataView = new DataView(buf.data.buffer);
+                this.uniformBufferPool.push(buf);
+                return buf;
+              });
+            // )
+          }
+          this.activeUniformBuffers = [];
+          this.currentUniformBuffer = undefined;
+
+          // Execute post-submit callbacks after GPU work completes
+          if (this._postSubmitCallbacks.length > 0) {
+            const callbacks = this._postSubmitCallbacks;
+            this._postSubmitCallbacks = [];
+            this.device.queue.onSubmittedWorkDone().then(() => {
+              for (const callback of callbacks) {
+                callback();
+              }
+            });
+          }
+
+          // Reset canvas texture cache for next frame
+          this.currentCanvasColorTexture = null;
+          this.currentCanvasColorTextureView = null;
         }
       }
 
@@ -5439,23 +5869,29 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 
       async finishDraw() {
         this.flushDraw();
-        const states = [];
-        while (this.activeFramebuffers.length > 0) {
-          const fbo = this.activeFramebuffers.pop();
-          states.unshift({ fbo, diff: { ...this.states } });
-        }
-        this.flushDraw();
 
-        // this._pInst.background('red');
-        this._pInst.push();
-        this.states.setValue('enableLighting', false);
-        this.states.setValue('activeImageLight', null);
-        this._pInst.setCamera(this.finalCamera);
-        this._pInst.resetShader();
-        this._pInst.imageMode(this._pInst.CENTER);
-        this._pInst.image(this.mainFramebuffer, 0, 0);
-        this._pInst.pop();
-        this.flushDraw();
+        const states = [];
+
+        // Only blit if we promoted to framebuffer this frame
+        if (this._frameState === FRAME_STATE.PROMOTED) {
+          while (this.activeFramebuffers.length > 0) {
+            const fbo = this.activeFramebuffers.pop();
+            states.unshift({ fbo, diff: { ...this.states } });
+          }
+          this.flushDraw();
+
+          // this._pInst.background('red');
+          this._pInst.push();
+          this.states.setValue('enableLighting', false);
+          this.states.setValue('activeImageLight', null);
+          this._pInst.setCamera(this.finalCamera);
+          this._pInst.shader(this._getBlitShader());
+          this._pInst.resetMatrix();
+          this._pInst.imageMode(this._pInst.CENTER);
+          this._pInst.image(this.mainFramebuffer, 0, 0);
+          this._pInst.pop();
+          this.flushDraw();
+        }
 
         // Return all uniform buffers to their pools
         this._returnUniformBuffersToPool();
@@ -5465,21 +5901,31 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
           this._markGeometryBuffersForReturn(geometry);
         }
 
+        // this.uniformBufferPool.push(...(await Promise.all(this.resettingUniformBuffers)));
+        this.resettingUniformBuffers = [];
+
         // Return all vertex buffers to their pools
         this._returnVertexBuffersToPool();
 
         // Destroy all retired buffers
-        for (const buffer of this._retiredBuffers) {
-          if (buffer && buffer.destroy) {
-            buffer.destroy();
+        const retired = this._retiredBuffers;
+        this._postSubmitCallbacks.push(() => {
+          for (const buffer of retired) {
+            if (buffer && buffer.destroy) {
+              buffer.destroy();
+            }
           }
-        }
+        });
         this._retiredBuffers = [];
 
-        for (const { fbo, diff } of states) {
-          fbo.begin();
-          for (const key in diff) {
-            this.states.setValue(key, diff[key]);
+        if (this._frameState === FRAME_STATE.PROMOTED) {
+          for (const { fbo, diff } of states) {
+            if (fbo !== this.mainFramebuffer || this._frameState !== FRAME_STATE.PROMOTED) {
+              fbo.begin();
+            }
+            for (const key in diff) {
+              this.states.setValue(key, diff[key]);
+            }
           }
         }
       }
@@ -5492,47 +5938,20 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         const buffers = this.geometryBufferCache.getCached(geometry);
         if (!buffers) return;
 
-        const commandEncoder = this.device.createCommandEncoder();
+        // If PENDING and no custom framebuffer, regular draw means PROMOTE
+        if (this._frameState === FRAME_STATE.PENDING && !this.activeFramebuffer()) {
+          this._promoteToFramebufferWithoutCopy();
+        }
 
-        // Use framebuffer texture if active, otherwise use canvas texture
-        const activeFramebuffer = this.activeFramebuffer();
-        const colorTexture = activeFramebuffer ?
-          (activeFramebuffer.aaColorTexture || activeFramebuffer.colorTexture) :
-          this.drawingContext.getCurrentTexture();
-
-        const colorAttachment = {
-          view: colorTexture.createView(),
-          loadOp: "load",
-          storeOp: "store",
-          // If using multisampled texture, resolve to non-multisampled texture
-          resolveTarget: activeFramebuffer && activeFramebuffer.aaColorTexture ?
-            activeFramebuffer.colorTexture.createView() : undefined,
-        };
-
-        // Use framebuffer depth texture if active, otherwise use canvas depth texture
-        const depthTexture = activeFramebuffer ?
-          (activeFramebuffer.aaDepthTexture || activeFramebuffer.depthTexture) :
-          this.depthTexture;
-        const depthTextureView = depthTexture?.createView();
-        const renderPassDescriptor = {
-          colorAttachments: [colorAttachment],
-          depthStencilAttachment: depthTextureView
-            ? {
-                view: depthTextureView,
-                depthLoadOp: "load",
-                depthStoreOp: "store",
-                depthClearValue: 1.0,
-                stencilLoadOp: "load",
-                stencilStoreOp: "store",
-                depthReadOnly: false,
-                stencilReadOnly: false,
-              }
-            : undefined,
-        };
-
-        const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
+        this._beginActiveRenderPass();
+        const passEncoder = this.activeRenderPass;
         const currentShader = this._curShader;
-        passEncoder.setPipeline(currentShader.getPipeline(this._shaderOptions({ mode })));
+        const shaderOptions = this._shaderOptions({ mode });
+        if (this.activeShader !== currentShader || this._shaderOptionsDifferent(shaderOptions)) {
+          passEncoder.setPipeline(currentShader.getPipeline(shaderOptions));
+        }
+        this.activeShader = currentShader;
+        this.activeShaderOptions = shaderOptions;
 
         // Set stencil reference value for clipping
         const drawTarget = this.drawTarget();
@@ -5546,52 +5965,125 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
           passEncoder.setStencilReference(1);
         }
         // Bind vertex buffers
-        for (const buffer of this._getVertexBuffers(currentShader)) {
+        for (const buffer of currentShader._vertexBuffers || this._getVertexBuffers(currentShader)) {
           const location = currentShader.attributes[buffer.attr].location;
           const gpuBuffer = buffers[buffer.dst];
           passEncoder.setVertexBuffer(location, gpuBuffer, 0);
         }
-        // Bind uniforms - get a buffer from the pool
-        const uniformBufferInfo = this._getUniformBufferFromPool(currentShader);
-        this._packUniforms(currentShader, uniformBufferInfo);
-        this.device.queue.writeBuffer(
-          uniformBufferInfo.buffer,
-          0,
-          uniformBufferInfo.data.buffer,
-          uniformBufferInfo.data.byteOffset,
-          uniformBufferInfo.data.byteLength
-        );
 
-        // Bind sampler/texture uniforms
-        for (const [group, entries] of currentShader._groupEntries) {
-          const bgEntries = entries.map(entry => {
-            if (group === 0 && entry.binding === 0) {
-              return {
-                binding: 0,
-                resource: { buffer: uniformBufferInfo.buffer },
-              };
+        for (const bufferGroup of currentShader._uniformBufferGroups) {
+          if (bufferGroup.dynamic) {
+            // Bind uniforms into a part of a big dynamic memory block because
+            // the group changes often
+            const uniformBufferInfo = this._getDynamicUniformBufferFromPool(bufferGroup);
+            if (currentShader._lastDynamicBuffer[bufferGroup.cacheKey] !== uniformBufferInfo) {
+              currentShader._cachedBindGroup[bufferGroup.group] = undefined;
+              currentShader._lastDynamicBuffer[bufferGroup.cacheKey] = uniformBufferInfo;
             }
+            this._packUniformGroup(currentShader, bufferGroup.uniforms, uniformBufferInfo);
+            uniformBufferInfo.lastOffset = uniformBufferInfo.offset;
+            uniformBufferInfo.offset += Math.ceil(bufferGroup.size / this.uniformBufferAlignment) * this.uniformBufferAlignment;
 
-            if (!entry.uniform.isSampler) {
-              throw new Error(
-                'All non-texture/sampler uniforms should be in the uniform struct!'
+            // Make a shallow copy so that we keep track of the last offset for this uniform
+            bufferGroup.currentDynamicBuffer = uniformBufferInfo;
+            bufferGroup.lastOffset = uniformBufferInfo.lastOffset;
+          } else {
+            // Bind uniforms to a binding-specific buffer, which may be cached for performance
+            let bufferInfo;
+            const dataChanged = this._hasGroupDataChanged(currentShader, bufferGroup);
+
+            if (!dataChanged && bufferGroup.currentBuffer) {
+              // Reuse the cached buffer - no need to pack or write
+              bufferInfo = bufferGroup.currentBuffer;
+              bufferGroup.buffersInUse.add(bufferInfo);
+            } else {
+              // Data changed - get a new buffer and write to it
+              bufferInfo = this._getUniformBufferFromPool(bufferGroup);
+              this._packUniformGroup(currentShader, bufferGroup.uniforms, bufferInfo);
+              this.device.queue.writeBuffer(
+                bufferInfo.buffer,
+                0,
+                bufferInfo.data.buffer,
+                bufferInfo.data.byteOffset,
+                bufferInfo.data.byteLength
               );
-            }
 
-            return {
-              binding: entry.binding,
-              resource: entry.uniform.type === 'sampler'
-                ? (entry.uniform.textureSource.texture || this._getEmptyTexture()).getSampler()
-                : (entry.uniform.texture || this._getEmptyTexture()).textureHandle.view,
-            };
-          });
+              currentShader.buffersDirty.delete(bufferGroup.group * 1000 + bufferGroup.binding);
+              currentShader._cachedBindGroup[bufferGroup.group] = undefined;
+
+              // Cache this buffer and data for next frame
+              bufferGroup.currentBuffer = bufferInfo;
+            }
+          }
+        }
+        for (const sampler of currentShader.samplers) {
+          const key = sampler.group * 1000 + sampler.binding;
+          if (currentShader.buffersDirty.has(key)) {
+            currentShader._cachedBindGroup[sampler.group] = undefined;
+            currentShader.buffersDirty.delete(key);
+          }
+        }
+
+        // Bind sampler/texture uniforms and uniform buffers
+        for (const iter of currentShader._groupEntries) {
+          const group = iter[0];
+          const entries = iter[1];
+          let dynamicOffsetIdx = 0;
+          const bgEntries = [];
+          let bindGroup = currentShader._cachedBindGroup[group];
+          for (const entry of entries) {
+            const bufferGroup = entry.bufferGroup;
+            // Check if this is a uniform buffer binding
+            const uniformBufferInfo =
+              bufferGroup?.currentBuffer || bufferGroup?.currentDynamicBuffer;
+            if (uniformBufferInfo) {
+              if (bufferGroup.dynamic) {
+                this.dynamicEntryOffsets[dynamicOffsetIdx++] = bufferGroup.lastOffset;
+              }
+              if (!bindGroup) {
+                bgEntries.push({
+                  binding: entry.binding,
+                  resource: bufferGroup.dynamic
+                    ? {
+                      buffer: uniformBufferInfo.uniformBuffer,
+                      offset: 0,
+                      size: Math.ceil(bufferGroup.size / this.uniformBufferAlignment) * this.uniformBufferAlignment,
+                    }
+                    : { buffer: uniformBufferInfo.buffer },
+                });
+              }
+            } else if (!bindGroup) {
+              bgEntries.push({
+                binding: entry.binding,
+                resource: entry.uniform.type === 'sampler'
+                  ? (entry.uniform.textureSource.texture || this._getEmptyTexture()).getSampler()
+                  : (entry.uniform.texture || this._getEmptyTexture()).textureHandle.view,
+              });
+            }
+          }
 
           const layout = currentShader._bindGroupLayouts[group];
-          const bindGroup = this.device.createBindGroup({
-            layout,
-            entries: bgEntries,
-          });
-          passEncoder.setBindGroup(group, bindGroup);
+          if (!bindGroup) {
+            bindGroup = this.device.createBindGroup({
+              layout,
+              entries: bgEntries,
+            });
+          }
+          currentShader._cachedBindGroup[group] = bindGroup;
+          if (dynamicOffsetIdx === 0) {
+            passEncoder.setBindGroup(
+              group,
+              bindGroup,
+            );
+          } else {
+            passEncoder.setBindGroup(
+              group,
+              bindGroup,
+              this.dynamicEntryOffsets,
+              0,
+              dynamicOffsetIdx
+            );
+          }
         }
 
         if (currentShader.shaderType === "fill") {
@@ -5616,11 +6108,6 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
           passEncoder.draw(geometry.lineVertices.length / 3, count, 0, 0);
         }
 
-        passEncoder.end();
-
-        // Store the command encoder for later submission
-        this._pendingCommandEncoders.push(commandEncoder.finish());
-
         // Mark that we have pending draws that need submission
         this._hasPendingDraws = true;
       }
@@ -5629,44 +6116,60 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       // SHADER
       //////////////////////////////////////////////
 
-      _packUniforms(shader, bufferInfo) {
+      _packUniformGroup(shader, groupUniforms, bufferInfo) {
+        // Pack a single group's uniforms into a buffer
         const data = bufferInfo.data;
         const dataView = bufferInfo.dataView;
 
-        for (const name in shader.uniforms) {
-          const uniform = shader.uniforms[name];
-          if (uniform.isSampler) continue;
+        const offset = bufferInfo.offset || 0;
+        for (const uniform of groupUniforms) {
+          const fullUniform = shader.uniforms[uniform.name];
+          if (!fullUniform || fullUniform.isSampler) continue;
+          const uniformData = fullUniform._mappedData;
 
-          if (uniform.baseType === 'u32') {
-            if (uniform.size === 4) {
-              // Single u32
-              dataView.setUint32(uniform.offset, uniform._cachedData, true);
+          if (fullUniform.baseType === 'u32') {
+            if (fullUniform.size === 4) {
+              dataView.setUint32(offset + fullUniform.offset, uniformData, true);
             } else {
-              // Vector of u32s
-              const uniformData = uniform._cachedData;
               for (let i = 0; i < uniformData.length; i++) {
-                dataView.setUint32(uniform.offset + i * 4, uniformData[i], true);
+                dataView.setUint32(offset + fullUniform.offset + i * 4, uniformData[i], true);
               }
             }
-          } else if (uniform.baseType === 'i32') {
-            if (uniform.size === 4) {
-              // Single i32
-              dataView.setInt32(uniform.offset, uniform._cachedData, true);
+          } else if (fullUniform.baseType === 'i32') {
+            if (fullUniform.size === 4) {
+              dataView.setInt32(offset + fullUniform.offset, uniformData, true);
             } else {
-              // Vector of i32s
-              const uniformData = uniform._cachedData;
               for (let i = 0; i < uniformData.length; i++) {
-                dataView.setInt32(uniform.offset + i * 4, uniformData[i], true);
+                dataView.setInt32(offset + fullUniform.offset + i * 4, uniformData[i], true);
               }
             }
-          } else if (uniform.size === 4) {
-            // Single float value
-            data.set([uniform._cachedData], uniform.offset / 4);
-          } else if (uniform._cachedData !== undefined) {
-            // Float array (including vec2<f32>, vec3<f32>, vec4<f32>, mat4x4<f32>)
-            data.set(uniform._cachedData, uniform.offset / 4);
+          } else if (fullUniform.packInPlace) {
+            // In-place packing for mat3: write directly to buffer with padding
+            const baseOffset = (offset + fullUniform.offset) / 4;
+            // Column 0
+            data[baseOffset + 0] = uniformData[0];
+            data[baseOffset + 1] = uniformData[1];
+            data[baseOffset + 2] = uniformData[2];
+            // Column 1
+            data[baseOffset + 4] = uniformData[3];
+            data[baseOffset + 5] = uniformData[4];
+            data[baseOffset + 6] = uniformData[5];
+            // Column 2
+            data[baseOffset + 8] = uniformData[6];
+            data[baseOffset + 9] = uniformData[7];
+            data[baseOffset + 10] = uniformData[8];
+          } else if (fullUniform.size === 4) {
+            data.set([uniformData], (offset + fullUniform.offset) / 4);
+          } else if (uniformData !== undefined) {
+            data.set(uniformData, (offset + fullUniform.offset) / 4);
           }
         }
+      }
+
+      _hasGroupDataChanged(shader, bufferGroup) {
+        // First time
+        if (!bufferGroup.currentBuffer) return true;
+        return shader.buffersDirty.has(bufferGroup.group * 1000 + bufferGroup.binding);
       }
 
       _parseStruct(shaderSource, structName) {
@@ -5712,17 +6215,16 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
             const align = dim === 2 ? 8 : 16;
             // Each column must be aligned
             const size = Math.ceil(dim * 4 / align) * align * dim;
+            // For mat3, use in-place packing to avoid array allocation
             const pack = dim === 3
               ? (data) => [
                 ...data.slice(0, 3),
-                0,
                 ...data.slice(3, 6),
-                0,
                 ...data.slice(6, 9),
-                0
               ]
               : undefined;
-            return { align, size, pack, items: dim * dim, baseType: 'f32' };
+            const packInPlace = dim === 3;
+            return { align, size, pack, packInPlace, items: dim * dim, baseType: 'f32' };
           }
           if (/^array<.+>$/.test(type)) {
             const [, subtype, rawLength] = type.match(/^array<(.+),\s*(\d+)>/);
@@ -5759,7 +6261,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 
         while ((match = elementRegex.exec(structBody)) !== null) {
           const [_, location, name, type] = match;
-          const { size, align, pack, baseType } = baseAlignAndSize(type);
+          const { size, align, pack, packInPlace, baseType } = baseAlignAndSize(type);
           offset = Math.ceil(offset / align) * align;
           const offsetEnd = offset + size;
           elements[name] = {
@@ -5771,6 +6273,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
             offset,
             offsetEnd,
             pack,
+            packInPlace,
             baseType
           };
           index++;
@@ -5796,22 +6299,64 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       getUniformMetadata(shader) {
-        // Currently, for ease of parsing, we enforce that the first bind group is a
-        // struct, which contains all non-sampler uniforms. Then, any subsequent
-        // groups contain samplers.
+        // Parse all uniform struct bindings in group 0.
+        // TODO: support non-sampler uniforms being in other groups
 
-        // Extract the struct name from the uniform variable declaration
-        const uniformVarRegex = /@group\(0\)\s+@binding\(0\)\s+var<uniform>\s+(\w+)\s*:\s*(\w+);/;
-        const uniformVarMatch = uniformVarRegex.exec(shader.vertSrc());
-        if (!uniformVarMatch) {
-          throw new Error('Expected a uniform struct bound to @group(0) @binding(0)');
+        // Each binding represents a logical group of uniforms, since they get
+        // updated or cached all at once.
+
+        const uniformGroups = [];
+        const uniformVarRegex = /@group\((\d+)\)\s+@binding\((\d+)\)\s+var<uniform>\s+(\w+)\s*:\s*(\w+);/g;
+
+        let match;
+        while ((match = uniformVarRegex.exec(shader.vertSrc())) !== null) {
+          const [_, groupNum, binding, varName, structType] = match;
+          const bindingIndex = parseInt(binding);
+          const uniforms = this._parseStruct(shader.vertSrc(), structType);
+
+          uniformGroups.push({
+            group: parseInt(groupNum),
+            binding: bindingIndex,
+            varName,
+            structType,
+            uniforms
+          });
         }
-        const structType = uniformVarMatch[2];
-        const uniforms = this._parseStruct(shader.vertSrc(), structType);
+
+        if (uniformGroups.length === 0) {
+          throw new Error('Expected at least one uniform struct bound to @group(0)');
+        }
+
+        // While we're also keeping track of the groups, the API we expose
+        // to users of p5 is just a flat list of uniforms (which can be the
+        // individual struct items in the group.)
+        const allUniforms = {};
+        for (const group of uniformGroups) {
+          for (const [uniformName, uniformData] of Object.entries(group.uniforms)) {
+            allUniforms[uniformName] = {
+              ...uniformData,
+              group: group.group,
+              binding: group.binding,
+              varName: group.varName
+            };
+          }
+        }
+
+        // Store uniform groups for buffer pooling
+        shader._uniformGroups = uniformGroups;
+
         // Extract samplers from group bindings
         const samplers = {};
         // TODO: support other texture types
         const samplerRegex = /@group\((\d+)\)\s*@binding\((\d+)\)\s*var\s+(\w+)\s*:\s*(texture_2d<f32>|sampler);/g;
+
+        // Track which bindings are taken by the struct properties we've parsed
+        // (the rest should be textures/samplers)
+        const structUniformBindings = {};
+        for (const g of uniformGroups) {
+          structUniformBindings[g.group + ',' + g.binding] = true;
+        }
+
         for (const [src, visibility] of [
           [shader.vertSrc(), GPUShaderStage.VERTEX],
           [shader.fragSrc(), GPUShaderStage.FRAGMENT]
@@ -5821,10 +6366,8 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
             const [_, group, binding, name, type] = match;
             const groupIndex = parseInt(group);
             const bindingIndex = parseInt(binding);
-            // We're currently reserving group 0 for non-sampler stuff, which we parse
-            // above, so we can skip it here while we grab the remaining sampler
-            // uniforms
-            if (groupIndex === 0 && bindingIndex === 0) continue;
+            // Skip struct uniform bindings which we've already parsed
+            if (structUniformBindings[groupIndex + ',' + bindingIndex]) continue;
 
             const key = `${groupIndex},${bindingIndex}`;
             samplers[key] = {
@@ -5853,17 +6396,17 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
             }
           }
         }
-        return [...Object.values(uniforms).sort((a, b) => a.index - b.index), ...Object.values(samplers)];
+        return [...Object.values(allUniforms).sort((a, b) => a.index - b.index), ...Object.values(samplers)];
       }
 
-      getNextBindingIndex(shader, group = 0) {
+      getNextBindingIndex({ vert, frag }, group = 0) {
         // Get the highest binding index in the specified group and return the next available
         const samplerRegex = /@group\((\d+)\)\s*@binding\((\d+)\)\s*var\s+(\w+)\s*:\s*(texture_2d<f32>|sampler|uniform)/g;
         let maxBindingIndex = -1;
 
         for (const [src, visibility] of [
-          [shader.vertSrc(), GPUShaderStage.VERTEX],
-          [shader.fragSrc(), GPUShaderStage.FRAGMENT]
+          [vert, GPUShaderStage.VERTEX],
+          [frag, GPUShaderStage.FRAGMENT]
         ]) {
           let match;
           while ((match = samplerRegex.exec(src)) !== null) {
@@ -5877,11 +6420,14 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         return maxBindingIndex + 1;
       }
 
-      updateUniformValue(_shader, uniform, data) {
+      updateUniformValue(shader, uniform, data) {
         if (uniform.isSampler) {
           uniform.texture =
             data instanceof Texture ? data : this.getTexture(data);
+        } else {
+          uniform._mappedData = this._mapUniformData(uniform, uniform._cachedData);
         }
+        shader.buffersDirty.add(uniform.group * 1000 + uniform.binding);
       }
 
       _updateTexture(uniform, tex) {
@@ -5957,7 +6503,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       bindTextureToShader(_texture, _sampler, _uniformName, _unit) {}
 
       deleteTexture({ gpuTexture }) {
-        gpuTexture.destroy();
+        this._postSubmitCallbacks.push(() => gpuTexture.destroy());
       }
 
       _getLightShader() {
@@ -6057,6 +6603,17 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         return this._defaultFontShader;
       }
 
+      _getBlitShader() {
+        if (!this._defaultBlitShader) {
+          this._defaultBlitShader = new Shader(
+            this,
+            blitVertexShader,
+            blitFragmentShader
+          );
+        }
+        return this._defaultBlitShader;
+      }
+
       //////////////////////////////////////////////
       // Setting
       //////////////////////////////////////////////
@@ -6069,16 +6626,18 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         const commandEncoder = this.device.createCommandEncoder();
 
         const activeFramebuffer = this.activeFramebuffer();
-        const depthTexture = activeFramebuffer ?
-          (activeFramebuffer.aaDepthTexture || activeFramebuffer.depthTexture) :
-          this.depthTexture;
+        const depthTextureView = activeFramebuffer
+          ? (activeFramebuffer.aaDepthTexture
+              ? activeFramebuffer.aaDepthTextureView
+              : activeFramebuffer.depthTextureView)
+          : this.depthTextureView;
 
-        if (!depthTexture) {
+        if (!depthTextureView) {
           return;
         }
 
         const depthStencilAttachment = {
-          view: depthTexture.createView(),
+          view: depthTextureView,
           stencilLoadOp: 'clear',
           stencilStoreOp: 'store',
           stencilClearValue: 0,
@@ -6105,19 +6664,22 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       _clearClipBuffer() {
+        this._finishActiveRenderPass();
         const commandEncoder = this.device.createCommandEncoder();
 
         const activeFramebuffer = this.activeFramebuffer();
-        const depthTexture = activeFramebuffer ?
-          (activeFramebuffer.aaDepthTexture || activeFramebuffer.depthTexture) :
-          this.depthTexture;
+        const depthTextureView = activeFramebuffer
+          ? (activeFramebuffer.aaDepthTexture
+              ? activeFramebuffer.aaDepthTextureView
+              : activeFramebuffer.depthTextureView)
+          : this.depthTextureView;
 
-        if (!depthTexture) {
+        if (!depthTextureView) {
           return;
         }
 
         const depthStencilAttachment = {
-          view: depthTexture.createView(),
+          view: depthTextureView,
           stencilLoadOp: 'clear',
           stencilStoreOp: 'store',
           stencilClearValue: 1,
@@ -6186,12 +6748,33 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
           }
         }
 
-        let uniforms = '';
+        // Inject hook uniforms as a separate struct at a new binding
+        let hookUniformFields = '';
         for (const key in shader.hooks.uniforms) {
           // WGSL format: "name: type"
-          uniforms += `${key},\n`;
+          hookUniformFields += `  ${key},\n`;
         }
-        preMain = preMain.replace(/struct\s+Uniforms\s+\{/, `$&\n${uniforms}`);
+
+        if (hookUniformFields) {
+          // Find the next available binding in group 0
+          // Use the source we're currently building (preMain) which has texture bindings. We can't call `fragSrc()`
+          // or `vertSrc()` because we may be in one of those calls already, and might infinite loop
+          const nextBinding = this.getNextBindingIndex({
+            vert: shaderType === 'vertex' ? preMain + (shader.hooks.vertex?.declarations ?? '') + shader.hooks.declarations : shader._vertSrc,
+            frag: shaderType === 'fragment' ? preMain + (shader.hooks.fragment?.declarations ?? '') + shader.hooks.declarations : shader._fragSrc,
+          }, 0);
+
+          // Create HookUniforms struct and binding
+          const hookUniformsDecl = `
+// Hook Uniforms (from .modify())
+struct HookUniforms {
+${hookUniformFields}}
+
+@group(0) @binding(${nextBinding}) var<uniform> hooks: HookUniforms;
+`;
+          // Insert before the first @group binding
+          preMain = preMain.replace(/(@group\(0\)\s+@binding)/, `${hookUniformsDecl}\n$1`);
+        }
 
         // Handle varying variables by injecting them into VertexOutput and FragmentInput structs
         if (shader.hooks.varyingVariables && shader.hooks.varyingVariables.length > 0) {
@@ -6502,6 +7085,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         if (!this.pixelReadBuffer || this.pixelReadBufferSize < requiredSize) {
           // Clean up old buffer
           if (this.pixelReadBuffer) {
+            this.flushDraw();
             this.pixelReadBuffer.destroy();
           }
 
@@ -6568,18 +7152,27 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       recreateFramebufferTextures(framebuffer) {
+        this.flushDraw();
         // Clean up existing textures
         if (framebuffer.colorTexture && framebuffer.colorTexture.destroy) {
-          framebuffer.colorTexture.destroy();
+          const tex = framebuffer.colorTexture;
+          this._postSubmitCallbacks.push(() => tex.destroy());
+          framebuffer.colorTextureView = null;
         }
         if (framebuffer.aaColorTexture && framebuffer.aaColorTexture.destroy) {
-          framebuffer.aaColorTexture.destroy();
+          const tex = framebuffer.aaColorTexture;
+          this._postSubmitCallbacks.push(() => tex.destroy());
+          framebuffer.aaColorTextureView = null;
         }
         if (framebuffer.depthTexture && framebuffer.depthTexture.destroy) {
-          framebuffer.depthTexture.destroy();
+          const tex = framebuffer.depthTexture;
+          this._postSubmitCallbacks.push(() => tex.destroy());
+          framebuffer.depthTextureView = null;
         }
         if (framebuffer.aaDepthTexture && framebuffer.aaDepthTexture.destroy) {
-          framebuffer.aaDepthTexture.destroy();
+          const tex = framebuffer.aaDepthTexture;
+          this._postSubmitCallbacks.push(() => tex.destroy());
+          framebuffer.aaDepthTextureView = null;
         }
 
         const baseDescriptor = {
@@ -6594,10 +7187,14 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         // Create non-multisampled texture for texture binding (always needed)
         const colorTextureDescriptor = {
           ...baseDescriptor,
-          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_SRC,
+          usage: GPUTextureUsage.RENDER_ATTACHMENT |
+                 GPUTextureUsage.TEXTURE_BINDING |
+                 GPUTextureUsage.COPY_SRC |
+                 (framebuffer._useCanvasFormat ? GPUTextureUsage.COPY_DST : 0),
           sampleCount: 1,
         };
         framebuffer.colorTexture = this.device.createTexture(colorTextureDescriptor);
+        framebuffer.colorTextureView = framebuffer.colorTexture.createView();
 
         // Create multisampled texture for rendering if antialiasing is enabled
         if (framebuffer.antialias) {
@@ -6607,6 +7204,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
             sampleCount: this._getValidSampleCount(framebuffer.antialiasSamples),
           };
           framebuffer.aaColorTexture = this.device.createTexture(aaColorTextureDescriptor);
+          framebuffer.aaColorTextureView = framebuffer.aaColorTexture.createView();
         }
 
         if (framebuffer.useDepth) {
@@ -6622,10 +7220,13 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
           // Create non-multisampled depth texture for texture binding (always needed)
           const depthTextureDescriptor = {
             ...depthBaseDescriptor,
-            usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+            usage: GPUTextureUsage.RENDER_ATTACHMENT |
+                   GPUTextureUsage.TEXTURE_BINDING |
+                   (framebuffer._useCanvasFormat ? GPUTextureUsage.COPY_DST : 0),
             sampleCount: 1,
           };
           framebuffer.depthTexture = this.device.createTexture(depthTextureDescriptor);
+          framebuffer.depthTextureView = framebuffer.depthTexture.createView();
 
           // Create multisampled depth texture for rendering if antialiasing is enabled
           if (framebuffer.antialias) {
@@ -6635,6 +7236,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
               sampleCount: this._getValidSampleCount(framebuffer.antialiasSamples),
             };
             framebuffer.aaDepthTexture = this.device.createTexture(aaDepthTextureDescriptor);
+            framebuffer.aaDepthTextureView = framebuffer.aaDepthTexture.createView();
           }
         }
 
@@ -6643,23 +7245,28 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       _clearFramebufferTextures(framebuffer) {
+        this._finishActiveRenderPass();
         const commandEncoder = this.device.createCommandEncoder();
 
         // Clear the color texture (and multisampled texture if it exists)
-        const colorTexture = framebuffer.aaColorTexture || framebuffer.colorTexture;
         const colorAttachment = {
-          view: colorTexture.createView(),
+          view: framebuffer.aaColorTexture
+            ? framebuffer.aaColorTextureView
+            : framebuffer.colorTextureView,
           loadOp: "clear",
           storeOp: "store",
           clearValue: { r: 0, g: 0, b: 0, a: 0 },
-          resolveTarget: framebuffer.aaColorTexture ?
-            framebuffer.colorTexture.createView() : undefined,
+          resolveTarget: framebuffer.aaColorTexture
+            ? framebuffer.colorTextureView
+            : undefined,
         };
 
         // Clear the depth texture if it exists
         const depthTexture = framebuffer.aaDepthTexture || framebuffer.depthTexture;
         const depthStencilAttachment = depthTexture ? {
-          view: depthTexture.createView(),
+          view: framebuffer.aaDepthTexture
+            ? framebuffer.aaDepthTextureView
+            : framebuffer.depthTextureView,
           depthLoadOp: "clear",
           depthStoreOp: "store",
           depthClearValue: 1.0,
@@ -6683,7 +7290,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
 
       _getFramebufferColorTextureView(framebuffer) {
         if (framebuffer.colorTexture) {
-          return framebuffer.colorTexture.createView();
+          return framebuffer.colorTextureView;
         }
         return null;
       }
@@ -6707,11 +7314,19 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         } else if (framebuffer.format === HALF_FLOAT) {
           return framebuffer.channels === RGBA ? 'rgba16float' : 'rgba16float';
         } else {
+          // Framebuffer with _useCanvasFormat should match canvas presentation format
+          if (framebuffer._useCanvasFormat) {
+            return this.presentationFormat;
+          }
+          // Other framebuffers use standard RGBA format
           return framebuffer.channels === RGBA ? 'rgba8unorm' : 'rgba8unorm';
         }
       }
 
       _getWebGPUDepthFormat(framebuffer) {
+        if (framebuffer._useCanvasFormat) {
+          return this.depthFormat;
+        }
         if (framebuffer.useStencil) {
           return framebuffer.depthFormat === FLOAT ? 'depth32float-stencil8' : 'depth24plus-stencil8';
         } else {
@@ -6720,9 +7335,11 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       _deleteFramebufferTexture(texture) {
+        this.flushDraw();
         const handle = texture.rawTexture();
         if (handle.texture && handle.texture.destroy) {
-          handle.texture.destroy();
+          const tex = handle.texture;
+          this._postSubmitCallbacks.push(() => tex.destroy());
         }
         this.textures.delete(texture);
       }
@@ -6733,14 +7350,18 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       deleteFramebufferResources(framebuffer) {
+        this.flushDraw();
         if (framebuffer.colorTexture && framebuffer.colorTexture.destroy) {
-          framebuffer.colorTexture.destroy();
+          const tex = framebuffer.colorTexture;
+          this._postSubmitCallbacks.push(() => tex.destroy());
         }
         if (framebuffer.depthTexture && framebuffer.depthTexture.destroy) {
-          framebuffer.depthTexture.destroy();
+          const tex = framebuffer.depthTexture;
+          this._postSubmitCallbacks.push(() => tex.destroy());
         }
         if (framebuffer.aaDepthTexture && framebuffer.aaDepthTexture.destroy) {
-          framebuffer.aaDepthTexture.destroy();
+          const tex = framebuffer.aaDepthTexture;
+          this._postSubmitCallbacks.push(() => tex.destroy());
         }
       }
 
@@ -6758,7 +7379,8 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       }
 
       async readFramebufferPixels(framebuffer) {
-        await this.finishDraw();
+        this.flushDraw();
+        // await this.finishDraw();
         // Ensure all pending GPU work is complete before reading pixels
         // await this.queue.onSubmittedWorkDone();
 
@@ -6796,13 +7418,13 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         const mappedRange = stagingBuffer.getMappedRange(0, bufferSize);
 
         // If alignment was needed, extract the actual pixel data
+        let result;
         if (alignedBytesPerRow === unalignedBytesPerRow) {
-          const result = new Uint8Array(mappedRange.slice(0, width * height * bytesPerPixel));
+          result = new Uint8Array(mappedRange.slice(0, width * height * bytesPerPixel));
           stagingBuffer.unmap();
-          return result;
         } else {
           // Need to extract pixel data from aligned buffer
-          const result = new Uint8Array(width * height * bytesPerPixel);
+          result = new Uint8Array(width * height * bytesPerPixel);
           const mappedData = new Uint8Array(mappedRange);
           for (let y = 0; y < height; y++) {
             const srcOffset = y * alignedBytesPerRow;
@@ -6810,12 +7432,16 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
             result.set(mappedData.subarray(srcOffset, srcOffset + unalignedBytesPerRow), dstOffset);
           }
           stagingBuffer.unmap();
-          return result;
         }
+
+        this._ensurePixelsAreRGBA(framebuffer, result);
+
+        return result;
       }
 
       async readFramebufferPixel(framebuffer, x, y) {
-        await this.finishDraw();
+        this.flushDraw();
+        // await this.finishDraw();
         // Ensure all pending GPU work is complete before reading pixels
         // await this.queue.onSubmittedWorkDone();
 
@@ -6842,12 +7468,16 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
         const pixelData = new Uint8Array(mappedRange);
         const result = [pixelData[0], pixelData[1], pixelData[2], pixelData[3]];
 
+
+        this._ensurePixelsAreRGBA(framebuffer, result);
+
         stagingBuffer.unmap();
         return result;
       }
 
       async readFramebufferRegion(framebuffer, x, y, w, h) {
-        await this.finishDraw();
+        this.flushDraw();
+        // await this.finishDraw();
         // const wasActive = this.activeFramebuffer() === framebuffer;
         // if (wasActive) {
           // framebuffer.end();
@@ -6894,6 +7524,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
             pixelData.set(mappedData.subarray(srcOffset, srcOffset + unalignedBytesPerRow), dstOffset);
           }
         }
+        this._ensurePixelsAreRGBA(framebuffer, pixelData);
 
         // WebGPU doesn't need vertical flipping unlike WebGL
         const region = new Image(width, height);
@@ -6938,24 +7569,39 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
       // Main canvas pixel methods
       //////////////////////////////////////////////
 
-      _convertBGRtoRGB(pixelData) {
-        // Convert BGR to RGB by swapping red and blue channels
-        for (let i = 0; i < pixelData.length; i += 4) {
-          const temp = pixelData[i];     // Store red
-          pixelData[i] = pixelData[i + 2]; // Red = Blue
-          pixelData[i + 2] = temp;         // Blue = Red
-          // Green (i + 1) and Alpha (i + 3) stay the same
+      _ensurePixelsAreRGBA(framebuffer, result) {
+        // Convert BGRA to RGBA if reading from canvas-format framebuffer on BGRA systems
+        if (framebuffer._useCanvasFormat && this.presentationFormat === 'bgra8unorm') {
+          this._convertBGRtoRGB(result);
         }
-        return pixelData;
+      }
+
+      _convertBGRtoRGB(pixelData) {
+        for (let i = 0; i < pixelData.length; i += 4) {
+          const temp = pixelData[i];
+          pixelData[i] = pixelData[i + 2];
+          pixelData[i + 2] = temp;
+        }
       }
 
       async loadPixels() {
+        this._promoteToFramebuffer();
         await this.mainFramebuffer.loadPixels();
         this.pixels = this.mainFramebuffer.pixels.slice();
       }
 
       async get(x, y, w, h) {
+        this._promoteToFramebuffer();
         return this.mainFramebuffer.get(x, y, w, h);
+      }
+
+      filter(...args) {
+        // If no custom framebuffer is active, promote to mainFramebuffer
+        if (!this.activeFramebuffer()) {
+          this._promoteToFramebuffer();
+        }
+
+        return super.filter(...args);
       }
 
       getNoiseShaderSnippet() {
@@ -6975,6 +7621,9 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
                 "vec4<f32> getColor": `(inputs: FilterInputs, tex: texture_2d<f32>, tex_sampler: sampler) -> vec4<f32> {
                 return textureSample(tex, tex_sampler, inputs.texCoord);
               }`,
+              },
+              hookAliases: {
+                'getColor': ['filterColor'],
               },
             }
           );
@@ -7037,6 +7686,7 @@ fn main(input: FragmentInput) -> @location(0) vec4<f32> {
        * Copy framebuffer content directly to WebGPU texture mip level
        */
       _accumulateMipLevel(framebuffer, mipmapData, mipLevel, width, height) {
+        this.flushDraw();
         // Copy from framebuffer texture to the mip level
         const commandEncoder = this.device.createCommandEncoder();
 
