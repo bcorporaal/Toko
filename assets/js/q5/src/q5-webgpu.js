@@ -19,7 +19,8 @@ struct Q5 {
 	mouseY: f32,
 	mouseIsPressed: f32,
 	keyCode: f32,
-	keyIsPressed: f32
+	keyIsPressed: f32,
+	yUp: f32
 }`;
 
 	$._g = $.createGraphics(1, 1, 'c2d');
@@ -43,6 +44,7 @@ struct Q5 {
 	$._pipelineConfigs = [];
 	$._pipelines = [];
 	$._buffers = [];
+	$._texturesToDestroy = [];
 
 	// local variables used for slightly better performance
 
@@ -141,7 +143,8 @@ fn vertexMain(v: VertexParams) -> FragParams {
 @fragment
 fn fragMain(f: FragParams ) -> @location(0) vec4f {
 	return textureSample(tex, samp, f.texCoord);
-}`;
+}
+`;
 
 		let frameShader = Q5.device.createShaderModule({
 			label: 'frameShader',
@@ -362,16 +365,31 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 		matrixIdx = 0,
 		matrixDirty = false; // tracks if the matrix has been modified
 
-	// 4x4 identity matrix with y axis flipped
+	// 4x4 identity matrix
 	// prettier-ignore
 	matrices.push([
 		1, 0, 0, 0,
-		0, -1, 0, 0, // -1 here flips the y axis
+		0, 1, 0, 0,
 		0, 0, 1, 0,
 		0, 0, 0, 1
 	]);
 
 	transforms.set(matrices[0]);
+
+	let flippedY = false,
+		yDir = 1;
+
+	$.flipY = () => {
+		$._flippedY = flippedY = !flippedY;
+		yDir *= -1;
+
+		// edit the identity matrix to flip Y axis
+		matrices[0][5] *= -1;
+		transforms.set(matrices[0], 0);
+	};
+
+	// current default is y-down for q5 WebGPU
+	$.flipY();
 
 	$.translate = (x, y) => {
 		if (!x && !y) return;
@@ -630,20 +648,20 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 			l = x;
 			r = x + w;
 			t = y;
-			b = y + h;
+			b = y - h * yDir;
 		} else if (mode == 'center') {
 			let hw = w / 2,
 				hh = h / 2;
 			l = x - hw;
 			r = x + hw;
-			t = y - hh;
-			b = y + hh;
+			t = y + hh * yDir;
+			b = y - hh * yDir;
 		} else {
 			// CORNERS
 			l = x;
 			r = w;
 			t = y;
-			b = h;
+			b = -h * yDir;
 		}
 
 		boxCache[0] = l;
@@ -673,7 +691,7 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 	];
 
 	const blendModes = {
-		'source-over': [2, 3, 0, 2, 3, 0],
+		'source-over': [2, 3, 0, 1, 3, 0],
 		'destination-over': [6, 1, 0, 6, 1, 0],
 		'source-in': [5, 0, 0, 5, 0, 0],
 		'destination-in': [0, 2, 0, 0, 2, 0],
@@ -682,8 +700,8 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 		'source-atop': [5, 3, 0, 5, 3, 0],
 		'destination-atop': [6, 2, 0, 6, 2, 0],
 		lighter: [1, 1, 0, 1, 1, 0],
-		darken: [1, 1, 3, 3, 5, 0],
-		lighten: [1, 1, 4, 3, 5, 0],
+		darken: [1, 1, 3, 1, 3, 0],
+		lighten: [1, 1, 4, 1, 3, 0],
 		replace: [1, 0, 0, 1, 0, 0]
 	};
 
@@ -819,6 +837,7 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 		$._uniforms[10] = $.mouseIsPressed ? 1 : 0;
 		$._uniforms[11] = $.keyCode;
 		$._uniforms[12] = $.keyIsPressed ? 1 : 0;
+		$._uniforms[13] = yDir;
 
 		Q5.device.queue.writeBuffer(uniformBuffer, 0, $._uniforms);
 
@@ -1072,9 +1091,14 @@ fn fragMain(f: FragParams ) -> @location(0) vec4f {
 		ellipseStackIdx = 0;
 
 		// destroy buffers
+		let bufs = $._buffers;
+		let texs = $._texturesToDestroy;
+		$._buffers = [];
+		$._texturesToDestroy = [];
+
 		Q5.device.queue.onSubmittedWorkDone().then(() => {
-			for (let b of $._buffers) b.destroy();
-			$._buffers = [];
+			for (let b of bufs) b.destroy();
+			for (let t of texs) t.destroy();
 		});
 	};
 
@@ -1646,7 +1670,7 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 		if (_rectMode != 'center') {
 			if (_rectMode == 'corner') {
 				x += hw;
-				y += hh;
+				y += hh * -yDir;
 				hw = Math.abs(hw);
 				hh = Math.abs(hh);
 			} else if (_rectMode == 'radius') {
@@ -1679,7 +1703,7 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 
 	function addCapsule(x1, y1, x2, y2, r, strokeW, fillCapsule) {
 		let dx = x2 - x1,
-			dy = y2 - y1,
+			dy = flippedY ? y2 - y1 : y1 - y2,
 			len = Math.hypot(dx, dy);
 
 		if (len === 0) return;
@@ -1789,7 +1813,12 @@ fn vertexMain(v: VertexParams) -> FragParams {
 	f.position = transformVertex(pos, ellipse.matrixIndex);
 	f.outerEdge = dist / (ellipse.size + halfStrokeSize);
 	f.fillEdge = dist / ellipse.size;
-	f.innerEdge = dist / (ellipse.size - halfStrokeSize);
+	let innerSize = ellipse.size - halfStrokeSize;
+	if (innerSize.x <= 0.0 || innerSize.y <= 0.0) {
+		f.innerEdge = vec2f(2.0, 0.0);
+	} else {
+		f.innerEdge = dist / innerSize;
+	}
 	f.strokeWeight = ellipse.strokeWeight;
 
 	let fill = colors[i32(ellipse.fillIndex)];
@@ -1848,7 +1877,7 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 	let strokeAlpha = innerAlpha * outerAlpha;
 	return vec4f(f.stroke.rgb, f.stroke.a * strokeAlpha);
 }
-		`;
+`;
 
 	let ellipseShader = Q5.device.createShaderModule({
 		label: 'ellipseShader',
@@ -2028,61 +2057,61 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 	$._imageShaderCode =
 		$._baseShaderCode +
 		/* wgsl */ `
-	struct VertexParams {
-		@builtin(vertex_index) vertexIndex : u32,
-		@location(0) pos: vec2f,
-		@location(1) texCoord: vec2f,
-		@location(2) tintIndex: f32,
-		@location(3) matrixIndex: f32,
-		@location(4) imageAlpha: f32
-	}
-	struct FragParams {
-		@builtin(position) position: vec4f,
-		@location(0) texCoord: vec2f,
-		@location(1) tintColor: vec4f,
-		@location(2) imageAlpha: f32
-	}
-	
-	@group(0) @binding(0) var<uniform> q: Q5;
-	@group(0) @binding(1) var<storage> transforms: array<mat4x4<f32>>;
-	@group(0) @binding(2) var<storage> colors : array<vec4f>;
-	
-	@group(1) @binding(0) var samp: sampler;
-	@group(1) @binding(1) var tex: texture_2d<f32>;
-	
-	fn transformVertex(pos: vec2f, matrixIndex: f32) -> vec4f {
-		var vert = vec4f(pos, 0f, 1f);
-		vert = transforms[i32(matrixIndex)] * vert;
-		vert.x /= q.halfWidth;
-		vert.y /= q.halfHeight;
-		return vert;
-	}
-	
-	fn applyTint(texColor: vec4f, tintColor: vec4f) -> vec4f {
-		// apply the tint color to the sampled texture color at full strength
-		let tinted = vec4f(texColor.rgb * tintColor.rgb, texColor.a);
-		// mix in the tint using the tint alpha as the blend strength
-		return mix(texColor, tinted, tintColor.a);
-	}
-	
-	@vertex
-	fn vertexMain(v: VertexParams) -> FragParams {
-		var vert = transformVertex(v.pos, v.matrixIndex);
-	
-		var f: FragParams;
-		f.position = vert;
-		f.texCoord = v.texCoord;
-		f.tintColor = colors[i32(v.tintIndex)];
-		f.imageAlpha = v.imageAlpha;
-		return f;
-	}
-	
-	@fragment
-	fn fragMain(f: FragParams) -> @location(0) vec4f {
-		var texColor = textureSample(tex, samp, f.texCoord);
-		texColor.a *= f.imageAlpha;
-		return applyTint(texColor, f.tintColor);
-	}
+struct VertexParams {
+	@builtin(vertex_index) vertexIndex : u32,
+	@location(0) pos: vec2f,
+	@location(1) texCoord: vec2f,
+	@location(2) tintIndex: f32,
+	@location(3) matrixIndex: f32,
+	@location(4) imageAlpha: f32
+}
+struct FragParams {
+	@builtin(position) position: vec4f,
+	@location(0) texCoord: vec2f,
+	@location(1) tintColor: vec4f,
+	@location(2) imageAlpha: f32
+}
+
+@group(0) @binding(0) var<uniform> q: Q5;
+@group(0) @binding(1) var<storage> transforms: array<mat4x4<f32>>;
+@group(0) @binding(2) var<storage> colors : array<vec4f>;
+
+@group(1) @binding(0) var samp: sampler;
+@group(1) @binding(1) var tex: texture_2d<f32>;
+
+fn transformVertex(pos: vec2f, matrixIndex: f32) -> vec4f {
+	var vert = vec4f(pos, 0f, 1f);
+	vert = transforms[i32(matrixIndex)] * vert;
+	vert.x /= q.halfWidth;
+	vert.y /= q.halfHeight;
+	return vert;
+}
+
+fn applyTint(texColor: vec4f, tintColor: vec4f) -> vec4f {
+	// apply the tint color to the sampled texture color at full strength
+	let tinted = vec4f(texColor.rgb * tintColor.rgb, texColor.a);
+	// mix in the tint using the tint alpha as the blend strength
+	return mix(texColor, tinted, tintColor.a);
+}
+
+@vertex
+fn vertexMain(v: VertexParams) -> FragParams {
+	var vert = transformVertex(v.pos, v.matrixIndex);
+
+	var f: FragParams;
+	f.position = vert;
+	f.texCoord = v.texCoord;
+	f.tintColor = colors[i32(v.tintIndex)];
+	f.imageAlpha = v.imageAlpha;
+	return f;
+}
+
+@fragment
+fn fragMain(f: FragParams) -> @location(0) vec4f {
+	var texColor = textureSample(tex, samp, f.texCoord);
+	texColor.a *= f.imageAlpha;
+	return applyTint(texColor, f.tintColor);
+}
 	`;
 
 	let imageShader = Q5.device.createShaderModule({
@@ -2291,8 +2320,11 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 					GPUTextureUsage.RENDER_ATTACHMENT
 			});
 
+			let src = { source: cnv };
+			if (cnv.tagName == 'IMG') src.colorSpace = $.canvas.colorSpace;
+
 			Q5.device.queue.copyExternalImageToTexture(
-				{ source: cnv },
+				src,
 				{
 					texture,
 					colorSpace: $.canvas.colorSpace
@@ -2370,7 +2402,7 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 	$._getImageMode = () => _imageMode;
 
 	// Reusable uniform buffer array to avoid GC
-	$._uniforms = new Float32Array(13);
+	$._uniforms = new Float32Array(14);
 
 	const addImgVert = (x, y, u, v, ci, ti, ia) => {
 		let s = imgVertStack,
@@ -2390,7 +2422,7 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 		let isVideo;
 		if (img._texture == undefined) {
 			isVideo = img.tagName == 'VIDEO';
-			if (!img.width || (isVideo && !img.currentTime)) return;
+			if (!isVideo || !img.currentTime) return;
 			if (img.flipped) $.scale(-1, 1);
 		}
 
@@ -2429,8 +2461,9 @@ fn fragMain(f: FragParams) -> @location(0) vec4f {
 		let u0 = sx / w,
 			v0 = sy / h,
 			u1 = (sx + sw) / w,
-			v1 = (sy + sh) / h,
-			ti = matrixIdx,
+			v1 = (sy + sh) / h;
+
+		let ti = matrixIdx,
 			ci = tintIdx,
 			ia = globalAlpha;
 
@@ -2515,12 +2548,11 @@ struct Text {
 @group(2) @binding(0) var<storage> textChars: array<vec4f>;
 @group(2) @binding(1) var<storage> textMetadata: array<Text>;
 
-const quad = array(vec2f(0, 1), vec2f(1, 1), vec2f(0, 0), vec2f(1, 0));
+const quad = array(vec2f(0, -1), vec2f(1, -1), vec2f(0, 0), vec2f(1, 0));
 const uvs = array(vec2f(0, 1), vec2f(1, 1), vec2f(0, 0), vec2f(1, 0));
 
 fn calcPos(i: u32, char: vec4f, fontChar: Char, text: Text) -> vec2f {
-	return ((quad[i] * fontChar.size + char.xy + fontChar.offset) *
-		text.scale) + text.pos;
+	return ((vec2f(quad[i].x, quad[i].y * q.yUp) * fontChar.size + char.xy + fontChar.offset) * text.scale) + text.pos;
 }
 
 fn calcUV(i: u32, fontChar: Char) -> vec2f {
@@ -2751,7 +2783,7 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 			fontChars[o + 4] = char.width; // size.x
 			fontChars[o + 5] = char.height; // size.y
 			fontChars[o + 6] = char.xoffset; // offset.x
-			fontChars[o + 7] = char.yoffset; // offset.y
+			fontChars[o + 7] = -char.yoffset * yDir; // offset.y
 			o += 8;
 		}
 		charsBuffer.unmap();
@@ -2827,9 +2859,10 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 
 	let _textSize = 18,
 		_textAlign = 'left',
+		_textStyle = 'normal',
 		_textBaseline = 'alphabetic',
 		leadingSet = false,
-		leading = 22.5,
+		_textLeading = 22.5,
 		leadDiff = 4.5,
 		leadPercent = 1.25;
 
@@ -2850,8 +2883,8 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 		if (size == undefined) return _textSize;
 		_textSize = size;
 		if (!leadingSet) {
-			leading = size * leadPercent;
-			leadDiff = leading - size;
+			_textLeading = size * leadPercent;
+			leadDiff = _textLeading - size;
 		}
 	};
 
@@ -2884,29 +2917,29 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 
 	$.textLeading = (lineHeight) => {
 		if (!$._font) return $._g.textLeading(lineHeight);
-		if (!lineHeight) return leading;
-		$._font.lineHeight = leading = lineHeight;
-		leadDiff = leading - _textSize;
-		leadPercent = leading / _textSize;
+		if (!lineHeight) return _textLeading;
+		$._font.lineHeight = _textLeading = lineHeight;
+		leadDiff = _textLeading - _textSize;
+		leadPercent = _textLeading / _textSize;
 		leadingSet = true;
 	};
 
 	$.textAlign = (horiz, vert) => {
 		_textAlign = horiz;
-		if (vert) _textBaseline = vert;
+		if (vert) _textBaseline = vert[0] == 'c' ? 'middle' : vert;
 	};
 
 	$.textStyle = (style) => {
-		// stub
+		_textStyle = style;
 	};
 
 	let charStack = [],
 		textStack = [];
 
 	// Reusable array for line widths to avoid GC
-	let lineWidthsCache = new Array(100);
+	let lineWidths = new Array(100);
 
-	// Reusable buffers for text data to avoid creating new arrays
+	// Reusable buffers for text data to avoid GC
 	let charDataBuffer = new Float32Array(Q5.MAX_CHARS * 4); // reusable buffer for char data
 	let textDataBuffer = new Float32Array(Q5.MAX_TEXTS * 8); // reusable buffer for text metadata
 
@@ -2916,7 +2949,6 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 			offsetY = 0,
 			line = 0,
 			printedCharCount = 0,
-			lineWidths = lineWidthsCache, // reuse array
 			nextCharCode = text.charCodeAt(0);
 
 		for (let i = 0; i < text.length; ++i) {
@@ -2924,7 +2956,7 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 			nextCharCode = i < text.length - 1 ? text.charCodeAt(i + 1) : -1;
 			switch (charCode) {
 				case 10: // newline
-					lineWidths.push(offsetX);
+					lineWidths[line] = offsetX;
 					line++;
 					maxWidth = Math.max(maxWidth, offsetX);
 					offsetX = 0;
@@ -2960,7 +2992,7 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 	};
 
 	$.text = (str, x, y, w, h) => {
-		if (_textSize < 1) return;
+		if (_textSize * _scale < 1) return;
 
 		let type = typeof str;
 		if (type != 'string') {
@@ -3016,17 +3048,17 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 				o += 4;
 			});
 
-			if (tb == 'alphabetic') y -= _textSize;
-			else if (tb == 'center') y -= _textSize * 0.5;
-			else if (tb == 'bottom') y -= leading;
+			if (tb == 'alphabetic') y += _textSize * yDir;
+			else if (tb == 'middle') y += _textSize * 0.5 * yDir;
+			else if (tb == 'bottom') y += _textLeading * yDir;
 		} else {
 			// measure the text to get the line height before setting
 			// the x position to properly align the text
 			measurements = measureText($._font, str);
 
 			let offsetY = 0;
-			if (tb == 'alphabetic') y -= _textSize;
-			else if (tb == 'center') offsetY = measurements.height * 0.5;
+			if (tb == 'alphabetic') y += _textSize * yDir;
+			else if (tb == 'middle') offsetY = measurements.height * 0.5;
 			else if (tb == 'bottom') offsetY = measurements.height;
 
 			measureText($._font, str, (textX, textY, line, char) => {
@@ -3037,7 +3069,7 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 					offsetX = -measurements.lineWidths[line];
 				}
 				charsData[o] = textX + offsetX;
-				charsData[o + 1] = -(textY + offsetY);
+				charsData[o + 1] = (textY + offsetY) * yDir;
 				charsData[o + 2] = char.charIndex;
 				charsData[o + 3] = textIndex;
 				o += 4;
@@ -3075,7 +3107,7 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 			$._g.textSize(_textSize);
 			return $._g.textAscent(str);
 		}
-		return leading - leadDiff;
+		return _textLeading - leadDiff;
 	};
 
 	$.textDescent = (str) => {
@@ -3086,17 +3118,28 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 		return leadDiff;
 	};
 
-	$.createTextImage = (str, w, h) => {
-		$._g.textSize(_textSize);
-
-		if (doFill && fillSet) {
+	$._applyTextStylesToC2D = () => {
+		if (!doFill) $._g.noFill();
+		else if (fillSet) {
 			let fi = fillIdx * 4;
 			$._g.fill(colorStack.slice(fi, fi + 4));
 		}
-		if (doStroke && strokeSet) {
+
+		if (!doStroke) $._g.noStroke();
+		else if (strokeSet) {
 			let si = strokeIdx * 4;
 			$._g.stroke(colorStack.slice(si, si + 4));
 		}
+
+		if (sw != $._g._strokeWeight) $._g.strokeWeight(sw);
+		if (_textSize != $._g._textSize) $._g.textSize(_textSize);
+		if (_textStyle != $._g._textStyle) $._g.textStyle(_textStyle);
+		if (_textLeading != $._g.textLeading()) $._g.textLeading(_textLeading);
+		$._g.textAlign(_textAlign, _textBaseline);
+	};
+
+	$.createTextImage = (str, w, h) => {
+		$._applyTextStylesToC2D();
 
 		let g = $._g.createTextImage(str, w, h);
 		$._makeDrawable(g);
@@ -3114,13 +3157,18 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 		else if (ta == 'right') x -= img.width;
 
 		let bl = _textBaseline;
-		if (bl == 'alphabetic') y -= img._leading;
-		else if (bl == 'center') y -= img._middle;
-		else if (bl == 'bottom') y -= img._bottom;
-		else if (bl == 'top') y -= img._top;
+		if (bl == 'alphabetic') y += img._leading * yDir;
+		else if (bl == 'middle') y += img._middle * yDir;
+		else if (bl == 'bottom') y += img._bottom * yDir;
+		else if (bl == 'top') y += img._top * yDir;
 
 		$.image(img, x, y);
 		_imageMode = og;
+	};
+
+	$.textToPoints = (str, x, y, sampleRate, density) => {
+		$._applyTextStylesToC2D();
+		return $._g.textToPoints(str, x, y, sampleRate, density);
 	};
 
 	/* SHADERS */
@@ -3207,6 +3255,28 @@ fn fragMain(f : FragParams) -> @location(0) vec4f {
 		videoPL = 3;
 		textPL = 4;
 	};
+
+	const _remove = $.remove;
+	$.remove = () => {
+		$._frameA?.destroy();
+		$._frameB?.destroy();
+		uniformBuffer?.destroy();
+		transformsBuffer?.destroy();
+		colorsBuffer?.destroy();
+		shapesVertBuff?.destroy();
+		imgVertBuff?.destroy();
+		charBuffer?.destroy();
+		textBuffer?.destroy();
+		rectBuffer?.destroy();
+		rectIndexBuffer?.destroy();
+		ellipseBuffer?.destroy();
+		ellipseIndexBuffer?.destroy();
+
+		for (let b of $._buffers) b.destroy();
+		$._buffers = [];
+
+		_remove();
+	};
 };
 
 Q5.THRESHOLD = 1;
@@ -3218,7 +3288,7 @@ Q5.DILATE = 6;
 Q5.ERODE = 7;
 Q5.BLUR = 8;
 
-Q5.MAX_TRANSFORMS = 1e7;
+Q5.MAX_TRANSFORMS = 2097152;
 Q5.MAX_RECTS = 200200;
 Q5.MAX_ELLIPSES = 200200;
 Q5.MAX_CHARS = 100000;
@@ -3229,20 +3299,50 @@ Q5.initWebGPU = async () => {
 		console.warn('q5 WebGPU not supported on this browser! Use Google Chrome or Edge.');
 		return false;
 	}
-	if (!Q5.requestedGPU) {
-		Q5.requestedGPU = true;
-		let adapter = await navigator.gpu.requestAdapter();
-		if (!adapter) {
-			console.warn('q5 WebGPU could not start! No appropriate GPUAdapter found, Vulkan may need to be enabled.');
-			return false;
-		}
-		Q5.device = await adapter.requestDevice();
 
-		Q5.device.lost.then((e) => {
-			console.error('WebGPU crashed!');
-			console.error(e);
-		});
+	// fn can only be called once
+	if (Q5.requestedGPU) return;
+	Q5.requestedGPU = true;
+
+	let adapter = await navigator.gpu.requestAdapter();
+
+	adapter ??= await navigator.gpu.requestAdapter({
+		featureLevel: 'compatibility'
+	});
+
+	if (!adapter) {
+		console.warn('q5 WebGPU could not start! No appropriate GPUAdapter found, Vulkan may need to be enabled.');
+		return false;
 	}
+
+	let device = await adapter.requestDevice();
+
+	const vertexStorageLimit =
+		device.limits.maxStorageBuffersInVertexStage ?? device.limits.maxStorageBuffersPerShaderStage;
+	if (vertexStorageLimit < 3) {
+		console.warn('q5 WebGPU requires vertex storage buffers, which are not supported by this device.');
+		return false;
+	}
+
+	// Update to fit device limits
+	const maxStorage = device.limits.maxStorageBufferBindingSize;
+
+	let min = Math.min,
+		floor = Math.floor;
+
+	Q5.MAX_TRANSFORMS = min(Q5.MAX_TRANSFORMS, floor(maxStorage / 64));
+	Q5.MAX_RECTS = min(Q5.MAX_RECTS, floor(maxStorage / 64));
+	Q5.MAX_ELLIPSES = min(Q5.MAX_ELLIPSES, floor(maxStorage / 64));
+	Q5.MAX_CHARS = min(Q5.MAX_CHARS, floor(maxStorage / 16));
+	Q5.MAX_TEXTS = min(Q5.MAX_TEXTS, floor(maxStorage / 32));
+
+	device.lost.then((e) => {
+		console.error('WebGPU crashed!');
+		console.error(e);
+	});
+
+	Q5.device = device;
+
 	return true;
 };
 
