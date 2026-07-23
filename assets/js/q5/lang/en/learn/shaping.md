@@ -27,6 +27,15 @@ background(0.8);
 arc(0, 0, 160, 160, 0.8, -0.8);
 ```
 
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+arc(0, 0, 160, 160, 0.8, -0.8)
+```
+
 ### c2d
 
 ```js
@@ -52,6 +61,15 @@ background(0.8);
 curve(-100, -200, -50, 0, 50, 0, 100, -200);
 ```
 
+### python
+
+```py
+Canvas(200, 100)
+background(0.8)
+
+curve(-100, -200, -50, 0, 50, 0, 100, -200)
+```
+
 ## curveDetail
 
 Sets the amount of straight line segments used to make a curve.
@@ -74,25 +92,29 @@ stroke(0, 1, 1);
 curve(-100, -200, -50, 0, 50, 0, 100, -200);
 ```
 
+### python
+
+```py
+Canvas(200)
+
+curveDetail(4)
+
+strokeWeight(10)
+stroke(0, 1, 1)
+curve(-100, -200, -50, 0, 50, 0, 100, -200)
+```
+
 ## beginShape
 
-Starts storing vertices for a convex shape.
+Starts storing vertices for a shape.
 
 ## endShape
 
-Ends storing vertices for a convex shape.
+Ends storing vertices for a shape.
 
-## beginContour
-
-Starts storing vertices for a contour.
-
-Not available in q5 WebGPU.
-
-## endContour
-
-Ends storing vertices for a contour.
-
-Not available in q5 WebGPU.
+```
+@param {boolean} [close] whether to close the shape by connecting the last vertex to the first vertex, default is false
+```
 
 ## vertex
 
@@ -101,6 +123,44 @@ Specifies a vertex in a shape.
 ```
 @param {number} x x-coordinate
 @param {number} y y-coordinate
+```
+
+### webgpu
+
+Each vertex can have its own fill color. Useful for creating gradients.
+
+```js
+await Canvas(200);
+
+stroke(1, 0.5);
+strokeWeight(20);
+
+beginShape();
+fill(1, 0, 0);
+vertex(-80, -80);
+vertex(40, -60);
+fill(0, 0, 1);
+vertex(80, 60);
+vertex(-60, 80);
+endShape(true);
+```
+
+### python
+
+```py
+Canvas(200)
+
+stroke(1, 0.5)
+strokeWeight(20)
+
+beginShape()
+fill(1, 0, 0)
+vertex(-80, -80)
+vertex(40, -60)
+fill(0, 0, 1)
+vertex(80, 60)
+vertex(-60, 80)
+endShape(True)
 ```
 
 ## bezierVertex
@@ -169,3 +229,15 @@ Draws a quadrilateral.
 @param {number} x4 x-coordinate of the fourth vertex
 @param {number} y4 y-coordinate of the fourth vertex
 ```
+
+## beginContour
+
+Starts storing vertices for a contour.
+
+Not available in q5 WebGPU.
+
+## endContour
+
+Ends storing vertices for a contour.
+
+Not available in q5 WebGPU.

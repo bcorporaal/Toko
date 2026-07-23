@@ -9,6 +9,8 @@ Generates a random value.
 - If two numerical inputs are provided, returns a number between the two values.
 - If an array is provided, returns a random element from the array.
 
+Return value can be the lower bound but can never exactly be the upper bound.
+
 ```
 @param {number | any[]} [low] lower bound (inclusive) or an array
 @param {number} [high] upper bound (exclusive)
@@ -31,6 +33,22 @@ q5.draw = function () {
 q5.draw = function () {
 	circle(random(-100, 100), random(-10, 10), 10);
 };
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+frameRate(5)
+
+def draw():
+	circle(0, 0, random(200))
+```
+
+```py
+def draw():
+	circle(random(-100, 100), random(-10, 10), 10)
 ```
 
 ### c2d
@@ -78,6 +96,20 @@ await Canvas(200);
 q5.draw = function () {
 	circle(jit(50), 0, random(50));
 };
+```
+
+### python
+
+```py
+def draw():
+	circle(mouseX + jit(3), mouseY + jit(3), 5)
+```
+
+```py
+Canvas(200)
+
+def draw():
+	circle(jit(50), 0, random(50))
 ```
 
 ### c2d
@@ -144,6 +176,34 @@ q5.draw = function () {
 };
 ```
 
+### python
+
+```py
+def draw():
+	background(0.8)
+	n = noise(frameCount * 0.01)
+	circle(0, 0, n * 200)
+```
+
+```py
+def draw():
+	background(0.8)
+	t = (frameCount + mouseX) * 0.02
+	for x in range(-5, 220, 10):
+		n = noise(t, x * 0.1)
+		circle(x - 100, 0, n * 40)
+```
+
+```py
+def draw():
+	noStroke()
+	t = millis() * 0.002
+	for x in range(-100, 100, 5):
+		for y in range(-100, 100, 5):
+			fill(noise(t, (mouseX + x) * 0.05, y * 0.05))
+			square(x, y, 5)
+```
+
 ### c2d
 
 ```js
@@ -189,6 +249,17 @@ q5.draw = function () {
 	let d = dist(0, 0, mouseX, mouseY);
 	text(round(d), -80, -80);
 };
+```
+
+### python
+
+```py
+def draw():
+	background(0.8)
+	line(0, 0, mouseX, mouseY)
+
+	d = dist(0, 0, mouseX, mouseY)
+	text(round(d), -80, -80)
 ```
 
 ### c2d
@@ -313,6 +384,15 @@ textSize(32);
 text(round(PI, 5), -90, 10);
 ```
 
+### python
+
+```py
+Canvas(200, 100)
+background(0.8)
+textSize(32)
+text(round(PI, 5), -90, 10)
+```
+
 ### c2d
 
 ```js
@@ -338,6 +418,15 @@ await Canvas(200, 100);
 background(0.8);
 textSize(32);
 text(ceil(PI), -90, 10);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+background(0.8)
+textSize(32)
+text(ceil(PI), -90, 10)
 ```
 
 ### c2d
@@ -367,6 +456,15 @@ textSize(32);
 text(floor(-PI), -90, 10);
 ```
 
+### python
+
+```py
+Canvas(200, 100)
+background(0.8)
+textSize(32)
+text(floor(-PI), -90, 10)
+```
+
 ### c2d
 
 ```js
@@ -394,6 +492,14 @@ q5.draw = function () {
 };
 ```
 
+### python
+
+```py
+def draw():
+	background(min(-mouseX / 100, 0.5))
+	circle(min(mouseX, 0), 0, 80)
+```
+
 ### c2d
 
 ```js
@@ -419,6 +525,14 @@ q5.draw = function () {
 	background(max(-mouseX / 100, 0.5));
 	circle(max(mouseX, 0), 0, 80);
 };
+```
+
+### python
+
+```py
+def draw():
+	background(max(-mouseX / 100, 0.5))
+	circle(max(mouseX, 0), 0, 80)
 ```
 
 ### c2d

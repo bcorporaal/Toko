@@ -25,6 +25,19 @@ fill('lime');
 square(-20, -20, 80);
 ```
 
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+fill('red')
+circle(-20, -20, 80)
+
+fill('lime')
+square(-20, -20, 80)
+```
+
 ### c2d
 
 ```js
@@ -64,6 +77,20 @@ stroke('lime');
 square(-20, -20, 80);
 ```
 
+### python
+
+```py
+Canvas(200)
+background(0.8)
+fill(0.14)
+
+stroke('red')
+circle(-20, -20, 80)
+
+stroke('lime')
+square(-20, -20, 80)
+```
+
 ### c2d
 
 ```js
@@ -96,6 +123,20 @@ stroke('lime');
 square(-20, -20, 80);
 ```
 
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+noFill()
+
+stroke('red')
+circle(-20, -20, 80)
+stroke('lime')
+square(-20, -20, 80)
+```
+
 ### c2d
 
 ```js
@@ -125,6 +166,19 @@ circle(-20, -20, 80);
 
 noStroke();
 square(-20, -20, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+fill(0.14)
+stroke('red')
+circle(-20, -20, 80)
+
+noStroke()
+square(-20, -20, 80)
 ```
 
 ### c2d
@@ -160,6 +214,18 @@ strokeWeight(12);
 circle(50, 0, 80);
 ```
 
+### python
+
+```py
+Canvas(200)
+background(0.8)
+stroke('red')
+circle(-50, 0, 80)
+
+strokeWeight(12)
+circle(50, 0, 80)
+```
+
 ### c2d
 
 ```js
@@ -193,6 +259,19 @@ circle(-20, -20, 80);
 
 opacity(0.2);
 square(-20, -20, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+opacity(1)
+circle(-20, -20, 80)
+
+opacity(0.2)
+square(-20, -20, 80)
 ```
 
 ### c2d
@@ -238,7 +317,7 @@ rect(64, 60, 80, 80);
 
 ```js
 createCanvas(200);
-let logo = loadImage('/assets/p5play_logo.webp');
+let logo = loadImage('/assets/q5play_logo.avif');
 
 function setup() {
 	background(200);
@@ -318,15 +397,43 @@ Not available in q5 WebGPU.
 
 ## strokeCap
 
-Set the line cap style to `ROUND`, `SQUARE`, or `PROJECT`.
-
-Not available in q5 WebGPU.
-
 ```
 @param {CanvasLineCap} val line cap style
 ```
 
+### webgpu
+
+Set the line cap style to `SQUARE` or `PROJECT`.
+
+```js
+await Canvas(200);
+background(0.8);
+strokeWeight(20);
+
+strokeCap(SQUARE);
+line(-50, -25, 50, -25);
+
+strokeCap(PROJECT);
+line(-50, 25, 50, 25);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+strokeWeight(20)
+
+strokeCap(SQUARE)
+line(-50, -25, 50, -25)
+
+strokeCap(PROJECT)
+line(-50, 25, 50, 25)
+```
+
 ### c2d
+
+Set the line cap style to `ROUND`, `SQUARE`, or `PROJECT`.
 
 ```js
 createCanvas(200);
@@ -345,15 +452,47 @@ line(50, 150, 150, 150);
 
 ## strokeJoin
 
-Set the line join style to `ROUND`, `BEVEL`, or `MITER`.
-
-Not available in q5 WebGPU.
-
 ```
 @param {CanvasLineJoin} val line join style
 ```
 
+### webgpu
+
+Set the line join style to `ROUND` or `MITER`.
+
+The default is `MITER`.
+
+```js
+await Canvas(200);
+background(0.8);
+strokeWeight(10);
+
+strokeJoin(ROUND);
+triangle(-50, -30, 50, -30, -50, 20);
+
+strokeJoin(MITER);
+triangle(50, 0, -50, 50, 50, 50);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+strokeWeight(10)
+
+strokeJoin(ROUND)
+triangle(-50, -30, 50, -30, -50, 20)
+
+strokeJoin(MITER)
+triangle(50, 0, -50, 50, 50, 50)
+```
+
 ### c2d
+
+Set the line join style to `ROUND`, `BEVEL`, or `MITER`.
+
+The default is `ROUND`.
 
 ```js
 createCanvas(200);
@@ -410,6 +549,20 @@ popStyles();
 circle(50, 50, 80);
 ```
 
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+pushStyles()
+fill('blue')
+circle(-50, -50, 80)
+
+popStyles()
+circle(50, 50, 80)
+```
+
 ### c2d
 
 ```js
@@ -442,6 +595,20 @@ popStyles();
 circle(50, 50, 80);
 ```
 
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+pushStyles()
+fill('blue')
+circle(-50, -50, 80)
+
+popStyles()
+circle(50, 50, 80)
+```
+
 ### c2d
 
 ```js
@@ -471,6 +638,16 @@ q5.draw = function () {
 	clear();
 	circle((frameCount % 200) - 100, 0, 80);
 };
+```
+
+### python
+
+```py
+Canvas(200, { alpha: True })
+
+def draw():
+	clear()
+	circle((frameCount % 200) - 100, 0, 80)
 ```
 
 ### c2d

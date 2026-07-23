@@ -21,14 +21,12 @@ struct Q5 {
 struct Rect {
 	center: vec2f,
 	extents: vec2f,
-	roundedRadius: f32,
+	cornerRadii: vec4f,
 	strokeWeight: f32,
 	fillIndex: f32,
 	strokeIndex: f32,
 	matrixIndex: f32,
-	padding0: f32, // can't use vec3f for alignment
-	padding1: vec2f,
-	padding2: vec4f
+	padding: vec4f
 };
 
 struct VertexParams {
@@ -40,7 +38,7 @@ struct FragParams {
 	@builtin(position) position: vec4f,
 	@location(0) local: vec2f,
 	@location(1) extents: vec2f,
-	@location(2) roundedRadius: f32,
+	@location(2) cornerRadii: vec4f,
 	@location(3) strokeWeight: f32,
 	@location(4) fill: vec4f,
 	@location(5) stroke: vec4f,
@@ -84,7 +82,7 @@ fn vertexMain(v: VertexParams) -> FragParams {
 
 	f.local = local;
 	f.extents = rect.extents;
-	f.roundedRadius = rect.roundedRadius;
+	f.cornerRadii = rect.cornerRadii;
 	f.strokeWeight = rect.strokeWeight;
 
 	let fill = colors[i32(rect.fillIndex)];
@@ -106,12 +104,24 @@ fn sdRoundRect(p: vec2f, extents: vec2f, radius: f32) -> f32 {
 	return length(max(q, vec2f(0.0))) - radius + min(max(q.x, q.y), 0.0);
 }
 
+fn getCornerRadius(p: vec2f, radii: vec4f) -> f32 {
+	let top = select(radii.x, radii.y, p.x > 0.0);
+	let bottom = select(radii.w, radii.z, p.x > 0.0);
+	return select(top, bottom, p.y > 0.0);
+}
+
+fn hasCornerRadii(radii: vec4f) -> bool {
+	return max(max(radii.x, radii.y), max(radii.z, radii.w)) > 0.0;
+}
+
 @fragment
 fn fragMain(f: FragParams) -> @location(0) vec4f {
+	let rounded = hasCornerRadii(f.cornerRadii);
+	let radius = getCornerRadius(f.local, f.cornerRadii);
 	let dist = select(
 		max(abs(f.local.x) - f.extents.x, abs(f.local.y) - f.extents.y), // sharp
-		sdRoundRect(f.local, f.extents, f.roundedRadius),                  // rounded
-		f.roundedRadius > 0.0
+		sdRoundRect(f.local, f.extents, radius),                           // rounded
+		rounded
 	);
 
 	// fill only

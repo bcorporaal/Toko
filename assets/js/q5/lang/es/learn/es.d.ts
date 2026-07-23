@@ -1,4 +1,5 @@
 declare global {
+	declare interface GPUShaderModule {}
 	// ⭐️ core
 
 	function Lienzo(ancho?: number, alto?: number, opciones?: object): Promise<HTMLCanvasElement>;
@@ -9,7 +10,7 @@ declare global {
 
 	// 🧑‍🎨 shapes
 
-	function círculo(x: number, y: number, diámetro: number): void;
+	function circulo(x: number, y: number, diametro: number): void;
 
 	function elipse(x: number, y: number, ancho: number, alto?: number): void;
 
@@ -19,9 +20,9 @@ declare global {
 
 	function punto(x: number, y: number): void;
 
-	function línea(x1: number, y1: number, x2: number, y2: number): void;
+	function linea(x1: number, y1: number, x2: number, y2: number): void;
 
-	function cápsula(x1: number, y1: number, x2: number, y2: number, r: number): void;
+	function capsula(x1: number, y1: number, x2: number, y2: number, r: number): void;
 
 	function modoRect(modo: string): void;
 
@@ -69,17 +70,26 @@ declare global {
 
 	function copiar(): Q5.Imagen;
 
-	function insertado(sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): void;
+	function insertado(
+		sx: number,
+		sy: number,
+		sw: number,
+		sh: number,
+		dx: number,
+		dy: number,
+		dw: number,
+		dh: number
+	): void;
 
 	function obtener(x: number, y: number, w?: number, h?: number): Q5.Imagen | number[];
 
 	function establecer(x: number, y: number, val: any): void;
 
-	var píxeles: number[];
+	var pixeles: number[];
 
-	function cargarPíxeles(): void;
+	function cargarPixeles(): void;
 
-	function actualizarPíxeles(): void;
+	function actualizarPixeles(): void;
 
 	function filtro(tipo: string, valor?: number): void;
 
@@ -101,7 +111,7 @@ declare global {
 
 	function crearImagen(w: number, h: number, opt?: any): Q5.Imagen;
 
-	function crearGráficos(w: number, h: number, opt?: any): Q5;
+	function crearGraficos(w: number, h: number, opt?: any): Q5;
 
 	// 📘 text
 
@@ -117,7 +127,7 @@ declare global {
 
 	function estiloTexto(estilo: 'normal' | 'italic' | 'bold' | 'bolditalic'): void;
 
-	function alineaciónTexto(horiz: 'left' | 'center' | 'right', vert?: 'top' | 'middle' | 'bottom' | 'alphabetic'): void;
+	function alineacionTexto(horiz: 'left' | 'center' | 'right', vert?: 'top' | 'middle' | 'bottom' | 'alphabetic'): void;
 
 	function pesoTexto(peso: number | string): void;
 
@@ -155,25 +165,25 @@ declare global {
 
 	// 🖲️ input
 
-	let ratónX: number;
+	let ratonX: number;
 
-	let ratónY: number;
+	let ratonY: number;
 
-	let pRatónX: number;
+	let pRatonX: number;
 
-	let pRatónY: number;
+	let pRatonY: number;
 
-	let botónRatón: string;
+	let botonRaton: string;
 
-	let ratónPresionado: boolean;
+	let ratonPresionado: boolean;
 
-	function alPresionarRatón(): void;
+	function alPresionarRaton(): void;
 
-	function alSoltarRatón(): void;
+	function alSoltarRaton(): void;
 
-	function alMoverRatón(): void;
+	function alMoverRaton(): void;
 
-	function alArrastrarRatón(): void;
+	function alArrastrarRaton(): void;
 
 	function dobleClic(): void;
 
@@ -195,13 +205,15 @@ declare global {
 
 	function alMoverToque(): void;
 
-	let punteros: {};
-
 	function cursor(nombre: string, x?: number, y?: number): void;
 
 	function sinCursor(): void;
 
-	function ruedaRatón(evento: any): void;
+	function ruedaRaton(evento: any): void;
+
+	let movidoX: number;
+
+	let movidoY: number;
 
 	function bloqueoPuntero(movimientoNoAjustado: boolean): void;
 
@@ -259,9 +271,9 @@ declare global {
 
 	function modoMezcla(val: string): void;
 
-	function terminaciónTrazo(val: CanvasLineCap): void;
+	function terminacionTrazo(val: CanvasLineCap): void;
 
-	function uniónTrazo(val: CanvasLineJoin): void;
+	function unionTrazo(val: CanvasLineJoin): void;
 
 	function borrar(rellenoAlfa?: number, trazoAlfa?: number): void;
 
@@ -272,6 +284,8 @@ declare global {
 	function recuperarEstilos(): void;
 
 	function limpiar(): void;
+
+	let ctx: CanvasRenderingContext2D;
 
 	function enRelleno(x: number, y: number): boolean;
 
@@ -303,7 +317,7 @@ declare global {
 
 	// 💻 display
 
-	function modoVisualización(modo: string, calidadRender: string, escala: string | number): void;
+	function modoVisualizacion(modo: string, calidadRender: string, escala: string | number): void;
 
 	const MAXIMIZADO: 'maxed';
 
@@ -345,13 +359,15 @@ declare global {
 
 	function postProcesar(): void;
 
-	function densidadPíxeles(v: number): number;
+	function densidadPixeles(v: number): number;
 
-	function densidadVisualización(): number;
+	function densidadVisualizacion(): number;
 
 	var deltaTiempo: number;
 
-	var contextoDibujo: CanvasRenderingContext2D;
+	const C2D: 'c2d';
+
+	const WEBGPU: 'webgpu';
 
 	// 🧮 math
 
@@ -365,7 +381,7 @@ declare global {
 
 	function mapa(val: number, inicio1: number, fin1: number, inicio2: number, fin2: number): number;
 
-	function modoÁngulo(modo: 'degrees' | 'radians'): void;
+	function modoAngulo(modo: 'degrees' | 'radians'): void;
 
 	function radianes(grados: number): number;
 
@@ -459,7 +475,7 @@ declare global {
 
 	function crearA(href: string, texto?: string): HTMLAnchorElement;
 
-	function crearBotón(contenido?: string): HTMLButtonElement;
+	function crearBoton(contenido?: string): HTMLButtonElement;
 
 	function crearCasilla(etiqueta?: string, marcado?: boolean): HTMLInputElement;
 
@@ -471,9 +487,9 @@ declare global {
 
 	function crearP(contenido?: string): HTMLParagraphElement;
 
-	function crearOpciónes(nombreGrupo?: string): HTMLDivElement;
+	function crearOpciones(nombreGrupo?: string): HTMLDivElement;
 
-	function crearSelección(placeholder?: string): HTMLSelectElement;
+	function crearSeleccion(placeholder?: string): HTMLSelectElement;
 
 	function crearDeslizador(min: number, max: number, valor?: number, paso?: number): HTMLInputElement;
 
@@ -491,11 +507,11 @@ declare global {
 
 	function grabar(): void;
 
-	function pausarGrabación(): void;
+	function pausarGrabacion(): void;
 
-	function borrarGrabación(): void;
+	function borrarGrabacion(): void;
 
-	function guardarGrabación(nombreArchivo: string): void;
+	function guardarGrabacion(nombreArchivo: string): void;
 
 	var grabando: boolean;
 
@@ -531,7 +547,7 @@ declare global {
 
 	function año(): number;
 
-	function día(): number;
+	function dia(): number;
 
 	function hora(): number;
 
@@ -586,7 +602,7 @@ declare global {
 
 		slerp(v: Vector, amt: number): Vector;
 
-		static desdeÁngulo(angulo: number, longitud?: number): Vector;
+		static desdeAngulo(angulo: number, longitud?: number): Vector;
 	}
 
 	// 🖌️ shaping
@@ -605,21 +621,21 @@ declare global {
 
 	function terminarContorno(): void;
 
-	function vértice(x: number, y: number): void;
+	function vertice(x: number, y: number): void;
 
-	function vérticeBezier(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
+	function verticeBezier(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void;
 
-	function vérticeCuadrático(cp1x: number, cp1y: number, x: number, y: number): void;
+	function verticeCuadratico(cp1x: number, cp1y: number, x: number, y: number): void;
 
 	function bezier(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): void;
 
-	function triángulo(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): void;
+	function triangulo(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): void;
 
 	function quad(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): void;
 
 	// ⚡️ shaders
 
-	function crearShader(codigo: string): GPUShaderModule;
+	function crearShader(codigo: string, tipo?: string, datos?: Float32Array | {}): GPUShaderModule;
 
 	function plano(x: number, y: number, w: number, h?: number): void;
 
@@ -650,7 +666,7 @@ declare global {
 	class Q5 {
 		constructor(scope?: string | Function, parent?: HTMLElement);
 
-		static versión: string;
+		static version: string;
 
 		static lang: string;
 
@@ -680,12 +696,190 @@ declare global {
 
 		static modulos: object;
 
+		static dibujar(): void;
+
+		static postProcesar(): void;
+
+		//-
+		static actualizar(): void;
+		actualizar(): void;
 		dibujar(): void;
-
 		postProcesar(): void;
-
-		actualizar(): void; //-
-
+		Lienzo: typeof Lienzo;
+		log: typeof log;
+		circulo: typeof circulo;
+		elipse: typeof elipse;
+		rect: typeof rect;
+		cuadrado: typeof cuadrado;
+		punto: typeof punto;
+		linea: typeof linea;
+		capsula: typeof capsula;
+		modoRect: typeof modoRect;
+		modoEliptico: typeof modoEliptico;
+		cargarImagen: typeof cargarImagen;
+		imagen: typeof imagen;
+		modoImagen: typeof modoImagen;
+		escalaImagenPorDefecto: typeof escalaImagenPorDefecto;
+		redimensionar: typeof redimensionar;
+		recortar: typeof recortar;
+		suavizar: typeof suavizar;
+		noSuavizar: typeof noSuavizar;
+		teñir: typeof teñir;
+		noTeñir: typeof noTeñir;
+		enmascarar: typeof enmascarar;
+		copiar: typeof copiar;
+		insertado: typeof insertado;
+		obtener: typeof obtener;
+		establecer: typeof establecer;
+		cargarPixeles: typeof cargarPixeles;
+		actualizarPixeles: typeof actualizarPixeles;
+		filtro: typeof filtro;
+		crearImagen: typeof crearImagen;
+		crearGraficos: typeof crearGraficos;
+		texto: typeof texto;
+		cargarFuente: typeof cargarFuente;
+		fuenteTexto: typeof fuenteTexto;
+		tamañoTexto: typeof tamañoTexto;
+		interlineado: typeof interlineado;
+		estiloTexto: typeof estiloTexto;
+		alineacionTexto: typeof alineacionTexto;
+		pesoTexto: typeof pesoTexto;
+		anchoTexto: typeof anchoTexto;
+		ascensoTexto: typeof ascensoTexto;
+		descensoTexto: typeof descensoTexto;
+		crearImagenTexto: typeof crearImagenTexto;
+		imagenTexto: typeof imagenTexto;
+		nf: typeof nf;
+		alPresionarRaton: typeof alPresionarRaton;
+		alSoltarRaton: typeof alSoltarRaton;
+		alMoverRaton: typeof alMoverRaton;
+		alArrastrarRaton: typeof alArrastrarRaton;
+		dobleClic: typeof dobleClic;
+		teclaEstaPresionada: typeof teclaEstaPresionada;
+		alPresionarTecla: typeof alPresionarTecla;
+		alSoltarTecla: typeof alSoltarTecla;
+		alEmpezarToque: typeof alEmpezarToque;
+		alTerminarToque: typeof alTerminarToque;
+		alMoverToque: typeof alMoverToque;
+		cursor: typeof cursor;
+		sinCursor: typeof sinCursor;
+		ruedaRaton: typeof ruedaRaton;
+		bloqueoPuntero: typeof bloqueoPuntero;
+		color: typeof color;
+		modoColor: typeof modoColor;
+		fondo: typeof fondo;
+		relleno: typeof relleno;
+		trazo: typeof trazo;
+		sinRelleno: typeof sinRelleno;
+		sinTrazo: typeof sinTrazo;
+		grosorTrazo: typeof grosorTrazo;
+		opacidad: typeof opacidad;
+		sombra: typeof sombra;
+		sinSombra: typeof sinSombra;
+		cajaSombra: typeof cajaSombra;
+		modoMezcla: typeof modoMezcla;
+		terminacionTrazo: typeof terminacionTrazo;
+		unionTrazo: typeof unionTrazo;
+		borrar: typeof borrar;
+		noBorrar: typeof noBorrar;
+		guardarEstilos: typeof guardarEstilos;
+		recuperarEstilos: typeof recuperarEstilos;
+		limpiar: typeof limpiar;
+		enRelleno: typeof enRelleno;
+		enTrazo: typeof enTrazo;
+		trasladar: typeof trasladar;
+		rotar: typeof rotar;
+		escalar: typeof escalar;
+		cizallarX: typeof cizallarX;
+		cizallarY: typeof cizallarY;
+		aplicarMatriz: typeof aplicarMatriz;
+		reiniciarMatriz: typeof reiniciarMatriz;
+		guardarMatriz: typeof guardarMatriz;
+		recuperarMatriz: typeof recuperarMatriz;
+		guardar: typeof guardar;
+		recuperar: typeof recuperar;
+		modoVisualizacion: typeof modoVisualizacion;
+		pantallaCompleta: typeof pantallaCompleta;
+		redimensionarLienzo: typeof redimensionarLienzo;
+		pausar: typeof pausar;
+		redibujar: typeof redibujar;
+		reanudar: typeof reanudar;
+		frecuenciaRefresco: typeof frecuenciaRefresco;
+		obtenerTasaFotogramasObjetivo: typeof obtenerTasaFotogramasObjetivo;
+		obtenerFPS: typeof obtenerFPS;
+		densidadPixeles: typeof densidadPixeles;
+		densidadVisualizacion: typeof densidadVisualizacion;
+		aleatorio: typeof aleatorio;
+		flu: typeof flu;
+		ruido: typeof ruido;
+		dist: typeof dist;
+		mapa: typeof mapa;
+		modoAngulo: typeof modoAngulo;
+		radianes: typeof radianes;
+		grados: typeof grados;
+		interpolar: typeof interpolar;
+		constreñir: typeof constreñir;
+		norm: typeof norm;
+		frac: typeof frac;
+		abs: typeof abs;
+		redondear: typeof redondear;
+		techo: typeof techo;
+		piso: typeof piso;
+		min: typeof min;
+		max: typeof max;
+		pot: typeof pot;
+		cuad: typeof cuad;
+		raiz: typeof raiz;
+		loge: typeof loge;
+		exp: typeof exp;
+		semillaAleatoria: typeof semillaAleatoria;
+		generadorAleatorio: typeof generadorAleatorio;
+		aleatorioGaussiano: typeof aleatorioGaussiano;
+		aleatorioExponencial: typeof aleatorioExponencial;
+		modoRuido: typeof modoRuido;
+		semillaRuido: typeof semillaRuido;
+		detalleRuido: typeof detalleRuido;
+		cargarSonido: typeof cargarSonido;
+		cargarAudio: typeof cargarAudio;
+		obtenerContextoAudio: typeof obtenerContextoAudio;
+		iniciarAudioUsuario: typeof iniciarAudioUsuario;
+		crearElemento: typeof crearElemento;
+		crearA: typeof crearA;
+		crearBoton: typeof crearBoton;
+		crearCasilla: typeof crearCasilla;
+		crearSelectorColor: typeof crearSelectorColor;
+		crearImg: typeof crearImg;
+		crearEntrada: typeof crearEntrada;
+		crearP: typeof crearP;
+		crearOpciones: typeof crearOpciones;
+		crearSeleccion: typeof crearSeleccion;
+		crearDeslizador: typeof crearDeslizador;
+		crearVideo: typeof crearVideo;
+		crearCaptura: typeof crearCaptura;
+		encontrarElemento: typeof encontrarElemento;
+		encontrarElementos: typeof encontrarElementos;
+		crearGrabadora: typeof crearGrabadora;
+		recordar: typeof grabar;
+		pausarGrabacion: typeof pausarGrabacion;
+		borrarGrabacion: typeof borrarGrabacion;
+		guardarGrabacion: typeof guardarGrabacion;
+		cargar: typeof cargar;
+		cargarTexto: typeof cargarTexto;
+		cargarJSON: typeof cargarJSON;
+		cargarCSV: typeof cargarCSV;
+		cargarXML: typeof cargarXML;
+		cargarTodo: typeof cargarTodo;
+		deshabilitarPrecarga: typeof deshabilitarPrecarga;
+		barajar: typeof barajar;
+		guardarItem: typeof guardarItem;
+		obtenerItem: typeof obtenerItem;
+		eliminarItem: typeof eliminarItem;
+		limpiarAlmacenamiento: typeof limpiarAlmacenamiento;
+		año: typeof año;
+		dia: typeof dia;
+		hora: typeof hora;
+		minuto: typeof minuto;
+		segundo: typeof segundo;
 		static Imagen: {
 			new (w: number, h: number, opt?: any): Q5.Imagen;
 		};
@@ -695,7 +889,20 @@ declare global {
 		interface Imagen {
 			ancho: number;
 			alto: number;
+			copiar(): Q5.Imagen;
+			obtener(x: number, y: number, w?: number, h?: number): Q5.Imagen | number[];
+			establecer(x: number, y: number, val: any): void;
+			redimensionar(w: number, h: number): void;
+			enmascarar(img: Q5.Imagen): void;
+			recortar(): Q5.Imagen;
+			filtro(tipo: string, valor?: number): void;
+			cargarPixeles(): void;
+			actualizarPixeles(): void;
+			guardar(nombreArchivo?: string): void;
 		}
+
+		export import Color = globalThis.Color;
+		export import Vector = globalThis.Vector;
 	}
 
 	const q5: typeof Q5;

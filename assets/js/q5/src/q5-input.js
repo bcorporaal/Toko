@@ -1,12 +1,9 @@
 Q5.modules.input = ($, q) => {
 	if ($._isGraphics) return;
 
-	$.mouseX = 0;
-	$.mouseY = 0;
-	$.pmouseX = 0;
-	$.pmouseY = 0;
+	$.mouseX = $.mouseY = $.pmouseX = $.pmouseY = $.movedX = $.movedY = 0;
 	$.touches = [];
-	$.pointers = {};
+	$.pointers = [];
 	$.mouseButton = '';
 	$.keyIsPressed = false;
 	$.mouseIsPressed = false;
@@ -42,10 +39,16 @@ Q5.modules.input = ($, q) => {
 	};
 
 	$._updatePointer = (e) => {
-		let pid = e.pointerId;
-		$.pointers[pid] ??= { event: e };
-		let pointer = $.pointers[pid];
-		pointer.event = e;
+		let id = e.pointerId ?? $.pointers[0]?.id;
+
+		let p = $.pointers.find((p) => p.id === id);
+		if (!p) {
+			p = { id };
+			if (e.type != 'wheel') $.pointers.push(p);
+		}
+
+		if (e.type != 'wheel') p.event = e;
+		else $._wheel = p;
 
 		let x, y;
 		if (c) {
@@ -65,20 +68,32 @@ Q5.modules.input = ($, q) => {
 			y = e.clientY;
 		}
 
-		pointer.x = x;
-		pointer.y = y;
+		p.x = x;
+		p.y = y;
 
-		if (e.isPrimary || !e.pointerId) {
-			if (document.pointerLockElement) {
+		return p;
+	};
+
+	$._updateMouse = (e) => {
+		let p = $.pointers[0];
+
+		if (document.pointerLockElement) {
+			if (e.movementX != undefined) {
 				q.mouseX += e.movementX;
 				q.mouseY += e.movementY;
-			} else {
-				q.mouseX = x;
-				q.mouseY = y;
 			}
+		} else if (p) {
+			if (e.pointerId != undefined && e.pointerId != p.id) return;
+			q.mouseX = p.canvasPos?.x ?? p.x;
+			q.mouseY = p.canvasPos?.y ?? p.y;
+		} else if ($._wheel) {
+			q.mouseX = $._wheel.x;
+			q.mouseY = $._wheel.y;
+		}
 
-			q.moveX = e.movementX;
-			q.moveY = e.movementY;
+		if (e.movementX != undefined) {
+			q.movedX = e.movementX;
+			q.movedY = e.movementY;
 		}
 	};
 
@@ -88,6 +103,7 @@ Q5.modules.input = ($, q) => {
 		pressAmt++;
 		$._startAudio();
 		$._updatePointer(e);
+		$._updateMouse(e);
 		q.mouseIsPressed = true;
 		q.mouseButton = mouseBtns[e.button];
 		$.mousePressed(e);
@@ -96,28 +112,32 @@ Q5.modules.input = ($, q) => {
 	$._onpointermove = (e) => {
 		if (c && !c.visible) return;
 		$._updatePointer(e);
+		$._updateMouse(e);
 		if ($.mouseIsPressed) $.mouseDragged(e);
 		else $.mouseMoved(e);
 	};
 
 	$._onpointerup = (e) => {
 		q.mouseIsPressed = false;
-		if (pressAmt > 0) pressAmt--;
-		else return;
-		$._updatePointer(e);
-		delete $.pointers[e.pointerId];
-		$.mouseReleased(e);
+		if (pressAmt > 0) {
+			pressAmt--;
+			$._updatePointer(e);
+			$._updateMouse(e);
+			$.mouseReleased(e);
+		}
+		if (e.pointerType == 'touch' || e.pointerType == 'pen') {
+			let p = $.pointers.find((p) => p.id === e.pointerId);
+			if (p) p._ended = true;
+		}
 	};
 
 	$._onclick = (e) => {
-		$._updatePointer(e);
 		q.mouseIsPressed = true;
 		$.mouseClicked(e);
 		q.mouseIsPressed = false;
 	};
 
 	$._ondblclick = (e) => {
-		$._updatePointer(e);
 		q.mouseIsPressed = true;
 		$.doubleClicked(e);
 		q.mouseIsPressed = false;
@@ -125,6 +145,7 @@ Q5.modules.input = ($, q) => {
 
 	$._onwheel = (e) => {
 		$._updatePointer(e);
+		$._updateMouse(e);
 		e.delta = e.deltaY;
 		let ret = $.mouseWheel(e);
 		if (($._isGlobal && !ret) || ret == false) {
@@ -185,7 +206,7 @@ Q5.modules.input = ($, q) => {
 		let x = (touch.clientX - rect.left) / sx - modX,
 			y = (touch.clientY - rect.top) / sy - modY;
 
-		if ($._webgpu && !$._flippedY) y *= -1;
+		if (!$._flippedY) y *= -1;
 
 		return {
 			x,
@@ -253,7 +274,14 @@ Q5.modules.input = ($, q) => {
 
 		if (c) c.addEventListener('wheel', (e) => $._onwheel(e));
 
-		if (!$._isGlobal && c) l = c.addEventListener.bind(c);
+		if (!$._isGlobal && c) {
+			// If not global, only trigger pointer events when pointer is locked or over canvas
+			l(pointer + 'down', (e) => !document.pointerLockElement || $._onpointerdown(e));
+			l('click', (e) => !document.pointerLockElement || $._onclick(e));
+			l('dblclick', (e) => !document.pointerLockElement || $._ondblclick(e));
+
+			l = c.addEventListener.bind(c);
+		}
 
 		l(pointer + 'down', (e) => $._onpointerdown(e));
 		l('click', (e) => $._onclick(e));

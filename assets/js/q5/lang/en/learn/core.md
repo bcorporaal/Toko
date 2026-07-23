@@ -22,22 +22,28 @@ Note that in this example, the circle is located at position [0, 0], the origin 
 @param {number} [w] width or side lengths of the canvas
 @param {number} [h] height of the canvas
 @param {object} [opt] [options](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getContextAttributes)
-@returns {Promise<HTMLCanvasElement>} created canvas element
+@returns {Promise<HTMLCanvasElement>} canvas element
 ```
 
 ### webgpu
 
 ```js
-// WebGPU
 await Canvas(200, 100);
 background('silver');
 circle(0, 0, 80);
 ```
 
+### python
+
+```py
+Canvas(200, 100)
+background('silver')
+circle(0, 0, 80)
+```
+
 ### c2d
 
 ```js
-// Canvas2D
 createCanvas(200, 100);
 background('silver');
 circle(0, 0, 80);
@@ -54,6 +60,14 @@ q5.draw = function () {
 	background('silver');
 	circle(mouseX, mouseY, 80);
 };
+```
+
+### python
+
+```py
+def draw():
+	background('silver')
+	circle(mouseX, mouseY, 80)
 ```
 
 ### c2d
@@ -86,6 +100,14 @@ q5.draw = function () {
 	circle(mouseX, mouseY, 80);
 	log('The mouse is at:', mouseX, mouseY);
 };
+```
+
+### python
+
+```py
+def draw():
+	circle(mouseX, mouseY, 80)
+	log('The mouse is at:', mouseX, mouseY)
 ```
 
 ### c2d

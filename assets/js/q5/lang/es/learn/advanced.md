@@ -16,7 +16,7 @@ Funcion constructora. Crea una instancia de Q5.
 ```js
 let q = new Q5('namespace');
 q.crearLienzo(200, 100);
-q.círculo(100, 50, 20);
+q.circulo(100, 50, 20);
 ```
 
 ## Q5.version
@@ -107,7 +107,7 @@ que se pueden dibujar en una sola llamada de dibujo.
 Un límite de asignación de memoria WebGPU.
 
 El número máximo de elipses
-(llamadas a `elipse`, `círculo`, y `arco`)
+(llamadas a `elipse`, `circulo`, y `arco`)
 que se pueden dibujar en una sola llamada de dibujo.
 
 ```
@@ -148,7 +148,7 @@ q.crearLienzo(200, 100);
 
 q.dibujar = () => {
 	q.fondo(0.8);
-	q.círculo(q.ratónX, 0, 80);
+	q.circulo(q.ratonX, 0, 80);
 };
 ```
 
@@ -172,7 +172,7 @@ Q5.addHook('predraw', function () {
 });
 
 q5.dibujar = function () {
-	círculo(ratónX, ratónY, 80);
+	circulo(ratonX, ratonY, 80);
 };
 ```
 
@@ -217,7 +217,7 @@ Se ejecuta después de cada llamada a la función `dibujar` y procesos de addons
 
 Útil para agregar efectos de post-procesamiento cuando no es posible
 hacerlo al final de la función `dibujar`, como cuando se usan
-addons como p5play que dibujan automáticamente al lienzo después de que
+addons como q5play que dibujan automáticamente al lienzo después de que
 la función `dibujar` se ejecuta.
 
 ## q5

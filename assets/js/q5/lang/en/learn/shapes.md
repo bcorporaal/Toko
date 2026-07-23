@@ -17,6 +17,13 @@ await Canvas(200, 100);
 circle(0, 0, 80);
 ```
 
+### python
+
+```py
+Canvas(200, 100)
+circle(0, 0, 80)
+```
+
 ### c2d
 
 ```js
@@ -42,6 +49,13 @@ await Canvas(200, 100);
 ellipse(0, 0, 160, 80);
 ```
 
+### python
+
+```py
+Canvas(200, 100)
+ellipse(0, 0, 160, 80)
+```
+
 ### c2d
 
 ```js
@@ -52,6 +66,10 @@ ellipse(100, 50, 160, 80);
 ## rect
 
 Draws a rectangle or a rounded rectangle.
+
+Also accepts 8 parameters to specify a
+corner radius for each corner, in the order:
+top-left, top-right, bottom-right, bottom-left.
 
 ```
 @param {number} x x-coordinate
@@ -69,7 +87,18 @@ background(0.8);
 
 rect(-70, -80, 40, 60);
 rect(-20, -30, 40, 60, 10);
-rect(30, 20, 40, 60, 30);
+rect(30, 20, 40, 60, 20, 4, 0, 8);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+rect(-70, -80, 40, 60)
+rect(-20, -30, 40, 60, 10)
+rect(30, 20, 40, 60, 20, 4, 0, 8)
 ```
 
 ### c2d
@@ -80,12 +109,16 @@ background(200);
 
 rect(30, 20, 40, 60);
 rect(80, 70, 40, 60, 10);
-rect(130, 120, 40, 60, 30, 2, 8, 20);
+rect(130, 120, 40, 60, 20, 4, 0, 8);
 ```
 
 ## square
 
 Draws a square or a rounded square.
+
+Also accepts 7 parameters to specify a
+corner radius for each corner, in the order:
+top-left, top-right, bottom-right, bottom-left.
 
 ```
 @param {number} x x-coordinate
@@ -102,7 +135,18 @@ background(0.8);
 
 square(-70, -70, 40);
 square(-20, -20, 40, 10);
-square(30, 30, 40, 30);
+square(30, 30, 40, 20, 4, 0, 8);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+square(-70, -70, 40)
+square(-20, -20, 40, 10)
+square(30, 30, 40, 20, 4, 0, 8)
 ```
 
 ### c2d
@@ -113,7 +157,7 @@ background(200);
 
 square(30, 30, 40);
 square(80, 80, 40, 10);
-square(130, 130, 40, 30, 2, 8, 20);
+square(130, 130, 40, 20, 4, 0, 8);
 ```
 
 ## point
@@ -134,6 +178,17 @@ point(-25, 0);
 
 strokeWeight(10);
 point(25, 0);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+stroke('white')
+point(-25, 0)
+
+strokeWeight(10)
+point(25, 0)
 ```
 
 ### c2d
@@ -160,10 +215,20 @@ Draws a line on the canvas.
 
 ### webgpu
 
+To draw lines with rounded stroke caps, use `capsule` instead.
+
 ```js
 await Canvas(200, 100);
 stroke('lime');
 line(-80, -30, 80, 30);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+stroke('lime')
+line(-80, -30, 80, 30)
 ```
 
 ### c2d
@@ -202,6 +267,23 @@ q5.draw = function () {
 	strokeWeight(10);
 	capsule(0, 0, mouseX, mouseY, 20);
 };
+```
+
+### python
+
+```py
+Canvas(200, 100)
+background(0.8)
+strokeWeight(5)
+capsule(-60, -10, 60, 10, 10)
+```
+
+```py
+def draw():
+	background(0.8)
+	fill('cyan')
+	strokeWeight(10)
+	capsule(0, 0, mouseX, mouseY, 20)
 ```
 
 ### c2d
@@ -269,6 +351,44 @@ rectMode(CORNERS);
 
 //  ( x1,  y1, x2, y2)
 rect(-50, -25, 50, 25);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+background(0.8)
+rectMode(CORNER)
+
+# (  x,   y,   w,  h)
+rect(-50, -25, 100, 50)
+```
+
+```py
+Canvas(200, 100)
+background(0.8)
+rectMode(CENTER)
+
+# (cX, cY, w,  h)
+rect(0, 0, 100, 50)
+```
+
+```py
+Canvas(200, 100)
+background(0.8)
+rectMode(RADIUS)
+
+# (cX, cY, rX, rY)
+rect(0, 0, 50, 25)
+```
+
+```py
+Canvas(200, 100)
+background(0.8)
+rectMode(CORNERS)
+
+# ( x1,  y1, x2, y2)
+rect(-50, -25, 50, 25)
 ```
 
 ### c2d
@@ -356,6 +476,44 @@ ellipseMode(CORNERS);
 
 //     ( x1,  y1, x2, y2)
 ellipse(-50, -25, 50, 25);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+background(0.8)
+ellipseMode(CENTER)
+
+# (x, y,   w,  h)
+ellipse(0, 0, 100, 50)
+```
+
+```py
+Canvas(200, 100)
+background(0.8)
+ellipseMode(RADIUS)
+
+# (x, y, rX, rY)
+ellipse(0, 0, 50, 25)
+```
+
+```py
+Canvas(200, 100)
+background(0.8)
+ellipseMode(CORNER)
+
+# ( lX,  tY,   w,  h)
+ellipse(-50, -25, 100, 50)
+```
+
+```py
+Canvas(200, 100)
+background(0.8)
+ellipseMode(CORNERS)
+
+# ( x1,  y1, x2, y2)
+ellipse(-50, -25, 50, 25)
 ```
 
 ### c2d

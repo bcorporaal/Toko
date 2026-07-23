@@ -77,15 +77,15 @@ Q5.modules.canvas = ($, q) => {
 				if (!el) {
 					// reattach canvas to the DOM
 					document.getElementById(c.id)?.remove();
-					addCanvas();
+					$._addCanvas();
 				}
 
 				if (window.IntersectionObserver) {
 					let wasObserved = false;
 					new IntersectionObserver((e) => {
-						let isIntersecting = e[0].isIntersecting;
+						if ($._removed) return;
 
-						if (!isIntersecting) {
+						if (!e[0].isIntersecting) {
 							// the canvas might still be onscreen, just behind other elements
 							let r = c.getBoundingClientRect();
 							c.visible = r.top < window.innerHeight && r.bottom > 0 && r.left < window.innerWidth && r.right > 0;
@@ -114,6 +114,7 @@ Q5.modules.canvas = ($, q) => {
 
 		if ($._addEventMethods) $._addEventMethods(c);
 
+		if (!$._isImage) $.resetMatrix();
 		$.canvas.ready = true;
 
 		return rend;
@@ -131,7 +132,7 @@ Q5.modules.canvas = ($, q) => {
 		g.createCanvas.call($, w, h, opt);
 		let scale = g._pixelDensity * $._defaultImageScale;
 		g.defaultWidth = w * scale;
-		g.defaultHeight = h * scale;
+		g.defaultHeight = (h || w) * scale;
 		return g;
 	};
 
@@ -193,7 +194,7 @@ Q5.modules.canvas = ($, q) => {
 			el.append(c);
 
 			function parentResized() {
-				if ($.frameCount > 1) {
+				if ($.frameCount > 1 && !$._removed) {
 					$._didResize = true;
 					$._adjustDisplay();
 				}
@@ -207,7 +208,7 @@ Q5.modules.canvas = ($, q) => {
 			}
 		};
 
-		function addCanvas() {
+		$._addCanvas = () => {
 			let el = $._parent;
 			el ??= document.getElementsByTagName('main')[0];
 			if (!el) {
@@ -222,8 +223,8 @@ Q5.modules.canvas = ($, q) => {
 					if (document.body) document.body.appendChild(el);
 				});
 			}
-		}
-		addCanvas();
+		};
+		$._addCanvas();
 	}
 
 	$.resizeCanvas = (w, h) => {

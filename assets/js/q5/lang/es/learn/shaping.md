@@ -82,19 +82,7 @@ Comienza a almacenar vértices para una forma convexa.
 
 Termina de almacenar vértices para una forma convexa.
 
-## empezarContorno
-
-Comienza a almacenar vértices para un contorno.
-
-No disponible en q5 WebGPU.
-
-## terminarContorno
-
-Termina de almacenar vértices para un contorno.
-
-No disponible en q5 WebGPU.
-
-## vértice
+## vertice
 
 Especifica un vértice en una forma.
 
@@ -103,7 +91,27 @@ Especifica un vértice en una forma.
 @param {number} y coordenada-y
 ```
 
-## vérticeBezier
+### webgpu
+
+Cada vértice puede tener su propio color de relleno, lo que es útil para crear degradados.
+
+```js
+await Lienzo(200);
+
+trazo(1, 0.5);
+grosorTrazo(20);
+
+empezarForma();
+relleno(1, 0, 0);
+vertice(-80, -80);
+vertice(40, -60);
+relleno(0, 0, 1);
+vertice(80, 60);
+vertice(-60, 80);
+terminarForma(true);
+```
+
+## verticeBezier
 
 Especifica un vértice Bezier en una forma.
 
@@ -116,7 +124,7 @@ Especifica un vértice Bezier en una forma.
 @param {number} y coordenada-y del punto de anclaje
 ```
 
-## vérticeCuadrático
+## verticeCuadratico
 
 Especifica un vértice Bezier cuadrático en una forma.
 
@@ -142,7 +150,7 @@ Dibuja una curva Bezier.
 @param {number} y4 coordenada-y del segundo punto de anclaje
 ```
 
-## triángulo
+## triangulo
 
 Dibuja un triángulo.
 
@@ -169,3 +177,15 @@ Dibuja un cuadrilátero.
 @param {number} x4 coordenada-x del cuarto vértice
 @param {number} y4 coordenada-y del cuarto vértice
 ```
+
+## empezarContorno
+
+Comienza a almacenar vértices para un contorno.
+
+No disponible en q5 WebGPU.
+
+## terminarContorno
+
+Termina de almacenar vértices para un contorno.
+
+No disponible en q5 WebGPU.

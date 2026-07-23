@@ -1,3 +1,5 @@
+declare interface GPUShaderModule {}
+
 declare global {
 	// ⭐️ core
 
@@ -75,7 +77,7 @@ declare global {
 
 	function set(x: number, y: number, val: any): void;
 
-	var pixels: number[];
+	let pixels: number[];
 
 	function loadPixels(): void;
 
@@ -199,13 +201,15 @@ declare global {
 
 	function touchMoved(): void;
 
-	let pointers: {};
-
 	function cursor(name: string, x?: number, y?: number): void;
 
 	function noCursor(): void;
 
 	function mouseWheel(event: any): void;
+
+	let movedX: number;
+
+	let movedY: number;
 
 	function pointerLock(unadjustedMovement: boolean): void;
 
@@ -277,7 +281,7 @@ declare global {
 
 	function clear(): void;
 
-	var ctx: CanvasRenderingContext2D;
+	let ctx: CanvasRenderingContext2D;
 
 	function inFill(x: number, y: number): boolean;
 
@@ -319,23 +323,23 @@ declare global {
 
 	function fullscreen(v?: boolean): void;
 
-	var windowWidth: number;
+	let windowWidth: number;
 
-	var windowHeight: number;
+	let windowHeight: number;
 
-	var width: number;
+	let width: number;
 
-	var height: number;
+	let height: number;
 
-	var halfWidth: number;
+	let halfWidth: number;
 
-	var halfHeight: number;
+	let halfHeight: number;
 
-	var canvas: HTMLCanvasElement;
+	let canvas: HTMLCanvasElement;
 
 	function resizeCanvas(w: number, h: number): void;
 
-	var frameCount: number;
+	let frameCount: number;
 
 	function noLoop(): void;
 
@@ -355,7 +359,11 @@ declare global {
 
 	function displayDensity(): number;
 
-	var deltaTime: number;
+	let deltaTime: number;
+
+	const C2D: 'c2d';
+
+	const WEBGPU: 'webgpu';
 
 	// 🧮 math
 
@@ -521,13 +529,15 @@ declare global {
 
 	function saveRecording(fileName: string): void;
 
-	var recording: boolean;
+	let recording: boolean;
 
 	// 🛠️ utilities
 
 	function load(...urls: string[]): PromiseLike<any[]>;
 
 	function save(data?: object, fileName?: string): void;
+
+	function millis(): number;
 
 	function loadText(url: string): object & PromiseLike<string>;
 
@@ -643,7 +653,7 @@ declare global {
 
 	// ⚡️ shaders
 
-	function createShader(code: string): GPUShaderModule;
+	function createShader(code: string, type?: string, data?: Float32Array | {}): GPUShaderModule;
 
 	function plane(x: number, y: number, w: number, h?: number): void;
 
@@ -704,14 +714,200 @@ declare global {
 
 		static modules: object;
 
+		static draw(): void;
+
+		static postProcess(): void;
+
+		//-
+		static update(): void;
+		update(): void;
 		draw(): void;
-
 		postProcess(): void;
-
-		update(): void; //-
-
-		drawFrame(): void; //-
-
+		Canvas: typeof Canvas;
+		log: typeof log;
+		circle: typeof circle;
+		ellipse: typeof ellipse;
+		rect: typeof rect;
+		square: typeof square;
+		point: typeof point;
+		line: typeof line;
+		capsule: typeof capsule;
+		rectMode: typeof rectMode;
+		ellipseMode: typeof ellipseMode;
+		loadImage: typeof loadImage;
+		image: typeof image;
+		imageMode: typeof imageMode;
+		defaultImageScale: typeof defaultImageScale;
+		resize: typeof resize;
+		trim: typeof trim;
+		smooth: typeof smooth;
+		noSmooth: typeof noSmooth;
+		tint: typeof tint;
+		noTint: typeof noTint;
+		mask: typeof mask;
+		copy: typeof copy;
+		inset: typeof inset;
+		get: typeof get;
+		set: typeof set;
+		loadPixels: typeof loadPixels;
+		updatePixels: typeof updatePixels;
+		filter: typeof filter;
+		createImage: typeof createImage;
+		createGraphics: typeof createGraphics;
+		text: typeof text;
+		loadFont: typeof loadFont;
+		textFont: typeof textFont;
+		textSize: typeof textSize;
+		textLeading: typeof textLeading;
+		textStyle: typeof textStyle;
+		textAlign: typeof textAlign;
+		textWeight: typeof textWeight;
+		textWidth: typeof textWidth;
+		textAscent: typeof textAscent;
+		textDescent: typeof textDescent;
+		createTextImage: typeof createTextImage;
+		textImage: typeof textImage;
+		textToPoints: typeof textToPoints;
+		nf: typeof nf;
+		mousePressed: typeof mousePressed;
+		mouseReleased: typeof mouseReleased;
+		mouseMoved: typeof mouseMoved;
+		mouseDragged: typeof mouseDragged;
+		doubleClicked: typeof doubleClicked;
+		keyIsDown: typeof keyIsDown;
+		keyPressed: typeof keyPressed;
+		keyReleased: typeof keyReleased;
+		touchStarted: typeof touchStarted;
+		touchEnded: typeof touchEnded;
+		touchMoved: typeof touchMoved;
+		cursor: typeof cursor;
+		noCursor: typeof noCursor;
+		mouseWheel: typeof mouseWheel;
+		pointerLock: typeof pointerLock;
+		color: typeof color;
+		colorMode: typeof colorMode;
+		background: typeof background;
+		fill: typeof fill;
+		stroke: typeof stroke;
+		noFill: typeof noFill;
+		noStroke: typeof noStroke;
+		strokeWeight: typeof strokeWeight;
+		opacity: typeof opacity;
+		shadow: typeof shadow;
+		noShadow: typeof noShadow;
+		shadowBox: typeof shadowBox;
+		blendMode: typeof blendMode;
+		strokeCap: typeof strokeCap;
+		strokeJoin: typeof strokeJoin;
+		erase: typeof erase;
+		noErase: typeof noErase;
+		pushStyles: typeof pushStyles;
+		popStyles: typeof popStyles;
+		clear: typeof clear;
+		inFill: typeof inFill;
+		inStroke: typeof inStroke;
+		translate: typeof translate;
+		rotate: typeof rotate;
+		scale: typeof scale;
+		shearX: typeof shearX;
+		shearY: typeof shearY;
+		applyMatrix: typeof applyMatrix;
+		resetMatrix: typeof resetMatrix;
+		pushMatrix: typeof pushMatrix;
+		popMatrix: typeof popMatrix;
+		push: typeof push;
+		pop: typeof pop;
+		displayMode: typeof displayMode;
+		fullscreen: typeof fullscreen;
+		resizeCanvas: typeof resizeCanvas;
+		noLoop: typeof noLoop;
+		redraw: typeof redraw;
+		loop: typeof loop;
+		frameRate: typeof frameRate;
+		getTargetFrameRate: typeof getTargetFrameRate;
+		getFPS: typeof getFPS;
+		pixelDensity: typeof pixelDensity;
+		displayDensity: typeof displayDensity;
+		random: typeof random;
+		jit: typeof jit;
+		noise: typeof noise;
+		dist: typeof dist;
+		map: typeof map;
+		angleMode: typeof angleMode;
+		radians: typeof radians;
+		degrees: typeof degrees;
+		lerp: typeof lerp;
+		constrain: typeof constrain;
+		norm: typeof norm;
+		abs: typeof abs;
+		round: typeof round;
+		ceil: typeof ceil;
+		floor: typeof floor;
+		min: typeof min;
+		max: typeof max;
+		sin: typeof sin;
+		cos: typeof cos;
+		tan: typeof tan;
+		mag: typeof mag;
+		asin: typeof asin;
+		acos: typeof acos;
+		atan: typeof atan;
+		atan2: typeof atan2;
+		pow: typeof pow;
+		fract: typeof fract;
+		sq: typeof sq;
+		sqrt: typeof sqrt;
+		loge: typeof loge;
+		exp: typeof exp;
+		randomSeed: typeof randomSeed;
+		randomGenerator: typeof randomGenerator;
+		randomGaussian: typeof randomGaussian;
+		randomExponential: typeof randomExponential;
+		noiseMode: typeof noiseMode;
+		noiseSeed: typeof noiseSeed;
+		noiseDetail: typeof noiseDetail;
+		loadSound: typeof loadSound;
+		loadAudio: typeof loadAudio;
+		getAudioContext: typeof getAudioContext;
+		userStartAudio: typeof userStartAudio;
+		createEl: typeof createEl;
+		createA: typeof createA;
+		createButton: typeof createButton;
+		createCheckbox: typeof createCheckbox;
+		createColorPicker: typeof createColorPicker;
+		createImg: typeof createImg;
+		createInput: typeof createInput;
+		createP: typeof createP;
+		createRadio: typeof createRadio;
+		createSelect: typeof createSelect;
+		createSlider: typeof createSlider;
+		createVideo: typeof createVideo;
+		createCapture: typeof createCapture;
+		findEl: typeof findEl;
+		findEls: typeof findEls;
+		createRecorder: typeof createRecorder;
+		record: typeof record;
+		pauseRecording: typeof pauseRecording;
+		deleteRecording: typeof deleteRecording;
+		saveRecording: typeof saveRecording;
+		load: typeof load;
+		save: typeof save;
+		loadText: typeof loadText;
+		loadJSON: typeof loadJSON;
+		loadCSV: typeof loadCSV;
+		loadXML: typeof loadXML;
+		loadAll: typeof loadAll;
+		disablePreload: typeof disablePreload;
+		shuffle: typeof shuffle;
+		storeItem: typeof storeItem;
+		getItem: typeof getItem;
+		removeItem: typeof removeItem;
+		clearStorage: typeof clearStorage;
+		year: typeof year;
+		day: typeof day;
+		hour: typeof hour;
+		minute: typeof minute;
+		second: typeof second;
 		static Image: {
 			new (w: number, h: number, opt?: any): Q5.Image;
 		};
@@ -721,7 +917,20 @@ declare global {
 		interface Image {
 			width: number;
 			height: number;
+			copy(): Q5.Image;
+			get(x: number, y: number, w?: number, h?: number): Q5.Image | number[];
+			set(x: number, y: number, val: any): void;
+			resize(w: number, h: number): void;
+			mask(img: Q5.Image): void;
+			trim(): Q5.Image;
+			filter(type: string, value?: number): void;
+			loadPixels(): void;
+			updatePixels(): void;
+			save(fileName?: string): void;
 		}
+
+		export import Color = globalThis.Color;
+		export import Vector = globalThis.Vector;
 	}
 
 	const q5: typeof Q5;

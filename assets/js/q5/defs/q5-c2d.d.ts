@@ -23,9 +23,8 @@ declare global {
 	 * @param {number} [w] width or side lengths of the canvas
 	 * @param {number} [h] height of the canvas
 	 * @param {object} [opt] [options](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getContextAttributes)
-	 * @returns {Promise<HTMLCanvasElement>} created canvas element
+	 * @returns {Promise<HTMLCanvasElement>} canvas element
 	 * @example
-	 * // Canvas2D
 	 * createCanvas(200, 100);
 	 * background('silver');
 	 * circle(0, 0, 80);
@@ -86,6 +85,10 @@ declare global {
 
 	/** 🧑‍🎨
 	 * Draws a rectangle or a rounded rectangle.
+	 * 
+	 * Also accepts 8 parameters to specify a
+	 * corner radius for each corner, in the order:
+	 * top-left, top-right, bottom-right, bottom-left.
 	 * @param {number} x x-coordinate
 	 * @param {number} y y-coordinate
 	 * @param {number} w width of the rectangle
@@ -97,12 +100,16 @@ declare global {
 	 * 
 	 * rect(30, 20, 40, 60);
 	 * rect(80, 70, 40, 60, 10);
-	 * rect(130, 120, 40, 60, 30, 2, 8, 20);
+	 * rect(130, 120, 40, 60, 20, 4, 0, 8);
 	 */
 	function rect(x: number, y: number, w: number, h: number, rounded?: number): void;
 
 	/** 🧑‍🎨
 	 * Draws a square or a rounded square.
+	 * 
+	 * Also accepts 7 parameters to specify a
+	 * corner radius for each corner, in the order:
+	 * top-left, top-right, bottom-right, bottom-left.
 	 * @param {number} x x-coordinate
 	 * @param {number} y y-coordinate
 	 * @param {number} size size of the sides of the square
@@ -113,7 +120,7 @@ declare global {
 	 * 
 	 * square(30, 30, 40);
 	 * square(80, 80, 40, 10);
-	 * square(130, 130, 40, 30, 2, 8, 20);
+	 * square(130, 130, 40, 20, 4, 0, 8);
 	 */
 	function square(x: number, y: number, size: number, rounded?: number): void;
 
@@ -553,7 +560,7 @@ declare global {
 	 * and the bottom right pixel's data is at the end, going from
 	 * left to right and top to bottom.
 	 */
-	var pixels: number[];
+	let pixels: number[];
 
 	/** 🌆
 	 * Loads pixel data into `pixels` from the canvas or image.
@@ -1025,7 +1032,7 @@ declare global {
 	/**
 	 * q5's input handling is very basic.
 	 * 
-	 * For better input handling, including game controller support, consider using the [p5play](https://p5play.org/) addon with q5.
+	 * For better input handling, including game controller support, consider using the [q5play](https://q5play.org/) addon with q5.
 	 * 
 	 * Note that input responses inside `draw` can be delayed by
 	 * up to one frame cycle: from the exact moment an input event occurs
@@ -1228,11 +1235,14 @@ declare global {
 	 * Array containing all current touch points within the
 	 * browser window. Each touch being an object with
 	 * `id`, `x`, and `y` properties.
+	 * 
+	 * Consider using the `pointers` array instead,
+	 * which includes mouse, touch, and pen input.
 	 * @example
 	 * function draw() {
 	 * 	background(200);
-	 * 	for (let touch of touches) {
-	 * 		circle(touch.x, touch.y, 100);
+	 * 	for (let pt of pointers) {
+	 * 		circle(pt.x, pt.y, 100);
 	 * 	}
 	 * }
 	 */
@@ -1290,27 +1300,6 @@ declare global {
 	function touchMoved(): void;
 
 	/** 🖲
-	 * Object containing all current pointers within the
-	 * browser window.
-	 * 
-	 * This includes mouse, touch, and pen pointers.
-	 * 
-	 * Each pointer is an object with
-	 * `event`, `x`, and `y` properties.
-	 * The `event` property contains the original
-	 * [PointerEvent](https://developer.mozilla.org/docs/Web/API/PointerEvent).
-	 * @example
-	 * function draw() {
-	 * 	background(200);
-	 * 	for (let pointerID in pointers) {
-	 * 		let pointer = pointers[pointerID];
-	 * 		circle(pointer.x, pointer.y, 100);
-	 * 	}
-	 * }
-	 */
-	let pointers: {};
-
-	/** 🖲
 	 * Sets the cursor to a [CSS cursor type](https://developer.mozilla.org/docs/Web/CSS/cursor) or image.
 	 * If an image is provided, optional x and y coordinates can
 	 * specify the active point of the cursor.
@@ -1339,7 +1328,8 @@ declare global {
 	 * 
 	 * Return true to allow the default behavior of scrolling the page.
 	 * @example
-	 * let x = (y = 100);
+	 * let x = 100;
+	 * let y = 100;
 	 * function draw() {
 	 * 	circle(x, y, 10);
 	 * }
@@ -1350,6 +1340,16 @@ declare global {
 	 * }
 	 */
 	function mouseWheel(event: any): void;
+
+	/** 🖲
+	 * Distance the mouse has moved since the last frame in the horizontal direction.
+	 */
+	let movedX: number;
+
+	/** 🖲
+	 * Distance the mouse has moved since the last frame in the vertical direction.
+	 */
+	let movedY: number;
 
 	/** 🖲
 	 * Requests that the pointer be locked to the document body, hiding
@@ -1800,7 +1800,7 @@ declare global {
 	 * rect(64, 60, 80, 80);
 	 * @example
 	 * createCanvas(200);
-	 * let logo = loadImage('/assets/p5play_logo.webp');
+	 * let logo = loadImage('/assets/q5play_logo.avif');
 	 * 
 	 * function setup() {
 	 * 	background(200);
@@ -1868,8 +1868,6 @@ declare global {
 
 	/** 💅
 	 * Set the line cap style to `ROUND`, `SQUARE`, or `PROJECT`.
-	 * 
-	 * Not available in q5 WebGPU.
 	 * @param {CanvasLineCap} val line cap style
 	 * @example
 	 * createCanvas(200);
@@ -1890,7 +1888,7 @@ declare global {
 	/** 💅
 	 * Set the line join style to `ROUND`, `BEVEL`, or `MITER`.
 	 * 
-	 * Not available in q5 WebGPU.
+	 * The default is `ROUND`.
 	 * @param {CanvasLineJoin} val line join style
 	 * @example
 	 * createCanvas(200);
@@ -1991,7 +1989,7 @@ declare global {
 	 * ctx.fillStyle = lg;
 	 * rect(0, 0, 200, 200);
 	 */
-	var ctx: CanvasRenderingContext2D;
+	let ctx: CanvasRenderingContext2D;
 
 	/** 💅
 	 * Checks if a given point is within the current path's fill area.
@@ -2243,7 +2241,7 @@ declare global {
 	 * 	text(windowWidth, 100, 100);
 	 * }
 	 */
-	var windowWidth: number;
+	let windowWidth: number;
 
 	/** 💻
 	 * The height of the window.
@@ -2255,32 +2253,32 @@ declare global {
 	 * 	text(windowHeight, 100, 100);
 	 * }
 	 */
-	var windowHeight: number;
+	let windowHeight: number;
 
 	/** 💻
 	 * The width of the canvas.
 	 */
-	var width: number;
+	let width: number;
 
 	/** 💻
 	 * The height of the canvas.
 	 */
-	var height: number;
+	let height: number;
 
 	/** 💻
 	 * Half the width of the canvas.
 	 */
-	var halfWidth: number;
+	let halfWidth: number;
 
 	/** 💻
 	 * Half the height of the canvas.
 	 */
-	var halfHeight: number;
+	let halfHeight: number;
 
 	/** 💻
 	 * The canvas element associated with the Q5 instance.
 	 */
-	var canvas: HTMLCanvasElement;
+	let canvas: HTMLCanvasElement;
 
 	/** 💻
 	 * Resizes the canvas to the specified width and height.
@@ -2308,7 +2306,7 @@ declare global {
 	 * 	text(frameCount, 8, 120);
 	 * }
 	 */
-	var frameCount: number;
+	let frameCount: number;
 
 	/** 💻
 	 * Stops the draw loop.
@@ -2417,7 +2415,7 @@ declare global {
 	 * 
 	 * Useful for adding post-processing effects when it's not possible
 	 * to do so at the end of the `draw` function, such as when using
-	 * addons like p5play that auto-draw to the canvas after the `draw`
+	 * addons like q5play that auto-draw to the canvas after the `draw`
 	 * function is run.
 	 * @example
 	 * function draw() {
@@ -2482,7 +2480,23 @@ declare global {
 	 * 	circle(x % 200, 100, 20);
 	 * }
 	 */
-	var deltaTime: number;
+	let deltaTime: number;
+
+	/** 💻
+	 * A constant that can be passed as the third argument to `Canvas` to specify that the Canvas2D renderer should be used.
+	 * 
+	 * Note that in this example, the circle is located at position [0, 0], the origin of the canvas.
+	 * @example
+	 * await Canvas(200, 100, C2D);
+	 * background('silver');
+	 * circle(0, 0, 80);
+	 */
+	const C2D: 'c2d';
+
+	/** 💻
+	 * Since WebGPU is the default renderer in JavaScript modules, it's not necessary to use this constant with `Canvas`, unless you want to make it explicit.
+	 */
+	const WEBGPU: 'webgpu';
 
 	// 🧮 math
 
@@ -2493,6 +2507,8 @@ declare global {
 	 * - If one numerical input is provided, returns a number between 0 and the provided value.
 	 * - If two numerical inputs are provided, returns a number between the two values.
 	 * - If an array is provided, returns a random element from the array.
+	 * 
+	 * Return value can be the lower bound but can never exactly be the upper bound.
 	 * @param {number | any[]} [low] lower bound (inclusive) or an array
 	 * @param {number} [high] upper bound (exclusive)
 	 * @returns {number | any} a random number or element
@@ -3098,7 +3114,7 @@ declare global {
 	 * @example
 	 * createCanvas(200, 100);
 	 * 
-	 * let img = createImg('/assets/p5play_logo.webp');
+	 * let img = createImg('/assets/q5play_logo.avif');
 	 * img.position(0, 0).size(100, 100);
 	 */
 	function createImg(src: string): HTMLImageElement;
@@ -3374,7 +3390,7 @@ declare global {
 	/** 🎞
 	 * True if the canvas is currently being recorded.
 	 */
-	var recording: boolean;
+	let recording: boolean;
 
 	// 🛠 utilities
 
@@ -3426,6 +3442,12 @@ declare global {
 	 * }
 	 */
 	function save(data?: object, fileName?: string): void;
+
+	/** 🛠
+	 * Returns the number of milliseconds since the program started.
+	 * @returns {number} milliseconds since the program started
+	 */
+	function millis(): number;
 
 	/** 🛠
 	 * Loads a text file from the specified url.
@@ -3742,28 +3764,15 @@ declare global {
 	function curveDetail(val: number): void;
 
 	/** 🖌
-	 * Starts storing vertices for a convex shape.
+	 * Starts storing vertices for a shape.
 	 */
 	function beginShape(): void;
 
 	/** 🖌
-	 * Ends storing vertices for a convex shape.
+	 * Ends storing vertices for a shape.
+	 * @param {boolean} [close] whether to close the shape by connecting the last vertex to the first vertex, default is false
 	 */
 	function endShape(): void;
-
-	/** 🖌
-	 * Starts storing vertices for a contour.
-	 * 
-	 * Not available in q5 WebGPU.
-	 */
-	function beginContour(): void;
-
-	/** 🖌
-	 * Ends storing vertices for a contour.
-	 * 
-	 * Not available in q5 WebGPU.
-	 */
-	function endContour(): void;
 
 	/** 🖌
 	 * Specifies a vertex in a shape.
@@ -3829,6 +3838,20 @@ declare global {
 	 */
 	function quad(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): void;
 
+	/** 🖌
+	 * Starts storing vertices for a contour.
+	 * 
+	 * Not available in q5 WebGPU.
+	 */
+	function beginContour(): void;
+
+	/** 🖌
+	 * Ends storing vertices for a contour.
+	 * 
+	 * Not available in q5 WebGPU.
+	 */
+	function endContour(): void;
+
 	// ⚙ advanced
 
 	/** ⚙
@@ -3892,7 +3915,7 @@ declare global {
 		 * A WebGPU memory allocation limit.
 		 * 
 		 * The maximum number of transformation matrixes
-		 * that can be used in a single draw call.
+		 * that can be used per frame.
 		 */
 		static MAX_TRANSFORMS: number;
 
@@ -3901,7 +3924,7 @@ declare global {
 		 * 
 		 * The maximum number of rectangles
 		 * (calls to `rect`, `square`, `capsule`)
-		 * that can be drawn in a single draw call.
+		 * that can be drawn per frame.
 		 */
 		static MAX_RECTS: number;
 
@@ -3910,7 +3933,7 @@ declare global {
 		 * 
 		 * The maximum number of ellipses
 		 * (calls to `ellipse`, `circle`, and `arc`)
-		 * that can be drawn in a single draw call.
+		 * that can be drawn per frame.
 		 */
 		static MAX_ELLIPSES: number;
 
@@ -3918,7 +3941,7 @@ declare global {
 		 * A WebGPU memory allocation limit.
 		 * 
 		 * The maximum number of text characters
-		 * that can be drawn in a single draw call.
+		 * that can be drawn per frame.
 		 */
 		static MAX_CHARS: number;
 
@@ -3926,7 +3949,7 @@ declare global {
 		 * A WebGPU memory allocation limit.
 		 * 
 		 * The maximum number of separate calls to `text`
-		 * that can be drawn in a single draw call.
+		 * that can be drawn per frame.
 		 */
 		static MAX_TEXTS: number;
 
@@ -3964,23 +3987,209 @@ declare global {
 		/** ⚙
 		 * The q5 draw function is run 60 times per second by default.
 		 */
-		draw(): void;
+		static draw(): void;
 
 		/** ⚙
 		 * Runs after each `draw` function call and post-draw q5 addon processes, if any.
 		 * 
 		 * Useful for adding post-processing effects when it's not possible
 		 * to do so at the end of the `draw` function, such as when using
-		 * addons like p5play that auto-draw to the canvas after the `draw`
+		 * addons like q5play that auto-draw to the canvas after the `draw`
 		 * function is run.
 		 */
-		postProcess(): void;
-		update(): void; //-
-
-		drawFrame(): void; //-
-
-		static Image: {
-			new (w: number, h: number, opt?: any): Q5.Image;
+		static postProcess(): void;
+		//-
+			static update(): void;
+			update(): void;
+			draw(): void;
+			postProcess(): void;
+			Canvas: typeof Canvas;
+			log: typeof log;
+			circle: typeof circle;
+			ellipse: typeof ellipse;
+			rect: typeof rect;
+			square: typeof square;
+			point: typeof point;
+			line: typeof line;
+			capsule: typeof capsule;
+			rectMode: typeof rectMode;
+			ellipseMode: typeof ellipseMode;
+			loadImage: typeof loadImage;
+			image: typeof image;
+			imageMode: typeof imageMode;
+			defaultImageScale: typeof defaultImageScale;
+			resize: typeof resize;
+			trim: typeof trim;
+			smooth: typeof smooth;
+			noSmooth: typeof noSmooth;
+			tint: typeof tint;
+			noTint: typeof noTint;
+			mask: typeof mask;
+			copy: typeof copy;
+			inset: typeof inset;
+			get: typeof get;
+			set: typeof set;
+			loadPixels: typeof loadPixels;
+			updatePixels: typeof updatePixels;
+			filter: typeof filter;
+			createImage: typeof createImage;
+			createGraphics: typeof createGraphics;
+			text: typeof text;
+			loadFont: typeof loadFont;
+			textFont: typeof textFont;
+			textSize: typeof textSize;
+			textLeading: typeof textLeading;
+			textStyle: typeof textStyle;
+			textAlign: typeof textAlign;
+			textWeight: typeof textWeight;
+			textWidth: typeof textWidth;
+			textAscent: typeof textAscent;
+			textDescent: typeof textDescent;
+			createTextImage: typeof createTextImage;
+			textImage: typeof textImage;
+			textToPoints: typeof textToPoints;
+			nf: typeof nf;
+			mousePressed: typeof mousePressed;
+			mouseReleased: typeof mouseReleased;
+			mouseMoved: typeof mouseMoved;
+			mouseDragged: typeof mouseDragged;
+			doubleClicked: typeof doubleClicked;
+			keyIsDown: typeof keyIsDown;
+			keyPressed: typeof keyPressed;
+			keyReleased: typeof keyReleased;
+			touchStarted: typeof touchStarted;
+			touchEnded: typeof touchEnded;
+			touchMoved: typeof touchMoved;
+			cursor: typeof cursor;
+			noCursor: typeof noCursor;
+			mouseWheel: typeof mouseWheel;
+			pointerLock: typeof pointerLock;
+			color: typeof color;
+			colorMode: typeof colorMode;
+			background: typeof background;
+			fill: typeof fill;
+			stroke: typeof stroke;
+			noFill: typeof noFill;
+			noStroke: typeof noStroke;
+			strokeWeight: typeof strokeWeight;
+			opacity: typeof opacity;
+			shadow: typeof shadow;
+			noShadow: typeof noShadow;
+			shadowBox: typeof shadowBox;
+			blendMode: typeof blendMode;
+			strokeCap: typeof strokeCap;
+			strokeJoin: typeof strokeJoin;
+			erase: typeof erase;
+			noErase: typeof noErase;
+			pushStyles: typeof pushStyles;
+			popStyles: typeof popStyles;
+			clear: typeof clear;
+			inFill: typeof inFill;
+			inStroke: typeof inStroke;
+			translate: typeof translate;
+			rotate: typeof rotate;
+			scale: typeof scale;
+			shearX: typeof shearX;
+			shearY: typeof shearY;
+			applyMatrix: typeof applyMatrix;
+			resetMatrix: typeof resetMatrix;
+			pushMatrix: typeof pushMatrix;
+			popMatrix: typeof popMatrix;
+			push: typeof push;
+			pop: typeof pop;
+			displayMode: typeof displayMode;
+			fullscreen: typeof fullscreen;
+			resizeCanvas: typeof resizeCanvas;
+			noLoop: typeof noLoop;
+			redraw: typeof redraw;
+			loop: typeof loop;
+			frameRate: typeof frameRate;
+			getTargetFrameRate: typeof getTargetFrameRate;
+			getFPS: typeof getFPS;
+			pixelDensity: typeof pixelDensity;
+			displayDensity: typeof displayDensity;
+			random: typeof random;
+			jit: typeof jit;
+			noise: typeof noise;
+			dist: typeof dist;
+			map: typeof map;
+			angleMode: typeof angleMode;
+			radians: typeof radians;
+			degrees: typeof degrees;
+			lerp: typeof lerp;
+			constrain: typeof constrain;
+			norm: typeof norm;
+			abs: typeof abs;
+			round: typeof round;
+			ceil: typeof ceil;
+			floor: typeof floor;
+			min: typeof min;
+			max: typeof max;
+			sin: typeof sin;
+			cos: typeof cos;
+			tan: typeof tan;
+			mag: typeof mag;
+			asin: typeof asin;
+			acos: typeof acos;
+			atan: typeof atan;
+			atan2: typeof atan2;
+			pow: typeof pow;
+			fract: typeof fract;
+			sq: typeof sq;
+			sqrt: typeof sqrt;
+			loge: typeof loge;
+			exp: typeof exp;
+			randomSeed: typeof randomSeed;
+			randomGenerator: typeof randomGenerator;
+			randomGaussian: typeof randomGaussian;
+			randomExponential: typeof randomExponential;
+			noiseMode: typeof noiseMode;
+			noiseSeed: typeof noiseSeed;
+			noiseDetail: typeof noiseDetail;
+			loadSound: typeof loadSound;
+			loadAudio: typeof loadAudio;
+			getAudioContext: typeof getAudioContext;
+			userStartAudio: typeof userStartAudio;
+			createEl: typeof createEl;
+			createA: typeof createA;
+			createButton: typeof createButton;
+			createCheckbox: typeof createCheckbox;
+			createColorPicker: typeof createColorPicker;
+			createImg: typeof createImg;
+			createInput: typeof createInput;
+			createP: typeof createP;
+			createRadio: typeof createRadio;
+			createSelect: typeof createSelect;
+			createSlider: typeof createSlider;
+			createVideo: typeof createVideo;
+			createCapture: typeof createCapture;
+			findEl: typeof findEl;
+			findEls: typeof findEls;
+			createRecorder: typeof createRecorder;
+			record: typeof record;
+			pauseRecording: typeof pauseRecording;
+			deleteRecording: typeof deleteRecording;
+			saveRecording: typeof saveRecording;
+			load: typeof load;
+			save: typeof save;
+			loadText: typeof loadText;
+			loadJSON: typeof loadJSON;
+			loadCSV: typeof loadCSV;
+			loadXML: typeof loadXML;
+			loadAll: typeof loadAll;
+			disablePreload: typeof disablePreload;
+			shuffle: typeof shuffle;
+			storeItem: typeof storeItem;
+			getItem: typeof getItem;
+			removeItem: typeof removeItem;
+			clearStorage: typeof clearStorage;
+			year: typeof year;
+			day: typeof day;
+			hour: typeof hour;
+			minute: typeof minute;
+			second: typeof second;
+			static Image: {
+				new (w: number, h: number, opt?: any): Q5.Image;
 			};
 
 	}
@@ -3989,7 +4198,20 @@ declare global {
 		interface Image {
 			width: number;
 			height: number;
+			copy(): Q5.Image;
+			get(x: number, y: number, w?: number, h?: number): Q5.Image | number[];
+			set(x: number, y: number, val: any): void;
+			resize(w: number, h: number): void;
+			mask(img: Q5.Image): void;
+			trim(): Q5.Image;
+			filter(type: string, value?: number): void;
+			loadPixels(): void;
+			updatePixels(): void;
+			save(fileName?: string): void;
 		}
+
+		export import Color = globalThis.Color;
+		export import Vector = globalThis.Vector;
 	}
 
 }
