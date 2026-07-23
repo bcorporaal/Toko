@@ -1523,7 +1523,7 @@
     // Create the main Tweakpane panel
     basePane = new Tweakpane.Pane({
       container: document.getElementById(TWEAKPANE_CONTAINER_ID),
-      title: 'Sketch options',
+      title: 'Sketch options (p to toggle)',
     });
 
     // Build array of tabs to add based on configuration
