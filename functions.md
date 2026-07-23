@@ -126,7 +126,7 @@ function addPanelControls(panel) {
 
 ### Capture System
 
-TokoWrapper includes a comprehensive capture system for recording videos and saving images:
+TokoWrapper includes a capture system for recording videos and saving images:
 
 ```javascript
 // Capture options
