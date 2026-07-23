@@ -523,7 +523,7 @@ const char = rng.randomChar();
 
 ### Camera
 
-Maps world coordinates onto the canvas, fitting a focus area into the view — handy for panning/zooming around large canvases.
+Maps world coordinates onto the canvas, fitting a focus area into the view. Handy for panning/zooming around large canvases.
 
 ```javascript
 // Create a camera for the current canvas
@@ -875,7 +875,7 @@ toko.toggleLibraryBackground();
 
 ### Filename & Word Generators
 
-Generate playful, timestamped filenames (used by the save functions) or grab random words.
+Generate timestamped filenames (used by the save functions) or grab random words.
 
 ```javascript
 // Random words from the built-in word lists
