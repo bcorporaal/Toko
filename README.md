@@ -2,7 +2,7 @@
 
 # Toko: expanding p5.js with handy features
 
-Toko is a framework to expand p5.js for creative coding with grids, color palettes, image loading, parameter panels, svg rendering, image and video capture, and more. Toko works (sort of) seamlessly with p5.js v1, v2, and Q5 variants, making it easier to switch for between them for performance or support.
+Toko is a framework to expand p5.js for creative coding with grids, color palettes, image loading, parameter panels, svg rendering, image and video capture, and more. Toko works (sort of) seamlessly with p5.js v1, v2, and Q5 variants, making it easier to switch for between them for performance or support. It has a [collection of example sketches](https://bcorporaal.github.io/Toko/) illustrating features and variants.
 
 For examples of generative art created with Toko see [Late Night Noodles on Instagram](https://www.instagram.com/_late_night_noodles_/).
 
@@ -13,6 +13,7 @@ For examples of generative art created with Toko see [Late Night Noodles on Inst
 
 - Easy capturing options for images and video using p5.capture
 - Create and save SVG images using p5.js-svg (also with p5.js v2)
+- WebGPU rendering support (via p5.js and Q5)
 - Switching between canvas sizes on the fly
 - Larger canvas sizes are scaled to fit on the screen
 - Camera class to set the viewport on large canvasses
@@ -42,6 +43,8 @@ To use only the base functionality without the wrapper, include p5.toko in your 
 <script src="path/to/q5.js"></script>
 <script src="path/to/p5.toko.js"></script>
 ```
+
+See the [`examples/no-wrapper`](/examples/no-wrapper) set for complete sketches that use the library directly, without TokoWrapper.
 
 For additional functionality and convenience, use Toko-wrapper as well. See the [`examples`](/examples) for details of this implementation.
 
@@ -183,7 +186,13 @@ const color = colors.scale(0.5); // Get color at position 0.5
 
 // Create colors with alpha transparency
 const transparentRed = toko.colorAlpha('#ff0000', 128);
+
+// Inspect the available palettes and collections
+const palettes = toko.getAllPalettes(); // Array of all palette objects
+const collections = toko.getCollections(); // Available collection types
 ```
+
+See the [color palettes page](colors.html) for a visual index of every included palette.
 
 ### Graphics Functions
 
@@ -244,7 +253,6 @@ src/
     ├── lifecycle/      # Lifecycle event handlers
     ├── media/          # Capture, file handling, save/load
     ├── ui/             # Tweakpane and UI controls
-    ├── util/           # Wrapper utility functions
     ├── toko-wrapper.js
     └── toko-wrapper-min.js # Used to compile a minified version with Codekit
 ```

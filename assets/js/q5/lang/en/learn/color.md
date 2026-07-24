@@ -5,24 +5,11 @@
 Creates a new `Color` object, which is primarily useful for storing
 a color that your sketch will reuse or modify later.
 
-With the default RGB color mode, colors have `r`/`red`, `g`/`green`, `b`/`blue`, and `a`/`alpha` components. The default color
-format is integer, so set components to values between 0 and 255.
+With the default color mode, RGB, colors have `r`/`red`, `g`/`green`,
+`b`/`blue`, and `a`/`alpha` components.
 
-In q5 WebGPU, the default color mode is RGB in float format, so
-set color components to values between 0 and 1.
-
-The [`fill`](https://q5js.org/learn/#fill), [`stroke`](https://q5js.org/learn/#stroke), and [`background`](https://q5js.org/learn/#background) functions
-accept the same wide range of color representations as this function.
-
-Here are some examples of valid use:
-
-- `color(255)` (grayscale)
-- `color(255, 200)` (grayscale, alpha)
-- `color(255, 0, 0)` (r, g, b)
-- `color(255, 0, 0, 10)` (r, g, b, a)
-- `color('red')` (colorName)
-- `color('#ff0000')` (hexColor)
-- `color([255, 0, 0])` (colorComponents)
+The [`fill`](https://q5js.org/learn/#fill), [`stroke`](https://q5js.org/learn/#stroke), and [`background`](https://q5js.org/learn/#background)
+functions accept the same wide range of color representations as this function.
 
 ```
 @param {string | number | Color | number[]} c0 color or first color component
@@ -34,8 +21,21 @@ Here are some examples of valid use:
 
 ### webgpu
 
+The default color format is "float", so
+set color components to values between 0 and 1.
+
+Here are some examples of valid use:
+
+- `color(1)` (grayscale)
+- `color(1, 0.8)` (grayscale, alpha)
+- `color(1, 0, 0)` (r, g, b)
+- `color(1, 0, 0, 0.1)` (r, g, b, a)
+- `color('red')` (colorName)
+- `color('#ff0000')` (hexColor)
+- `color([1, 0, 0])` (colorComponents)
+
 ```js
-await createCanvas(200);
+await Canvas(200);
 rect(-100, -100, 100, 200);
 
 //                ( r,   g,   b,   a)
@@ -47,7 +47,7 @@ circle(0, 0, 155);
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 //          (gray, alpha)
 let c = color(0.8, 0.2);
 
@@ -59,7 +59,7 @@ q5.draw = function () {
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 //           (r, g, b,   a)
 let c = color(0, 1, 1, 0.2);
@@ -70,7 +70,56 @@ q5.draw = function () {
 };
 ```
 
+### python
+
+```py
+Canvas(200)
+rect(-100, -100, 100, 200)
+
+# ( r,   g,   b,   a)
+bottle = color(0.35, 0.39, 1, 0.4)
+fill(bottle)
+stroke(bottle)
+strokeWeight(30)
+circle(0, 0, 155)
+```
+
+```py
+Canvas(200)
+# (gray, alpha)
+c = color(0.8, 0.2)
+
+def draw():
+	background(c)
+	circle(mouseX, mouseY, 50)
+	c.g = (c.g + 0.005) % 1
+```
+
+```py
+Canvas(200)
+
+# (r, g, b,   a)
+c = color(0, 1, 1, 0.2)
+
+def draw():
+	fill(c)
+	circle(mouseX, mouseY, 50)
+```
+
 ### c2d
+
+The default color format is "integer",
+so set components to values between 0 and 255.
+
+Here are some examples of valid use:
+
+- `color(255)` (grayscale)
+- `color(255, 200)` (grayscale, alpha)
+- `color(255, 0, 0)` (r, g, b)
+- `color(255, 0, 0, 10)` (r, g, b, a)
+- `color('red')` (colorName)
+- `color('#ff0000')` (hexColor)
+- `color([255, 0, 0])` (colorComponents)
 
 ```js
 createCanvas(200);
@@ -113,10 +162,6 @@ function draw() {
 Sets the color mode for the sketch, which changes how colors are
 interpreted and displayed.
 
-The default color mode is RGB in legacy integer format.
-
-In WebGPU, the default is RGB in float format (best performance).
-
 Color gamut is 'display-p3' by default, if the device supports HDR.
 
 ```
@@ -127,8 +172,10 @@ Color gamut is 'display-p3' by default, if the device supports HDR.
 
 ### webgpu
 
+The default color mode is RGB in float format.
+
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 colorMode(RGB, 1);
 fill(1, 0, 0);
@@ -140,7 +187,7 @@ rect(33, -100, 67, 200);
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 colorMode(OKLCH);
 
@@ -151,7 +198,35 @@ fill(0.75, 0.15, 0);
 rect(0, -100, 100, 200);
 ```
 
+### python
+
+```py
+Canvas(200)
+
+colorMode(RGB, 1)
+fill(1, 0, 0)
+rect(-100, -100, 66, 200)
+fill(0, 1, 0)
+rect(-34, -100, 67, 200)
+fill(0, 0, 1)
+rect(33, -100, 67, 200)
+```
+
+```py
+Canvas(200)
+
+colorMode(OKLCH)
+
+fill(0.25, 0.15, 0)
+rect(-100, -100, 100, 200)
+
+fill(0.75, 0.15, 0)
+rect(0, -100, 100, 200)
+```
+
 ### c2d
+
+The default color mode is RGB in legacy integer format.
 
 ```js
 createCanvas(200);
@@ -189,11 +264,21 @@ legacy integer 0-255 format.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
 colorMode(RGB);
 
 background(1, 0, 0);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+colorMode(RGB)
+
+background(1, 0, 0)
 ```
 
 ### c2d
@@ -234,7 +319,7 @@ in-gamut colors.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
 colorMode(OKLCH);
 
@@ -242,12 +327,30 @@ background(0.64, 0.3, 30);
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 colorMode(OKLCH);
 
 q5.draw = function () {
 	background(0.7, 0.16, frameCount % 360);
 };
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+colorMode(OKLCH)
+
+background(0.64, 0.3, 30)
+```
+
+```py
+Canvas(200)
+colorMode(OKLCH)
+
+def draw():
+	background(0.7, 0.16, frameCount % 360)
 ```
 
 ### c2d
@@ -293,7 +396,7 @@ using the "display-p3" color space.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
 colorMode(HSL);
 
@@ -301,7 +404,7 @@ background(0, 100, 50);
 ```
 
 ```js
-await createCanvas(200, 220);
+await Canvas(200, 220);
 noStroke();
 
 colorMode(HSL);
@@ -311,6 +414,27 @@ for (let h = 0; h < 360; h += 10) {
 		rect(h * (11 / 20) - 100, l * 2 - 110, 6, 20);
 	}
 }
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+colorMode(HSL)
+
+background(0, 100, 50)
+```
+
+```py
+Canvas(200, 220)
+noStroke()
+
+colorMode(HSL)
+for h in range(0, 360, 10):
+	for l in range(0, 101, 10):
+		fill(h, 100, l)
+		rect(h * (11 / 20) - 100, l * 2 - 110, 6, 20)
 ```
 
 ### c2d
@@ -354,7 +478,7 @@ to 100 and saturation to 0.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
 colorMode(HSB);
 
@@ -362,7 +486,7 @@ background(0, 100, 100);
 ```
 
 ```js
-await createCanvas(200, 220);
+await Canvas(200, 220);
 noStroke();
 
 colorMode(HSB);
@@ -372,6 +496,27 @@ for (let h = 0; h < 360; h += 10) {
 		rect(h * (11 / 20) - 100, b * 2 - 110, 6, 20);
 	}
 }
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+colorMode(HSB)
+
+background(0, 100, 100)
+```
+
+```py
+Canvas(200, 220)
+noStroke()
+
+colorMode(HSB)
+for h in range(0, 360, 10):
+	for b in range(0, 101, 10):
+		fill(h, 100, b)
+		rect(h * (11 / 20) - 100, b * 2 - 110, 6, 20)
 ```
 
 ### c2d
@@ -408,11 +553,21 @@ an SDR display.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
 colorMode(RGB, 1, SRGB);
 
 background(1, 0, 0);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+colorMode(RGB, 1, SRGB)
+
+background(1, 0, 0)
 ```
 
 ### c2d
@@ -437,11 +592,21 @@ fully saturated and bright in the following example.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
 colorMode(RGB, 1, DISPLAY_P3);
 
 background(1, 0, 0);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+colorMode(RGB, 1, DISPLAY_P3)
+
+background(1, 0, 0)
 ```
 
 ### c2d
@@ -469,7 +634,7 @@ CSS color string, grayscale value, and color component values.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 background('crimson');
 ```
 
@@ -478,6 +643,19 @@ q5.draw = function () {
 	background(0.5, 0.2);
 	circle(mouseX, mouseY, 20);
 };
+```
+
+### python
+
+```py
+Canvas(200, 100)
+background('crimson')
+```
+
+```py
+def draw():
+	background(0.5, 0.2)
+	circle(mouseX, mouseY, 20)
 ```
 
 ### c2d
@@ -501,9 +679,6 @@ components.
 
 Use the `color` function for greater flexibility, it runs
 this constructor internally.
-
-`Color` is not actually a class itself, it's a reference to a
-Q5 color class based on the color mode, format, and gamut.
 
 ## Color.equals
 

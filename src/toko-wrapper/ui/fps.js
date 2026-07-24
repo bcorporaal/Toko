@@ -7,10 +7,20 @@ export function setUpFPS () {
   addFPSToggle();
 }
 
+let fpsToggleHandler = null;
+
 export function addFPSToggle () {
-  document.onkeydown = function (event) {
+  if (fpsToggleHandler) return;
+  fpsToggleHandler = function (event) {
     if (event.key.toLowerCase() === 'f') {
       libraryState.toko.toggleFPS();
     }
   };
+  document.addEventListener('keydown', fpsToggleHandler);
+}
+
+export function removeFPSToggle () {
+  if (!fpsToggleHandler) return;
+  document.removeEventListener('keydown', fpsToggleHandler);
+  fpsToggleHandler = null;
 }

@@ -20,6 +20,11 @@ import { getFilenameForCapture } from '../media/capture.js';
  * @param {Object} options - User-provided options to merge with defaults
  */
 export function parseOptions (options) {
+  // Guard against null/undefined options
+  if (options == null) {
+    options = {};
+  }
+
   if (libraryState.options != null) {
     libraryState.options = { ...libraryState.options, ...options };
   } else {
@@ -41,7 +46,7 @@ export function parseOptions (options) {
   };
 
   // Handle canvas-specific options if they exist
-  if (options.additionalCanvasSizes != undefined && options.additionalCanvasSizes.length != 0) {
+  if (options && options.additionalCanvasSizes != undefined && options.additionalCanvasSizes.length != 0) {
     parseAdditionalCanvasSizes(options);
   }
 }
@@ -60,6 +65,9 @@ export function parseOptions (options) {
  * @note SVG render mode is automatically converted to P2D when using Q5 variant
  */
 function parseUrlParameters (options) {
+  if (typeof document === 'undefined' || !document.location) {
+    return options;
+  }
   const params = new URLSearchParams(document.location.search);
   const renderModeParam = params.get('r');
 
@@ -81,7 +89,9 @@ function parseUrlParameters (options) {
       case 'webgl':
         if (libraryState.toko?.variant === LIBRARY_Q5) {
           renderMode = RENDER_MODES.WEBGPU;
-          Q5.WebGPU();
+          if (typeof Q5 !== 'undefined' && typeof Q5.WebGPU === 'function') {
+            Q5.WebGPU();
+          }
         } else {
           renderMode = RENDER_MODES.WEBGL;
         }
@@ -89,7 +99,9 @@ function parseUrlParameters (options) {
       case 'webgpu':
         if (libraryState.toko?.variant === LIBRARY_Q5) {
           renderMode = RENDER_MODES.WEBGPU;
-          Q5.WebGPU();
+          if (typeof Q5 !== 'undefined' && typeof Q5.WebGPU === 'function') {
+            Q5.WebGPU();
+          }
         } else {
           renderMode = RENDER_MODES.WEBGL;
         }

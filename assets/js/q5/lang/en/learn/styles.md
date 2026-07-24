@@ -15,7 +15,7 @@ a `Color` object, grayscale value, or color component values.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 fill('red');
@@ -23,6 +23,19 @@ circle(-20, -20, 80);
 
 fill('lime');
 square(-20, -20, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+fill('red')
+circle(-20, -20, 80)
+
+fill('lime')
+square(-20, -20, 80)
 ```
 
 ### c2d
@@ -53,7 +66,7 @@ a `Color` object, grayscale value, or color component values.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 fill(0.14);
 
@@ -62,6 +75,20 @@ circle(-20, -20, 80);
 
 stroke('lime');
 square(-20, -20, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+fill(0.14)
+
+stroke('red')
+circle(-20, -20, 80)
+
+stroke('lime')
+square(-20, -20, 80)
 ```
 
 ### c2d
@@ -85,7 +112,7 @@ After calling this function, drawing will not be filled.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 noFill();
@@ -94,6 +121,20 @@ stroke('red');
 circle(-20, -20, 80);
 stroke('lime');
 square(-20, -20, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+noFill()
+
+stroke('red')
+circle(-20, -20, 80)
+stroke('lime')
+square(-20, -20, 80)
 ```
 
 ### c2d
@@ -117,7 +158,7 @@ After calling this function, drawing will not have a stroke (outline).
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 fill(0.14);
 stroke('red');
@@ -125,6 +166,19 @@ circle(-20, -20, 80);
 
 noStroke();
 square(-20, -20, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+fill(0.14)
+stroke('red')
+circle(-20, -20, 80)
+
+noStroke()
+square(-20, -20, 80)
 ```
 
 ### c2d
@@ -151,13 +205,25 @@ Sets the size of the stroke used for lines and the border around drawings.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 stroke('red');
 circle(-50, 0, 80);
 
 strokeWeight(12);
 circle(50, 0, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+stroke('red')
+circle(-50, 0, 80)
+
+strokeWeight(12)
+circle(50, 0, 80)
 ```
 
 ### c2d
@@ -185,7 +251,7 @@ In q5 WebGPU this function only affects images.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 opacity(1);
@@ -193,6 +259,19 @@ circle(-20, -20, 80);
 
 opacity(0.2);
 square(-20, -20, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+opacity(1)
+circle(-20, -20, 80)
+
+opacity(0.2)
+square(-20, -20, 80)
 ```
 
 ### c2d
@@ -238,7 +317,7 @@ rect(64, 60, 80, 80);
 
 ```js
 createCanvas(200);
-let logo = loadImage('/assets/p5play_logo.webp');
+let logo = loadImage('/assets/q5play_logo.avif');
 
 function setup() {
 	background(200);
@@ -318,15 +397,43 @@ Not available in q5 WebGPU.
 
 ## strokeCap
 
-Set the line cap style to `ROUND`, `SQUARE`, or `PROJECT`.
-
-Not available in q5 WebGPU.
-
 ```
 @param {CanvasLineCap} val line cap style
 ```
 
+### webgpu
+
+Set the line cap style to `SQUARE` or `PROJECT`.
+
+```js
+await Canvas(200);
+background(0.8);
+strokeWeight(20);
+
+strokeCap(SQUARE);
+line(-50, -25, 50, -25);
+
+strokeCap(PROJECT);
+line(-50, 25, 50, 25);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+strokeWeight(20)
+
+strokeCap(SQUARE)
+line(-50, -25, 50, -25)
+
+strokeCap(PROJECT)
+line(-50, 25, 50, 25)
+```
+
 ### c2d
+
+Set the line cap style to `ROUND`, `SQUARE`, or `PROJECT`.
 
 ```js
 createCanvas(200);
@@ -345,15 +452,47 @@ line(50, 150, 150, 150);
 
 ## strokeJoin
 
-Set the line join style to `ROUND`, `BEVEL`, or `MITER`.
-
-Not available in q5 WebGPU.
-
 ```
 @param {CanvasLineJoin} val line join style
 ```
 
+### webgpu
+
+Set the line join style to `ROUND` or `MITER`.
+
+The default is `MITER`.
+
+```js
+await Canvas(200);
+background(0.8);
+strokeWeight(10);
+
+strokeJoin(ROUND);
+triangle(-50, -30, 50, -30, -50, 20);
+
+strokeJoin(MITER);
+triangle(50, 0, -50, 50, 50, 50);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+strokeWeight(10)
+
+strokeJoin(ROUND)
+triangle(-50, -30, 50, -30, -50, 20)
+
+strokeJoin(MITER)
+triangle(50, 0, -50, 50, 50, 50)
+```
+
 ### c2d
+
+Set the line join style to `ROUND`, `BEVEL`, or `MITER`.
+
+The default is `ROUND`.
 
 ```js
 createCanvas(200);
@@ -399,7 +538,7 @@ shadow settings.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 pushStyles();
@@ -408,6 +547,20 @@ circle(-50, -50, 80);
 
 popStyles();
 circle(50, 50, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+pushStyles()
+fill('blue')
+circle(-50, -50, 80)
+
+popStyles()
+circle(50, 50, 80)
 ```
 
 ### c2d
@@ -431,7 +584,7 @@ Restores the previously saved drawing style settings.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 pushStyles();
@@ -440,6 +593,20 @@ circle(-50, -50, 80);
 
 popStyles();
 circle(50, 50, 80);
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+
+pushStyles()
+fill('blue')
+circle(-50, -50, 80)
+
+popStyles()
+circle(50, 50, 80)
 ```
 
 ### c2d
@@ -462,15 +629,25 @@ Clears the canvas, making every pixel completely transparent.
 
 Note that the canvas can only be seen through if it has an alpha channel.
 
-#### webgpu
+### webgpu
 
 ```js
-await createCanvas(200, { alpha: true });
+await Canvas(200, { alpha: true });
 
 q5.draw = function () {
 	clear();
 	circle((frameCount % 200) - 100, 0, 80);
 };
+```
+
+### python
+
+```py
+Canvas(200, { alpha: True })
+
+def draw():
+	clear()
+	circle((frameCount % 200) - 100, 0, 80)
 ```
 
 ### c2d
@@ -482,6 +659,29 @@ function draw() {
 	clear();
 	circle(frameCount % 200, 100, 80);
 }
+```
+
+## ctx
+
+The 2D rendering context for the canvas.
+
+You can use it to create [linear gradients](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D/createLinearGradient), [radial gradients](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D/createRadialGradient), [font stretching](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D/fontStretch), and
+other advanced drawing features.
+
+Not available in q5 WebGPU.
+
+### c2d
+
+```js
+createCanvas(200);
+
+let lg = ctx.createLinearGradient(0, 0, 200, 0);
+lg.addColorStop(0, 'green');
+lg.addColorStop(0.5, 'cyan');
+lg.addColorStop(1, 'green');
+
+ctx.fillStyle = lg;
+rect(0, 0, 200, 200);
 ```
 
 ## inFill

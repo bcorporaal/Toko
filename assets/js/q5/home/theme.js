@@ -1,9 +1,3 @@
-{
-	let theme = localStorage.getItem('theme');
-	theme ??= window.matchMedia('prefers-color-scheme: dark').matches ? 'dark' : 'light';
-	document.body.className = theme;
-}
-
 let themeCache = {};
 
 async function setMonacoEditorTheme(themeName) {
@@ -22,7 +16,21 @@ async function setMonacoEditorTheme(themeName) {
 }
 
 let jsCustomTokenizer = {
-	tokenizer: { root: [[/[a-zA-Z_$][\w$]*(?=\()/, 'functionName']] }
+	tokenizer: {
+		root: [
+			[/[$_A-Za-z\u00C0-\u024F][$_0-9A-Za-z\u00C0-\u024F\u0300-\u036F][\w$]*(?=\()/, 'functionName'],
+			[
+				/[$_A-Za-z\u00C0-\u024F][$_0-9A-Za-z\u00C0-\u024F\u0300-\u036F]*/,
+				{
+					cases: {
+						'@typeKeywords': 'keyword',
+						'@keywords': 'keyword',
+						'@default': 'identifier'
+					}
+				}
+			]
+		]
+	}
 };
 
 async function modifyTokenizer(languageId, customRules) {
@@ -46,17 +54,42 @@ async function modifyTokenizer(languageId, customRules) {
 	monaco.languages.setMonarchTokensProvider(languageId, language);
 }
 
-function setTheme(theme) {
+function applyTheme(theme) {
 	if (theme == 'dark') {
 		document.body.classList.remove('light');
 		document.body.classList.add('dark');
 		setMonacoEditorTheme('aijs_dark_modern');
+		let hl = document.getElementById('highlight-theme');
+		if (hl) hl.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css';
 	} else {
 		document.body.classList.remove('dark');
 		document.body.classList.add('light');
 		setMonacoEditorTheme('aijs_light');
+		let hl = document.getElementById('highlight-theme');
+		if (hl) hl.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css';
 	}
-	localStorage.setItem('theme', theme);
 }
 
-setTheme(localStorage.getItem('theme') || 'light');
+function setTheme(theme) {
+	applyTheme(theme);
+	localStorage.setItem('theme', theme);
+	localStorage.setItem('lastUsed', Date.now());
+}
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+	setTheme(e.matches ? 'dark' : 'light');
+});
+
+{
+	let pref,
+		theme = localStorage.getItem('theme'),
+		time = localStorage.getItem('lastUsed');
+	// preference expires after 1 hour
+	if (theme && time && Date.now() - parseInt(time) < 3600000) {
+		pref = theme;
+	} else {
+		pref = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+	}
+
+	setTheme(pref);
+}

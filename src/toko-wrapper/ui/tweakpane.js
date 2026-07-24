@@ -14,6 +14,8 @@ import {
   CAPTURE_FRAMERATES,
   REFRESH_RECORD_BUTTON_LABEL,
   RECORD_BUTTON_LABEL,
+  TWEAKPANE_CONTAINER_ID,
+  TWEAKPANE_HIDDEN_CLASS,
 } from '../config/constants';
 import { setCanvasSize } from '../canvas/canvas';
 import { saveSketch, saveSketchAndSettings } from '../media/saveSketch';
@@ -30,11 +32,12 @@ import {
 import { addPaletteSelector, addBlendModeSelector } from './colorControls';
 import { addRandomSeedControl } from './rngControls';
 import { addEasingSelector } from './easingControls';
-import { logDebug, logError } from '../util/logging';
+import { isDebugLogEnabled } from '../../shared/util/debug.js';
 import { LIBRARY_NAME } from '../config/constants.js';
 
 // Global references to the main Tweakpane panel and tab container
 let basePane, basePaneTab;
+let paneToggleHandler = null;
 
 /**
  * Initializes the Tweakpane UI panel with tabs and controls based on configuration options
@@ -42,10 +45,17 @@ let basePane, basePaneTab;
  * @returns {void}
  */
 export function setUpTweakpane () {
-  // Create the main Tweakpane panel if enabled
-  if (libraryState.options.useParameterPanel) {
-    basePane = new Tweakpane.Pane({});
+  // Skip Tweakpane setup entirely when the parameter panel is disabled
+  if (!libraryState.options.useParameterPanel) {
+    libraryState.tweakpane = null;
+    return;
   }
+
+  // Create the main Tweakpane panel
+  basePane = new Tweakpane.Pane({
+    container: document.getElementById(TWEAKPANE_CONTAINER_ID),
+    title: 'Sketch options (p to toggle)',
+  });
 
   // Build array of tabs to add based on configuration
   const tabs = buildTabList();
@@ -147,7 +157,7 @@ function addEventHandlers () {
 
   // Call user-defined setup function if available
   if (typeof window.setupPanelControls === 'function') {
-    logDebug(`${LIBRARY_NAME} - setupPanelControls`);
+    if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - setupPanelControls`);
     window.setupPanelControls(libraryState.tweakpane);
   }
 }
@@ -163,15 +173,22 @@ function initializePanelState () {
 
 /**
  * Adds keyboard shortcut (P key) to toggle panel visibility
- * Replaces any existing keydown handler on the document
  * @returns {void}
  */
 export function addPaneToggle () {
-  document.onkeydown = function (event) {
+  if (paneToggleHandler) return;
+  paneToggleHandler = function (event) {
     if (event.key.toLowerCase() === 'p') {
       togglePaneVisibility();
     }
   };
+  document.addEventListener('keydown', paneToggleHandler);
+}
+
+export function removePaneToggle () {
+  if (!paneToggleHandler) return;
+  document.removeEventListener('keydown', paneToggleHandler);
+  paneToggleHandler = null;
 }
 
 /**
@@ -180,15 +197,15 @@ export function addPaneToggle () {
  * @returns {void}
  */
 export function togglePaneVisibility (makeVisible = null) {
-  const panelElement = document.getElementsByClassName('tp-dfwv')[0];
+  const panelElement = document.getElementById(TWEAKPANE_CONTAINER_ID);
   if (!panelElement) return;
 
-  const isCurrentlyVisible = panelElement.style.display === 'block' || panelElement.style.display === '';
+  const isCurrentlyVisible = !panelElement.classList.contains(TWEAKPANE_HIDDEN_CLASS);
 
   if (makeVisible === true || (makeVisible === null && !isCurrentlyVisible)) {
-    panelElement.style.display = 'block';
+    panelElement.classList.remove(TWEAKPANE_HIDDEN_CLASS);
   } else if (makeVisible === false || (makeVisible === null && isCurrentlyVisible)) {
-    panelElement.style.display = 'none';
+    panelElement.classList.add(TWEAKPANE_HIDDEN_CLASS);
   }
 }
 
@@ -206,7 +223,7 @@ export function addRefreshHandler () {
       if (typeof window.tokoWrapper === 'function' && window.tokoWrapper()) {
         window.tokoWrapper().updateParameters();
       } else {
-        logError('tokoWrapper instance not available to update parameters');
+        console.error('tokoWrapper instance not available to update parameters');
       }
     }, libraryState.debounceDelay);
   };

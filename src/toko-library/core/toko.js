@@ -19,7 +19,6 @@ import { libraryState } from './state.js';
 import { ContextManager } from './context.js';
 import * as libraryFunctions from '../functions/index.js';
 import * as libraryClasses from '../classes/index.js';
-import { logWarn } from '../functions/utils/logging.js';
 import { getGlobalObject } from '../../shared/util/global.js';
 import { initializeP5Variant } from '../../shared/util/initialization.js';
 
@@ -73,7 +72,7 @@ export class Toko {
   initializeLibrary () {
     // Prevent multiple initializations
     if (this.initialized) {
-      logWarn(`${LIBRARY_NAME}: Already initialized`);
+      console.warn(`${LIBRARY_NAME}: Already initialized`);
       return this;
     }
 
@@ -86,7 +85,7 @@ export class Toko {
       initializeP5v1,
       initializeQ5,
       p5v2Adapter,
-      logWarn,
+      logWarn: console.warn.bind(console),
       libraryName: LIBRARY_NAME,
     });
     this.variant = variant;

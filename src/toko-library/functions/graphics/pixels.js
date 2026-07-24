@@ -30,9 +30,19 @@ function getImagePixelDensity (image) {
  * console.log(`R:${color[0]} G:${color[1]} B:${color[2]} A:${color[3]}`);
  */
 export function getPixelColor (image, x, y, width) {
+  if (!image || !image.pixels) {
+    console.warn('Toko: getPixelColor requires an image with loaded pixels. Call loadPixels() first.');
+    return [0, 0, 0, 0];
+  }
+
   // calculate the index in the pixel array
   let d = getImagePixelDensity(image);
   let index = 4 * (y * d * width * d + x * d);
+
+  if (index < 0 || index + 3 >= image.pixels.length) {
+    console.warn('Toko: getPixelColor coordinates out of bounds.');
+    return [0, 0, 0, 0];
+  }
 
   // retrieve the color values
   let r = image.pixels[index];
@@ -61,9 +71,19 @@ export function getPixelColor (image, x, y, width) {
  * const isDark = toko.pixelThreshold(img, 100, 50, img.width, 0, 50);
  */
 export function pixelThreshold (image, x, y, width, min = 0, max = 255) {
+  if (!image || !image.pixels) {
+    console.warn('Toko: pixelThreshold requires an image with loaded pixels. Call loadPixels() first.');
+    return false;
+  }
+
   // calculate the index in the pixel array
   let d = getImagePixelDensity(image);
   let index = 4 * (y * d * width * d + x * d);
+
+  if (index < 0 || index + 2 >= image.pixels.length) {
+    console.warn('Toko: pixelThreshold coordinates out of bounds.');
+    return false;
+  }
 
   // retrieve the color values
   let ave = (image.pixels[index] + image.pixels[index + 1] + image.pixels[index + 2]) / 3;

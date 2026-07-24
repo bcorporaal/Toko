@@ -31,7 +31,13 @@ export class Grid {
    * @param {number} height - Height of the complete grid
    * @param {RNG} [rng=libraryState.RNG] - Random number generator instance
    */
-  constructor (x, y, width, height, rng = libraryState.RNG) {
+  constructor (x, y, width, height, rng) {
+    if (rng === undefined) {
+      if (!libraryState.RNG) {
+        throw new Error('Toko: Grid requires an RNG instance. Either pass one or ensure toko.init() has been called.');
+      }
+      rng = libraryState.RNG;
+    }
     this._position = createVector(x, y);
     this._x = x;
     this._y = y;
@@ -115,7 +121,7 @@ export class Grid {
    * @returns {this} Returns this grid for method chaining
    */
   packGrid (columns, rows, cellShapes, fillEmptySpaces = true, snapToPixel = true) {
-    this._pointsAreValid = false;
+    this._pointsAreUpdated = false;
     this._cells = [];
     let cw, rh;
     if (snapToPixel) {
@@ -144,6 +150,13 @@ export class Grid {
       h = shape[1];
 
       keepTryingThisShape = true;
+
+      // Skip shapes that are wider or taller than the grid
+      if (w > columns || h > rows) {
+        fails++;
+        keepTryingThisShape = false;
+      }
+
       while (keepTryingThisShape) {
         // pick random location
         c = this._rng.intRange(0, columns - w + 1);
@@ -198,6 +211,8 @@ export class Grid {
    * @private
    */
   _fillEmptySpaces (columns, rows, cellShapes, snapToPixel) {
+    // Clone to avoid mutating the caller's array
+    cellShapes = [...cellShapes];
     cellShapes.push([1, 1]); // add a 1x1 so we can always fill
     let cw, rh;
     if (snapToPixel) {

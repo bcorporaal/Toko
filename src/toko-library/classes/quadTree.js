@@ -190,8 +190,14 @@ export class QuadTree {
 
     let qt = new QuadTree(new QuadTreeRectangle(x, y, w, h), capacity, depth);
 
-    qt.points = obj.points ?? null;
-    qt.divided = qt.points === null; // points are set to null on subdivide
+    const hasChildren = 'ne' in obj || 'nw' in obj || 'se' in obj || 'sw' in obj;
+    if (hasChildren) {
+      qt.points = null; // points are set to null on subdivide
+      qt.divided = true;
+    } else {
+      qt.points = Array.isArray(obj.points) ? obj.points : [];
+      qt.divided = false;
+    }
 
     if ('ne' in obj || 'nw' in obj || 'se' in obj || 'sw' in obj) {
       const x = qt.boundary.x;
@@ -324,8 +330,10 @@ export class QuadTree {
       this.southeast.deleteInRange(range);
     }
 
-    // Delete points with range
-    this.points = this.points.filter(point => !range.contains(point));
+    // Delete points within range (points is null when subdivided)
+    if (this.points) {
+      this.points = this.points.filter(point => !range.contains(point));
+    }
   }
 
   /**
@@ -390,7 +398,7 @@ export class QuadTree {
 
     return {
       found: found.sort((a, b) => a.sqDistanceFrom(searchPoint) - b.sqDistanceFrom(searchPoint)).slice(0, maxCount),
-      furthestSqDistance: Math.sqrt(furthestSqDistance),
+      furthestSqDistance: furthestSqDistance,
     };
   }
 

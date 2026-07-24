@@ -13,11 +13,8 @@ import {
   SIZE_MACBOOK_14_WALLPAPER,
   SIZE_MACBOOK_16_WALLPAPER,
   SIZE_INSTAGRAM_PORTRAIT,
-  // SIZES,
-  // SIZES_LIST,
   CAPTURE_FORMATS,
   CAPTURE_FRAMERATES,
-  // DEFAULT_OPTIONS,
   VERSION,
   RENDER_MODES,
 } from './config/constants.js';
@@ -26,7 +23,7 @@ import { LIBRARY_Q5, LIBRARY_UNKNOWN } from '../shared/constants/common.js';
 import { initializeP5v1, initializeQ5, p5v2Adapter } from './adapters/shared-adapter.js';
 import { parseOptions } from './core/options.js';
 import { libraryState } from './core/state.js';
-import { logError, logWarn, logInfo, logDebug } from './util/logging.js';
+import { isDebugLogEnabled } from '../shared/util/debug.js';
 import { initializeP5Variant } from '../shared/util/initialization.js';
 
 // IIFE wrapper for the entire TokoWrapper library
@@ -59,12 +56,12 @@ import { initializeP5Variant } from '../shared/util/initialization.js';
 
   // Save sketch functions (simplified)
   function saveSketchWrapper () {
-    logDebug('saveSketch');
+    if (isDebugLogEnabled(libraryState)) console.log('saveSketch');
     // Implementation would go here
   }
 
   function saveSketchAndSettingsWrapper () {
-    logDebug('saveSketchAndSettings');
+    if (isDebugLogEnabled(libraryState)) console.log('saveSketchAndSettings');
     // Implementation would go here
   }
 
@@ -94,10 +91,12 @@ import { initializeP5Variant } from '../shared/util/initialization.js';
       this.saveSketch = this.saveSketch.bind(this);
       this.saveSketchAndSettings = this.saveSketchAndSettings.bind(this);
       this.updateParameters = this.updateParameters.bind(this);
-      this.logError = logError.bind(this);
-      this.logWarn = logWarn.bind(this);
-      this.logInfo = logInfo.bind(this);
-      this.logDebug = logDebug.bind(this);
+      this.logError = console.error.bind(console);
+      this.logWarn = console.warn.bind(console);
+      this.logInfo = console.log.bind(console);
+      this.logDebug = function (msg) {
+        if (isDebugLogEnabled(libraryState)) console.log(msg);
+      };
     }
 
     bindClasses () {
@@ -143,7 +142,7 @@ import { initializeP5Variant } from '../shared/util/initialization.js';
     initializeLibrary () {
       // Prevent multiple initializations
       if (this.initialized) {
-        logWarn(`${this.name}: Already initialized`);
+        console.warn(`${this.name}: Already initialized`);
         return this;
       }
 
@@ -153,7 +152,7 @@ import { initializeP5Variant } from '../shared/util/initialization.js';
         initializeP5v1,
         initializeQ5,
         p5v2Adapter,
-        logWarn,
+        logWarn: console.warn.bind(console),
         libraryName: LIBRARY_NAME,
       });
       this.variant = variant;
@@ -186,8 +185,21 @@ import { initializeP5Variant } from '../shared/util/initialization.js';
       libraryState.options.sketchElementId = value;
     }
 
+    /**
+     * Returns the renderer value for use with createCanvas().
+     * Resolves internal render mode string to the p5/Q5 renderer constant when available,
+     * so createCanvas(w, h, tokoWrapper.renderMode) works with p5.js and extensions (e.g. p5.svg).
+     * @returns {Object|string} p5 renderer constant (P2D, WEBGL, SVG) or internal string if not yet available
+     */
     get renderMode () {
-      return libraryState.options.renderMode;
+      const mode = libraryState.options.renderMode;
+      if (typeof window !== 'undefined') {
+        if (mode === RENDER_MODES.P2D && typeof window.P2D !== 'undefined') return window.P2D;
+        if (mode === RENDER_MODES.WEBGL && typeof window.WEBGL !== 'undefined') return window.WEBGL;
+        if (mode === RENDER_MODES.WEBGPU && typeof window.WEBGPU !== 'undefined') return window.WEBGPU;
+        if (mode === RENDER_MODES.SVG && typeof window.SVG !== 'undefined') return window.SVG;
+      }
+      return mode;
     }
 
     // set renderMode (value) {
@@ -195,22 +207,22 @@ import { initializeP5Variant } from '../shared/util/initialization.js';
     // }
 
     test () {
-      logDebug('testing');
+      if (isDebugLogEnabled(libraryState)) console.log('testing');
     }
 
     saveSketch () {
-      logDebug('saveSketch');
+      if (isDebugLogEnabled(libraryState)) console.log('saveSketch');
       saveSketchWrapper();
     }
 
     saveSketchAndSettings () {
-      logDebug('saveSketchAndSettings');
+      if (isDebugLogEnabled(libraryState)) console.log('saveSketchAndSettings');
       saveSketchAndSettingsWrapper();
     }
 
     // Called by the UI to update the parameters
     updateParameters () {
-      logDebug('tokoWrapper - updateParameters');
+      if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - updateParameters');
 
       // Call refresh() if available to parse the parameters
       if (typeof window.refresh === 'function') {

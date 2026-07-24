@@ -3,12 +3,12 @@ require('../q5-server.js');
 
 let log = console.log;
 
-function q5ImageTest(resolve) {
+function imageTest(resolve) {
 	expect(Q5).toBeDefined();
 
-	let q = new Q5('instance');
+	let q = new Q5('namespace');
 
-	q.createCanvas(200, 200);
+	q.Canvas(200, 200);
 
 	let icon = q.loadImage('./q5js_icon.png');
 
@@ -24,4 +24,4 @@ function q5ImageTest(resolve) {
 	};
 }
 
-test('q5-image', () => new Promise(q5ImageTest));
+test('q5-image', () => new Promise(imageTest));

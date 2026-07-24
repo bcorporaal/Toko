@@ -10,19 +10,27 @@ Creates a new TokoWrapper instance with the specified configuration options.
 
 - `{Object} [options={}]` - Configuration options
   - `{string} [options.title='untitled sketch']` - Title for the sketch
+  - `{boolean} [options.addInfoToTitle=false]` - Append variant and render mode to the title
   - `{string} [options.sketchElementId='sketch-canvas']` - ID of the canvas container element
   - `{Object} [options.canvasSize=TokoWrapper.SIZE_DEFAULT]` - Canvas size configuration
+  - `{string} [options.renderMode=TokoWrapper.RENDER_MODES.P2D]` - Render mode (`P2D`, `WEBGL`, `SVG`, or `WEBGPU`)
+  - `{boolean} [options.shiftCanvasForWebGL=true]` - Shift the origin to the top-left for WebGL (so coordinates match P2D)
   - `{boolean} [options.useParameterPanel=true]` - Enable parameter panel
   - `{boolean} [options.hideParameterPanelOnStart=false]` - Hide panel initially
   - `{boolean} [options.showCanvasSizeOptions=false]` - Show canvas size controls
   - `{boolean} [options.showSaveSketchButton=false]` - Show save button
   - `{boolean} [options.saveSettingsWithSketch=false]` - Save settings with sketch
-  - `{boolean} [options.acceptDroppedSettings=true]` - Accept dropped settings files
+  - `{boolean} [options.acceptDroppedSettings=false]` - Accept dropped settings files
   - `{boolean} [options.acceptDroppedFiles=false]` - Accept dropped image files
   - `{boolean} [options.captureFrames=false]` - Enable frame capture
+  - `{boolean} [options.showCaptureOptions=false]` - Show capture controls in the panel
+  - `{Object} [options.captureOptions]` - Capture configuration (see [Capture System](#capture-system))
+  - `{boolean} [options.showFPS=false]` - Show the FPS counter on start
   - `{Array} [options.additionalCanvasSizes=[]]` - Additional canvas size options
   - `{string} [options.seedString='']` - Default seed string
   - `{number} [options.debounceDelay=100]` - Debounce delay for parameter changes
+  - `{boolean} [options.loggingEnabled=true]` - Enable console logging
+  - `{string} [options.logLevel='info']` - Log level (`error`, `warn`, `info`, or `debug`)
 
 **Example:**
 
@@ -42,14 +50,54 @@ TokoWrapper provides predefined canvas sizes for common use cases:
 ```javascript
 TokoWrapper.SIZE_DEFAULT; // 800x800
 TokoWrapper.SIZE_FULL; // Full window
+TokoWrapper.SIZE_SQUARE_XL; // 1600x1600
 TokoWrapper.SIZE_1080P; // 1920x1080
 TokoWrapper.SIZE_1080P_PORTRAIT; // 1080x1920
+TokoWrapper.SIZE_INSTAGRAM_PORTRAIT; // 1080x1350
 TokoWrapper.SIZE_4K; // 3840x2160
 TokoWrapper.SIZE_4K_PORTRAIT; // 2160x3840
 TokoWrapper.SIZE_IPHONE_11_WALLPAPER; // 1436x3113
 TokoWrapper.SIZE_WIDE_SCREEN; // 2560x1440
 TokoWrapper.SIZE_MACBOOK_14_WALLPAPER; // 3024x1964
 TokoWrapper.SIZE_MACBOOK_16_WALLPAPER; // 3072x1920
+```
+
+### Render Mode Constants
+
+TokoWrapper exposes render mode constants for use in the `renderMode` option:
+
+```javascript
+TokoWrapper.RENDER_MODES.P2D; // 'p2d' - default 2D renderer
+TokoWrapper.RENDER_MODES.WEBGL; // 'webgl' - 3D / GPU renderer (p5.js)
+TokoWrapper.RENDER_MODES.WEBGPU; // 'webgpu' - GPU renderer (p5.js and Q5)
+TokoWrapper.RENDER_MODES.SVG; // 'svg' - vector renderer (converted to P2D on Q5)
+```
+
+The render mode can also be set at runtime through the URL parameter `?r=` (e.g. `?r=webgl`, `?r=svg`, `?r=webgpu`).
+
+### Instance Properties & Methods
+
+```javascript
+const wrapper = new TokoWrapper({ renderMode: TokoWrapper.RENDER_MODES.SVG });
+
+// renderMode getter resolves to the actual p5/Q5 renderer constant,
+// so it can be passed straight into createCanvas()
+function setup() {
+  createCanvas(800, 800, wrapper.renderMode);
+}
+
+// Get or set the canvas container element id
+const id = wrapper.sketchElementId;
+wrapper.sketchElementId = 'my-canvas';
+
+// Re-parse the parameter panel values and refresh the sketch
+wrapper.updateParameters();
+
+// Save the current canvas (png or svg, depending on render mode)
+wrapper.saveSketch();
+
+// Save the canvas together with the current parameter settings
+wrapper.saveSketchAndSettings();
 ```
 
 ### Parameter Panel Integration
@@ -78,7 +126,7 @@ function addPanelControls(panel) {
 
 ### Capture System
 
-TokoWrapper includes a comprehensive capture system for recording videos and saving images:
+TokoWrapper includes a capture system for recording videos and saving images:
 
 ```javascript
 // Capture options
@@ -139,7 +187,7 @@ Returns information about the toko library and detected p5.js variant.
 ```javascript
 const info = toko.getInfo();
 console.log(`Using ${info.name} v${info.version} with ${info.variant}`);
-// Output: "Using Toko v0.0.1 with p5v2"
+// Output: "Using Toko v1.1 with p5v2"
 ```
 
 **Returns:**
@@ -196,6 +244,9 @@ setSeed(newSeed);
 
 // Reset seed to restart the sequence
 resetSeed();
+
+// Reset the global RNG with a new (or random) seed
+resetRNG('mySeed'); // pass a seed, or call without arguments for a random one
 
 // Navigate through seed sequence
 const next = nextSeed();
@@ -304,6 +355,33 @@ const random = toko.getRandomPalette('viridis');
 
 // Get palette of specific type
 const nextWarm = toko.getNextPalette('viridis', 'warm', true);
+```
+
+### Querying Palettes & Collections
+
+```javascript
+// Get every palette object (name, colors, type, …)
+const allPalettes = toko.getAllPalettes();
+allPalettes.forEach(p => console.log(p.name, p.colors));
+
+// Get all available collection types
+const collections = toko.getCollections();
+// e.g. ['basic', 'cako', 'colourscafe', ...]
+
+// Find a single palette object by name
+const palette = toko.findPaletteByName('viridis');
+if (palette) {
+  console.log(palette.colors);
+}
+
+// Get a palette list formatted for Tweakpane (optionally by type / primary only / sorted)
+const paletteList = toko.getPaletteList('all', true, true);
+
+// Get a Tweakpane-formatted selection from a comma-separated list of names
+const selection = toko.getPaletteSelection('viridis,inferno,magma');
+
+// Get the list of available color interpolation modes (for Tweakpane)
+const modes = toko.getColorModeList();
 ```
 
 ### Available Palettes
@@ -443,6 +521,100 @@ const bool = rng.randomBool();
 const char = rng.randomChar();
 ```
 
+### Camera
+
+Maps world coordinates onto the canvas, fitting a focus area into the view. Handy for panning/zooming around large canvases.
+
+```javascript
+// Create a camera for the current canvas
+const camera = new toko.Camera(width, height);
+
+// Define the world size and the area to fit into view (methods are chainable)
+camera.setWorld(4000, 4000).setFocus(2000, 2000, 800, 800);
+
+function draw() {
+  camera.apply(); // push transform
+  // ...draw in world coordinates...
+  camera.unapply(); // pop transform
+
+  // Coordinate conversions
+  const screen = camera.worldToScreen(2000, 2000);
+  const world = camera.screenToWorld(mouseX, mouseY);
+
+  // Visibility / bounds helpers
+  if (camera.isVisible(world.x, world.y)) {
+    /* ... */
+  }
+  const bounds = camera.getViewBounds();
+}
+
+// Update after a canvas resize
+camera.setCanvas(width, height);
+```
+
+### ImageLoader
+
+Loads and manages a set of images and/or SVGs, integrating with the p5.js preload system.
+
+```javascript
+// Provide items with an id and url (type is auto-detected from the extension)
+const loader = new toko.ImageLoader([
+  { id: 1, url: 'assets/image.png' },
+  { id: 2, url: 'assets/logo.svg' },
+  { id: 3, url: 'assets/pic.jpg', type: toko.ImageLoader.IMAGE }, // explicit type
+]);
+
+// In preload() with a callback
+function preload() {
+  loader.preloadAll(() => console.log('All assets loaded'));
+}
+
+// Or in setup() with async/await (p5.js v2)
+async function setup() {
+  await loader.preloadAll();
+}
+
+// Retrieve a loaded asset by id (returns null if missing / not yet loaded)
+const img = loader.get(1);
+if (img) image(img, 0, 0);
+```
+
+### HexPoint
+
+A small vector-like helper used for hex grid coordinates.
+
+```javascript
+const a = new toko.HexPoint(30, 30);
+const b = new toko.HexPoint(10, 5);
+
+const sum = a.add(b);
+const diff = a.subtract(b);
+const scaled = a.scale(2);
+const dist = a.distanceTo(b);
+const same = a.equals(b);
+```
+
+### Hexagon
+
+Represents a single hexagon in cube coordinates (`q`, `r`, `s`) with attached data. Usually created via `HexGrid`, but can be used directly.
+
+```javascript
+const hex = new toko.Hexagon(0, 0, 0, { value: 42 });
+
+// Attached data
+hex.setData('color', '#ff0000');
+const value = hex.getData('value', 0); // with default
+hex.hasData('color'); // true
+hex.removeData('color');
+
+// Coordinate math (all return new Hexagons where applicable)
+const neighbor = hex.neighbor(0);
+const neighbors = hex.getAllNeighbors();
+const distance = hex.distanceTo(new toko.Hexagon(2, -1, -1));
+const line = hex.lineTo(new toko.Hexagon(3, 0, -3));
+const inRange = hex.getHexagonsInRange(2);
+```
+
 ## Visual Effects
 
 ### Gradients
@@ -493,6 +665,11 @@ const colors = toko.getColorScale('sunset', { steps: 10 });
 const gradientStops = toko.makeGradientStops(colors, 20);
 toko.linearGradient(0, 0, width, 0, gradientStops);
 rect(0, 0, width, height);
+
+// Draw a circle with a radial gradient from center to edge
+// (works in any render mode, unlike the gradient fills above)
+toko.gradientCircle(width / 2, height / 2, 200, 'white', 'black');
+toko.gradientCircle(300, 200, 150, '#ff6b6b', '#4ecdc4');
 ```
 
 ### Shadow Effects
@@ -544,6 +721,17 @@ endShape(CLOSE);
 const customVertices = [createVector(100, 100), createVector(200, 100), createVector(150, 200)];
 toko.plotVertices(customVertices); // Closed shape
 toko.plotVertices(customVertices, OPEN); // Open shape
+
+// Draw a polygon/polyline with rounded corners
+// Points are {x, y} with an optional per-point `radius` that overrides the default.
+const roundedPoints = [
+  { x: 100, y: 100 },
+  { x: 200, y: 100 },
+  { x: 200, y: 200, radius: 40 }, // this corner uses a larger radius
+  { x: 100, y: 200 },
+];
+toko.plotRoundedVertices(roundedPoints, 20); // closed polygon, 20px default radius
+toko.plotRoundedVertices(roundedPoints, 20, false); // open polyline
 ```
 
 ### Transformations
@@ -575,6 +763,44 @@ const redWithAlpha = toko.colorAlpha('#ff0000', 128); // 50% opacity
 const blue = toko.colorAlpha('#0000ff'); // Full opacity
 fill(redWithAlpha);
 rect(50, 50, 100, 100);
+```
+
+### Pixel Access
+
+Read pixel data from a loaded image. Call `image.loadPixels()` first.
+
+```javascript
+img.loadPixels();
+
+// Get the [r, g, b, a] color of a pixel at (x, y)
+const color = toko.getPixelColor(img, 100, 50, img.width);
+console.log(`R:${color[0]} G:${color[1]} B:${color[2]} A:${color[3]}`);
+
+// Test whether a pixel's average brightness falls within a range (returns boolean)
+const isMidtone = toko.pixelThreshold(img, 100, 50, img.width, 50, 200);
+```
+
+## Math Functions
+
+General-purpose math helpers.
+
+```javascript
+// Wrap a value around when it exceeds a range (default range 0-100)
+const wrapped = toko.wrap(120, 0, 100); // 20
+const under = toko.wrap(-10, 0, 100); // 90
+
+// Number of integer digits in a value
+const digits = toko.numDigits(1234); // 4
+
+// Evenly distributed values between two numbers
+const values = toko.interpolate(0, 10, 5); // [0, 2, 4, 6, 8, 10]
+const inner = toko.interpolate(0, 10, 5, false); // endpoints excluded
+
+// Evenly distributed points between two {x, y} coordinates
+const points = toko.interpolateCoordinates({ x: 0, y: 0 }, { x: 100, y: 50 }, 4);
+
+// Linear interpolation between two coordinates at a given fraction (0-1)
+const mid = toko.lerpCoordinates({ x: 0, y: 0 }, { x: 100, y: 50 }, 0.5); // { x: 50, y: 25 }
 ```
 
 ## Noise Functions
@@ -618,6 +844,50 @@ circle(width / 2, height / 2, 100);
 const size = toko.pulse(0.1) * 50 + 25;
 circle(width / 2, height / 2, size);
 ```
+
+### FPS Counter
+
+An on-screen frame-rate counter. When using TokoWrapper it can also be toggled with the **F** key.
+
+```javascript
+// Create the counter (options are all optional)
+toko.createFPS({
+  showMinMax: false, // show min-avg-max instead of just the average
+  showTarget: false, // append the target frame rate
+  delay: 1500, // ms to wait before showing
+});
+
+// Show / hide / toggle manually
+toko.showFPS();
+toko.hideFPS();
+toko.toggleFPS();
+
+// Query current visibility
+const visible = toko.isFPSVisible();
+```
+
+### Background Color Toggle
+
+```javascript
+// Cycle the library's default background through a small preset palette
+toko.toggleLibraryBackground();
+```
+
+### Filename & Word Generators
+
+Generate timestamped filenames (used by the save functions) or grab random words.
+
+```javascript
+// Random words from the built-in word lists
+const adjective = toko.randomAdjective(); // e.g. 'mysterious'
+const noun = toko.randomNoun(); // e.g. 'mountain'
+
+// Generate a filename: YYYYMMDD_verb_the_adjective_adjective_noun.extension
+const filename = toko.generateFilename(); // e.g. '20260723_sketched_the_mysterious_blue_mountain.svg'
+const png = toko.generateFilename('png', 'painted'); // custom extension and verb
+```
+
+> Note: the word/filename generators use unseeded randomness (so filenames stay unique regardless of the sketch seed).
 
 ## Easing Functions
 
@@ -701,4 +971,17 @@ function draw() {
   const x = eased * width;
   circle(x, height / 2, 50);
 }
+```
+
+### Custom Cubic Bézier Easing
+
+Create your own easing function from cubic Bézier control points (see [cubic-bezier.com](https://cubic-bezier.com/) to find values).
+
+```javascript
+// Returns an easing function that takes t (0-1) and returns an eased value
+const easing = toko.cubicBezier(0.25, 0.1, 0.25, 1);
+const value = easing(0.5);
+
+// Optionally give it a custom name
+const named = toko.cubicBezier(0.68, -0.55, 0.27, 1.55, 'overshoot');
 ```

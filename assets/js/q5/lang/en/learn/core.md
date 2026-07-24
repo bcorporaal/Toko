@@ -7,7 +7,9 @@ First time coding? Check out the [q5 Beginner's Brief](https://github.com/q5js/q
 On these Learn pages, you can experiment with editing the
 interactive mini examples. Have fun! 😎
 
-## createCanvas
+[![](/assets/Authored-By-Humans-Not-By-AI-Badge.png)](https://notbyai.fyi/)
+
+## Canvas
 
 Creates a canvas element, a section of the screen your program
 can draw on.
@@ -20,22 +22,28 @@ Note that in this example, the circle is located at position [0, 0], the origin 
 @param {number} [w] width or side lengths of the canvas
 @param {number} [h] height of the canvas
 @param {object} [opt] [options](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getContextAttributes)
-@returns {HTMLCanvasElement} created canvas element
+@returns {Promise<HTMLCanvasElement>} canvas element
 ```
 
 ### webgpu
 
 ```js
-// WebGPU
-await createCanvas(200, 100);
+await Canvas(200, 100);
 background('silver');
 circle(0, 0, 80);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+background('silver')
+circle(0, 0, 80)
 ```
 
 ### c2d
 
 ```js
-// Canvas2D
 createCanvas(200, 100);
 background('silver');
 circle(0, 0, 80);
@@ -54,6 +62,14 @@ q5.draw = function () {
 };
 ```
 
+### python
+
+```py
+def draw():
+	background('silver')
+	circle(mouseX, mouseY, 80)
+```
+
 ### c2d
 
 ```js
@@ -65,16 +81,13 @@ function draw() {
 
 ## log
 
-Logs a message to the JavaScript console.
+Logs a message to the JavaScript [console](https://developer.mozilla.org/docs/Web/API/console/log_static).
 
 To view the console, open your browser's web developer tools
 via the keyboard shortcut `Ctrl + Shift + i` or `command + option + i`,
 then click the "Console" tab.
 
-This is an alias for the standard
-[`console.log`](https://developer.mozilla.org/docs/Web/API/console/log_static) function.
-
-When you're curious about what your code is doing, use `log()`!
+Use `log` when you're curious about what your code is doing!
 
 ```
 @param {*} message
@@ -87,6 +100,14 @@ q5.draw = function () {
 	circle(mouseX, mouseY, 80);
 	log('The mouse is at:', mouseX, mouseY);
 };
+```
+
+### python
+
+```py
+def draw():
+	circle(mouseX, mouseY, 80)
+	log('The mouse is at:', mouseX, mouseY)
 ```
 
 ### c2d

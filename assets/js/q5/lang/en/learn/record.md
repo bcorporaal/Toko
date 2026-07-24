@@ -27,7 +27,7 @@ wiki page.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 let rec = createRecorder();
 rec.bitrate = 10;
@@ -35,6 +35,18 @@ rec.bitrate = 10;
 q5.draw = function () {
 	circle(mouseX, jit(halfHeight), 10);
 };
+```
+
+### python
+
+```py
+Canvas(200)
+
+rec = createRecorder()
+rec.bitrate = 10
+
+def draw():
+	circle(mouseX, jit(halfHeight), 10)
 ```
 
 ### c2d
@@ -83,6 +95,17 @@ q5.mousePressed = function () {
 	if (!recording) record();
 	else saveRecording('squares');
 };
+```
+
+### python
+
+```py
+def draw():
+	square(mouseX, jit(100), 10)
+
+def mousePressed():
+	if !recording: record()
+	else: saveRecording('squares')
 ```
 
 ### c2d

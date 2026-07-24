@@ -1,0 +1,28 @@
+---
+description: File structure, function design, and class architecture
+globs: src/toko-library/**/*.js, src/toko-wrapper/**/*.js
+alwaysApply: false
+---
+
+# Code Organization
+
+**File Structure**:
+
+- Group related functions in dedicated modules (`color.js`, `shapes.js`, `math.js`)
+- Keep adapters separate from core functionality
+- Use index files for clean imports
+- Maintain consistent naming conventions
+
+**Function Design**:
+
+- Use early returns to avoid nested conditions
+- Provide sensible defaults for optional parameters
+- Use object parameters for functions with many options
+- Include parameter validation with clear error messages
+
+**Class Architecture**:
+
+- Use composition over inheritance for creative coding classes
+- Provide both instance and static methods where appropriate
+- Include lifecycle management for resource cleanup
+- Document class relationships and dependencies

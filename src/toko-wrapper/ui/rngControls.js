@@ -1,5 +1,4 @@
 import { libraryState } from '../core/state';
-import { logWarn } from '../util/logging';
 
 /**
  * Add a random seed control to a Tweakpane panel
@@ -74,7 +73,7 @@ export function addRandomSeedControl (paneRef, pObject, incomingOptions) {
         pObject[o.seedStringKey] = o.rng.randomSeed();
         break;
       default:
-        logWarn('a non-existing button was pressed:', ev.index[0]);
+        console.warn('a non-existing button was pressed:', ev.index[0]);
         break;
     }
 

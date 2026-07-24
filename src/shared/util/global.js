@@ -24,5 +24,6 @@ export function getGlobalObject () {
 
   // Last resort - return an empty object
   // This should rarely happen in practice
+  console.warn('Toko: Unable to determine global object; falling back to empty object');
   return {};
 }

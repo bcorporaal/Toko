@@ -8,7 +8,7 @@
    * @readonly
    * @enum {string}
    */
-  const VERSION = '1.0.1';
+  const VERSION = '1.1';
 
   /**
    * Library variant constants
@@ -106,11 +106,15 @@
     if (typeof p5 !== 'undefined' || (typeof window !== 'undefined' && typeof window.p5 !== 'undefined')) {
       const p5Instance = typeof p5 !== 'undefined' ? p5 : window.p5;
 
+      if (!p5Instance) {
+        return LIBRARY_UNKNOWN;
+      }
+
       // Quick v2 detection
       if (typeof p5Instance.VERSION === 'string' && p5Instance.VERSION.startsWith('2.')) {
         return LIBRARY_P5V2;
       }
-      if (p5Instance && typeof p5Instance.Graphics2D !== 'undefined') {
+      if (typeof p5Instance.Graphics2D !== 'undefined') {
         return LIBRARY_P5V2; // Beta version of p5.js with Graphics2D feature
       }
       return LIBRARY_P5V1;
@@ -120,144 +124,12 @@
   }
 
   /**
-   * Logging level constants and utilities
-   *
-   * Provides standard logging levels with numeric hierarchy for comparison.
-   * Levels are ordered from most critical (error) to least critical (debug).
+   * Debug logging helper - only used to gate console.log when debug flag is set.
+   * @param {Object} state - Library state with options.loggingEnabled and options.logLevel
+   * @returns {boolean} True when debug logging is enabled
    */
-
-  // Log level constants with numeric values for comparison
-  const LOG_LEVELS = {
-    ERROR: 'error',
-    WARN: 'warn',
-    INFO: 'info',
-    DEBUG: 'debug',
-  };
-
-  // Numeric hierarchy for level comparison (higher number = more verbose)
-  const LOG_LEVEL_VALUES = {
-    [LOG_LEVELS.ERROR]: 0,
-    [LOG_LEVELS.WARN]: 1,
-    [LOG_LEVELS.INFO]: 2,
-    [LOG_LEVELS.DEBUG]: 3,
-  };
-
-  /**
-   * Check if a log level should be output based on current configuration
-   * @param {string} level - The log level to check
-   * @param {boolean} loggingEnabled - Master logging switch
-   * @param {string} currentLogLevel - Current minimum log level setting
-   * @returns {boolean} True if the level should be logged
-   */
-  function shouldLog (level, loggingEnabled, currentLogLevel) {
-    if (!loggingEnabled) {
-      return false;
-    }
-
-    const levelValue = LOG_LEVEL_VALUES[level];
-    const currentValue = LOG_LEVEL_VALUES[currentLogLevel];
-
-    return levelValue !== undefined && currentValue !== undefined && levelValue <= currentValue;
-  }
-
-  /**
-   * Shared logging utility for Toko
-   *
-   * Provides level-based logging functions that work across toko-library and toko-wrapper.
-   * Supports standard log levels: error, warn, info, debug with configurable filtering.
-   */
-
-  /**
-   * Get the current library state for logging configuration
-   * This function will be overridden by each library to provide their specific state
-   * @returns {Object} Library state with options.loggingEnabled and options.logLevel
-   */
-  let getLibraryState = () => ({ options: { loggingEnabled: true, logLevel: LOG_LEVELS.INFO } });
-
-  /**
-   * Set the library state getter function
-   * @param {Function} stateGetter - Function that returns the current library state
-   * @returns {void}
-   * @example
-   * setLibraryStateGetter(() => libraryState);
-   */
-  function setLibraryStateGetter (stateGetter) {
-    getLibraryState = stateGetter;
-  }
-
-  /**
-   * Log an error message
-   * @param {string} message - The error message to log
-   * @returns {void}
-   * @example
-   * logError('Failed to initialize canvas');
-   */
-  function logError (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.ERROR, loggingEnabled, logLevel)) {
-      console.error(message);
-    }
-  }
-
-  /**
-   * Log a warning message
-   * @param {string} message - The warning message to log
-   * @returns {void}
-   * @example
-   * logWarn('Canvas size exceeds recommended limits');
-   */
-  function logWarn (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.WARN, loggingEnabled, logLevel)) {
-      console.warn(message);
-    }
-  }
-
-  /**
-   * Log an info message
-   * @param {string} message - The info message to log
-   * @returns {void}
-   * @example
-   * logInfo('Library initialized successfully');
-   */
-  function logInfo (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.INFO, loggingEnabled, logLevel)) {
-      console.log(message);
-    }
-  }
-
-  /**
-   * Log a debug message
-   * @param {string} message - The debug message to log
-   * @returns {void}
-   * @example
-   * logDebug('Processing frame 42');
-   */
-  function logDebug (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.DEBUG, loggingEnabled, logLevel)) {
-      console.log(message);
-    }
-  }
-
-  /**
-   * Log a message with default info level (backward compatibility)
-   * @param {string} message - The message to log
-   * @returns {void}
-   * @example
-   * log('Processing complete');
-   */
-  function log$1 (message) {
-    logInfo(message);
+  function isDebugLogEnabled (state) {
+    return !!(state?.options?.loggingEnabled && state?.options?.logLevel === 'debug');
   }
 
   /**
@@ -294,7 +166,7 @@
         case LIBRARY_Q5:
           return this.initializeQ5();
         default:
-          logWarn(`Unsupported p5.js variant: ${this.variant}`);
+          console.warn(`Unsupported p5.js variant: ${this.variant}`);
           return false;
       }
     }
@@ -331,7 +203,7 @@
      * @param {Object} [params.lifecycles] - lifecycles object for v2
      */
     initializeP5v2 (params = null) {
-      logDebug('shared-adapter - initializeP5v2');
+      if (isDebugLogEnabled(this.libraryState)) console.log('shared-adapter - initializeP5v2');
 
       // If no parameters provided, return the adapter function for later use
       if (!params) {
@@ -341,6 +213,12 @@
       }
 
       const { p5, fn, lifecycles } = params;
+
+      // Validate required parameters
+      if (!p5 || !fn || !lifecycles) {
+        console.warn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
+        return false;
+      }
 
       // Set the prototype reference
       this.libraryState.p5 = p5;
@@ -431,6 +309,7 @@
 
     // Last resort - return an empty object
     // This should rarely happen in practice
+    console.warn('Toko: Unable to determine global object; falling back to empty object');
     return {};
   }
 
@@ -451,10 +330,15 @@
    * registerLibraryFunctions({ myFunction: () => {} }, libraryState);
    */
   function registerLibraryFunctions (libraryFunctions, libraryState) {
-    const x5 = libraryState.x5;
+    if (!libraryFunctions) {
+      console.error('Toko: registerLibraryFunctions called with null or undefined libraryFunctions.');
+      return;
+    }
+
+    const x5 = libraryState?.x5;
 
     if (!libraryState || !x5) {
-      console.error('Error: libraryState.x5 is undefined or null.');
+      console.error('Toko: libraryState.x5 is undefined or null.');
       return;
     }
 
@@ -466,7 +350,7 @@
     // Register functions on prototype
     Object.entries(libraryFunctions).forEach(([name, value]) => {
       if (typeof value === 'function' || typeof value === 'string') {
-        if (!Object.hasOwn(x5, name)) {
+        if (!Object.prototype.hasOwnProperty.call(x5, name)) {
           x5[name] = value;
         }
       }
@@ -476,7 +360,7 @@
     const globalObj = getGlobalObject();
     Object.entries(libraryFunctions).forEach(([name, value]) => {
       if (typeof value === 'string') {
-        if (!Object.hasOwn(globalObj, name)) {
+        if (!Object.prototype.hasOwnProperty.call(globalObj, name)) {
           globalObj[name] = value;
         }
       }
@@ -494,10 +378,15 @@
    * registerLibraryClasses({ Grid: GridClass }, libraryState);
    */
   function registerLibraryClasses (libraryClasses, libraryState) {
-    const x5 = libraryState.x5;
+    if (!libraryClasses) {
+      console.error('Toko: registerLibraryClasses called with null or undefined libraryClasses.');
+      return;
+    }
+
+    const x5 = libraryState?.x5;
 
     if (!libraryState || !x5) {
-      console.error('Error: libraryState.x5 is undefined or null.');
+      console.error('Toko: libraryState.x5 is undefined or null.');
       return;
     }
 
@@ -508,71 +397,12 @@
 
     // Register classes on prototype for this.Grid access in sketches
     Object.entries(libraryClasses).forEach(([name, ClassConstructor]) => {
-      if (!Object.hasOwn(x5, name)) {
+      if (!Object.prototype.hasOwnProperty.call(x5, name)) {
         x5[name] = ClassConstructor;
       }
     });
 
     prototypeClassesRegistered = true;
-  }
-
-  // Wrapper-specific constants
-
-  //
-  //  Set of standard sizes for the canvas and exports
-  //
-  const SIZE_DEFAULT = {
-    name: 'default',
-    width: 800,
-    height: 800,
-    pixelDensity: 2,
-  };
-
-  //
-  //	Default options for setup
-  //
-  const DEFAULT_OPTIONS = {
-    sketchElementId: 'sketch-canvas',
-    renderMode: 'P2D',
-    title: 'untitled sketch',
-    addInfoToTitle: false,
-    showSaveSketchButton: false,
-    saveSettingsWithSketch: false,
-    acceptDroppedSettings: false,
-    acceptDroppedFiles: false,
-    useParameterPanel: true,
-    hideParameterPanelOnStart: false,
-    showCanvasSizeOptions: false,
-    additionalCanvasSizes: [],
-    captureFrames: false,
-    canvasSize: SIZE_DEFAULT,
-    seedString: '',
-    debounceDelay: 100,
-    loggingEnabled: true,
-    logLevel: LOG_LEVELS.INFO,
-    showCaptureOptions: false,
-    showFPS: false,
-    shiftCanvasForWebGL: true,
-  };
-
-  const libraryState = {
-    initialized: false,
-    variant: LIBRARY_UNKNOWN,
-    x5: null,
-    globalFunctionsRegistered: false,
-    prototypeFunctionsRegistered: false,
-    initColorDone: false,
-    initialDrawDone: false,
-    options: { ...DEFAULT_OPTIONS },
-    fps: null,
-  };
-
-  // Set up the library state getter for the shared logging system
-  setLibraryStateGetter(() => libraryState);
-
-  // Backward compatible log function
-  function log (message) {
-    log$1(message);
   }
 
   /**
@@ -1157,7 +987,7 @@
     if (typeof f === 'function') {
       return f;
     } else {
-      logError(`${easeFunction} is not a function.`);
+      console.error(`${easeFunction} is not a function.`);
       return null;
     }
   }
@@ -1513,6 +1343,67 @@
     return API;
   }
 
+  // Wrapper-specific constants
+
+  //
+  //  Set of standard sizes for the canvas and exports
+  //
+  const SIZE_DEFAULT = {
+    name: 'default',
+    width: 800,
+    height: 800,
+    pixelDensity: 2,
+  };
+
+  //
+  //  Render modes
+  //
+  const RENDER_MODES = {
+    P2D: 'p2d',
+    WEBGL: 'webgl',
+    SVG: 'svg',
+    WEBGPU: 'webgpu',
+  };
+
+  //
+  //	Default options for setup
+  //
+  const DEFAULT_OPTIONS = {
+    sketchElementId: 'sketch-canvas',
+    renderMode: RENDER_MODES.P2D,
+    title: 'untitled sketch',
+    addInfoToTitle: false,
+    showSaveSketchButton: false,
+    saveSettingsWithSketch: false,
+    acceptDroppedSettings: false,
+    acceptDroppedFiles: false,
+    useParameterPanel: true,
+    hideParameterPanelOnStart: false,
+    showCanvasSizeOptions: false,
+    additionalCanvasSizes: [],
+    captureFrames: false,
+    canvasSize: SIZE_DEFAULT,
+    seedString: '',
+    debounceDelay: 100,
+    loggingEnabled: true,
+    logLevel: 'info',
+    showCaptureOptions: false,
+    showFPS: false,
+    shiftCanvasForWebGL: true,
+  };
+
+  const libraryState = {
+    initialized: false,
+    variant: LIBRARY_UNKNOWN,
+    x5: null,
+    globalFunctionsRegistered: false,
+    prototypeFunctionsRegistered: false,
+    initColorDone: false,
+    initialDrawDone: false,
+    options: { ...DEFAULT_OPTIONS },
+    fps: null,
+  };
+
   /**
    * Random number generation functions
    *
@@ -1523,11 +1414,22 @@
    */
 
   /**
+   * Ensure the global RNG is initialized before use
+   * @private
+   */
+  function _ensureRNG () {
+    if (!libraryState.RNG) {
+      throw new Error('Toko: RNG is not initialized. Make sure toko.init() has been called before using random functions.');
+    }
+  }
+
+  /**
    * Reset the global RNG with a new seed
    * @param {string} [seed] - New seed string. If not provided, a random seed is generated
    * @returns {string} The validated seed string
    */
   function resetRNG (seed) {
+    _ensureRNG();
     libraryState.RNG.reset(seed);
   }
 
@@ -1536,6 +1438,7 @@
    * @param {string} seed - New seed string
    */
   function setSeed (seed) {
+    _ensureRNG();
     libraryState.RNG.seed = seed;
   }
 
@@ -1544,6 +1447,7 @@
    * @returns {string} Current seed string
    */
   function getSeed () {
+    _ensureRNG();
     return libraryState.RNG.seed;
   }
 
@@ -1552,6 +1456,7 @@
    * @returns {string} The next seed string
    */
   function nextSeed () {
+    _ensureRNG();
     return libraryState.RNG.nextSeed();
   }
 
@@ -1560,6 +1465,7 @@
    * @returns {string} The previous seed string
    */
   function previousSeed () {
+    _ensureRNG();
     return libraryState.RNG.previousSeed();
   }
 
@@ -1568,6 +1474,7 @@
    * @returns {string} The new random seed string
    */
   function randomSeed () {
+    _ensureRNG();
     return libraryState.RNG.randomSeed();
   }
 
@@ -1576,6 +1483,7 @@
    * @returns {string} The current seed string
    */
   function resetSeed () {
+    _ensureRNG();
     return libraryState.RNG.resetSeed();
   }
 
@@ -1586,6 +1494,7 @@
    * @returns {number|*} Random number or array element
    */
   function random$1 (min, max) {
+    _ensureRNG();
     return libraryState.RNG.random(min, max);
   }
 
@@ -1596,6 +1505,7 @@
    * @returns {number} Random integer
    */
   function intRange (min = 0, max = 100) {
+    _ensureRNG();
     return libraryState.RNG.intRange(min, max);
   }
 
@@ -1604,6 +1514,7 @@
    * @returns {boolean} Random true or false
    */
   function randomBool () {
+    _ensureRNG();
     return libraryState.RNG.randomBool();
   }
 
@@ -1613,6 +1524,7 @@
    * @returns {string} Random character
    */
   function randomChar (inString = 'abcdefghijklmnopqrstuvwxyz') {
+    _ensureRNG();
     return libraryState.RNG.randomChar(inString);
   }
 
@@ -1623,6 +1535,7 @@
    * @returns {string} Random string
    */
   function randomString (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+    _ensureRNG();
     return libraryState.RNG.randomString(count, inString);
   }
 
@@ -1634,6 +1547,7 @@
    * @returns {number} Random number snapped to steps
    */
   function steppedRandom (min = 0, max = 1, step = 0.1) {
+    _ensureRNG();
     return libraryState.RNG.steppedRandom(min, max, step);
   }
 
@@ -1643,6 +1557,7 @@
    * @returns {Array} The shuffled array (same reference)
    */
   function shuffle (inArray) {
+    _ensureRNG();
     return libraryState.RNG.shuffle(inArray);
   }
 
@@ -1653,6 +1568,7 @@
    * @returns {number[]} Array of integers in random order
    */
   function intSequence (min = 0, max = 100) {
+    _ensureRNG();
     return libraryState.RNG.intSequence(min, max);
   }
 
@@ -1661,6 +1577,7 @@
    * @returns {p5.Vector} Random 2D unit vector
    */
   function random2DVector () {
+    _ensureRNG();
     return libraryState.RNG.random2DVector();
   }
 
@@ -1674,6 +1591,7 @@
    * @returns {p5.Vector[]} Array of randomly distributed points
    */
   function poissonDisk (inWidth, inHeight, inRadius) {
+    _ensureRNG();
     return libraryState.RNG.poissonDisk(inWidth, inHeight, inRadius);
   }
 
@@ -1862,6 +1780,20 @@
 
     // Calculate half the interior angle for arc calculations
     const halfAngle = interiorAngle / 2;
+
+    // Handle collinear or near-collinear edges where sin(halfAngle) is zero or near-zero
+    // In this case, skip rounding and return a degenerate arc (radius 0, straight line segment)
+    if (Math.abs(Math.sin(halfAngle)) < epsilon) {
+      return {
+        centerX: currentVertex.x,
+        centerY: currentVertex.y,
+        radius: 0,
+        startAngle: 0,
+        endAngle: 0,
+        angleDiff: 0,
+        numSegments: 0,
+      };
+    }
 
     // Calculate the distance from vertex to arc center
     // This is derived from trigonometry: distance = radius / tan(halfAngle)
@@ -2428,9 +2360,19 @@
    * console.log(`R:${color[0]} G:${color[1]} B:${color[2]} A:${color[3]}`);
    */
   function getPixelColor (image, x, y, width) {
+    if (!image || !image.pixels) {
+      console.warn('Toko: getPixelColor requires an image with loaded pixels. Call loadPixels() first.');
+      return [0, 0, 0, 0];
+    }
+
     // calculate the index in the pixel array
     let d = getImagePixelDensity(image);
     let index = 4 * (y * d * width * d + x * d);
+
+    if (index < 0 || index + 3 >= image.pixels.length) {
+      console.warn('Toko: getPixelColor coordinates out of bounds.');
+      return [0, 0, 0, 0];
+    }
 
     // retrieve the color values
     let r = image.pixels[index];
@@ -2459,9 +2401,19 @@
    * const isDark = toko.pixelThreshold(img, 100, 50, img.width, 0, 50);
    */
   function pixelThreshold (image, x, y, width, min = 0, max = 255) {
+    if (!image || !image.pixels) {
+      console.warn('Toko: pixelThreshold requires an image with loaded pixels. Call loadPixels() first.');
+      return false;
+    }
+
     // calculate the index in the pixel array
     let d = getImagePixelDensity(image);
     let index = 4 * (y * d * width * d + x * d);
+
+    if (index < 0 || index + 2 >= image.pixels.length) {
+      console.warn('Toko: pixelThreshold coordinates out of bounds.');
+      return false;
+    }
 
     // retrieve the color values
     let ave = (image.pixels[index] + image.pixels[index + 1] + image.pixels[index + 2]) / 3;
@@ -2490,6 +2442,10 @@
    * @returns {p5.Color} p5.js color object with specified alpha
    */
   function colorAlpha (hexColor, alpha = 255) {
+    if (hexColor == null || hexColor === '') {
+      console.warn('Toko: colorAlpha received an invalid color value.');
+      return null;
+    }
     let c = color(hexColor);
     // Check if setAlpha method exists (p5.js and q5.js integer mode)
     if (typeof c.setAlpha === 'function') {
@@ -3314,29 +3270,6 @@
         '#7f0000',
       ],
       id: 'interpolateOrRd',
-      isPrimary: false,
-      type: 'd3',
-    },
-    {
-      name: 'plasma',
-      colors: [
-        '#0d0887',
-        '#350498',
-        '#5302a3',
-        '#6f00a8',
-        '#8b0aa5',
-        '#a31e9a',
-        '#b83289',
-        '#cc4778',
-        '#db5c68',
-        '#e97158',
-        '#f48849',
-        '#fba238',
-        '#febd2a',
-        '#fada24',
-        '#f0f921',
-      ],
-      id: 'interpolatePlasma',
       isPrimary: false,
       type: 'd3',
     },
@@ -6086,8 +6019,672 @@
   var chroma_minExports = chroma_min.exports;
   var chroma = /*@__PURE__*/getDefaultExportFromCjs(chroma_minExports);
 
+  /**
+   * Main random number generator class with seed-based deterministic randomness
+   * Provides various random number generation methods and seed management
+   * Uses a high-quality pseudo-random number generator (mulberry32) for consistent results
+   *
+   * @example
+   * // Create a new RNG with a seed
+   * const rng = new RNG('mySeed123');
+   *
+   * // Generate random numbers
+   * const randomValue = rng.random(0, 100);
+   * const randomInt = rng.intRange(1, 10);
+   *
+   * // Navigate seed history
+   * rng.nextSeed();
+   * rng.previousSeed();
+   *
+   */
+
+  class RNG {
+    /**
+     * Create a new RNG instance
+     * @param {string} [seedString] - Initial seed string. If not provided, a random seed is generated
+     */
+    constructor (seedString) {
+      this._currentSeed = 0;
+      this._seedString = '';
+      this.reset(seedString);
+    }
+
+    /**
+     * Debug method to log current seed state
+     * @private
+     * @returns {void}
+     */
+    _dump () {
+      if (isDebugLogEnabled(libraryState)) {
+        console.log(this._seedString, this._currentSeed);
+        console.log(this._seedHistory, this._seedHistoryIndex);
+      }
+    }
+
+    /**
+     * Push a new seed to the history
+     * @param {string} newSeed - The new seed string to push
+     * @returns {void}
+     * @private
+     */
+    _pushSeed (newSeed) {
+      if (newSeed != this._seedString) {
+        // ignore if it is the same string
+        if (this._seedHistory.length > 0 && this._seedHistoryIndex >= 0) {
+          this._seedHistory = this._seedHistory.slice(0, this._seedHistoryIndex + 1);
+        }
+        this._seedHistory.push(newSeed);
+        this._seedHistoryIndex++;
+        this._seedString = newSeed;
+        this._currentSeed = this._base62ToBase10(this._seedString);
+      }
+    }
+
+    /**
+     * Validate the incoming string to only include numbers and letters
+     * If the string is empty a random string is generated
+     * @param {string} inSeedString - The seed string to validate
+     * @returns {string} Cleaned and validated seed string
+     * @private
+     */
+    _validateSeedString (inSeedString) {
+      let cleanSeedString;
+      if (inSeedString == undefined || inSeedString == '') {
+        cleanSeedString = this._randomSeedString();
+      } else {
+        cleanSeedString = inSeedString;
+      }
+      cleanSeedString = cleanSeedString.replace(/[^a-zA-Z0-9]/g, '');
+      // Fallback to random seed if cleaned string is empty (all non-alphanumeric input)
+      if (cleanSeedString.length === 0) {
+        cleanSeedString = this._randomSeedString();
+      }
+      return cleanSeedString;
+    }
+
+    /**
+     * Reset the RNG with a new seed, clearing history
+     * @param {string} [newSeed] - New seed string. If not provided, a random seed is generated
+     * @returns {string} The validated seed string
+     */
+    reset (newSeed) {
+      this._seedHistory = [];
+      this._seedHistoryIndex = -1;
+      newSeed = this._validateSeedString(newSeed);
+      this._pushSeed(newSeed);
+      return this._seedString;
+    }
+
+    /**
+     * Reset the current seed back to the current seedString
+     * Effectively resets the sequence of random numbers
+     * @returns {string} The current seed string
+     */
+    resetSeed () {
+      this._currentSeed = this._base62ToBase10(this._seedString);
+      return this._seedString;
+    }
+
+    /**
+     * Navigate to the previous seed in the history
+     * @returns {string} The previous seed string
+     */
+    previousSeed () {
+      if (this._seedHistoryIndex >= 1) {
+        this._seedHistoryIndex--;
+        this._seedString = this._seedHistory[this._seedHistoryIndex];
+        this._currentSeed = this._base62ToBase10(this._seedString);
+      }
+      return this._seedString;
+    }
+
+    /**
+     * Navigate to the next seed in the history
+     * @returns {string} The next seed string
+     */
+    nextSeed () {
+      if (this._seedHistoryIndex < this._seedHistory.length - 1) {
+        this._seedHistoryIndex++;
+        this._seedString = this._seedHistory[this._seedHistoryIndex];
+        this._currentSeed = this._base62ToBase10(this._seedString);
+      }
+      return this._seedString;
+    }
+
+    /**
+     * Set seed to random and push to the history
+     * @returns {string} The new random seed string
+     */
+    randomSeed () {
+      this._pushSeed(this._randomSeedString());
+      return this._seedString;
+    }
+
+    //------------------------------------------------------------------------
+    //
+    //  GET & SET
+    //
+    //------------------------------------------------------------------------
+
+    /**
+     * Get the current seed string
+     * @returns {string} The current seed string
+     */
+    get seed () {
+      return this._seedString;
+    }
+
+    /**
+     * Set a new seed string
+     * @param {string} newSeed - The new seed string
+     * @returns {void}
+     */
+    set seed (newSeed) {
+      newSeed = this._validateSeedString(newSeed);
+      this._pushSeed(newSeed);
+    }
+
+    //------------------------------------------------------------------------
+    //
+    //  SUPPORT FUNCTIONS
+    //
+    //------------------------------------------------------------------------
+
+    /**
+     * Generate a random seed string
+     * @param {number} [stringLength=6] - Length of the seed string to generate
+     * @returns {string} Random seed string
+     * @private
+     */
+    _randomSeedString (stringLength = 6) {
+      const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+      let result = '';
+
+      for (let i = 0; i < stringLength; i++) {
+        const n = Math.floor(Math.random() * 62);
+        result = BASE62_ALPHABET[n] + result;
+      }
+      return result;
+    }
+
+    /**
+     * Convert a base62 string to base10 number
+     * @param {string} input - Base62 string to convert
+     * @returns {number} Base10 number
+     * @throws {Error} If input contains invalid characters
+     * @private
+     */
+    _base62ToBase10 (input) {
+      const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+        base = 62;
+      let result = 0;
+
+      for (let i = 0; i < input.length; i++) {
+        const char = input.charAt(i),
+          charValue = BASE62_ALPHABET.indexOf(char);
+
+        if (charValue === -1) {
+          throw new Error('Invalid character in the input string.');
+        }
+
+        result = result * base + charValue;
+      }
+
+      return result;
+    }
+
+    //------------------------------------------------------------------------
+    //
+    //  CORE RNG
+    //
+    //------------------------------------------------------------------------
+
+    /**
+     * The pseudo random number generator
+     * Adapted from https://github.com/cprosche/mulberry32
+     * @returns {number} Random number between 0 and 1
+     * @private
+     */
+    _rng () {
+      let t = (this._currentSeed += 0x6d2b79f5);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+
+    //------------------------------------------------------------------------
+    //
+    //  RNG FUNCTIONS
+    //
+    //------------------------------------------------------------------------
+
+    /**
+     * Return a random floating-point number
+     * @param {number|Array} [min] - If number: minimum value (exclusive). If array: random element from array
+     * @param {number} [max] - Maximum value (exclusive) when min is a number
+     * @returns {number|*} Random number or array element
+     *
+     * @example
+     * rng.random();           // Random number between 0 and 1
+     * rng.random(10);         // Random number between 0 and 10
+     * rng.random(5, 15);      // Random number between 5 and 15
+     * rng.random(['a', 'b']); // Random element from array
+     */
+    random (min, max) {
+      let rand = this._rng();
+
+      if (typeof min === 'undefined') {
+        return rand;
+      } else if (typeof max === 'undefined') {
+        if (min instanceof Array) {
+          return min[Math.floor(rand * min.length)];
+        } else {
+          return rand * min;
+        }
+      } else {
+        if (min > max) {
+          const tmp = min;
+          min = max;
+          max = tmp;
+        }
+
+        return rand * (max - min) + min;
+      }
+    }
+
+    /**
+     * Generate a random integer from a range
+     * @param {number} [min=0] - Minimum value (inclusive)
+     * @param {number} [max=100] - Maximum value (exclusive)
+     * @returns {number} Random integer in the range
+     */
+    intRange (min = 0, max = 100) {
+      let rand = this._rng();
+
+      min = Math.floor(min);
+      max = Math.floor(max);
+
+      // Swap if min > max
+      if (min > max) {
+        const tmp = min;
+        min = max;
+        max = tmp;
+      }
+
+      // When min === max, the range is empty; return min
+      if (min === max) {
+        return min;
+      }
+
+      return Math.floor(rand * (max - min) + min);
+    }
+
+    /**
+     * Return a random boolean
+     * @returns {boolean} Random boolean value
+     */
+    randomBool () {
+      if (this._rng() < 0.5) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    /**
+     * Return a random character from a string
+     * Without input it returns a random lowercase letter
+     * @param {string} [inString='abcdefghijklmnopqrstuvwxyz'] - String to select character from
+     * @returns {string} Random character from the string
+     * @throws {Error} If input string is empty
+     */
+    randomChar (inString = 'abcdefghijklmnopqrstuvwxyz') {
+      if (inString.length === 0) {
+        throw new Error('randomChar: Input string cannot be empty.');
+      }
+      let r = Math.floor(this.random(0, inString.length));
+      return inString.charAt(r);
+    }
+
+    /**
+     * Generate a random string of specified length from a character set
+     * @param {number} [count=1] - Length of the string to generate
+     * @param {string} [inString='abcdefghijklmnopqrstuvwxyz'] - Character set to select from
+     * @returns {string} Random string of specified length
+     * @throws {Error} If input string is empty
+     */
+    randomString (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+      if (inString.length === 0) {
+        throw new Error('randomString: Input string cannot be empty.');
+      }
+      let output = '';
+      for (var i = 0; i < count; i++) {
+        output += this.randomChar(inString);
+      }
+      return output;
+    }
+
+    /**
+     * Generate a random number snapped to steps
+     * @param {number} [min=0] - Minimum value
+     * @param {number} [max=1] - Maximum value
+     * @param {number} [step=0.1] - Step size
+     * @returns {number} Random number snapped to the nearest step
+     */
+    steppedRandom (min = 0, max = 1, step = 0.1) {
+      // Swap if min > max
+      if (min > max) {
+        const tmp = min;
+        min = max;
+        max = tmp;
+      }
+
+      // Ensure step is positive
+      if (step <= 0) {
+        return min;
+      }
+
+      let n = Math.floor((max - min) / step);
+      if (n <= 0) {
+        return min;
+      }
+
+      let r = Math.round(this._rng() * n);
+      return min + r * step;
+    }
+
+    /**
+     * Shuffle an array in place using Fisher-Yates algorithm
+     * @param {Array} array - Array to shuffle
+     * @returns {Array} The shuffled array (same reference)
+     */
+    shuffle (array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(this._rng() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    /**
+     * Generate random integer sequence from min to max
+     * Including min, excluding max
+     * @param {number} [min=0] - Minimum value (inclusive)
+     * @param {number} [max=100] - Maximum value (exclusive)
+     * @returns {number[]} Shuffled array of integers in the range
+     */
+    intSequence (min = 0, max = 100) {
+      min = Math.floor(min);
+      max = Math.floor(max);
+      if (max < min) {
+        let temp = max;
+        max = min;
+        min = temp;
+      }
+      let seq = Array.from(Array(max - min)).map((e, i) => i + min);
+      this.shuffle(seq);
+      return seq;
+    }
+    /**
+     * Create a 2D unit p5 vector in a random direction
+     * @returns {p5.Vector} Random 2D unit vector
+     */
+    random2DVector () {
+      let v = createVector(1, 0);
+      let h = this.random() * TWO_PI;
+      v.setHeading(h);
+      return v;
+    }
+    /**
+     * Fast Poisson Disk Sampling
+     * Based on the example from Coding Train
+     * https://thecodingtrain.com/challenges/33-poisson-disc-sampling
+     * @param {number} inWidth - Width of the sampling area
+     * @param {number} inHeight - Height of the sampling area
+     * @param {number} inRadius - Minimum distance between points
+     * @returns {p5.Vector[]} Array of points generated using Poisson disk sampling
+     */
+    poissonDisk (inWidth, inHeight, inRadius) {
+      let r = inRadius;
+      let nrSamples = 30;
+      let grid = [];
+      let w = r / Math.sqrt(2);
+      let active = [];
+      let cols, rows;
+      let ordered = [];
+      let nrTries = 20;
+
+      //  create reference grid
+      cols = Math.floor(inWidth / w);
+      rows = Math.floor(inHeight / w);
+      grid = new Array(cols * rows);
+
+      // set initial point
+      let x = this.random(inWidth);
+      let y = this.random(inHeight);
+      let i = Math.floor(x / w);
+      let j = Math.floor(y / w);
+      let pos = createVector(x, y);
+      grid[i + j * cols] = pos;
+      active.push(pos);
+
+      for (let total = 0; total < nrTries; total++) {
+        while (active.length > 0) {
+          let randIndex = Math.floor(this.random(active.length));
+          let pos = active[randIndex];
+          let found = false;
+          for (let n = 0; n < nrSamples; n++) {
+            let sample = this.random2DVector();
+            let m = this.random(r, 2 * r);
+            sample.setMag(m);
+            sample.add(pos);
+
+            let col = Math.floor(sample.x / w);
+            let row = Math.floor(sample.y / w);
+
+            if (col > -1 && row > -1 && col < cols && row < rows && !grid[col + row * cols]) {
+              let ok = true;
+              for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                  let index = col + i + (row + j) * cols;
+                  let neighbor = grid[index];
+                  if (neighbor) {
+                    let dx = sample.x - neighbor.x;
+                    let dy = sample.y - neighbor.y;
+                    let d = Math.sqrt(dx * dx + dy * dy);
+                    if (d < r) {
+                      ok = false;
+                    }
+                  }
+                }
+              }
+              if (ok) {
+                found = true;
+                grid[col + row * cols] = sample;
+                active.push(sample);
+                ordered.push(sample);
+                break;
+              }
+            }
+          }
+          //
+          //  remove active point if no option was found
+          //
+          if (!found) {
+            active.splice(randIndex, 1);
+          }
+        }
+      }
+
+      //
+      //  take out undefined points
+      //
+      ordered = ordered.filter(n => n !== undefined);
+
+      return ordered;
+    }
+  }
+
+  /**
+   * CubicBezier easing function implementation
+   *
+   * Based on https://github.com/thednp/bezier-easing/ by thednp
+   *
+   * Creates a cubic Bézier easing function for smooth animations and transitions.
+   * Uses Newton-Raphson method with bisection fallback for precise curve solving.
+   *
+   * @example
+   * // Create a custom easing function
+   * const easing = toko.cubicBezier(0.25, 0.1, 0.25, 1, 'custom');
+   * const value = easing(0.5); // Get eased value at t=0.5
+   *
+   * // Use preset easing functions
+   * const easeInOut = toko.cubicBezier.presets.easeInOut();
+   * const easedValue = easeInOut(0.3);
+   *
+   * // Use https://cubic-bezier.com/ to find suitable parameters
+   *
+   * @param {number} [x1=0] - X coordinate of first control point
+   * @param {number} [y1=0] - Y coordinate of first control point
+   * @param {number} [x2=1] - X coordinate of second control point
+   * @param {number} [y2=1] - Y coordinate of second control point
+   * @param {string} [customName=null] - Custom name for the easing function
+   * @returns {Function} Easing function that takes t (0-1) and returns eased value
+   *
+   * @author thednp (original), Bob Corporaal (adapted)
+   */
+  function cubicBezier (x1 = 0, y1 = 0, x2 = 1, y2 = 1, customName = null) {
+    // Validate inputs
+    const isNumber = val => typeof val === 'number';
+    const allNumbers = [x1, y1, x2, y2].every(isNumber);
+
+    // Store control points
+    const controlPoints = { x1, y1, x2, y2 };
+
+    // Generate name for the easing function
+    const name = customName || (allNumbers ? `cubic-bezier(${[x1, y1, x2, y2].join(',')})` : 'linear');
+
+    // Calculate coefficients for the cubic bezier curve
+    const cx = 3 * x1;
+    const bx = 3 * (x2 - x1) - cx;
+    const ax = 1 - cx - bx;
+
+    const cy = 3 * y1;
+    const by = 3 * (y2 - y1) - cy;
+    const ay = 1 - cy - by;
+
+    // Sample the curve at parameter t for X coordinate
+    function sampleCurveX (t) {
+      return ((ax * t + bx) * t + cx) * t;
+    }
+
+    // Sample the curve at parameter t for Y coordinate
+    function sampleCurveY (t) {
+      return ((ay * t + by) * t + cy) * t;
+    }
+
+    // Calculate the derivative of the curve at parameter t for X coordinate
+    function sampleCurveDerivativeX (t) {
+      return (3 * ax * t + 2 * bx) * t + cx;
+    }
+
+    // Solve for t given x using Newton-Raphson method with bisection fallback
+    function solveCurveX (x) {
+      if (x <= 0) return 0;
+      if (x >= 1) return 1;
+
+      let t = x;
+      let x2, d2;
+
+      // Newton-Raphson iteration
+      for (let i = 0; i < 8; i++) {
+        x2 = sampleCurveX(t) - x;
+        if (Math.abs(x2) < 1e-6) return t;
+
+        d2 = sampleCurveDerivativeX(t);
+        if (Math.abs(d2) < 1e-6) break;
+
+        t -= x2 / d2;
+      }
+
+      // Fallback to bisection method
+      let t0 = 0;
+      let t1 = 1;
+      t = x;
+
+      while (t0 < t1) {
+        x2 = sampleCurveX(t);
+        if (Math.abs(x2 - x) < 1e-6) return t;
+
+        if (x > x2) {
+          t0 = t;
+        } else {
+          t1 = t;
+        }
+
+        t = (t1 - t0) * 0.5 + t0;
+      }
+
+      return t;
+    }
+
+    // Main easing function - given input t (0-1), return eased value
+    function easingFunction (t) {
+      if (t <= 0) return 0;
+      if (t >= 1) return 1;
+      return sampleCurveY(solveCurveX(t));
+    }
+
+    // Add properties to the function for compatibility and debugging
+    Object.defineProperty(easingFunction, 'name', {
+      writable: true,
+      value: name,
+    });
+    easingFunction.x1 = x1;
+    easingFunction.y1 = y1;
+    easingFunction.x2 = x2;
+    easingFunction.y2 = y2;
+    easingFunction.controlPoints = controlPoints;
+
+    // Add the original ease method for backward compatibility
+    easingFunction.ease = easingFunction;
+
+    // Add toString method
+    easingFunction.toString = () => name;
+
+    return easingFunction;
+  }
+
+  /**
+   * Static presets for common easing functions
+   * Each preset returns a callable easing function
+   * @namespace cubicBezier.presets
+   */
+  cubicBezier.presets = {
+    linear: () => cubicBezier(0, 0, 1, 1, 'linear'),
+    ease: () => cubicBezier(0.25, 0.1, 0.25, 1, 'ease'),
+    easeIn: () => cubicBezier(0.42, 0, 1, 1, 'ease-in'),
+    easeOut: () => cubicBezier(0, 0, 0.58, 1, 'ease-out'),
+    easeInOut: () => cubicBezier(0.42, 0, 0.58, 1, 'ease-in-out'),
+    easeInBack: () => cubicBezier(0.6, -0.28, 0.735, 0.045, 'ease-in-back'),
+    easeOutBack: () => cubicBezier(0.175, 0.885, 0.32, 1.275, 'ease-out-back'),
+    easeInOutBack: () => cubicBezier(0.68, -0.55, 0.265, 1.55, 'ease-in-out-back'),
+  };
+
   var COLOR_COLLECTIONS = [];
   var COLOR_PALETTES = allPalettes;
+
+  /**
+   * Constrain a value between a minimum and maximum
+   * Local implementation to avoid dependency on p5.js
+   * @param {number} value - The value to constrain
+   * @param {number} min - Minimum value
+   * @param {number} max - Maximum value
+   * @returns {number} Constrained value
+   */
+  function _constrain (value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
 
   /**
    * Initialize the color system and preprocess all palettes
@@ -6105,13 +6702,13 @@
   //  validate incoming color options
   //
   function _validateColorOptions (colorOptions) {
-    // merge with default options
-    DEFAULT_COLOR_OPTIONS.easing = easeLinear;
-    colorOptions = Object.assign({}, DEFAULT_COLOR_OPTIONS, colorOptions);
+    // merge with default options (copy defaults to avoid mutating the shared object)
+    let defaults = Object.assign({}, DEFAULT_COLOR_OPTIONS, { easing: easeLinear });
+    colorOptions = Object.assign({}, defaults, colorOptions);
 
     // add a new RNG if none was defined
     if (colorOptions.rng == undefined) {
-      colorOptions.rng = new Toko.RNG();
+      colorOptions.rng = new RNG();
     }
 
     // set the options validated, so it is not needlessly checked multiple times
@@ -6174,7 +6771,7 @@
     // set easing function for the scale
     if (colorOptions.useEasing) {
       let par = colorOptions.easingParameters;
-      o.easing = Toko.cubicBezier(par[0], par[1], par[2], par[3]);
+      o.easing = cubicBezier(par[0], par[1], par[2], par[3]);
     } else {
       o.easing = i => {
         return i;
@@ -6276,11 +6873,16 @@
     } else if (typeof inPalette === 'string') {
       p = findPaletteByName(inPalette);
 
+      if (!p) {
+        console.error('Toko: palette not found: ' + inPalette);
+        return o;
+      }
+
       //
       //  TO DO - currently this does not work
       //
       if ('sortOrder' in p && colorOptions.useSortOrder) {
-        logDebug('sorting because sortOrder is available and sort is true');
+        if (isDebugLogEnabled(libraryState)) console.log('sorting because sortOrder is available and sort is true');
         colorSet = [p.colors.length];
         for (let i = 0; i < p.colors.length; i++) {
           colorSet[i] = p.colors[p.sortOrder[i] - 1];
@@ -6296,7 +6898,7 @@
         extraColors.push(p.background);
       }
     } else {
-      logError('ERROR: palette should be a string or an array');
+      console.error('ERROR: palette should be a string or an array');
     }
     o = _createColorScale(colorSet, colorOptions, extraColors);
 
@@ -6310,7 +6912,7 @@
     let tempPaletteList = _getPaletteListRaw(paletteType, justPrimary);
     var i = tempPaletteList.findIndex(p => p.name === inPalette);
     if (i === -1) {
-      logWarn('palette not found: ' + inPalette);
+      console.warn('palette not found: ' + inPalette);
       return inPalette;
     } else {
       i += direction;
@@ -6347,9 +6949,11 @@
     if (!libraryState.initColorDone) {
       initColor();
     }
-    let filtered; // = COLOR_PALETTES;
+    let filtered;
     if (paletteType !== 'all') {
       filtered = COLOR_PALETTES.filter(p => p.type === paletteType);
+    } else {
+      filtered = [...COLOR_PALETTES];
     }
 
     if (justPrimary) {
@@ -6486,14 +7090,14 @@
       if (constrainContrast) {
         hsl = chroma(contrastColors[0]).hsl();
         lightH = hsl[0];
-        lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
-        lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
+        lightS = _constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
+        lightL = _constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
         contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
 
         hsl = chroma(contrastColors[1]).hsl();
         darkH = hsl[0];
-        darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
-        darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
+        darkS = _constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
+        darkL = _constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
         contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
       }
     }
@@ -6504,15 +7108,15 @@
     if (!lightContrastSet) {
       hsl = chroma(sortedColorSet[0]).hsl();
       lightH = hsl[0];
-      lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
-      lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
+      lightS = _constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
+      lightL = _constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
       contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
     }
     if (!darkContrastSet) {
       hsl = chroma(sortedColorSet[n - 1]).hsl();
       darkH = hsl[0];
-      darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
-      darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
+      darkS = _constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
+      darkL = _constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
       contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
     }
 
@@ -6729,7 +7333,7 @@
     }
     var p = COLOR_PALETTES.filter(p => p.name === paletteName)[0];
     if (p === undefined) {
-      logWarn('palette not found: ' + paletteName);
+      console.warn('palette not found: ' + paletteName);
     }
     return p;
   }
@@ -6797,6 +7401,36 @@
     }
 
     return o;
+  }
+
+  /**
+   * Get all color palettes
+   * @returns {Array} Array of all palette objects with name, colors, type, etc.
+   * @example
+   * // Get all palettes
+   * const palettes = toko.getAllPalettes();
+   * palettes.forEach(p => console.log(p.name, p.colors));
+   */
+  function getAllPalettes () {
+    if (!libraryState.initColorDone) {
+      initColor();
+    }
+    return COLOR_PALETTES;
+  }
+
+  /**
+   * Get all collection types
+   * @returns {Array} Array of collection type strings (e.g., 'basic', 'cako', etc.)
+   * @example
+   * // Get all collection types
+   * const collections = toko.getCollections();
+   * // Returns: ['basic', 'cako', 'colourscafe', ...]
+   */
+  function getCollections () {
+    if (!libraryState.initColorDone) {
+      initColor();
+    }
+    return COLOR_COLLECTIONS;
   }
 
   /**
@@ -7869,6 +8503,8 @@
     findPaletteByName: findPaletteByName,
     formatForTweakpane: formatForTweakpane,
     generateFilename: generateFilename,
+    getAllPalettes: getAllPalettes,
+    getCollections: getCollections,
     getColorModeList: getColorModeList,
     getColorScale: getColorScale,
     getEasingFunction: getEasingFunction,
@@ -7890,11 +8526,6 @@
     isFPSVisible: isFPSVisible,
     lerpCoordinates: lerpCoordinates,
     linearGradient: linearGradient,
-    log: log,
-    logDebug: logDebug,
-    logError: logError,
-    logInfo: logInfo,
-    logWarn: logWarn,
     makeGradientStops: makeGradientStops,
     nextSeed: nextSeed,
     numDigits: numDigits,
@@ -7962,7 +8593,13 @@
      * @param {number} height - Height of the complete grid
      * @param {RNG} [rng=libraryState.RNG] - Random number generator instance
      */
-    constructor (x, y, width, height, rng = libraryState.RNG) {
+    constructor (x, y, width, height, rng) {
+      if (rng === undefined) {
+        if (!libraryState.RNG) {
+          throw new Error('Toko: Grid requires an RNG instance. Either pass one or ensure toko.init() has been called.');
+        }
+        rng = libraryState.RNG;
+      }
       this._position = createVector(x, y);
       this._x = x;
       this._y = y;
@@ -8046,7 +8683,7 @@
      * @returns {this} Returns this grid for method chaining
      */
     packGrid (columns, rows, cellShapes, fillEmptySpaces = true, snapToPixel = true) {
-      this._pointsAreValid = false;
+      this._pointsAreUpdated = false;
       this._cells = [];
       let cw, rh;
       if (snapToPixel) {
@@ -8075,6 +8712,13 @@
         h = shape[1];
 
         keepTryingThisShape = true;
+
+        // Skip shapes that are wider or taller than the grid
+        if (w > columns || h > rows) {
+          fails++;
+          keepTryingThisShape = false;
+        }
+
         while (keepTryingThisShape) {
           // pick random location
           c = this._rng.intRange(0, columns - w + 1);
@@ -8129,6 +8773,8 @@
      * @private
      */
     _fillEmptySpaces (columns, rows, cellShapes, snapToPixel) {
+      // Clone to avoid mutating the caller's array
+      cellShapes = [...cellShapes];
       cellShapes.push([1, 1]); // add a 1x1 so we can always fill
       let cw, rh;
       if (snapToPixel) {
@@ -8523,152 +9169,6 @@
   }
 
   /**
-   * CubicBezier easing function implementation
-   *
-   * Based on https://github.com/thednp/bezier-easing/ by thednp
-   *
-   * Creates a cubic Bézier easing function for smooth animations and transitions.
-   * Uses Newton-Raphson method with bisection fallback for precise curve solving.
-   *
-   * @example
-   * // Create a custom easing function
-   * const easing = toko.cubicBezier(0.25, 0.1, 0.25, 1, 'custom');
-   * const value = easing(0.5); // Get eased value at t=0.5
-   *
-   * // Use preset easing functions
-   * const easeInOut = toko.cubicBezier.presets.easeInOut();
-   * const easedValue = easeInOut(0.3);
-   *
-   * // Use https://cubic-bezier.com/ to find suitable parameters
-   *
-   * @param {number} [x1=0] - X coordinate of first control point
-   * @param {number} [y1=0] - Y coordinate of first control point
-   * @param {number} [x2=1] - X coordinate of second control point
-   * @param {number} [y2=1] - Y coordinate of second control point
-   * @param {string} [customName=null] - Custom name for the easing function
-   * @returns {Function} Easing function that takes t (0-1) and returns eased value
-   *
-   * @author thednp (original), Bob Corporaal (adapted)
-   */
-  function cubicBezier (x1 = 0, y1 = 0, x2 = 1, y2 = 1, customName = null) {
-    // Validate inputs
-    const isNumber = val => typeof val === 'number';
-    const allNumbers = [x1, y1, x2, y2].every(isNumber);
-
-    // Store control points
-    const controlPoints = { x1, y1, x2, y2 };
-
-    // Generate name for the easing function
-    const name = customName || (allNumbers ? `cubic-bezier(${[x1, y1, x2, y2].join(',')})` : 'linear');
-
-    // Calculate coefficients for the cubic bezier curve
-    const cx = 3 * x1;
-    const bx = 3 * (x2 - x1) - cx;
-    const ax = 1 - cx - bx;
-
-    const cy = 3 * y1;
-    const by = 3 * (y2 - y1) - cy;
-    const ay = 1 - cy - by;
-
-    // Sample the curve at parameter t for X coordinate
-    function sampleCurveX (t) {
-      return ((ax * t + bx) * t + cx) * t;
-    }
-
-    // Sample the curve at parameter t for Y coordinate
-    function sampleCurveY (t) {
-      return ((ay * t + by) * t + cy) * t;
-    }
-
-    // Calculate the derivative of the curve at parameter t for X coordinate
-    function sampleCurveDerivativeX (t) {
-      return (3 * ax * t + 2 * bx) * t + cx;
-    }
-
-    // Solve for t given x using Newton-Raphson method with bisection fallback
-    function solveCurveX (x) {
-      if (x <= 0) return 0;
-      if (x >= 1) return 1;
-
-      let t = x;
-      let x2, d2;
-
-      // Newton-Raphson iteration
-      for (let i = 0; i < 8; i++) {
-        x2 = sampleCurveX(t) - x;
-        if (Math.abs(x2) < 1e-6) return t;
-
-        d2 = sampleCurveDerivativeX(t);
-        if (Math.abs(d2) < 1e-6) break;
-
-        t -= x2 / d2;
-      }
-
-      // Fallback to bisection method
-      let t0 = 0;
-      let t1 = 1;
-      t = x;
-
-      while (t0 < t1) {
-        x2 = sampleCurveX(t);
-        if (Math.abs(x2 - x) < 1e-6) return t;
-
-        if (x > x2) {
-          t0 = t;
-        } else {
-          t1 = t;
-        }
-
-        t = (t1 - t0) * 0.5 + t0;
-      }
-
-      return t;
-    }
-
-    // Main easing function - given input t (0-1), return eased value
-    function easingFunction (t) {
-      if (t <= 0) return 0;
-      if (t >= 1) return 1;
-      return sampleCurveY(solveCurveX(t));
-    }
-
-    // Add properties to the function for compatibility and debugging
-    Object.defineProperty(easingFunction, 'name', {
-      writable: true,
-      value: name,
-    });
-    easingFunction.x1 = x1;
-    easingFunction.y1 = y1;
-    easingFunction.x2 = x2;
-    easingFunction.y2 = y2;
-    easingFunction.controlPoints = controlPoints;
-
-    // Add the original ease method for backward compatibility
-    easingFunction.ease = easingFunction;
-
-    // Add toString method
-    easingFunction.toString = () => name;
-
-    return easingFunction;
-  }
-
-  /**
-   * Static presets for common easing functions
-   * Each preset returns a callable easing function
-   * @namespace cubicBezier.presets
-   */
-  cubicBezier.presets = {
-    linear: () => cubicBezier(0, 0, 1, 1, 'linear'),
-    ease: () => cubicBezier(0.25, 0.1, 0.25, 1, 'ease'),
-    easeIn: () => cubicBezier(0.42, 0, 1, 1, 'ease-in'),
-    easeOut: () => cubicBezier(0, 0, 0.58, 1, 'ease-out'),
-    easeInOut: () => cubicBezier(0.42, 0, 0.58, 1, 'ease-in-out'),
-    easeInBack: () => cubicBezier(0.6, -0.28, 0.735, 0.045, 'ease-in-back'),
-    easeOutBack: () => cubicBezier(0.175, 0.885, 0.32, 1.275, 'ease-out-back'),
-    easeInOutBack: () => cubicBezier(0.68, -0.55, 0.265, 1.55, 'ease-in-out-back'),
-  };
-
-  /**
    * QuadTree implementation for efficient spatial queries
    *
    * Original code by Daniel Shiffman
@@ -8860,8 +9360,14 @@
 
       let qt = new QuadTree(new QuadTreeRectangle(x, y, w, h), capacity, depth);
 
-      qt.points = obj.points ?? null;
-      qt.divided = qt.points === null; // points are set to null on subdivide
+      const hasChildren = 'ne' in obj || 'nw' in obj || 'se' in obj || 'sw' in obj;
+      if (hasChildren) {
+        qt.points = null; // points are set to null on subdivide
+        qt.divided = true;
+      } else {
+        qt.points = Array.isArray(obj.points) ? obj.points : [];
+        qt.divided = false;
+      }
 
       if ('ne' in obj || 'nw' in obj || 'se' in obj || 'sw' in obj) {
         const x = qt.boundary.x;
@@ -8994,8 +9500,10 @@
         this.southeast.deleteInRange(range);
       }
 
-      // Delete points with range
-      this.points = this.points.filter(point => !range.contains(point));
+      // Delete points within range (points is null when subdivided)
+      if (this.points) {
+        this.points = this.points.filter(point => !range.contains(point));
+      }
     }
 
     /**
@@ -9060,7 +9568,7 @@
 
       return {
         found: found.sort((a, b) => a.sqDistanceFrom(searchPoint) - b.sqDistanceFrom(searchPoint)).slice(0, maxCount),
-        furthestSqDistance: Math.sqrt(furthestSqDistance),
+        furthestSqDistance: furthestSqDistance,
       };
     }
 
@@ -9380,475 +9888,6 @@
   }
 
   /**
-   * Main random number generator class with seed-based deterministic randomness
-   * Provides various random number generation methods and seed management
-   * Uses a high-quality pseudo-random number generator (mulberry32) for consistent results
-   *
-   * @example
-   * // Create a new RNG with a seed
-   * const rng = new RNG('mySeed123');
-   *
-   * // Generate random numbers
-   * const randomValue = rng.random(0, 100);
-   * const randomInt = rng.intRange(1, 10);
-   *
-   * // Navigate seed history
-   * rng.nextSeed();
-   * rng.previousSeed();
-   *
-   */
-
-  class RNG {
-    /**
-     * Create a new RNG instance
-     * @param {string} [seedString] - Initial seed string. If not provided, a random seed is generated
-     */
-    constructor (seedString) {
-      this._currentSeed = 0;
-      this._seedString = '';
-      this.reset(seedString);
-    }
-
-    /**
-     * Debug method to log current seed state
-     * @private
-     * @returns {void}
-     */
-    _dump () {
-      logDebug(this._seedString, this._currentSeed);
-      logDebug(this._seedHistory, this._seedHistoryIndex);
-    }
-
-    /**
-     * Push a new seed to the history
-     * @param {string} newSeed - The new seed string to push
-     * @returns {void}
-     * @private
-     */
-    _pushSeed (newSeed) {
-      if (newSeed != this._seedString) {
-        // ignore if it is the same string
-        if (this._seedHistory.length > 0 && this._seedHistoryIndex >= 0) {
-          this._seedHistory = this._seedHistory.slice(0, this._seedHistoryIndex + 1);
-        }
-        this._seedHistory.push(newSeed);
-        this._seedHistoryIndex++;
-        this._seedString = newSeed;
-        this._currentSeed = this._base62ToBase10(this._seedString);
-      }
-    }
-
-    /**
-     * Validate the incoming string to only include numbers and letters
-     * If the string is empty a random string is generated
-     * @param {string} inSeedString - The seed string to validate
-     * @returns {string} Cleaned and validated seed string
-     * @private
-     */
-    _validateSeedString (inSeedString) {
-      let cleanSeedString;
-      if (inSeedString == undefined || inSeedString == '') {
-        cleanSeedString = this._randomSeedString();
-      } else {
-        cleanSeedString = inSeedString;
-      }
-      cleanSeedString = cleanSeedString.replace(/[^a-zA-Z0-9]/g, '');
-      return cleanSeedString;
-    }
-
-    /**
-     * Reset the RNG with a new seed, clearing history
-     * @param {string} [newSeed] - New seed string. If not provided, a random seed is generated
-     * @returns {string} The validated seed string
-     */
-    reset (newSeed) {
-      this._seedHistory = [];
-      this._seedHistoryIndex = -1;
-      newSeed = this._validateSeedString(newSeed);
-      this._pushSeed(newSeed);
-      return this._seedString;
-    }
-
-    /**
-     * Reset the current seed back to the current seedString
-     * Effectively resets the sequence of random numbers
-     * @returns {string} The current seed string
-     */
-    resetSeed () {
-      this._currentSeed = this._base62ToBase10(this._seedString);
-      return this._seedString;
-    }
-
-    /**
-     * Navigate to the previous seed in the history
-     * @returns {string} The previous seed string
-     */
-    previousSeed () {
-      if (this._seedHistoryIndex >= 1) {
-        this._seedHistoryIndex--;
-        this._seedString = this._seedHistory[this._seedHistoryIndex];
-        this._currentSeed = this._base62ToBase10(this._seedString);
-      }
-      return this._seedString;
-    }
-
-    /**
-     * Navigate to the next seed in the history
-     * @returns {string} The next seed string
-     */
-    nextSeed () {
-      if (this._seedHistoryIndex < this._seedHistory.length - 1) {
-        this._seedHistoryIndex++;
-        this._seedString = this._seedHistory[this._seedHistoryIndex];
-        this._currentSeed = this._base62ToBase10(this._seedString);
-      }
-      return this._seedString;
-    }
-
-    /**
-     * Set seed to random and push to the history
-     * @returns {string} The new random seed string
-     */
-    randomSeed () {
-      this._pushSeed(this._randomSeedString());
-      return this._seedString;
-    }
-
-    //------------------------------------------------------------------------
-    //
-    //  GET & SET
-    //
-    //------------------------------------------------------------------------
-
-    /**
-     * Get the current seed string
-     * @returns {string} The current seed string
-     */
-    get seed () {
-      return this._seedString;
-    }
-
-    /**
-     * Set a new seed string
-     * @param {string} newSeed - The new seed string
-     * @returns {void}
-     */
-    set seed (newSeed) {
-      newSeed = this._validateSeedString(newSeed);
-      this._pushSeed(newSeed);
-    }
-
-    //------------------------------------------------------------------------
-    //
-    //  SUPPORT FUNCTIONS
-    //
-    //------------------------------------------------------------------------
-
-    /**
-     * Generate a random seed string
-     * @param {number} [stringLength=6] - Length of the seed string to generate
-     * @returns {string} Random seed string
-     * @private
-     */
-    _randomSeedString (stringLength = 6) {
-      const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-      let result = '';
-
-      for (let i = 0; i < stringLength; i++) {
-        const n = Math.floor(Math.random() * 62);
-        result = BASE62_ALPHABET[n] + result;
-      }
-      return result;
-    }
-
-    /**
-     * Convert a base62 string to base10 number
-     * @param {string} input - Base62 string to convert
-     * @returns {number} Base10 number
-     * @throws {Error} If input contains invalid characters
-     * @private
-     */
-    _base62ToBase10 (input) {
-      const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-        base = 62;
-      let result = 0;
-
-      for (let i = 0; i < input.length; i++) {
-        const char = input.charAt(i),
-          charValue = BASE62_ALPHABET.indexOf(char);
-
-        if (charValue === -1) {
-          throw new Error('Invalid character in the input string.');
-        }
-
-        result = result * base + charValue;
-      }
-
-      return result;
-    }
-
-    //------------------------------------------------------------------------
-    //
-    //  CORE RNG
-    //
-    //------------------------------------------------------------------------
-
-    /**
-     * The pseudo random number generator
-     * Adapted from https://github.com/cprosche/mulberry32
-     * @returns {number} Random number between 0 and 1
-     * @private
-     */
-    _rng () {
-      let t = (this._currentSeed += 0x6d2b79f5);
-      t = Math.imul(t ^ (t >>> 15), t | 1);
-      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    }
-
-    //------------------------------------------------------------------------
-    //
-    //  RNG FUNCTIONS
-    //
-    //------------------------------------------------------------------------
-
-    /**
-     * Return a random floating-point number
-     * @param {number|Array} [min] - If number: minimum value (exclusive). If array: random element from array
-     * @param {number} [max] - Maximum value (exclusive) when min is a number
-     * @returns {number|*} Random number or array element
-     *
-     * @example
-     * rng.random();           // Random number between 0 and 1
-     * rng.random(10);         // Random number between 0 and 10
-     * rng.random(5, 15);      // Random number between 5 and 15
-     * rng.random(['a', 'b']); // Random element from array
-     */
-    random (min, max) {
-      let rand = this._rng();
-
-      if (typeof min === 'undefined') {
-        return rand;
-      } else if (typeof max === 'undefined') {
-        if (min instanceof Array) {
-          return min[Math.floor(rand * min.length)];
-        } else {
-          return rand * min;
-        }
-      } else {
-        if (min > max) {
-          const tmp = min;
-          min = max;
-          max = tmp;
-        }
-
-        return rand * (max - min) + min;
-      }
-    }
-
-    /**
-     * Generate a random integer from a range
-     * @param {number} [min=0] - Minimum value (inclusive)
-     * @param {number} [max=100] - Maximum value (exclusive)
-     * @returns {number} Random integer in the range
-     */
-    intRange (min = 0, max = 100) {
-      let rand = this._rng();
-
-      min = Math.floor(min);
-      max = Math.floor(max);
-
-      return Math.floor(rand * (max - min) + min);
-    }
-
-    /**
-     * Return a random boolean
-     * @returns {boolean} Random boolean value
-     */
-    randomBool () {
-      if (this._rng() < 0.5) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-
-    /**
-     * Return a random character from a string
-     * Without input it returns a random lowercase letter
-     * @param {string} [inString='abcdefghijklmnopqrstuvwxyz'] - String to select character from
-     * @returns {string} Random character from the string
-     * @throws {Error} If input string is empty
-     */
-    randomChar (inString = 'abcdefghijklmnopqrstuvwxyz') {
-      if (inString.length === 0) {
-        throw new Error('randomChar: Input string cannot be empty.');
-      }
-      let r = Math.floor(this.random(0, inString.length));
-      return inString.charAt(r);
-    }
-
-    /**
-     * Generate a random string of specified length from a character set
-     * @param {number} [count=1] - Length of the string to generate
-     * @param {string} [inString='abcdefghijklmnopqrstuvwxyz'] - Character set to select from
-     * @returns {string} Random string of specified length
-     * @throws {Error} If input string is empty
-     */
-    randomString (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
-      if (inString.length === 0) {
-        throw new Error('randomString: Input string cannot be empty.');
-      }
-      let output = '';
-      for (var i = 0; i < count; i++) {
-        output += this.randomChar(inString);
-      }
-      return output;
-    }
-
-    /**
-     * Generate a random number snapped to steps
-     * @param {number} [min=0] - Minimum value
-     * @param {number} [max=1] - Maximum value
-     * @param {number} [step=0.1] - Step size
-     * @returns {number} Random number snapped to the nearest step
-     */
-    steppedRandom (min = 0, max = 1, step = 0.1) {
-      let n = Math.floor((max - min) / step),
-        r = Math.round(this._rng() * n);
-      return min + r * step;
-    }
-
-    /**
-     * Shuffle an array in place using Fisher-Yates algorithm
-     * @param {Array} array - Array to shuffle
-     * @returns {void}
-     */
-    shuffle (array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        let j = Math.floor(this._rng() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-    }
-
-    /**
-     * Generate random integer sequence from min to max
-     * Including min, excluding max
-     * @param {number} [min=0] - Minimum value (inclusive)
-     * @param {number} [max=100] - Maximum value (exclusive)
-     * @returns {number[]} Shuffled array of integers in the range
-     */
-    intSequence (min = 0, max = 100) {
-      min = Math.floor(min);
-      max = Math.floor(max);
-      if (max < min) {
-        let temp = max;
-        max = min;
-        min = temp;
-      }
-      let seq = Array.from(Array(max - min)).map((e, i) => i + min);
-      this.shuffle(seq);
-      return seq;
-    }
-    /**
-     * Create a 2D unit p5 vector in a random direction
-     * @returns {p5.Vector} Random 2D unit vector
-     */
-    random2DVector () {
-      let v = createVector(1, 0);
-      let h = this.random() * TWO_PI;
-      v.setHeading(h);
-      return v;
-    }
-    /**
-     * Fast Poisson Disk Sampling
-     * Based on the example from Coding Train
-     * https://thecodingtrain.com/challenges/33-poisson-disc-sampling
-     * @param {number} inWidth - Width of the sampling area
-     * @param {number} inHeight - Height of the sampling area
-     * @param {number} inRadius - Minimum distance between points
-     * @returns {p5.Vector[]} Array of points generated using Poisson disk sampling
-     */
-    poissonDisk (inWidth, inHeight, inRadius) {
-      let r = inRadius;
-      let nrSamples = 30;
-      let grid = [];
-      let w = r / Math.sqrt(2);
-      let active = [];
-      let cols, rows;
-      let ordered = [];
-      let nrTries = 20;
-
-      //  create reference grid
-      cols = Math.floor(inWidth / w);
-      rows = Math.floor(inHeight / w);
-      grid = new Array(cols * rows);
-
-      // set initial point
-      let x = this.random(inWidth);
-      let y = this.random(inHeight);
-      let i = Math.floor(x / w);
-      let j = Math.floor(y / w);
-      let pos = createVector(x, y);
-      grid[i + j * cols] = pos;
-      active.push(pos);
-
-      for (let total = 0; total < nrTries; total++) {
-        while (active.length > 0) {
-          let randIndex = Math.floor(this.random(active.length));
-          let pos = active[randIndex];
-          let found = false;
-          for (let n = 0; n < nrSamples; n++) {
-            let sample = this.random2DVector();
-            let m = this.random(r, 2 * r);
-            sample.setMag(m);
-            sample.add(pos);
-
-            let col = Math.floor(sample.x / w);
-            let row = Math.floor(sample.y / w);
-
-            if (col > -1 && row > -1 && col < cols && row < rows && !grid[col + row * cols]) {
-              let ok = true;
-              for (let i = -1; i <= 1; i++) {
-                for (let j = -1; j <= 1; j++) {
-                  let index = col + i + (row + j) * cols;
-                  let neighbor = grid[index];
-                  if (neighbor) {
-                    let d = p5.Vector.dist(sample, neighbor);
-                    if (d < r) {
-                      ok = false;
-                    }
-                  }
-                }
-              }
-              if (ok) {
-                found = true;
-                grid[col + row * cols] = sample;
-                active.push(sample);
-                ordered.push(sample);
-                break;
-              }
-            }
-          }
-          //
-          //  remove active point if no option was found
-          //
-          if (!found) {
-            active.splice(randIndex, 1);
-          }
-        }
-      }
-
-      //
-      //  take out undefined points
-      //
-      ordered = ordered.filter(n => n !== undefined);
-
-      return ordered;
-    }
-  }
-
-  /**
    * Hexagon Grid System
    * Based on Red Blob Games hexagon grid implementation
    * Provides classes for managing hexagonal grids and individual hexagons with custom data storage
@@ -9978,7 +10017,7 @@
      * @returns {*} The property value or default
      */
     getData (key, defaultValue = undefined) {
-      return Object.hasOwn(this.data, key) ? this.data[key] : defaultValue;
+      return Object.prototype.hasOwnProperty.call(this.data, key) ? this.data[key] : defaultValue;
     }
 
     /**
@@ -9987,7 +10026,7 @@
      * @returns {boolean} True if property exists
      */
     hasData (key) {
-      return Object.hasOwn(this.data, key);
+      return Object.prototype.hasOwnProperty.call(this.data, key);
     }
 
     /**
@@ -9996,7 +10035,7 @@
      * @returns {boolean} True if property was removed
      */
     removeData (key) {
-      if (Object.hasOwn(this.data, key)) {
+      if (Object.prototype.hasOwnProperty.call(this.data, key)) {
         delete this.data[key];
         return true;
       }
@@ -10401,10 +10440,6 @@
      * @param {HexPoint} origin - Origin point of the grid in pixel coordinates
      */
     constructor (orientation = 'pointy', size = new HexPoint(100, 100), origin = new HexPoint(0, 0)) {
-      // statics
-      HexGrid.ORIENTATION_POINTY = 'pointy';
-      HexGrid.ORIENTATION_FLAT = 'flat';
-
       if (orientation !== HexGrid.ORIENTATION_POINTY && orientation !== HexGrid.ORIENTATION_FLAT) {
         throw new Error('Orientation must be "pointy" or "flat"');
       }
@@ -11400,6 +11435,9 @@
     }
   }
 
+  HexGrid.ORIENTATION_POINTY = 'pointy';
+  HexGrid.ORIENTATION_FLAT = 'flat';
+
   // Static orientation configurations
   HexGrid.POINTY = new Orientation(
     Math.sqrt(3.0),
@@ -11786,6 +11824,10 @@
      * ]);
      */
     constructor (items) {
+      if (!Array.isArray(items)) {
+        console.warn('Toko: ImageLoader expects an array of items. Defaulting to empty array.');
+        items = [];
+      }
       this.items = items;
       this.images = new Map();
       this.loadedCount = 0;
@@ -11876,6 +11918,13 @@
       const currentItem = item;
       const loadType = this._determineLoadType(currentItem);
       const p5Context = ContextManager.getCurrentContext();
+      const finalizeItem = () => {
+        this.loadedCount++;
+        if (this.loadedCount === this.totalCount) {
+          this.isDone = true;
+          if (onComplete) onComplete();
+        }
+      };
 
       // Increment preload counter if available (manual tracking - Option 2)
       // This works regardless of where preloadAll() is called
@@ -11885,6 +11934,14 @@
       }
 
       if (loadType === ImageLoader.SVG) {
+        if (typeof loadSVG !== 'function') {
+          if (p5Context && typeof p5Context._decrementPreload === 'function') {
+            p5Context._decrementPreload();
+          }
+          console.warn('Toko: loadSVG is not available');
+          finalizeItem();
+          return;
+        }
         loadSVG(
           currentItem.url,
           svg => {
@@ -11893,11 +11950,7 @@
             if (p5Context && typeof p5Context._decrementPreload === 'function') {
               p5Context._decrementPreload();
             }
-            this.loadedCount++;
-            if (this.loadedCount === this.totalCount) {
-              this.isDone = true;
-              if (onComplete) onComplete();
-            }
+            finalizeItem();
           },
           event => {
             // Decrement preload counter on error (critical - must always be called)
@@ -11905,9 +11958,18 @@
               p5Context._decrementPreload();
             }
             console.log('SVG load failure', event);
+            finalizeItem();
           },
         );
       } else {
+        if (typeof loadImage !== 'function') {
+          if (p5Context && typeof p5Context._decrementPreload === 'function') {
+            p5Context._decrementPreload();
+          }
+          console.warn('Toko: loadImage is not available');
+          finalizeItem();
+          return;
+        }
         loadImage(
           currentItem.url,
           img => {
@@ -11916,11 +11978,7 @@
             if (p5Context && typeof p5Context._decrementPreload === 'function') {
               p5Context._decrementPreload();
             }
-            this.loadedCount++;
-            if (this.loadedCount === this.totalCount) {
-              this.isDone = true;
-              if (onComplete) onComplete();
-            }
+            finalizeItem();
           },
           event => {
             // Decrement preload counter on error (critical - must always be called)
@@ -11928,6 +11986,7 @@
               p5Context._decrementPreload();
             }
             console.log('Image load failure', event);
+            finalizeItem();
           },
         );
       }
@@ -11989,7 +12048,7 @@
    * Initializes the library state and color system
    */
   function preSetupHook () {
-    logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant})`);
+    console.log(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant})`);
     libraryState.initialized = true;
     initColor();
   }
@@ -12029,7 +12088,7 @@
    * Performs cleanup tasks and resets library state
    */
   function removeHook () {
-    logDebug(`${LIBRARY_NAME} - Cleanup on sketch removal`);
+    if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - Cleanup on sketch removal`);
     libraryState.initialized = false;
   }
 
@@ -12190,7 +12249,7 @@
     initializeLibrary () {
       // Prevent multiple initializations
       if (this.initialized) {
-        logWarn(`${LIBRARY_NAME}: Already initialized`);
+        console.warn(`${LIBRARY_NAME}: Already initialized`);
         return this;
       }
 
@@ -12203,7 +12262,7 @@
         initializeP5v1,
         initializeQ5,
         p5v2Adapter,
-        logWarn,
+        logWarn: console.warn.bind(console),
         libraryName: LIBRARY_NAME,
       });
       this.variant = variant;
@@ -12267,11 +12326,16 @@
     // Create the main Toko instance
     const tokoInstance = new Toko$1();
     let initializationAttempted = false;
+    let domReadyHandler = null;
 
     function autoInit () {
       // Prevent multiple initialization attempts
       if (initializationAttempted) {
         return;
+      }
+      if (domReadyHandler && typeof document !== 'undefined') {
+        document.removeEventListener('DOMContentLoaded', domReadyHandler);
+        domReadyHandler = null;
       }
 
       // Check for both global and window-attached variables
@@ -12320,7 +12384,14 @@
       if (typeof Q5 !== 'undefined' || (typeof window !== 'undefined' && typeof window.Q5 !== 'undefined')) {
         autoInit();
       } else if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', autoInit);
+        if (!domReadyHandler) {
+          domReadyHandler = () => {
+            document.removeEventListener('DOMContentLoaded', domReadyHandler);
+            domReadyHandler = null;
+            autoInit();
+          };
+        }
+        document.addEventListener('DOMContentLoaded', domReadyHandler);
       } else {
         autoInit();
       }

@@ -9,6 +9,8 @@ declare global {
 	 * 
 	 * On these Learn pages, you can experiment with editing the
 	 * interactive mini examples. Have fun! 😎
+	 * 
+	 * [![](/assets/Authored-By-Humans-Not-By-AI-Badge.png)](https://notbyai.fyi/)
 	 */
 
 	/** ⭐
@@ -21,14 +23,13 @@ declare global {
 	 * @param {number} [w] width or side lengths of the canvas
 	 * @param {number} [h] height of the canvas
 	 * @param {object} [opt] [options](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getContextAttributes)
-	 * @returns {HTMLCanvasElement} created canvas element
+	 * @returns {Promise<HTMLCanvasElement>} canvas element
 	 * @example
-	 * // Canvas2D
 	 * createCanvas(200, 100);
 	 * background('silver');
 	 * circle(0, 0, 80);
 	 */
-	function createCanvas(w?: number, h?: number, options?: CanvasRenderingContext2DSettings): HTMLCanvasElement;
+	function Canvas(w?: number, h?: number, options?: object): Promise<HTMLCanvasElement>;
 
 	/** ⭐
 	 * The q5 draw function is run 60 times per second by default.
@@ -41,16 +42,13 @@ declare global {
 	function draw(): void;
 
 	/** ⭐
-	 * Logs a message to the JavaScript console.
+	 * Logs a message to the JavaScript [console](https://developer.mozilla.org/docs/Web/API/console/log_static).
 	 * 
 	 * To view the console, open your browser's web developer tools
 	 * via the keyboard shortcut `Ctrl + Shift + i` or `command + option + i`,
 	 * then click the "Console" tab.
 	 * 
-	 * This is an alias for the standard
-	 * [`console.log`](https://developer.mozilla.org/docs/Web/API/console/log_static) function.
-	 * 
-	 * When you're curious about what your code is doing, use `log()`!
+	 * Use `log` when you're curious about what your code is doing!
 	 * @param {*} message
 	 * @example
 	 * function draw() {
@@ -78,19 +76,23 @@ declare global {
 	 * @param {number} x x-coordinate
 	 * @param {number} y y-coordinate
 	 * @param {number} width width of the ellipse
-	 * @param {number} [height] height of the ellipse
+	 * @param {number} height height of the ellipse
 	 * @example
 	 * createCanvas(200, 100);
 	 * ellipse(100, 50, 160, 80);
 	 */
-	function ellipse(x: number, y: number, width: number, height?: number): void;
+	function ellipse(x: number, y: number, width: number, height: number): void;
 
 	/** 🧑‍🎨
 	 * Draws a rectangle or a rounded rectangle.
+	 * 
+	 * Also accepts 8 parameters to specify a
+	 * corner radius for each corner, in the order:
+	 * top-left, top-right, bottom-right, bottom-left.
 	 * @param {number} x x-coordinate
 	 * @param {number} y y-coordinate
 	 * @param {number} w width of the rectangle
-	 * @param {number} [h] height of the rectangle
+	 * @param {number} h height of the rectangle
 	 * @param {number} [rounded] radius for all corners
 	 * @example
 	 * createCanvas(200);
@@ -98,12 +100,16 @@ declare global {
 	 * 
 	 * rect(30, 20, 40, 60);
 	 * rect(80, 70, 40, 60, 10);
-	 * rect(130, 120, 40, 60, 30, 2, 8, 20);
+	 * rect(130, 120, 40, 60, 20, 4, 0, 8);
 	 */
-	function rect(x: number, y: number, w: number, h?: number, rounded?: number): void;
+	function rect(x: number, y: number, w: number, h: number, rounded?: number): void;
 
 	/** 🧑‍🎨
 	 * Draws a square or a rounded square.
+	 * 
+	 * Also accepts 7 parameters to specify a
+	 * corner radius for each corner, in the order:
+	 * top-left, top-right, bottom-right, bottom-left.
 	 * @param {number} x x-coordinate
 	 * @param {number} y y-coordinate
 	 * @param {number} size size of the sides of the square
@@ -114,7 +120,7 @@ declare global {
 	 * 
 	 * square(30, 30, 40);
 	 * square(80, 80, 40, 10);
-	 * square(130, 130, 40, 30, 2, 8, 20);
+	 * square(130, 130, 40, 20, 4, 0, 8);
 	 */
 	function square(x: number, y: number, size: number, rounded?: number): void;
 
@@ -259,7 +265,9 @@ declare global {
 	// 🌆 image
 
 	/** 🌆
-	 * Loads an image from a URL and optionally runs a callback function.
+	 * Loads an image from a URL.
+	 * 
+	 * By default, assets are loaded in parallel before q5 runs `draw`. Use `await` to wait for an image to load.
 	 * @param {string} url url of the image to load
 	 * @returns {Q5.Image & PromiseLike<Q5.Image>} image
 	 * @example
@@ -488,6 +496,8 @@ declare global {
 	 * 
 	 * If you make changes to the canvas or image, you must call `loadPixels`
 	 * before using this function to get current color data.
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @param {number} x
 	 * @param {number} y
 	 * @param {number} [w] width of the area, default is 1
@@ -516,12 +526,14 @@ declare global {
 	function get(x: number, y: number, w?: number, h?: number): Q5.Image | number[];
 
 	/** 🌆
-	 * Sets a pixel's color in the image or canvas.
+	 * Sets a pixel's color in the image or canvas. Color mode must be RGB.
 	 * 
 	 * Or if a canvas or image is provided, it's drawn on top of the
 	 * destination image or canvas, ignoring its tint setting.
 	 * 
 	 * Run `updatePixels` to apply the changes.
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @param {number} x
 	 * @param {number} y
 	 * @param {any} val color, canvas, or image
@@ -539,23 +551,26 @@ declare global {
 	/** 🌆
 	 * Array of pixel color data from a canvas or image.
 	 * 
+	 * Empty by default, get the data by running `loadPixels`.
+	 * 
 	 * Each pixel is represented by four consecutive values in the array,
 	 * corresponding to its red, green, blue, and alpha channels.
 	 * 
 	 * The top left pixel's data is at the beginning of the array
 	 * and the bottom right pixel's data is at the end, going from
 	 * left to right and top to bottom.
-	 * 
-	 * Use `loadPixels` to load current pixel data from a canvas or image.
 	 */
-	var pixels: number[];
+	let pixels: number[];
 
 	/** 🌆
 	 * Loads pixel data into `pixels` from the canvas or image.
 	 * 
 	 * The example below sets some pixels' green channel
-	 * to a random 0-255 value.
+	 * to a random value.
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @example
+	 * createCanvas(200);
 	 * frameRate(5);
 	 * let icon = loadImage('/q5js_icon.png');
 	 * 
@@ -572,6 +587,8 @@ declare global {
 
 	/** 🌆
 	 * Applies changes in the `pixels` array to the canvas or image.
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @example
 	 * createCanvas(200);
 	 * 
@@ -591,6 +608,8 @@ declare global {
 	 * 
 	 * A CSS filter string can also be used.
 	 * https://developer.mozilla.org/docs/Web/CSS/filter
+	 * 
+	 * Not applicable to WebGPU canvases.
 	 * @param {string} type filter type or a CSS filter string
 	 * @param {number} [value] optional value, depends on filter type
 	 * @example
@@ -656,7 +675,7 @@ declare global {
 	/** 🌆
 	 * Creates a graphics buffer.
 	 * 
-	 * Disabled by default in q5 WebGPU.
+	 * Graphics looping is disabled by default in q5 WebGPU.
 	 * See issue [#104](https://github.com/q5js/q5.js/issues/104) for details.
 	 * @param {number} w width
 	 * @param {number} h height
@@ -665,18 +684,10 @@ declare global {
 	 */
 	function createGraphics(w: number, h: number, opt?: any): Q5;
 
-	namespace Q5 {
-		interface Image {
-			width: number;
-			height: number;
-		}
-	}
-
 	// 📘 text
 
 	/** 📘
-	 * Renders text to the screen. Text can be positioned with the x and y
-	 * parameters and can optionally be constrained.
+	 * Renders text on the canvas.
 	 * @param {string} str string of text to display
 	 * @param {number} x x-coordinate of the text's position
 	 * @param {number} y y-coordinate of the text's position
@@ -694,9 +705,9 @@ declare global {
 	 * textSize(20);
 	 * 
 	 * let info =
-	 * 	'q5.js was designed to make creative coding fun and accessible for a new generation of artists, designers, educators, and beginners.';
+	 * 	'q5.js was designed to make creative coding fun and accessible for artists, designers, educators, and beginners.';
 	 * 
-	 * text(info, 12, 30, 20, 6);
+	 * text(info, 12, 30, 20);
 	 * //
 	 * //
 	 */
@@ -705,20 +716,14 @@ declare global {
 	/** 📘
 	 * Loads a font from a URL.
 	 * 
-	 * The font file can be in any format accepted in CSS, such as
-	 * .ttf and .otf files. The first example below loads
-	 * [Robotica](https://www.dafont.com/robotica-courtney.font).
+	 * The first example below loads [Robotica](https://www.dafont.com/robotica-courtney.font).
 	 * 
-	 * Also supports loading [Google fonts](https://fonts.google.com/).
 	 * The second example loads
-	 * [Pacifico](https://fonts.google.com/specimen/Pacifico).
+	 * [Pacifico](https://fonts.google.com/specimen/Pacifico) from [Google fonts](https://fonts.google.com/).
 	 * 
-	 * If no fonts are loaded, the default sans-serif font is used.
-	 * 
-	 * In q5 WebGPU, only fonts in [MSDF format](https://github.com/q5js/q5.js/wiki/q5-WebGPU-renderer#text-rendering)
-	 * with the file ending "-msdf.json" can be used to render text with
-	 * the `text` function. Fonts in other formats can be used with the
-	 * [`textImage`](https://q5js.org/learn/#textImage) function.
+	 * By default, assets are loaded in parallel before q5 runs `draw`. Use `await` to wait for a font to load.
+	 *
+	 * If no fonts are loaded, the system's default sans-serif font is used.
 	 * @param {string} url URL of the font to load
 	 * @returns {FontFace & PromiseLike<FontFace>} font
 	 * @example
@@ -736,7 +741,7 @@ declare global {
 	 * 
 	 * loadFont('fonts.googleapis.com/css2?family=Pacifico');
 	 * 
-	 * function setup() {
+	 * function draw() {
 	 * 	fill('hotpink');
 	 * 	textSize(68);
 	 * 	text('Hello!', 2, 68);
@@ -756,7 +761,6 @@ declare global {
 	 * 
 	 * textFont('serif');
 	 * 
-	 * textSize(32);
 	 * text('Hello, world!', 15, 90);
 	 * @example
 	 * createCanvas(200);
@@ -764,7 +768,6 @@ declare global {
 	 * 
 	 * textFont('monospace');
 	 * 
-	 * textSize(24);
 	 * text('Hello, world!', 15, 90);
 	 */
 	function textFont(fontName: string): void;
@@ -814,6 +817,8 @@ declare global {
 
 	/** 📘
 	 * Sets the horizontal and vertical alignment of text.
+	 * 
+	 * Alignment constants like `CENTER` can be used with this function.
 	 * @param {'left' | 'center' | 'right'} horiz horizontal alignment
 	 * @param {'top' | 'middle' | 'bottom' | 'alphabetic'} [vert] vertical alignment
 	 * @example
@@ -821,7 +826,7 @@ declare global {
 	 * background(200);
 	 * textSize(32);
 	 * 
-	 * textAlign(CENTER, MIDDLE);
+	 * textAlign(CENTER, CENTER);
 	 * text('Hello, world!', 100, 100);
 	 */
 	function textAlign(horiz: 'left' | 'center' | 'right', vert?: 'top' | 'middle' | 'bottom' | 'alphabetic'): void;
@@ -843,7 +848,7 @@ declare global {
 	 * createCanvas(200);
 	 * background(200);
 	 * textSize(32);
-	 * textAlign(CENTER, MIDDLE);
+	 * textAlign(CENTER, CENTER);
 	 * 
 	 * textWeight(100);
 	 * text('Hello, world!', 100, 100);
@@ -921,11 +926,6 @@ declare global {
 	 * 
 	 * The positioning of the image is affected by the current text
 	 * alignment and baseline settings.
-	 * 
-	 * In q5 WebGPU, this function is the only way to draw multi-colored
-	 * text, like emojis, and to use fonts that aren't in MSDF format.
-	 * Using this function to draw text that changes every frame has
-	 * a very high performance cost.
 	 * @param {Q5.Image | string} img image or text
 	 * @param {number} x x-coordinate where the image should be placed
 	 * @param {number} y y-coordinate where the image should be placed
@@ -936,18 +936,24 @@ declare global {
 	 * textAlign(CENTER, CENTER);
 	 * 
 	 * textImage('🐶', 100, 100);
-	 * @example
-	 * createCanvas(200);
-	 * 
-	 * loadFont('/assets/Robotica.ttf');
-	 * 
-	 * function setup() {
-	 * 	background(200);
-	 * 	textSize(66);
-	 * 	textImage('Hello!', 0, 0);
-	 * }
 	 */
 	function textImage(img: Q5.Image | String, x: number, y: number): void;
+
+	/** 📘
+	 * Converts a string of text to an array of points.
+	 * 
+	 * Samples opaque pixels in a text image made with `createTextImage`.
+	 * 
+	 * It's influenced by text settings, such as font, size, and alignment.
+	 * 
+	 * Uses a [Z-order curve](https://wikipedia.org/wiki/Z-order_curve) to improve spatial distribution, which preserves the shape of text better than purely random sampling.
+	 * @param {string} str string of text
+	 * @param {number} [x=0] x coordinate of the text position
+	 * @param {number} [y=0] y coordinate of the text position
+	 * @param {number} [sampleRate=0.1] lower values increase dithering (1 = all points, 0.1 = ~10% of points)
+	 * @param {number} [density=1] pixel density of the text
+	 */
+	function textToPoints(str: string, x?: number, y?: number, sampleRate?: number, density?: number): [];
 
 	/** 📘
 	 * Number formatter, can be used to display a number as a string with
@@ -1007,6 +1013,11 @@ declare global {
 	const TOP: 'top';
 
 	/** 📘
+	 * Align text to the middle.
+	 */
+	const MIDDLE: 'middle';
+
+	/** 📘
 	 * Align text to the bottom.
 	 */
 	const BOTTOM: 'bottom';
@@ -1019,6 +1030,10 @@ declare global {
 	// 🖲 input
 
 	/**
+	 * q5's input handling is very basic.
+	 * 
+	 * For better input handling, including game controller support, consider using the [q5play](https://q5play.org/) addon with q5.
+	 * 
 	 * Note that input responses inside `draw` can be delayed by
 	 * up to one frame cycle: from the exact moment an input event occurs
 	 * to the next time a frame is drawn.
@@ -1220,11 +1235,14 @@ declare global {
 	 * Array containing all current touch points within the
 	 * browser window. Each touch being an object with
 	 * `id`, `x`, and `y` properties.
+	 * 
+	 * Consider using the `pointers` array instead,
+	 * which includes mouse, touch, and pen input.
 	 * @example
 	 * function draw() {
 	 * 	background(200);
-	 * 	for (let touch of touches) {
-	 * 		circle(touch.x, touch.y, 100);
+	 * 	for (let pt of pointers) {
+	 * 		circle(pt.x, pt.y, 100);
 	 * 	}
 	 * }
 	 */
@@ -1282,27 +1300,6 @@ declare global {
 	function touchMoved(): void;
 
 	/** 🖲
-	 * Object containing all current pointers within the
-	 * browser window.
-	 * 
-	 * This includes mouse, touch, and pen pointers.
-	 * 
-	 * Each pointer is an object with
-	 * `event`, `x`, and `y` properties.
-	 * The `event` property contains the original
-	 * [PointerEvent](https://developer.mozilla.org/docs/Web/API/PointerEvent).
-	 * @example
-	 * function draw() {
-	 * 	background(200);
-	 * 	for (let pointerID in pointers) {
-	 * 		let pointer = pointers[pointerID];
-	 * 		circle(pointer.x, pointer.y, 100);
-	 * 	}
-	 * }
-	 */
-	let pointers: {};
-
-	/** 🖲
 	 * Sets the cursor to a [CSS cursor type](https://developer.mozilla.org/docs/Web/CSS/cursor) or image.
 	 * If an image is provided, optional x and y coordinates can
 	 * specify the active point of the cursor.
@@ -1331,7 +1328,8 @@ declare global {
 	 * 
 	 * Return true to allow the default behavior of scrolling the page.
 	 * @example
-	 * let x = (y = 100);
+	 * let x = 100;
+	 * let y = 100;
 	 * function draw() {
 	 * 	circle(x, y, 10);
 	 * }
@@ -1342,6 +1340,16 @@ declare global {
 	 * }
 	 */
 	function mouseWheel(event: any): void;
+
+	/** 🖲
+	 * Distance the mouse has moved since the last frame in the horizontal direction.
+	 */
+	let movedX: number;
+
+	/** 🖲
+	 * Distance the mouse has moved since the last frame in the vertical direction.
+	 */
+	let movedY: number;
 
 	/** 🖲
 	 * Requests that the pointer be locked to the document body, hiding
@@ -1372,14 +1380,14 @@ declare global {
 	 * Creates a new `Color` object, which is primarily useful for storing
 	 * a color that your sketch will reuse or modify later.
 	 * 
-	 * With the default RGB color mode, colors have `r`/`red`, `g`/`green`, `b`/`blue`, and `a`/`alpha` components. The default color
-	 * format is integer, so set components to values between 0 and 255.
+	 * With the default color mode, RGB, colors have `r`/`red`, `g`/`green`,
+	 * `b`/`blue`, and `a`/`alpha` components.
 	 * 
-	 * In q5 WebGPU, the default color mode is RGB in float format, so
-	 * set color components to values between 0 and 1.
-	 * 
-	 * The [`fill`](https://q5js.org/learn/#fill), [`stroke`](https://q5js.org/learn/#stroke), and [`background`](https://q5js.org/learn/#background) functions
-	 * accept the same wide range of color representations as this function.
+	 * The [`fill`](https://q5js.org/learn/#fill), [`stroke`](https://q5js.org/learn/#stroke), and [`background`](https://q5js.org/learn/#background)
+	 * functions accept the same wide range of color representations as this function.
+	 *
+	 * The default color format is "integer",
+	 * so set components to values between 0 and 255.
 	 * 
 	 * Here are some examples of valid use:
 	 * 
@@ -1432,11 +1440,9 @@ declare global {
 	 * Sets the color mode for the sketch, which changes how colors are
 	 * interpreted and displayed.
 	 * 
-	 * The default color mode is RGB in legacy integer format.
-	 * 
-	 * In WebGPU, the default is RGB in float format (best performance).
-	 * 
 	 * Color gamut is 'display-p3' by default, if the device supports HDR.
+	 *
+	 * The default color mode is RGB in legacy integer format.
 	 * @param {'rgb' | 'oklch' | 'hsl' | 'hsb'} mode color mode
 	 * @param {1 | 255} format color format (1 for float, 255 for integer)
 	 * @param {'srgb' | 'display-p3'} [gamut] color gamut
@@ -1647,9 +1653,6 @@ declare global {
 		 * 
 		 * Use the `color` function for greater flexibility, it runs
 		 * this constructor internally.
-		 * 
-		 * `Color` is not actually a class itself, it's a reference to a
-		 * Q5 color class based on the color mode, format, and gamut.
 		 */
 		constructor(c0: number, c1: number, c2: number, c3: number);
 
@@ -1797,7 +1800,7 @@ declare global {
 	 * rect(64, 60, 80, 80);
 	 * @example
 	 * createCanvas(200);
-	 * let logo = loadImage('/assets/p5play_logo.webp');
+	 * let logo = loadImage('/assets/q5play_logo.avif');
 	 * 
 	 * function setup() {
 	 * 	background(200);
@@ -1865,8 +1868,6 @@ declare global {
 
 	/** 💅
 	 * Set the line cap style to `ROUND`, `SQUARE`, or `PROJECT`.
-	 * 
-	 * Not available in q5 WebGPU.
 	 * @param {CanvasLineCap} val line cap style
 	 * @example
 	 * createCanvas(200);
@@ -1887,7 +1888,7 @@ declare global {
 	/** 💅
 	 * Set the line join style to `ROUND`, `BEVEL`, or `MITER`.
 	 * 
-	 * Not available in q5 WebGPU.
+	 * The default is `ROUND`.
 	 * @param {CanvasLineJoin} val line join style
 	 * @example
 	 * createCanvas(200);
@@ -1960,15 +1961,6 @@ declare global {
 	 * Clears the canvas, making every pixel completely transparent.
 	 * 
 	 * Note that the canvas can only be seen through if it has an alpha channel.
-	 * 
-	 * #### webgpu
-	 * @example
-	 * await createCanvas(200, { alpha: true });
-	 * 
-	 * q5.draw = function () {
-	 * 	clear();
-	 * 	circle((frameCount % 200) - 100, 0, 80);
-	 * };
 	 * @example
 	 * createCanvas(200, 200, { alpha: true });
 	 * 
@@ -1978,6 +1970,26 @@ declare global {
 	 * }
 	 */
 	function clear(): void;
+
+	/** 💅
+	 * The 2D rendering context for the canvas.
+	 * 
+	 * You can use it to create [linear gradients](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D/createLinearGradient), [radial gradients](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D/createRadialGradient), [font stretching](https://developer.mozilla.org/docs/Web/API/CanvasRenderingContext2D/fontStretch), and
+	 * other advanced drawing features.
+	 * 
+	 * Not available in q5 WebGPU.
+	 * @example
+	 * createCanvas(200);
+	 * 
+	 * let lg = ctx.createLinearGradient(0, 0, 200, 0);
+	 * lg.addColorStop(0, 'green');
+	 * lg.addColorStop(0.5, 'cyan');
+	 * lg.addColorStop(1, 'green');
+	 * 
+	 * ctx.fillStyle = lg;
+	 * rect(0, 0, 200, 200);
+	 */
+	let ctx: CanvasRenderingContext2D;
 
 	/** 💅
 	 * Checks if a given point is within the current path's fill area.
@@ -2079,11 +2091,7 @@ declare global {
 	/** 🦋
 	 * Applies a transformation matrix.
 	 * 
-	 * Accepts a 3x3 or 4x4 matrix as either an array or multiple arguments.
-	 * 
-	 * Note that in q5 WebGPU, the identity matrix (default)
-	 * has a negative y scale to flip the y-axis to match
-	 * the Canvas2D renderer.
+	 * Accepts a 3x3 matrix as either an array or multiple arguments.
 	 * @param {number} a
 	 * @param {number} b
 	 * @param {number} c
@@ -2233,7 +2241,7 @@ declare global {
 	 * 	text(windowWidth, 100, 100);
 	 * }
 	 */
-	var windowWidth: number;
+	let windowWidth: number;
 
 	/** 💻
 	 * The height of the window.
@@ -2245,34 +2253,32 @@ declare global {
 	 * 	text(windowHeight, 100, 100);
 	 * }
 	 */
-	var windowHeight: number;
+	let windowHeight: number;
 
 	/** 💻
 	 * The width of the canvas.
 	 */
-	var width: number;
+	let width: number;
 
 	/** 💻
 	 * The height of the canvas.
 	 */
-	var height: number;
+	let height: number;
 
 	/** 💻
 	 * Half the width of the canvas.
 	 */
-	var halfWidth: number;
+	let halfWidth: number;
 
 	/** 💻
 	 * Half the height of the canvas.
 	 */
-	var halfHeight: number;
+	let halfHeight: number;
 
 	/** 💻
 	 * The canvas element associated with the Q5 instance.
-	 * 
-	 * If a canvas is not explicitly created with `createCanvas()`, but a q5 function like `draw` or `mousePressed` is defined, a default canvas of size 200x200 will be created automatically.
 	 */
-	var canvas: HTMLCanvasElement;
+	let canvas: HTMLCanvasElement;
 
 	/** 💻
 	 * Resizes the canvas to the specified width and height.
@@ -2300,7 +2306,7 @@ declare global {
 	 * 	text(frameCount, 8, 120);
 	 * }
 	 */
-	var frameCount: number;
+	let frameCount: number;
 
 	/** 💻
 	 * Stops the draw loop.
@@ -2409,7 +2415,7 @@ declare global {
 	 * 
 	 * Useful for adding post-processing effects when it's not possible
 	 * to do so at the end of the `draw` function, such as when using
-	 * addons like p5play that auto-draw to the canvas after the `draw`
+	 * addons like q5play that auto-draw to the canvas after the `draw`
 	 * function is run.
 	 * @example
 	 * function draw() {
@@ -2474,15 +2480,23 @@ declare global {
 	 * 	circle(x % 200, 100, 20);
 	 * }
 	 */
-	var deltaTime: number;
+	let deltaTime: number;
 
 	/** 💻
-	 * The 2D rendering context for the canvas, if using the Canvas2D
-	 * renderer.
+	 * A constant that can be passed as the third argument to `Canvas` to specify that the Canvas2D renderer should be used.
+	 * 
+	 * Note that in this example, the circle is located at position [0, 0], the origin of the canvas.
+	 * @example
+	 * await Canvas(200, 100, C2D);
+	 * background('silver');
+	 * circle(0, 0, 80);
 	 */
-	var ctx: CanvasRenderingContext2D;
+	const C2D: 'c2d';
 
-	var drawingContext: CanvasRenderingContext2D;
+	/** 💻
+	 * Since WebGPU is the default renderer in JavaScript modules, it's not necessary to use this constant with `Canvas`, unless you want to make it explicit.
+	 */
+	const WEBGPU: 'webgpu';
 
 	// 🧮 math
 
@@ -2493,6 +2507,8 @@ declare global {
 	 * - If one numerical input is provided, returns a number between 0 and the provided value.
 	 * - If two numerical inputs are provided, returns a number between the two values.
 	 * - If an array is provided, returns a random element from the array.
+	 * 
+	 * Return value can be the lower bound but can never exactly be the upper bound.
 	 * @param {number | any[]} [low] lower bound (inclusive) or an array
 	 * @param {number} [high] upper bound (exclusive)
 	 * @returns {number | any} a random number or element
@@ -2506,7 +2522,7 @@ declare global {
 	 * }
 	 * @example
 	 * function draw() {
-	 * 	circle(random(200), random(200), 10);
+	 * 	circle(random(200), random(50, 150), 10);
 	 * }
 	 */
 	function random(low?: number | any[], high?: number): number | any;
@@ -2517,7 +2533,7 @@ declare global {
 	 * Can be used to create a jitter effect (random displacement).
 	 * 
 	 * Equivalent to `random(-amount, amount)`.
-	 * @param {number} amount absolute maximum amount of jitter, default is 1
+	 * @param {number} [amount] absolute maximum amount of jitter, default is 1
 	 * @returns {number} random number between -val and val
 	 * @example
 	 * function draw() {
@@ -2531,7 +2547,7 @@ declare global {
 	 * 	circle(jit(50), 0, random(50));
 	 * };
 	 */
-	function jit(amount: number): number;
+	function jit(amount?: number): number;
 
 	/** 🧮
 	 * Generates a noise value based on the x, y, and z inputs.
@@ -2829,18 +2845,34 @@ declare global {
 	 */
 	const QUARTER_PI: number;
 
+	function sin(angle: number): number;
+
+	function cos(angle: number): number;
+
+	function tan(angle: number): number;
+
+	function mag(val1: number, val2: number): number;
+
+	function asin(n: number): number;
+
+	function acos(n: number): number;
+
+	function atan(n: number): number;
+
+	function atan2(y: number, x: number): number;
+
 	// 🔊 sound
 
 	/**
-	 * q5.js includes low latency sound playback and basic mixing powered
-	 * by WebAudio.
+	 * q5 includes low latency sound playback and basic mixing capabilities
+	 * powered by WebAudio.
 	 * 
-	 * For audio filtering, synthesis, and analysis, consider using
-	 * [p5.sound](https://p5js.org/reference/p5.sound/).
+	 * For audio filtering, synthesis, and analysis, consider using the
+	 * [p5.sound](https://p5js.org/reference/p5.sound/) addon with q5.
 	 */
 
 	/** 🔊
-	 * Loads audio data from a file and returns a `Q5.Sound` object.
+	 * Loads audio data from a file and returns a `Sound` object.
 	 * 
 	 * Use functions like `play`, `pause`, and `stop` to
 	 * control playback. Note that sounds can only be played after the
@@ -2852,14 +2884,9 @@ declare global {
 	 * 
 	 * Use `loaded`, `paused`, and `ended` to check the sound's status.
 	 * 
-	 * The entire sound file must be loaded before playback can start,
-	 * to stream larger audio files use the `loadAudio` function instead.
-	 * 
-	 * For backwards compatibility with the p5.sound API, the functions
-	 * `setVolume`, `setLoop`, `setPan`, `isLoaded`, and `isPlaying`
-	 * are also implemented, but their use is deprecated.
+	 * The entire sound file must be loaded before playback can start, use `await` to wait for a sound to load. To stream larger audio files use the `loadAudio` function instead.
 	 * @param {string} url sound file
-	 * @returns {Sound & PromiseLike<Sound>} a new `Sound` object
+	 * @returns {Sound & PromiseLike<Sound>} sound
 	 * @example
 	 * createCanvas(200);
 	 * 
@@ -2949,6 +2976,9 @@ declare global {
 		 * 
 		 * If this function is run when the sound is paused,
 		 * all playback instances will be resumed.
+		 * 
+		 * Use `await` to wait for the sound to finish playing.
+		 * @returns {Promise<void>} a promise that resolves when the sound finishes playing
 		 */
 		play(): void;
 
@@ -2974,7 +3004,7 @@ declare global {
 	 */
 
 	/** 📑
-	 * Creates a new HTML element and adds it to the page. `createEl` is
+	 * Creates a new HTML element and adds it to the page. `createElement` is
 	 * an alias.
 	 * 
 	 * Modify the element's CSS [`style`](https://developer.mozilla.org/docs/Web/API/HTMLElement/style) to change its appearance.
@@ -3006,7 +3036,7 @@ declare global {
 	 * el.style.backgroundColor = 'blue';
 	 * el.style.color = 'white';
 	 */
-	function createElement(tag: string, content?: string): HTMLElement;
+	function createEl(tag: string, content?: string): HTMLElement;
 
 	/** 📑
 	 * Creates a link element.
@@ -3084,7 +3114,7 @@ declare global {
 	 * @example
 	 * createCanvas(200, 100);
 	 * 
-	 * let img = createImg('/assets/p5play_logo.webp');
+	 * let img = createImg('/assets/q5play_logo.avif');
 	 * img.position(0, 0).size(100, 100);
 	 */
 	function createImg(src: string): HTMLImageElement;
@@ -3166,7 +3196,7 @@ declare global {
 	 * @example
 	 * createCanvas(200, 100);
 	 * 
-	 * let sel = createSelect('Select a color');
+	 * let sel = createSelect('Select an option');
 	 * sel.option('Red', '#f55').option('Green', '#5f5');
 	 * 
 	 * sel.addEventListener('change', () => {
@@ -3276,17 +3306,21 @@ declare global {
 
 	/** 📑
 	 * Finds the first element in the DOM that matches the given [CSS selector](https://developer.mozilla.org/docs/Learn_web_development/Core/Styling_basics/Basic_selectors).
+	 * 
+	 * Alias for `document.querySelector`.
 	 * @param {string} selector
 	 * @returns {HTMLElement} element
 	 */
-	function findElement(selector: string): HTMLElement;
+	function findEl(selector: string): HTMLElement;
 
 	/** 📑
 	 * Finds all elements in the DOM that match the given [CSS selector](https://developer.mozilla.org/docs/Learn_web_development/Core/Styling_basics/Basic_selectors).
+	 * 
+	 * Alias for `document.querySelectorAll`.
 	 * @param {string} selector
 	 * @returns {HTMLElement[]} elements
 	 */
-	function findElements(selector: string): HTMLElement[];
+	function findEls(selector: string): HTMLElement[];
 
 	// 🎞 record
 
@@ -3356,7 +3390,7 @@ declare global {
 	/** 🎞
 	 * True if the canvas is currently being recorded.
 	 */
-	var recording: boolean;
+	let recording: boolean;
 
 	// 🛠 utilities
 
@@ -3365,6 +3399,8 @@ declare global {
 	 * 
 	 * File type is determined by file extension. q5 supports loading
 	 * text, json, csv, font, audio, and image files.
+	 * 
+	 * By default, assets are loaded in parallel before q5 runs `draw`. Use `await` to wait for assets to load.
 	 * @param {...string} urls
 	 * @returns {Promise<any[]>} a promise that resolves with objects
 	 * @example
@@ -3408,46 +3444,57 @@ declare global {
 	function save(data?: object, fileName?: string): void;
 
 	/** 🛠
+	 * Returns the number of milliseconds since the program started.
+	 * @returns {number} milliseconds since the program started
+	 */
+	function millis(): number;
+
+	/** 🛠
 	 * Loads a text file from the specified url.
+	 * 
+	 * Using `await` to get the loaded text as a string is recommended.
 	 * @param {string} url text file
-	 * @returns {object & PromiseLike<string>} an object containing the loaded text in the property `obj.text` or a promise
+	 * @returns {object & PromiseLike<string>} an object containing the loaded text in the property `obj.text` or use `await` to get the text string directly
 	 */
 	function loadText(url: string): object & PromiseLike<string>;
 
 	/** 🛠
 	 * Loads a JSON file from the specified url.
+	 * 
+	 * Using `await` to get the loaded JSON object or array is recommended.
 	 * @param {string} url JSON file
-	 * @returns {any & PromiseLike<any>} an object or array containing the loaded JSON or a promise
+	 * @returns {any & PromiseLike<any>} an object or array containing the loaded JSON
 	 */
 	function loadJSON(url: string): any & PromiseLike<any>;
 
 	/** 🛠
 	 * Loads a CSV file from the specified url.
+	 * 
+	 * Using `await` to get the loaded CSV as an array of objects is recommended.
 	 * @param {string} url CSV file
-	 * @returns {object[] & PromiseLike<object[]>} an array of objects containing the loaded CSV or a promise
+	 * @returns {object[] & PromiseLike<object[]>} an array of objects containing the loaded CSV
 	 */
 	function loadCSV(url: string): object[] & PromiseLike<object[]>;
 
 	/** 🛠
 	 * Loads an xml file from the specified url.
+	 * 
+	 * Using `await` to get the loaded XML Element is recommended.
 	 * @param {string} url xml file
-	 * @returns {Element & PromiseLike<Element>} an object containing the loaded XML in a property called `obj.DOM` or a promise
-	 * @example
-	 * async function setup() {
-	 * 	createCanvas(200);
-	 * 	background(200);
-	 * 	textSize(32);
-	 * 
-	 * 	let myXML = await loadXML('/assets/animals.xml');
-	 * 
-	 * 	let mammals = myXML.getElementsByTagName('mammal');
-	 * 	let y = 64;
-	 * 	for (let mammal of mammals) {
-	 * 		text(mammal.textContent, 20, (y += 32));
-	 * 	}
-	 * }
+	 * @returns {Element & PromiseLike<Element>} an object containing the loaded XML Element in a property called `obj.DOM` or use await to get the XML Element directly
 	 */
 	function loadXML(url: string): object & PromiseLike<Element>;
+
+	/** 🛠
+	 * Wait for any assets that started loading to finish loading. By default q5 runs this before looping draw (which is called preloading), but it can be used even after draw starts looping.
+	 * @returns {PromiseLike<any[]>} a promise that resolves with loaded objects
+	 */
+	function loadAll(): PromiseLike<any[]>;
+
+	/** 🛠
+	 * Disables the automatic preloading of assets before draw starts looping. This allows draw to start immediately, and assets can be lazy loaded or `loadAll()` can be used to wait for assets to finish loading later.
+	 */
+	function disablePreload(): void;
 
 	/** 🛠
 	 * nf is short for number format. It formats a number
@@ -3717,28 +3764,15 @@ declare global {
 	function curveDetail(val: number): void;
 
 	/** 🖌
-	 * Starts storing vertices for a convex shape.
+	 * Starts storing vertices for a shape.
 	 */
 	function beginShape(): void;
 
 	/** 🖌
-	 * Ends storing vertices for a convex shape.
+	 * Ends storing vertices for a shape.
+	 * @param {boolean} [close] whether to close the shape by connecting the last vertex to the first vertex, default is false
 	 */
 	function endShape(): void;
-
-	/** 🖌
-	 * Starts storing vertices for a contour.
-	 * 
-	 * Not available in q5 WebGPU.
-	 */
-	function beginContour(): void;
-
-	/** 🖌
-	 * Ends storing vertices for a contour.
-	 * 
-	 * Not available in q5 WebGPU.
-	 */
-	function endContour(): void;
 
 	/** 🖌
 	 * Specifies a vertex in a shape.
@@ -3804,6 +3838,20 @@ declare global {
 	 */
 	function quad(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): void;
 
+	/** 🖌
+	 * Starts storing vertices for a contour.
+	 * 
+	 * Not available in q5 WebGPU.
+	 */
+	function beginContour(): void;
+
+	/** 🖌
+	 * Ends storing vertices for a contour.
+	 * 
+	 * Not available in q5 WebGPU.
+	 */
+	function endContour(): void;
+
 	// ⚙ advanced
 
 	/** ⚙
@@ -3816,7 +3864,7 @@ declare global {
 		/** ⚙
 		 * Creates an [instance](https://github.com/q5js/q5.js/wiki/Instance-Mode) of Q5.
 		 * 
-		 * Used by the global `createCanvas` function.
+		 * Used by the global `Canvas` function.
 		 * @param {string | Function} [scope]
 		 * @param {HTMLElement} [parent] element that the canvas will be placed inside
 		 * @example
@@ -3825,6 +3873,21 @@ declare global {
 		 * q.circle(100, 50, 20);
 		 */
 		constructor(scope?: string | Function, parent?: HTMLElement);
+
+		/** ⚙
+		 * The current minor version of q5.
+		 * @returns {string} the q5 version
+		 */
+		static version: string;
+
+		/** ⚙
+		 * Set to a language code other than 'en' (English) to use q5 in an additional language.
+		 * 
+		 * Currently supported languages:
+		 * 
+		 * - 'es' (Spanish)
+		 */
+		static lang: string;
 
 		/** ⚙
 		 * Turn off q5's friendly error messages.
@@ -3844,7 +3907,7 @@ declare global {
 		/** ⚙
 		 * Sets the default canvas context attributes used for newly created
 		 * canvases and internal graphics. These options are overwritten by any
-		 * per-canvas options you pass to `createCanvas`.
+		 * per-canvas options you pass to `Canvas`.
 		 */
 		static canvasOptions: object;
 
@@ -3852,7 +3915,7 @@ declare global {
 		 * A WebGPU memory allocation limit.
 		 * 
 		 * The maximum number of transformation matrixes
-		 * that can be used in a single draw call.
+		 * that can be used per frame.
 		 */
 		static MAX_TRANSFORMS: number;
 
@@ -3861,7 +3924,7 @@ declare global {
 		 * 
 		 * The maximum number of rectangles
 		 * (calls to `rect`, `square`, `capsule`)
-		 * that can be drawn in a single draw call.
+		 * that can be drawn per frame.
 		 */
 		static MAX_RECTS: number;
 
@@ -3870,7 +3933,7 @@ declare global {
 		 * 
 		 * The maximum number of ellipses
 		 * (calls to `ellipse`, `circle`, and `arc`)
-		 * that can be drawn in a single draw call.
+		 * that can be drawn per frame.
 		 */
 		static MAX_ELLIPSES: number;
 
@@ -3878,7 +3941,7 @@ declare global {
 		 * A WebGPU memory allocation limit.
 		 * 
 		 * The maximum number of text characters
-		 * that can be drawn in a single draw call.
+		 * that can be drawn per frame.
 		 */
 		static MAX_CHARS: number;
 
@@ -3886,7 +3949,7 @@ declare global {
 		 * A WebGPU memory allocation limit.
 		 * 
 		 * The maximum number of separate calls to `text`
-		 * that can be drawn in a single draw call.
+		 * that can be drawn per frame.
 		 */
 		static MAX_TEXTS: number;
 
@@ -3900,7 +3963,7 @@ declare global {
 		 * functions to be run at specific phases in the q5 lifecycle.
 		 * 
 		 * Inside the function, `this` refers to the Q5 instance.
-		 * @param {string} lifecycle init, presetup, postsetup, predraw, postdraw, or remove
+		 * @param {string} lifecycle 'init', 'presetup', 'postsetup', 'predraw', 'postdraw', or 'remove'
 		 * @param {Function} fn The function to be run at the specified lifecycle phase.
 		 */
 		static addHook(lifecycle: string, fn: Function): void;
@@ -3924,25 +3987,231 @@ declare global {
 		/** ⚙
 		 * The q5 draw function is run 60 times per second by default.
 		 */
-		draw(): void;
+		static draw(): void;
 
 		/** ⚙
 		 * Runs after each `draw` function call and post-draw q5 addon processes, if any.
 		 * 
 		 * Useful for adding post-processing effects when it's not possible
 		 * to do so at the end of the `draw` function, such as when using
-		 * addons like p5play that auto-draw to the canvas after the `draw`
+		 * addons like q5play that auto-draw to the canvas after the `draw`
 		 * function is run.
 		 */
-		postProcess(): void;
-		update(): void; //-
-
-		drawFrame(): void; //-
-
-		static Image: {
-			new (w: number, h: number, opt?: any): Q5.Image;
+		static postProcess(): void;
+		//-
+			static update(): void;
+			update(): void;
+			draw(): void;
+			postProcess(): void;
+			Canvas: typeof Canvas;
+			log: typeof log;
+			circle: typeof circle;
+			ellipse: typeof ellipse;
+			rect: typeof rect;
+			square: typeof square;
+			point: typeof point;
+			line: typeof line;
+			capsule: typeof capsule;
+			rectMode: typeof rectMode;
+			ellipseMode: typeof ellipseMode;
+			loadImage: typeof loadImage;
+			image: typeof image;
+			imageMode: typeof imageMode;
+			defaultImageScale: typeof defaultImageScale;
+			resize: typeof resize;
+			trim: typeof trim;
+			smooth: typeof smooth;
+			noSmooth: typeof noSmooth;
+			tint: typeof tint;
+			noTint: typeof noTint;
+			mask: typeof mask;
+			copy: typeof copy;
+			inset: typeof inset;
+			get: typeof get;
+			set: typeof set;
+			loadPixels: typeof loadPixels;
+			updatePixels: typeof updatePixels;
+			filter: typeof filter;
+			createImage: typeof createImage;
+			createGraphics: typeof createGraphics;
+			text: typeof text;
+			loadFont: typeof loadFont;
+			textFont: typeof textFont;
+			textSize: typeof textSize;
+			textLeading: typeof textLeading;
+			textStyle: typeof textStyle;
+			textAlign: typeof textAlign;
+			textWeight: typeof textWeight;
+			textWidth: typeof textWidth;
+			textAscent: typeof textAscent;
+			textDescent: typeof textDescent;
+			createTextImage: typeof createTextImage;
+			textImage: typeof textImage;
+			textToPoints: typeof textToPoints;
+			nf: typeof nf;
+			mousePressed: typeof mousePressed;
+			mouseReleased: typeof mouseReleased;
+			mouseMoved: typeof mouseMoved;
+			mouseDragged: typeof mouseDragged;
+			doubleClicked: typeof doubleClicked;
+			keyIsDown: typeof keyIsDown;
+			keyPressed: typeof keyPressed;
+			keyReleased: typeof keyReleased;
+			touchStarted: typeof touchStarted;
+			touchEnded: typeof touchEnded;
+			touchMoved: typeof touchMoved;
+			cursor: typeof cursor;
+			noCursor: typeof noCursor;
+			mouseWheel: typeof mouseWheel;
+			pointerLock: typeof pointerLock;
+			color: typeof color;
+			colorMode: typeof colorMode;
+			background: typeof background;
+			fill: typeof fill;
+			stroke: typeof stroke;
+			noFill: typeof noFill;
+			noStroke: typeof noStroke;
+			strokeWeight: typeof strokeWeight;
+			opacity: typeof opacity;
+			shadow: typeof shadow;
+			noShadow: typeof noShadow;
+			shadowBox: typeof shadowBox;
+			blendMode: typeof blendMode;
+			strokeCap: typeof strokeCap;
+			strokeJoin: typeof strokeJoin;
+			erase: typeof erase;
+			noErase: typeof noErase;
+			pushStyles: typeof pushStyles;
+			popStyles: typeof popStyles;
+			clear: typeof clear;
+			inFill: typeof inFill;
+			inStroke: typeof inStroke;
+			translate: typeof translate;
+			rotate: typeof rotate;
+			scale: typeof scale;
+			shearX: typeof shearX;
+			shearY: typeof shearY;
+			applyMatrix: typeof applyMatrix;
+			resetMatrix: typeof resetMatrix;
+			pushMatrix: typeof pushMatrix;
+			popMatrix: typeof popMatrix;
+			push: typeof push;
+			pop: typeof pop;
+			displayMode: typeof displayMode;
+			fullscreen: typeof fullscreen;
+			resizeCanvas: typeof resizeCanvas;
+			noLoop: typeof noLoop;
+			redraw: typeof redraw;
+			loop: typeof loop;
+			frameRate: typeof frameRate;
+			getTargetFrameRate: typeof getTargetFrameRate;
+			getFPS: typeof getFPS;
+			pixelDensity: typeof pixelDensity;
+			displayDensity: typeof displayDensity;
+			random: typeof random;
+			jit: typeof jit;
+			noise: typeof noise;
+			dist: typeof dist;
+			map: typeof map;
+			angleMode: typeof angleMode;
+			radians: typeof radians;
+			degrees: typeof degrees;
+			lerp: typeof lerp;
+			constrain: typeof constrain;
+			norm: typeof norm;
+			abs: typeof abs;
+			round: typeof round;
+			ceil: typeof ceil;
+			floor: typeof floor;
+			min: typeof min;
+			max: typeof max;
+			sin: typeof sin;
+			cos: typeof cos;
+			tan: typeof tan;
+			mag: typeof mag;
+			asin: typeof asin;
+			acos: typeof acos;
+			atan: typeof atan;
+			atan2: typeof atan2;
+			pow: typeof pow;
+			fract: typeof fract;
+			sq: typeof sq;
+			sqrt: typeof sqrt;
+			loge: typeof loge;
+			exp: typeof exp;
+			randomSeed: typeof randomSeed;
+			randomGenerator: typeof randomGenerator;
+			randomGaussian: typeof randomGaussian;
+			randomExponential: typeof randomExponential;
+			noiseMode: typeof noiseMode;
+			noiseSeed: typeof noiseSeed;
+			noiseDetail: typeof noiseDetail;
+			loadSound: typeof loadSound;
+			loadAudio: typeof loadAudio;
+			getAudioContext: typeof getAudioContext;
+			userStartAudio: typeof userStartAudio;
+			createEl: typeof createEl;
+			createA: typeof createA;
+			createButton: typeof createButton;
+			createCheckbox: typeof createCheckbox;
+			createColorPicker: typeof createColorPicker;
+			createImg: typeof createImg;
+			createInput: typeof createInput;
+			createP: typeof createP;
+			createRadio: typeof createRadio;
+			createSelect: typeof createSelect;
+			createSlider: typeof createSlider;
+			createVideo: typeof createVideo;
+			createCapture: typeof createCapture;
+			findEl: typeof findEl;
+			findEls: typeof findEls;
+			createRecorder: typeof createRecorder;
+			record: typeof record;
+			pauseRecording: typeof pauseRecording;
+			deleteRecording: typeof deleteRecording;
+			saveRecording: typeof saveRecording;
+			load: typeof load;
+			save: typeof save;
+			loadText: typeof loadText;
+			loadJSON: typeof loadJSON;
+			loadCSV: typeof loadCSV;
+			loadXML: typeof loadXML;
+			loadAll: typeof loadAll;
+			disablePreload: typeof disablePreload;
+			shuffle: typeof shuffle;
+			storeItem: typeof storeItem;
+			getItem: typeof getItem;
+			removeItem: typeof removeItem;
+			clearStorage: typeof clearStorage;
+			year: typeof year;
+			day: typeof day;
+			hour: typeof hour;
+			minute: typeof minute;
+			second: typeof second;
+			static Image: {
+				new (w: number, h: number, opt?: any): Q5.Image;
 			};
 
+	}
+
+	namespace Q5 {
+		interface Image {
+			width: number;
+			height: number;
+			copy(): Q5.Image;
+			get(x: number, y: number, w?: number, h?: number): Q5.Image | number[];
+			set(x: number, y: number, val: any): void;
+			resize(w: number, h: number): void;
+			mask(img: Q5.Image): void;
+			trim(): Q5.Image;
+			filter(type: string, value?: number): void;
+			loadPixels(): void;
+			updatePixels(): void;
+			save(fileName?: string): void;
+		}
+
+		export import Color = globalThis.Color;
+		export import Vector = globalThis.Vector;
 	}
 
 }

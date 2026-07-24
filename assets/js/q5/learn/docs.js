@@ -4,11 +4,12 @@
  * AI was used to generate parts of this script.
  */
 
-// reduce WebGPU memory usage since each learn pages
-// creates many Q5 instances
+// reduce WebGPU memory usage per Q5 instance
+// since these pages use a lot of them
 Q5.MAX_TRANSFORMS = 1000;
 Q5.MAX_RECTS = 10000;
 Q5.MAX_ELLIPSES = 1000;
+
 // Q5.online = false;
 
 toggleNavButton.addEventListener('pointerup', () => {
@@ -25,9 +26,6 @@ function winResized() {
 }
 winResized();
 window.addEventListener('resize', winResized);
-
-// theme select control replaces previous toggle button
-// `setTheme` is provided by /home/theme.js
 
 function stripParams(params) {
 	return params
@@ -46,15 +44,15 @@ function convertTSDefToMarkdown(data) {
 	const allLines = data.split('\n');
 	const firstSectionIdx = allLines.findIndex((l) => l.trim().startsWith('// '));
 	const lines = allLines.slice(firstSectionIdx >= 0 ? firstSectionIdx : 0);
-	(insideJSDoc = false),
-		(insideParams = false),
-		(insideProps = false),
-		(insideExample = false),
-		(hasExample = false),
-		(jsDocBuffer = ''),
-		(inClassDef = false),
-		(currentClassName = ''),
-		(curEmoji = '');
+	let insideJSDoc = false,
+		insideParams = false,
+		insideProps = false,
+		insideExample = false,
+		hasExample = false,
+		jsDocBuffer = '',
+		inClassDef = false,
+		currentClassName = '',
+		curEmoji = '';
 
 	// track when we are skipping over a namespace/interface block
 	let skippingBlock = false;
@@ -142,7 +140,7 @@ function convertTSDefToMarkdown(data) {
 			// classes are represented in .d.ts as properties (e.g. `static Image: { ... }`)
 			// which are handled elsewhere. So always treat 'class' as a top-level
 			// class beginning and update currentClassName.
-			let classMatch = line.match(/class\s+(\w+)/);
+			let classMatch = line.match(/class\s+([a-zA-Z0-9_\u00C0-\u00FF]+)/);
 			currentClassName = classMatch ? classMatch[1] : '';
 			inClassDef = true;
 		} else if (inClassDef && line.startsWith('constructor')) {
@@ -155,10 +153,10 @@ function convertTSDefToMarkdown(data) {
 			continue;
 		} else if (line.endsWith('//-')) {
 			jsDocBuffer = '';
-			continue;
+			return;
 		} else if (line.includes('(')) {
 			// capture a function/method name, its params, and any return/type (allow complex types)
-			let funcMatch = line.match(/(\w+)\s*\(([^)]*)\)\s*:\s*([^;]+)/);
+			let funcMatch = line.match(/([a-zA-Z0-9_\u00C0-\u00FF]+)\s*\(([^)]*)\)\s*:\s*([^;]+)/);
 			if (funcMatch) {
 				let [_, funcName, funcParams, funcType] = funcMatch;
 				if (!line.startsWith('function ')) {
@@ -173,8 +171,10 @@ function convertTSDefToMarkdown(data) {
 				hasExample = false;
 			}
 		} else if (
-			/^\s*static\s+\w+\s*:\s*\{/.test(line) ||
-			(/^\s*static\s+\w+\s*:\s*$/.test(line) && i + 1 < lines.length && lines[i + 1].trim().startsWith('{'))
+			/^\s*static\s+[a-zA-Z0-9_\u00C0-\u00FF]+\s*:\s*\{/.test(line) ||
+			(/^\s*static\s+[a-zA-Z0-9_\u00C0-\u00FF]+\s*:\s*$/.test(line) &&
+				i + 1 < lines.length &&
+				lines[i + 1].trim().startsWith('{'))
 		) {
 			// Skip nested static type blocks inside classes e.g. `static Image: { ... }`.
 			// If the brace is on the next line, we detect it and begin skipping.
@@ -242,6 +242,7 @@ let sections = {};
 // Current section state (must be declared before loader functions)
 let currentSectionId = '';
 let currentLoadedSectionId = '';
+let currentSubsectionId = '';
 
 // Current section state (must be declared before loader functions)
 // (declared earlier)
@@ -331,28 +332,45 @@ rawQSInit = rawQSInit.replace(/(?:^|&)(c2d)(?:=[^&]*)?(?=$|&)/g, '$1');
 let queryString = rawQSInit ? '?' + rawQSInit : '';
 
 // Renderer mode is read from the explicit `renderer` url param
-// Allowed values: 'webgpu' or 'c2d' (defaults to 'c2d')
+// Allowed values: 'webgpu' or 'c2d' (defaults to 'webgpu')
 // Detection: prefer explicit flags `?webgpu` or `?c2d` in the URL.
-// If none are present, default to c2d (isWebGPU=false).
-let isWebGPU = urlParams.has('webgpu') ? true : urlParams.has('c2d') ? false : false;
+// If none are present, default to webgpu (isWebGPU=true).
+let isWebGPU = urlParams.has('c2d') ? false : true;
 // Language selection is saved in localStorage. Fallback to any URL param
 // for backward compatibility, then default to English `en`.
 let lang = localStorage.getItem('lang') || urlParams.get('lang') || 'en';
 
 async function loadDtsAndRender(useWebGPU) {
-	const prevSection = currentSectionId;
+	// Snapshot everything needed BEFORE data or language changes.
+	const sectionKeys = Object.keys(sections);
+	const prevSectionIndex = sectionKeys.indexOf(currentSectionId);
+	const prevSubId = currentSubsectionId; // e.g. "canvas", "q5.canvas", "Vector.add"
+
+	// Positional fallback in case translation lookup fails.
+	let prevSubsectionIndex = -1;
+	if (prevSubId && currentSectionId && sections[currentSectionId]) {
+		const subKeys = Object.keys(sections[currentSectionId].subsections || {});
+		prevSubsectionIndex = subKeys.indexOf(prevSubId);
+	}
+
+	// Save the current translation map (English → currentLang) before Q5.lang changes.
+	// Q5._libMap is {} when on English, so we also save the current lang string.
+	const oldLibMap = { ...Q5._libMap };
+	const oldLang = Q5._lang || 'en';
+
 	// Build file name according to renderer + language. English (en) is default and has no suffix.
 	const baseName = useWebGPU ? 'q5' : 'q5-c2d';
-	const langSuffix = lang && lang !== 'en' ? `_${lang}` : '';
+	const langSuffix = lang && lang !== 'en' ? `-${lang}` : '';
 
-	// TODO: enable when WebGPU becomes the default
-	// const dir = lang == 'en' && useWebGPU ? '/' : `/defs/`;
+	Q5.lang = lang;
 
-	const dir = `/defs/`;
+	const dir = lang == 'en' && useWebGPU ? '/' : `/defs/`;
+
+	// const dir = `/defs/`;
 	const dtsFile = `${dir}${baseName}${langSuffix}.d.ts`;
 	// load the d.ts file for the requested renderer + language
 	const data = await fetch(dtsFile).then((res) => res.text());
-	markdownText = convertTSDefToMarkdown(data);
+	let markdownText = convertTSDefToMarkdown(data);
 	// Clean JSDoc example blocks (remove leading '*' and common indent)
 	markdownText = cleanJSDocExamples(markdownText);
 	sections = parseMarkdownIntoSections(markdownText);
@@ -386,11 +404,50 @@ async function loadDtsAndRender(useWebGPU) {
 	// Force content reload by resetting currentLoadedSectionId
 	currentLoadedSectionId = '';
 
-	// If we had a section selected previously, try to restore it in the new data.
-	if (prevSection && sections[prevSection]) {
-		await navigateTo(prevSection);
+	// Restore the same section/subsection using the translation map.
+	if (prevSectionIndex >= 0) {
+		const newSectionKeys = Object.keys(sections);
+		const targetSectionId = newSectionKeys[Math.min(prevSectionIndex, newSectionKeys.length - 1)];
+
+		let targetSubId = null;
+		if (prevSubId && targetSectionId) {
+			// Subsection IDs can be plain names ("canvas") or class-prefixed ("q5.canvas", "Vector.add").
+			// Split off the prefix so we look up just the member name in the translation map.
+			const dotIdx = prevSubId.indexOf('.');
+			const prefix = dotIdx >= 0 ? prevSubId.slice(0, dotIdx + 1) : '';
+			const memberName = dotIdx >= 0 ? prevSubId.slice(dotIdx + 1) : prevSubId;
+
+			// Step 1: get the English canonical name.
+			// If we were already on a translated page, reverse-look up the old map.
+			let englishName = memberName;
+			if (oldLang !== 'en') {
+				for (const [en, tr] of Object.entries(oldLibMap)) {
+					if (tr === memberName) {
+						englishName = en;
+						break;
+					}
+				}
+			}
+
+			// Step 2: translate the English name into the new language via Q5._libMap.
+			const newLibMap = Q5._libMap; // English → newLang (empty when newLang is 'en')
+			const newMemberName = newLibMap[englishName] || englishName;
+			const translatedSubId = prefix + newMemberName;
+
+			// Step 3: verify the translated subsection actually exists, fall back to positional.
+			if (sections[targetSectionId]?.subsections[translatedSubId]) {
+				targetSubId = translatedSubId;
+			} else if (prevSubsectionIndex >= 0) {
+				const newSubKeys = Object.keys(sections[targetSectionId]?.subsections || {});
+				if (prevSubsectionIndex < newSubKeys.length) {
+					targetSubId = newSubKeys[prevSubsectionIndex];
+				}
+			}
+		}
+
+		await navigateTo(targetSectionId, targetSubId);
 	} else {
-		// fall back to displayContent (handles hash and default)
+		// Initial load or no prior section — use hash or default first section.
 		await displayContent();
 	}
 }
@@ -577,6 +634,13 @@ function generateHeadings() {
 			button.type = 'button';
 			button.innerText = '';
 
+			button.addEventListener('focus', () => {
+				button.style.opacity = 1;
+			});
+			button.addEventListener('blur', () => {
+				button.style.opacity = '';
+			});
+
 			button.addEventListener('pointerup', () => {
 				let url = `${location.origin}${location.pathname.slice(0, location.pathname.lastIndexOf('/') + 1)}#${id}`;
 				button.classList.add('copied');
@@ -593,10 +657,14 @@ function generateHeadings() {
 }
 
 async function executeDataScripts() {
-	Q5.canUseWebGPU = await Q5.initWebGPU();
+	MiniEditor.host = 'q5';
+	await Q5.initWebGPU();
 	let scripts = contentArea.querySelectorAll('script[type="mini"]');
 	for (let script of scripts) {
+		script.setAttribute('horiz', true);
 		let mie = new MiniEditor(script);
+		mie.showLineNumbers = true;
+		mie.fontSize = 16;
 		await mie.init();
 	}
 }
@@ -661,6 +729,9 @@ async function populateContentArea() {
 		button.append(title);
 
 		button.addEventListener('pointerup', () => navigateTo(nav.id));
+		button.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter') navigateTo(nav.id);
+		});
 		navButtonsContainer.append(button);
 	}
 
@@ -670,9 +741,6 @@ async function populateContentArea() {
 	spacer.style.height = '100vh';
 	contentArea.append(spacer);
 
-	if (currentLoadedSectionId != currentSectionId) {
-		history.pushState(null, '', `${queryString}#${currentSectionId}`);
-	}
 	currentLoadedSectionId = currentSectionId;
 }
 
@@ -730,9 +798,9 @@ function updateStickyHeader() {
 	closestWrapper.classList.add('sticky');
 	prevStickyWrapper = closestWrapper;
 
-	const subsectionId = closestWrapper.parentElement?.id || '';
+	currentSubsectionId = closestWrapper.parentElement?.id || '';
 	for (const link of document.querySelectorAll('.subsection-link')) {
-		link.classList.toggle('active', link.getAttribute('href').slice(1) === subsectionId);
+		link.classList.toggle('active', link.getAttribute('href').slice(1) === currentSubsectionId);
 	}
 }
 
@@ -789,15 +857,17 @@ function updateNavigationActiveState() {
 }
 
 async function displayContent() {
-	const hash = location.hash.slice(1).split('?')[0]; // Remove query params from hash
-	if (!hash) {
-		// Find the first section ID (e.g., "coreSection")
-		const firstSectionId = Object.keys(sections)[0];
-		if (firstSectionId) await navigateTo(firstSectionId);
-		return;
+	const hash = decodeURIComponent(location.hash.slice(1).split('?')[0]); // Remove query params from hash
+	let sectionId, subsectionId;
+	if (hash) {
+		({ sectionId, subsectionId } = findSectionAndSubsection(hash));
 	}
-	const { sectionId, subsectionId } = findSectionAndSubsection(hash);
-	await navigateTo(sectionId, subsectionId);
+	if (!sectionId) {
+		// Find the first section ID (e.g., "coreSection")
+		sectionId = Object.keys(sections)[0];
+		subsectionId = null;
+	}
+	if (sectionId) await navigateTo(sectionId, subsectionId);
 }
 
 // Event Listeners

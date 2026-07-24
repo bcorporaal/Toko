@@ -96,18 +96,13 @@ Q5.renderers.c2d.canvas = ($, q) => {
 
 	$.strokeWeight = (n) => {
 		if (!n) $._doStroke = false;
+		else $._doStroke = true;
 		$.ctx.lineWidth = $._strokeWeight = n || 0.0001;
 	};
 
 	$.noFill = () => ($._doFill = false);
 	$.noStroke = () => ($._doStroke = false);
 	$.opacity = (a) => ($.ctx.globalAlpha = a);
-
-	// polyfill for q5 WebGPU functions (used by q5play)
-	$._getFillIdx = () => $._fill;
-	$._setFillIdx = (v) => ($._fill = v);
-	$._getStrokeIdx = () => $._stroke;
-	$._setStrokeIdx = (v) => ($._stroke = v);
 
 	$._doShadow = false;
 	$._shadowOffsetX = $._shadowOffsetY = $._shadowBlur = 10;

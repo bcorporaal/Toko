@@ -7,6 +7,8 @@ Loads a file or multiple files.
 File type is determined by file extension. q5 supports loading
 text, json, csv, font, audio, and image files.
 
+By default, assets are loaded in parallel before q5 runs `draw`. Use `await` to wait for assets to load.
+
 ```
 @param {...string} urls
 @returns {Promise<any[]>} a promise that resolves with objects
@@ -15,7 +17,7 @@ text, json, csv, font, audio, and image files.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 let logo = load('/q5js_logo.avif');
 
@@ -25,7 +27,7 @@ q5.draw = function () {
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 
 await load('/assets/Robotica.ttf');
@@ -35,26 +37,71 @@ text('Hello, world!', -97, 100);
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 let [jump, retro] = await load('/assets/jump.wav', '/assets/retro.flac');
 
 q5.mousePressed = function () {
-	mouseButton == 'left' ? jump.play() : retro.play();
+	if (mouseButton == 'left') jump.play();
+	if (mouseButton == 'right') retro.play();
 };
+//
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 textSize(32);
 
-let myXML = await load('/assets/animals.xml');
-let mammals = myXML.getElementsByTagName('mammal');
-let y = -100;
+let xml = await load('/assets/animals.xml');
+let mammals = xml.querySelectorAll('mammal');
+let y = -90;
 for (let mammal of mammals) {
-	text(mammal.textContent, -100, (y += 32));
+	text(mammal.textContent, -90, (y += 32));
 }
+```
+
+### python
+
+```py
+Canvas(200)
+
+logo = load('/q5js_logo.avif')
+
+def draw():
+	image(logo, -100, -100, 200, 200)
+```
+
+```py
+Canvas(200)
+background(0.8)
+
+await load('/assets/Robotica.ttf')
+
+textSize(28)
+text('Hello, world!', -97, 100)
+```
+
+```py
+Canvas(200)
+
+[jump, retro] = await load('/assets/jump.wav', '/assets/retro.flac')
+
+def mousePressed():
+	if mouseButton == 'left': jump.play()
+	if mouseButton == 'right': retro.play()
+```
+
+```py
+Canvas(200)
+background(0.8)
+textSize(32)
+
+xml = await load('/assets/animals.xml')
+mammals = xml.querySelectorAll('mammal')
+y = -90
+for (let mammal of mammals)
+	text(mammal.textContent, -90, (y += 32))
 ```
 
 ### c2d
@@ -85,7 +132,7 @@ an image file named "untitled.png".
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 circle(0, 0, 50);
 
@@ -95,7 +142,7 @@ q5.mousePressed = function () {
 ```
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 background(0.8);
 text('save me?', -90, 0);
 textSize(180);
@@ -104,6 +151,28 @@ let bolt = createTextImage('⚡️');
 q5.mousePressed = function () {
 	save(bolt, 'bolt.png');
 };
+```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+circle(0, 0, 50)
+
+def mousePressed():
+	save('circle.png')
+```
+
+```py
+Canvas(200)
+background(0.8)
+text('save me?', -90, 0)
+textSize(180)
+bolt = createTextImage('⚡️')
+
+def mousePressed():
+	save(bolt, 'bolt.png')
 ```
 
 ### c2d
@@ -130,59 +199,124 @@ function mousePressed() {
 }
 ```
 
+## millis
+
+Returns the number of milliseconds since the program started.
+
+```
+@returns {number} milliseconds since the program started
+```
+
+### webgpu
+
+```js
+await Canvas(200);
+
+q5.draw = function () {
+	background(0.8);
+
+	if (millis() > 2000) {
+		text('Hello, world!', -90, 0);
+	}
+};
+```
+
+### python
+
+```py
+Canvas(200)
+
+def draw():
+	background(0.8)
+
+	if millis(: > 2000)
+		text('Hello, world!', -90, 0)
+```
+
 ## loadText
 
 Loads a text file from the specified url.
 
+Using `await` to get the loaded text as a string is recommended.
+
 ```
 @param {string} url text file
-@returns {object & PromiseLike<string>} an object containing the loaded text in the property `obj.text` or a promise
+@returns {object & PromiseLike<string>} an object containing the loaded text in the property `obj.text` or use `await` to get the text string directly
 ```
 
 ## loadJSON
 
 Loads a JSON file from the specified url.
 
+Using `await` to get the loaded JSON object or array is recommended.
+
 ```
 @param {string} url JSON file
-@returns {any & PromiseLike<any>} an object or array containing the loaded JSON or a promise
+@returns {any & PromiseLike<any>} an object or array containing the loaded JSON
 ```
 
 ## loadCSV
 
 Loads a CSV file from the specified url.
 
+Using `await` to get the loaded CSV as an array of objects is recommended.
+
 ```
 @param {string} url CSV file
-@returns {object[] & PromiseLike<object[]>} an array of objects containing the loaded CSV or a promise
+@returns {object[] & PromiseLike<object[]>} an array of objects containing the loaded CSV
 ```
 
 ## loadXML
 
 Loads an xml file from the specified url.
 
+Using `await` to get the loaded XML Element is recommended.
+
 ```
 @param {string} url xml file
-@returns {Element & PromiseLike<Element>} an object containing the loaded XML in a property called `obj.DOM` or a promise
+@returns {Element & PromiseLike<Element>} an object containing the loaded XML Element in a property called `obj.DOM` or use await to get the XML Element directly
 ```
 
-### c2d
+### webgpu
 
 ```js
-async function setup() {
-	createCanvas(200);
-	background(200);
-	textSize(32);
+await Canvas(200);
+background(0.8);
+textSize(32);
 
-	let myXML = await loadXML('/assets/animals.xml');
-
-	let mammals = myXML.getElementsByTagName('mammal');
-	let y = 64;
-	for (let mammal of mammals) {
-		text(mammal.textContent, 20, (y += 32));
-	}
+let xml = await load('/assets/animals.xml');
+let mammals = xml.querySelectorAll('mammal');
+let y = -90;
+for (let mammal of mammals) {
+	text(mammal.textContent, -90, (y += 32));
 }
 ```
+
+### python
+
+```py
+Canvas(200)
+background(0.8)
+textSize(32)
+
+xml = await load('/assets/animals.xml')
+mammals = xml.querySelectorAll('mammal')
+y = -90
+for (let mammal of mammals)
+	text(mammal.textContent, -90, (y += 32))
+```
+
+## loadAll
+
+Wait for any assets that started loading to finish loading. By default q5 runs this before looping draw (which is called preloading), but it can be used even after draw starts looping.
+
+```
+@returns {PromiseLike<any[]>} a promise that resolves with loaded objects
+```
+
+## disablePreload
+
+Disables the automatic preloading of assets before draw starts looping. This allows draw to start immediately, and assets can be lazy loaded or `loadAll()` can be used to wait for assets to finish loading later.
 
 ## nf
 
@@ -198,11 +332,21 @@ to a string with a specified number of digits.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 background(0.8);
 
 textSize(32);
 text(nf(PI, 4, 5), -90, 10);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+background(0.8)
+
+textSize(32)
+text(nf(PI, 4, 5), -90, 10)
 ```
 
 ## shuffle

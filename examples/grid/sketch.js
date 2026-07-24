@@ -10,7 +10,7 @@ let seedHistory = [],
   gridRNG,
   g;
 
-let tokoWrapper = new TokoWrapper({
+var tokoWrapper = new TokoWrapper({
   title: 'Grid',
   addInfoToTitle: true,
   showCanvasSizeOptions: true,
@@ -95,11 +95,11 @@ function setupPanelControls (panelObject) {
   });
   f1.addBinding(p, 'splitType', {
     options: {
-      horizontal: g.SPLIT_HORIZONTAL,
-      vertical: g.SPLIT_VERTICAL,
-      longest: g.SPLIT_LONGEST,
-      mix: g.SPLIT_MIX,
-      square: g.SPLIT_SQUARE,
+      horizontal: Toko.Grid.SPLIT_HORIZONTAL,
+      vertical: Toko.Grid.SPLIT_VERTICAL,
+      longest: Toko.Grid.SPLIT_LONGEST,
+      mix: Toko.Grid.SPLIT_MIX,
+      square: Toko.Grid.SPLIT_SQUARE,
     },
   });
   f1.addBinding(p, 'splitChance', {
@@ -183,7 +183,6 @@ function setup () {
   //
   colorRNG = new Toko.RNG();
   gridRNG = new Toko.RNG();
-  g = new Toko.Grid();
 }
 
 //---------------------------------------------

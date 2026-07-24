@@ -88,6 +88,20 @@ function calculateArcParameters (
   // Calculate half the interior angle for arc calculations
   const halfAngle = interiorAngle / 2;
 
+  // Handle collinear or near-collinear edges where sin(halfAngle) is zero or near-zero
+  // In this case, skip rounding and return a degenerate arc (radius 0, straight line segment)
+  if (Math.abs(Math.sin(halfAngle)) < epsilon) {
+    return {
+      centerX: currentVertex.x,
+      centerY: currentVertex.y,
+      radius: 0,
+      startAngle: 0,
+      endAngle: 0,
+      angleDiff: 0,
+      numSegments: 0,
+    };
+  }
+
   // Calculate the distance from vertex to arc center
   // This is derived from trigonometry: distance = radius / tan(halfAngle)
   let distanceToArcCenter = Math.abs((Math.cos(halfAngle) * cornerRadius) / Math.sin(halfAngle));

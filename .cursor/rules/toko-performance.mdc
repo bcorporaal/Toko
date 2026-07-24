@@ -1,0 +1,29 @@
+---
+description: Performance guidelines for toko-library and toko-wrapper
+globs: src/toko-library/**/*.js, src/toko-wrapper/**/*.js
+alwaysApply: false
+---
+
+# Performance Guidelines
+
+**General Optimization**:
+
+- Minimize object creation in draw loops
+- Cache expensive calculations (color scales, noise values, transformations)
+- Pre-calculate static values in `setup()` when possible
+- Use `noLoop()` for static sketches, `loop()` only when needed
+
+**Memory Management**:
+
+- Reuse arrays and objects instead of creating new ones
+- Clear large data structures when no longer needed
+- Use typed arrays for performance-critical calculations
+- Avoid string concatenation in loops
+
+**Canvas Operations**:
+
+- Batch drawing operations when possible
+- Use `loadPixels()`/`updatePixels()` sparingly - batch pixel operations
+- Use `push()`/`pop()` efficiently to minimize matrix operations
+- Prefer `beginShape()`/`endShape()` over multiple individual draw calls
+- Cache `createGraphics()` objects for reusable elements

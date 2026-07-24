@@ -20,6 +20,10 @@
  * @returns {p5.Color} p5.js color object with specified alpha
  */
 export function colorAlpha (hexColor, alpha = 255) {
+  if (hexColor == null || hexColor === '') {
+    console.warn('Toko: colorAlpha received an invalid color value.');
+    return null;
+  }
   let c = color(hexColor);
   // Check if setAlpha method exists (p5.js and q5.js integer mode)
   if (typeof c.setAlpha === 'function') {

@@ -1,0 +1,39 @@
+---
+description: Error messages, graceful degradation, and validation
+globs: src/toko-library/**/*.js, src/toko-wrapper/**/*.js
+alwaysApply: false
+---
+
+# Error Handling
+
+**Clear Error Messages**:
+
+- Use descriptive error messages that help debugging
+- Include context about what the user was trying to do
+- Provide suggestions for fixing common issues
+- Use consistent error message formatting
+
+**Graceful Degradation**:
+
+- Log warnings instead of errors for non-critical issues
+- Maintain functionality across different p5.js versions
+
+**Validation**:
+
+- Validate input parameters with helpful error messages
+- Use early returns for invalid inputs
+- Provide default values for optional parameters
+- Include range checking for numeric inputs
+
+**Good vs bad error handling**:
+
+```javascript
+// BAD: silent failure, vague message
+if (!value) return;
+throw new Error('Invalid');
+
+// GOOD: early return with clear message, actionable suggestion
+if (typeof value !== 'number' || value < 0) {
+  throw new Error('Toko: pulse() period must be a non-negative number. Got: ' + value);
+}
+```

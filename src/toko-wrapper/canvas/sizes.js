@@ -36,6 +36,10 @@ export function parseAdditionalCanvasSizes (options) {
  * @param {Object} inSize - Size object with name and dimensions
  */
 export function addCanvasSize (inSize) {
+  if (!inSize || !inSize.name) {
+    console.warn('TokoWrapper: addCanvasSize requires a size object with a name property.');
+    return;
+  }
   SIZES.push(inSize);
   SIZES_LIST[inSize.name] = inSize.name;
 }

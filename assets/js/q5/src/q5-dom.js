@@ -272,6 +272,7 @@ Q5.modules.dom = ($, q) => {
 		el.height ||= el.videoHeight;
 		el.defaultWidth = el.width * $._defaultImageScale;
 		el.defaultHeight = el.height * $._defaultImageScale;
+		el._pixelDensity = 1;
 		el.ready = true;
 	}
 
@@ -282,7 +283,6 @@ Q5.modules.dom = ($, q) => {
 		if (src) {
 			el.promise = new Promise((resolve) => {
 				el.addEventListener('loadeddata', () => {
-					delete el.promise;
 					delete el.then;
 					if (el._usedAwait) {
 						el = $.createEl('video');
@@ -337,7 +337,6 @@ Q5.modules.dom = ($, q) => {
 				throw e;
 			}
 
-			delete vid.promise;
 			delete vid.then;
 			if (vid._usedAwait) {
 				vid = $.createVideo();
@@ -360,6 +359,6 @@ Q5.modules.dom = ($, q) => {
 		return vid;
 	};
 
-	$.findElement = (selector) => document.querySelector(selector);
-	$.findElements = (selector) => document.querySelectorAll(selector);
+	$.findEl = (selector) => document.querySelector(selector);
+	$.findEls = (selector) => document.querySelectorAll(selector);
 };

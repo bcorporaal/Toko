@@ -3,9 +3,9 @@
 The Document Object Model (DOM) is an interface for
 creating and editing web pages with JavaScript.
 
-## createElement
+## createEl
 
-Creates a new HTML element and adds it to the page. `createEl` is
+Creates a new HTML element and adds it to the page. `createElement` is
 an alias.
 
 Modify the element's CSS [`style`](https://developer.mozilla.org/docs/Web/API/HTMLElement/style) to change its appearance.
@@ -33,7 +33,7 @@ q5 adds some extra functionality to the elements it creates:
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 let el = createEl('div', '*');
 el.position(50, 50);
@@ -42,6 +42,20 @@ el.style.fontSize = '136px';
 el.style.textAlign = 'center';
 el.style.backgroundColor = 'blue';
 el.style.color = 'white';
+```
+
+### python
+
+```py
+Canvas(200)
+
+el = createEl('div', '*')
+el.position(50, 50)
+el.size(100, 100)
+el.style.fontSize = '136px'
+el.style.textAlign = 'center'
+el.style.backgroundColor = 'blue'
+el.style.color = 'white'
 ```
 
 ### c2d
@@ -71,7 +85,7 @@ Creates a link element.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 let link = createA('https://q5js.org', 'q5.js');
 link.position(16, 42);
@@ -80,6 +94,20 @@ link.style.fontSize = '80px';
 link.addEventListener('mouseover', () => {
 	background('cyan');
 });
+```
+
+### python
+
+```py
+Canvas(200)
+
+link = createA('https://q5js.org', 'q5.js')
+link.position(16, 42)
+link.style.fontSize = '80px'
+
+link.addEventListener('mouseover', () =>
+	background('cyan')
+	})
 ```
 
 ### c2d
@@ -107,13 +135,25 @@ Creates a button element.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
 let btn = createButton('Click me!');
 
 btn.addEventListener('click', () => {
 	background(random(0.4, 1));
 });
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+btn = createButton('Click me!')
+
+btn.addEventListener('click', () =>
+	background(random(0.4, 1))
+	})
 ```
 
 ### c2d
@@ -144,7 +184,7 @@ The `label` property is the text label element next to the checkbox.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
 let box = createCheckbox('Check me!');
 box.label.style.color = 'lime';
@@ -153,6 +193,20 @@ box.addEventListener('input', () => {
 	if (box.checked) background('lime');
 	else background('black');
 });
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+box = createCheckbox('Check me!')
+box.label.style.color = 'lime'
+
+box.addEventListener('input', () =>
+	if box.checked: background('lime')
+	else: background('black')
+	})
 ```
 
 ### c2d
@@ -182,7 +236,7 @@ Use the `value` property to get or set the color value.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
 let picker = createColorPicker();
 picker.value = '#fd7575';
@@ -190,6 +244,18 @@ picker.value = '#fd7575';
 q5.draw = function () {
 	background(picker.value);
 };
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+picker = createColorPicker()
+picker.value = '#fd7575'
+
+def draw():
+	background(picker.value)
 ```
 
 ### c2d
@@ -216,10 +282,19 @@ Creates an image element.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
-let img = createImg('/assets/p5play_logo.webp');
+let img = createImg('/assets/q5play_logo.avif');
 img.position(0, 0).size(100, 100);
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+img = createImg('/assets/q5play_logo.avif')
+img.position(0, 0).size(100, 100)
 ```
 
 ### c2d
@@ -227,7 +302,7 @@ img.position(0, 0).size(100, 100);
 ```js
 createCanvas(200, 100);
 
-let img = createImg('/assets/p5play_logo.webp');
+let img = createImg('/assets/q5play_logo.avif');
 img.position(0, 0).size(100, 100);
 ```
 
@@ -250,7 +325,7 @@ See MDN's [input documentation](https://developer.mozilla.org/docs/Web/HTML/Elem
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 textSize(64);
 
 let input = createInput();
@@ -261,6 +336,22 @@ input.addEventListener('input', () => {
 	background('orange');
 	text(input.value, -90, 30);
 });
+```
+
+### python
+
+```py
+Canvas(200, 100)
+textSize(64)
+
+input = createInput()
+input.placeholder = 'Type here!'
+input.size(200, 32)
+
+input.addEventListener('input', () =>
+	background('orange')
+	text(input.value, -90, 30)
+	})
 ```
 
 ### c2d
@@ -290,11 +381,21 @@ Creates a paragraph element.
 ### webgpu
 
 ```js
-await createCanvas(200, 50);
+await Canvas(200, 50);
 background('coral');
 
 let p = createP('Hello, world!');
 p.style.color = 'pink';
+```
+
+### python
+
+```py
+Canvas(200, 50)
+background('coral')
+
+p = createP('Hello, world!')
+p.style.color = 'pink'
 ```
 
 ### c2d
@@ -323,16 +424,32 @@ Use the `value` property to get or set the value of the selected radio button.
 ### webgpu
 
 ```js
-await createCanvas(200, 160);
+await Canvas(200, 160);
 
 let radio = createRadio();
-radio.option('square', '1').option('circle', '2');
+radio.option('square', '1');
+radio.option('circle', '2');
 
 q5.draw = function () {
 	background(0.8);
 	if (radio.value == '1') square(-40, -40, 80);
 	if (radio.value == '2') circle(0, 0, 80);
 };
+```
+
+### python
+
+```py
+Canvas(200, 160)
+
+radio = createRadio()
+radio.option('square', '1')
+radio.option('circle', '2')
+
+def draw():
+	background(0.8)
+	if radio.value == '1': square(-40, -40, 80)
+	if radio.value == '2': circle(0, 0, 80)
 ```
 
 ### c2d
@@ -372,14 +489,29 @@ string or an array of strings.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 
-let sel = createSelect('Select a color');
-sel.option('Red', '#f55').option('Green', '#5f5');
+let sel = createSelect('Select an option');
+sel.option('Red', '#f55');
+sel.option('Green', '#5f5');
 
 sel.addEventListener('change', () => {
 	background(sel.value);
 });
+```
+
+### python
+
+```py
+Canvas(200, 100)
+
+sel = createSelect('Select an option')
+sel.option('Red', '#f55')
+sel.option('Green', '#5f5')
+
+sel.addEventListener('change', () =>
+	background(sel.value)
+	})
 ```
 
 ### c2d
@@ -387,7 +519,7 @@ sel.addEventListener('change', () => {
 ```js
 createCanvas(200, 100);
 
-let sel = createSelect('Select a color');
+let sel = createSelect('Select an option');
 sel.option('Red', '#f55').option('Green', '#5f5');
 
 sel.addEventListener('change', () => {
@@ -413,7 +545,7 @@ Use the `val` function to get the slider's value as a number.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 let slider = createSlider(0, 1, 0.5, 0.1);
 slider.position(10, 10).size(180);
@@ -421,6 +553,18 @@ slider.position(10, 10).size(180);
 q5.draw = function () {
 	background(slider.val());
 };
+```
+
+### python
+
+```py
+Canvas(200)
+
+slider = createSlider(0, 1, 0.5, 0.1)
+slider.position(10, 10).size(180)
+
+def draw():
+	background(slider.val())
 ```
 
 ### c2d
@@ -454,7 +598,7 @@ displayed on the canvas using the `image` function.
 ### webgpu
 
 ```js
-await createCanvas(1);
+await Canvas(1);
 
 let vid = createVideo('/assets/apollo4.mp4');
 vid.size(200, 150);
@@ -463,7 +607,7 @@ vid.controls = true;
 ```
 
 ```js
-await createCanvas(200, 150);
+await Canvas(200, 150);
 let vid = createVideo('/assets/apollo4.mp4');
 vid.hide();
 
@@ -472,9 +616,33 @@ q5.mousePressed = function () {
 	vid.play();
 };
 q5.draw = function () {
+	rotate(mouseX / 55);
 	image(vid, -100, -75, 200, 150);
-	// filter(HUE_ROTATE, 90);
 };
+```
+
+### python
+
+```py
+Canvas(1)
+
+vid = createVideo('/assets/apollo4.mp4')
+vid.size(200, 150)
+vid.autoplay = vid.muted = vid.loop = True
+vid.controls = True
+```
+
+```py
+Canvas(200, 150)
+vid = createVideo('/assets/apollo4.mp4')
+vid.hide()
+
+def mousePressed():
+	vid.currentTime = 0
+	vid.play()
+def draw():
+	rotate(mouseX / 55)
+	image(vid, -100, -75, 200, 150)
 ```
 
 ### c2d
@@ -557,6 +725,35 @@ q5.mousePressed = function () {
 };
 ```
 
+### python
+
+```py
+def mousePressed():
+	cap = createCapture(VIDEO)
+	cap.size(200, 112.5)
+	canvas.remove()
+```
+
+```py
+cap
+def mousePressed():
+	cap = createCapture(VIDEO)
+	cap.hide()
+
+def draw():
+	y = (frameCount % 200) - 100
+	image(cap, -100, y, 200, 200)
+```
+
+```py
+def mousePressed():
+	cap = createCapture(
+		video: { width: 640, height: 480 }
+		})
+		cap.size(200, 150)
+		canvas.remove()
+```
+
 ### c2d
 
 ```js
@@ -590,18 +787,22 @@ function mousePressed() {
 }
 ```
 
-## findElement
+## findEl
 
 Finds the first element in the DOM that matches the given [CSS selector](https://developer.mozilla.org/docs/Learn_web_development/Core/Styling_basics/Basic_selectors).
+
+Alias for `document.querySelector`.
 
 ```
 @param {string} selector
 @returns {HTMLElement} element
 ```
 
-## findElements
+## findEls
 
 Finds all elements in the DOM that match the given [CSS selector](https://developer.mozilla.org/docs/Learn_web_development/Core/Styling_basics/Basic_selectors).
+
+Alias for `document.querySelectorAll`.
 
 ```
 @param {string} selector

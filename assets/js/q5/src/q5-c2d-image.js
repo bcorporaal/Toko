@@ -23,7 +23,7 @@ Q5.renderers.c2d.image = ($, q) => {
 		if (url.canvas) return url;
 		if (url.slice(-3).toLowerCase() == 'gif') {
 			throw new Error(
-				`q5 doesn't support GIFs. Use a video or p5play animation instead. https://github.com/q5js/q5.js/issues/84`
+				`q5 doesn't support GIFs. Use a video or q5play animation instead. https://github.com/q5js/q5.js/issues/84`
 			);
 		}
 		let last = [...arguments].at(-1);
@@ -40,7 +40,6 @@ Q5.renderers.c2d.image = ($, q) => {
 
 		g.promise = new Promise((resolve, reject) => {
 			img.onload = () => {
-				delete g.promise;
 				delete g.then;
 				if (g._usedAwait) g = $.createImage(1, 1, opt);
 
@@ -191,7 +190,17 @@ Q5.renderers.c2d.image = ($, q) => {
 			$.ctx.clearRect(0, 0, c.width, c.height);
 			$.ctx.drawImage(o, 0, 0, c.width, c.height);
 
-			$.modified = $._retint = true;
+			$._retint = true;
+
+			if ($._owner?._makeDrawable) {
+				if ($._owner._texturesToDestroy && $._texture) {
+					$._owner._texturesToDestroy.push($._texture);
+				} else {
+					$._texture.destroy();
+				}
+				delete $._texture;
+				$._owner._makeDrawable($);
+			}
 		};
 	}
 
@@ -275,7 +284,7 @@ Q5.renderers.c2d.image = ($, q) => {
 		img.ctx.drawImage(c, x, y, w * pd, h * pd, 0, 0, w, h);
 		img.width = w;
 		img.height = h;
-		if ($._webgpuInst) $._webgpuInst._makeDrawable(img);
+		if ($._owner?._makeDrawable) $._owner._makeDrawable(img);
 		return img;
 	};
 
@@ -290,15 +299,29 @@ Q5.renderers.c2d.image = ($, q) => {
 			$._tint = old;
 			return;
 		}
+
 		if (!pixels) $.loadPixels();
-		let mod = $._pixelDensity || 1;
+
+		let mod = $._pixelDensity || 1,
+			r = val.r,
+			g = val.g,
+			b = val.b,
+			a = val.a;
+
+		if (($._colorFormat || $._owner?._colorFormat) == 1) {
+			r *= 255;
+			g *= 255;
+			b *= 255;
+			a *= 255;
+		}
+
 		for (let i = 0; i < mod; i++) {
 			for (let j = 0; j < mod; j++) {
 				let idx = 4 * ((y * mod + i) * c.width + x * mod + j);
-				pixels[idx] = val.r;
-				pixels[idx + 1] = val.g;
-				pixels[idx + 2] = val.b;
-				pixels[idx + 3] = val.a;
+				pixels[idx] = r;
+				pixels[idx + 1] = g;
+				pixels[idx + 2] = b;
+				pixels[idx + 3] = a;
 			}
 		}
 	};
@@ -346,6 +369,28 @@ Q5.Image = class {
 		$.defaultHeight = h * scale;
 		delete $.createCanvas;
 		$._loop = false;
+
+		let m = Q5._libMap;
+		if (m) {
+			let imgFns = [
+				'copy',
+				'filter',
+				'get',
+				'set',
+				'resize',
+				'mask',
+				'trim',
+				'inset',
+				'pixels',
+				'loadPixels',
+				'updatePixels',
+				'smooth',
+				'noSmooth'
+			];
+			for (let name of imgFns) {
+				if (m[name]) $[m[name]] = $[name];
+			}
+		}
 	}
 	get w() {
 		return this.width;

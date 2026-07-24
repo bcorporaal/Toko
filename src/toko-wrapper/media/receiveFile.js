@@ -2,8 +2,6 @@ import { libraryState } from '../core/state';
 import { LIBRARY_Q5 } from '../config/constants';
 import { _presetToState } from '../ui/tweakpaneUtil';
 import { updatePaletteSelector } from '../ui/colorControls';
-import { logWarn } from '../util/logging';
-
 /**
  * Set up file receiving functionality for drag and drop
  * @returns {void}
@@ -23,13 +21,18 @@ export function setUpReceiveFile () {
   }
 }
 
+let nativeDropElement = null;
+let dragOverHandler = null;
+let dragEnterHandler = null;
+let dropHandler = null;
+
 /**
  * Set up native drag and drop event listeners
  * Used as fallback when p5.js drop() method is not available (e.g., p5v2 SVG, Q5)
  */
 function setUpNativeDrop () {
   if (!libraryState.p5Canvas) {
-    logWarn('Cannot set up file drop: canvas not available');
+    console.warn('Cannot set up file drop: canvas not available');
     return;
   }
 
@@ -62,22 +65,29 @@ function setUpNativeDrop () {
   }
 
   if (!canvasElement) {
-    logWarn('Cannot set up file drop: canvas element not found');
+    console.warn('Cannot set up file drop: canvas element not found');
     return;
   }
 
+  if (nativeDropElement) {
+    tearDownReceiveFile();
+  }
+  nativeDropElement = canvasElement;
+
   // Prevent default drag behaviors
-  canvasElement.addEventListener('dragover', e => {
+  dragOverHandler = e => {
     e.preventDefault();
     e.stopPropagation();
-  });
+  };
+  canvasElement.addEventListener('dragover', dragOverHandler);
 
-  canvasElement.addEventListener('dragenter', e => {
+  dragEnterHandler = e => {
     e.preventDefault();
     e.stopPropagation();
-  });
+  };
+  canvasElement.addEventListener('dragenter', dragEnterHandler);
 
-  canvasElement.addEventListener('drop', e => {
+  dropHandler = e => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -86,7 +96,25 @@ function setUpNativeDrop () {
       const file = files[0];
       processDroppedFile(file);
     }
-  });
+  };
+  canvasElement.addEventListener('drop', dropHandler);
+}
+
+export function tearDownReceiveFile () {
+  if (!nativeDropElement) return;
+  if (dragOverHandler) {
+    nativeDropElement.removeEventListener('dragover', dragOverHandler);
+  }
+  if (dragEnterHandler) {
+    nativeDropElement.removeEventListener('dragenter', dragEnterHandler);
+  }
+  if (dropHandler) {
+    nativeDropElement.removeEventListener('drop', dropHandler);
+  }
+  nativeDropElement = null;
+  dragOverHandler = null;
+  dragEnterHandler = null;
+  dropHandler = null;
 }
 
 /**
@@ -107,7 +135,7 @@ function processDroppedFile (file) {
       try {
         fileData = JSON.parse(fileData);
       } catch (error) {
-        logWarn('Failed to parse JSON file: ' + error.message);
+        console.warn('Failed to parse JSON file: ' + error.message);
         return;
       }
     }
@@ -126,7 +154,7 @@ function processDroppedFile (file) {
   };
 
   reader.onerror = function () {
-    logWarn('Failed to read dropped file');
+    console.warn('Failed to read dropped file');
   };
 
   // Read file as text for JSON, or as data URL for images

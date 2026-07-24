@@ -1,7 +1,7 @@
 import { LIBRARY_NAME, VERSION } from '../config/constants.js';
 import { libraryState } from '../core/state.js';
 import { initColor } from '../functions/color/colorPalettes.js';
-import { logInfo, logDebug } from '../functions/utils/logging.js';
+import { isDebugLogEnabled } from '../../shared/util/debug.js';
 import { updateFPS } from '../functions/utils/fps.js';
 import { ContextManager } from '../core/context.js';
 
@@ -18,7 +18,7 @@ export function initHook () {
  * Initializes the library state and color system
  */
 export function preSetupHook () {
-  logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant})`);
+  console.log(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant})`);
   libraryState.initialized = true;
   initColor();
 }
@@ -58,6 +58,6 @@ export function postDrawHook () {
  * Performs cleanup tasks and resets library state
  */
 export function removeHook () {
-  logDebug(`${LIBRARY_NAME} - Cleanup on sketch removal`);
+  if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - Cleanup on sketch removal`);
   libraryState.initialized = false;
 }

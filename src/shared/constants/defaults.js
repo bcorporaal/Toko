@@ -1,12 +1,11 @@
-import { SIZE_DEFAULT } from './wrapper.js';
-import { LOG_LEVELS } from './logging.js';
+import { SIZE_DEFAULT, RENDER_MODES } from './wrapper.js';
 
 //
 //	Default options for setup
 //
 export const DEFAULT_OPTIONS = {
   sketchElementId: 'sketch-canvas',
-  renderMode: 'P2D',
+  renderMode: RENDER_MODES.P2D,
   title: 'untitled sketch',
   addInfoToTitle: false,
   showSaveSketchButton: false,
@@ -22,7 +21,7 @@ export const DEFAULT_OPTIONS = {
   seedString: '',
   debounceDelay: 100,
   loggingEnabled: true,
-  logLevel: LOG_LEVELS.INFO,
+  logLevel: 'info',
   showCaptureOptions: false,
   showFPS: false,
   shiftCanvasForWebGL: true,

@@ -7,7 +7,6 @@
  * const preset = _stateToPreset(tweakpaneState);
  */
 
-import { logWarn } from '../util/logging';
 //
 //  turn the long Tweakpane state into a more compact set of values
 
@@ -19,7 +18,7 @@ export function _stateToPreset (stateObject) {
 
   function traverse (obj) {
     for (const key in obj) {
-      if (Object.hasOwn(obj, key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         // check if the current property is 'binding' and an object
         if (key === 'binding' && typeof obj[key] === 'object') {
           // if it is, extract the key value combination and add it to the presets
@@ -56,11 +55,11 @@ export function _presetToState (presetObject) {
 
   function traverse (obj) {
     for (const key in obj) {
-      if (Object.hasOwn(obj, key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         // check if the current property is 'binding' and an object
         if (key === 'binding' && typeof obj[key] === 'object') {
           // update the 'binding' object with values from newPreset
-          if (Object.hasOwn(presetObject, obj[key].key)) {
+          if (Object.prototype.hasOwnProperty.call(presetObject, obj[key].key)) {
             obj[key].value = presetObject[obj[key].key];
           }
         } else if (typeof obj[key] === 'object') {
@@ -126,7 +125,7 @@ export function addPaneNavButtons (
         break;
 
       default:
-        logWarn('a non-existing button was pressed:', ev.index[0]);
+        console.warn('a non-existing button was pressed:', ev.index[0]);
         break;
     }
     libraryState.tweakpane.base.refresh();

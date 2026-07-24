@@ -6,7 +6,7 @@
 import { BaseAdapter } from '../../shared/adapters/base-adapter.js';
 import { libraryState } from '../core/state.js';
 import { initHook, preSetupHook, postSetupHook, preDrawHook, postDrawHook, removeHook } from '../lifecycle/handlers.js';
-import { logDebug } from '../../shared/util/logging.js';
+import { isDebugLogEnabled } from '../../shared/util/debug.js';
 
 // Create lifecycle handlers object
 const lifecycleHandlers = {
@@ -27,7 +27,7 @@ export function initializeP5v1 () {
 }
 
 export const p5v2Adapter = function (p5, fn, lifecycles) {
-  logDebug('tokoWrapper - shared-adapter - p5v2Adapter', libraryState);
+  if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - shared-adapter - p5v2Adapter', libraryState);
   return adapter.initialize({ p5, fn, lifecycles });
 };
 

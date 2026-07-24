@@ -1,14 +1,14 @@
 # sound
 
-q5.js includes low latency sound playback and basic mixing powered
-by WebAudio.
+q5 includes low latency sound playback and basic mixing capabilities
+powered by WebAudio.
 
-For audio filtering, synthesis, and analysis, consider using
-[p5.sound](https://p5js.org/reference/p5.sound/).
+For audio filtering, synthesis, and analysis, consider using the
+[p5.sound](https://p5js.org/reference/p5.sound/) addon with q5.
 
 ## loadSound
 
-Loads audio data from a file and returns a `Q5.Sound` object.
+Loads audio data from a file and returns a `Sound` object.
 
 Use functions like `play`, `pause`, and `stop` to
 control playback. Note that sounds can only be played after the
@@ -20,22 +20,17 @@ the sound's stereo position. Set `loop` to true to loop the sound.
 
 Use `loaded`, `paused`, and `ended` to check the sound's status.
 
-The entire sound file must be loaded before playback can start,
-to stream larger audio files use the `loadAudio` function instead.
-
-For backwards compatibility with the p5.sound API, the functions
-`setVolume`, `setLoop`, `setPan`, `isLoaded`, and `isPlaying`
-are also implemented, but their use is deprecated.
+The entire sound file must be loaded before playback can start, use `await` to wait for a sound to load. To stream larger audio files use the `loadAudio` function instead.
 
 ```
 @param {string} url sound file
-@returns {Sound & PromiseLike<Sound>} a new `Sound` object
+@returns {Sound & PromiseLike<Sound>} sound
 ```
 
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 let sound = loadSound('/assets/jump.wav');
 sound.volume = 0.3;
@@ -43,6 +38,18 @@ sound.volume = 0.3;
 q5.mousePressed = function () {
 	sound.play();
 };
+```
+
+### python
+
+```py
+Canvas(200)
+
+sound = loadSound('/assets/jump.wav')
+sound.volume = 0.3
+
+def mousePressed():
+	sound.play()
 ```
 
 ### c2d
@@ -74,7 +81,7 @@ interaction with the page!
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 
 let audio = loadAudio('/assets/retro.flac');
 audio.volume = 0.4;
@@ -83,6 +90,18 @@ q5.mousePressed = function () {
 	audio.play();
 };
 ````
+
+### python
+
+```py
+Canvas(200)
+
+audio = loadAudio('/assets/retro.flac')
+audio.volume = 0.4
+
+def mousePressed():
+	audio.play()
+```
 
 ### c2d
 
@@ -151,6 +170,12 @@ a new playback will start, causing a layering effect.
 
 If this function is run when the sound is paused,
 all playback instances will be resumed.
+
+Use `await` to wait for the sound to finish playing.
+
+```
+@returns {Promise<void>} a promise that resolves when the sound finishes playing
+```
 
 ## Sound.pause
 

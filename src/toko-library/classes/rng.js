@@ -17,7 +17,8 @@
  *
  */
 
-import { logDebug } from '../functions/utils/logging.js';
+import { libraryState } from '../core/state.js';
+import { isDebugLogEnabled } from '../../shared/util/debug.js';
 
 export class RNG {
   /**
@@ -36,8 +37,10 @@ export class RNG {
    * @returns {void}
    */
   _dump () {
-    logDebug(this._seedString, this._currentSeed);
-    logDebug(this._seedHistory, this._seedHistoryIndex);
+    if (isDebugLogEnabled(libraryState)) {
+      console.log(this._seedString, this._currentSeed);
+      console.log(this._seedHistory, this._seedHistoryIndex);
+    }
   }
 
   /**
@@ -74,6 +77,10 @@ export class RNG {
       cleanSeedString = inSeedString;
     }
     cleanSeedString = cleanSeedString.replace(/[^a-zA-Z0-9]/g, '');
+    // Fallback to random seed if cleaned string is empty (all non-alphanumeric input)
+    if (cleanSeedString.length === 0) {
+      cleanSeedString = this._randomSeedString();
+    }
     return cleanSeedString;
   }
 
@@ -279,6 +286,18 @@ export class RNG {
     min = Math.floor(min);
     max = Math.floor(max);
 
+    // Swap if min > max
+    if (min > max) {
+      const tmp = min;
+      min = max;
+      max = tmp;
+    }
+
+    // When min === max, the range is empty; return min
+    if (min === max) {
+      return min;
+    }
+
     return Math.floor(rand * (max - min) + min);
   }
 
@@ -335,21 +354,38 @@ export class RNG {
    * @returns {number} Random number snapped to the nearest step
    */
   steppedRandom (min = 0, max = 1, step = 0.1) {
-    let n = Math.floor((max - min) / step),
-      r = Math.round(this._rng() * n);
+    // Swap if min > max
+    if (min > max) {
+      const tmp = min;
+      min = max;
+      max = tmp;
+    }
+
+    // Ensure step is positive
+    if (step <= 0) {
+      return min;
+    }
+
+    let n = Math.floor((max - min) / step);
+    if (n <= 0) {
+      return min;
+    }
+
+    let r = Math.round(this._rng() * n);
     return min + r * step;
   }
 
   /**
    * Shuffle an array in place using Fisher-Yates algorithm
    * @param {Array} array - Array to shuffle
-   * @returns {void}
+   * @returns {Array} The shuffled array (same reference)
    */
   shuffle (array) {
     for (let i = array.length - 1; i > 0; i--) {
       let j = Math.floor(this._rng() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];
     }
+    return array;
   }
 
   /**
@@ -435,7 +471,9 @@ export class RNG {
                 let index = col + i + (row + j) * cols;
                 let neighbor = grid[index];
                 if (neighbor) {
-                  let d = p5.Vector.dist(sample, neighbor);
+                  let dx = sample.x - neighbor.x;
+                  let dy = sample.y - neighbor.y;
+                  let d = Math.sqrt(dx * dx + dy * dy);
                   if (d < r) {
                     ok = false;
                   }

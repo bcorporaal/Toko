@@ -1,0 +1,114 @@
+---
+description: JSDoc standards for public API and documentation tags
+globs: src/toko-library/**/*.js, src/toko-wrapper/**/*.js
+alwaysApply: false
+---
+
+# JSDoc Standards
+
+**Required Documentation**:
+
+- All public API functions and classes must have JSDoc comments
+- Internal/private functions do not require JSDoc documentation
+- Focus on essential information: description, parameters, return values, and examples
+
+**JSDoc Structure**:
+
+```javascript
+/**
+ * Brief description of what the function does
+ * @param {type} paramName - Description with units and practical ranges
+ * @param {type} [optionalParam] - Optional parameter description
+ * @returns {type} Description of return value
+ * @example
+ * // Basic usage example
+ * const result = functionName(value1, value2);
+ *
+ * // Advanced usage example
+ * const advanced = functionName(value1, { option: true });
+ */
+```
+
+**Good vs bad JSDoc**:
+
+```javascript
+// BAD: no @param, no @returns, future tense, no example
+/**
+ * Will create a circle. Takes x and y.
+ */
+
+// GOOD: present tense, all params and return, optional in brackets, basic example
+/**
+ * Creates a circle at the given coordinates.
+ * @param {number} x - Center x in pixels
+ * @param {number} y - Center y in pixels
+ * @param {number} [radius=10] - Radius in pixels
+ * @returns {void}
+ * @example
+ * circle(50, 50, 20);
+ */
+```
+
+**Parameter Documentation**:
+
+- Include units in parameter descriptions (pixels, radians, 0-1 range, etc.)
+- Specify practical ranges when applicable (e.g., "0-255 for color values")
+- Use square brackets for optional parameters: `@param {type} [optionalParam]`
+- For object parameters, document the main properties inline
+
+**Example Guidelines**:
+
+- Always include at least one basic usage example
+- Show the most common use case first
+- Include advanced examples for complex functions
+- Use realistic values that demonstrate the function's purpose
+- Keep examples concise but complete
+
+**Cross-Variant Compatibility**:
+
+- Only mention variant limitations when a function doesn't work with specific p5.js versions
+- Use format: `@note Not compatible with p5.js v1`
+- Assume functions work across all variants unless explicitly noted
+- Document any variant-specific behavior differences
+
+**Performance Notes**:
+
+- Only document performance for functions with significant impact
+- Use casual language: "This function can be slow with large datasets"
+- Avoid technical complexity notation (O(n), etc.)
+- Focus on practical performance implications for creative coding
+
+**Mathematical Documentation**:
+
+- Include formulas for complex calculations
+- Document coordinate systems and transformations
+- Specify units and measurement systems
+- Provide algorithm complexity information
+
+**Return Value Documentation**:
+
+- Always document what the function returns
+- Include the data type and structure
+- Mention if the return value can be used for chaining
+- Document any side effects (canvas modifications, etc.)
+
+**Common JSDoc Tags**:
+
+- `@param` - Required for all parameters
+- `@returns` - Required for all functions
+- `@example` - Required for all public functions
+- `@note` - Use sparingly for important limitations or warnings
+- `@deprecated` - Use when marking functions for removal
+
+**Unused JSDoc Tags** (do not use):
+
+- `@author` - Use only in the root `src/toko-library/toko-library.js` and `src/toko-wrapper/toko-wrapper.js` files
+- `@since` - Not informative as the codebase is fluid
+
+**JSDoc Best Practices**:
+
+- Keep descriptions concise but informative
+- Use present tense ("Creates a circle" not "Will create a circle")
+- Start with a verb for function descriptions
+- Be consistent with terminology across the library
+- Don't repeat information that's obvious from the function name

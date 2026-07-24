@@ -1,0 +1,28 @@
+---
+description: Minimal changes, testing, and code review focus
+alwaysApply: true
+---
+
+# Code Quality
+
+**Minimal Changes Principle**:
+
+- Only modify code related to the specific task
+- Avoid unnecessary refactoring or cleanup
+- Preserve existing comments and documentation
+- Maintain backward compatibility
+
+**Testing Considerations**:
+
+- Test across all supported p5.js variants manually using the sketches in the examples directory
+- Include visual regression testing for creative functions
+- Test performance with large datasets
+- Verify cross-browser compatibility
+
+**Code Review Focus**:
+
+- Performance impact on real-time rendering
+- Cross-variant compatibility
+- Mathematical accuracy
+- Visual output quality
+- Error handling robustness

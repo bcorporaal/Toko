@@ -1,0 +1,27 @@
+---
+description: Toko-library, toko-wrapper, and sketch integration patterns
+globs: src/toko-library/**/*.js, src/toko-wrapper/**/*.js
+alwaysApply: false
+---
+
+# Integration Guidelines
+
+**Toko-Library Development**:
+
+- Keep functions pure and stateless when possible
+- Use the context manager for p5.js integration (use internally stored p5.js instance as it might be v1, v2, or Q5)
+- Provide both bound and unbound function versions
+- Include comprehensive parameter validation
+
+**Toko-Wrapper Development**:
+
+- Handle canvas lifecycle events properly
+- Integrate external libraries cleanly
+- Provide clear configuration options
+- Include proper cleanup and resource management
+
+**End-User Sketch Development**:
+
+- Use the parameter system for interactive controls (Tweakpane controls)
+- Follow the established sketch structure
+- Include proper event handling

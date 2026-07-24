@@ -1,8 +1,8 @@
 {
 	"name": "@q5/q5",
-	"version": "3.6.0",
-	"license": "LGPL-3.0",
-	"description": "Beginner friendly graphics powered by WebGPU and optimized for interactive art!",
+	"version": "4.7.0",
+	"license": "LGPL-3.0-only",
+	"description": "Beginner friendly graphics powered by WebGPU, optimized for interactive art!",
 	"author": "quinton-ashley",
 	"exports": "./q5-deno-server.js",
 	"types": "./q5.d.ts",
@@ -24,6 +24,7 @@
 			"home",
 			"lang",
 			"learn",
+			"teach",
 			"test",
 			".npmignore",
 			".prettierignore",
@@ -31,7 +32,9 @@
 			"CODE_OF_CONDUCT.md",
 			"deno.lock",
 			"Icon?",
-			"package.json"
+			"package.json",
+			"q5.min.js",
+			"q5.min.js.map"
 		]
 	}
 }

@@ -2,11 +2,25 @@ import { libraryState } from '../../core/state.js';
 import * as constants from '../../config/constants.js';
 import allPalettes from '../../color-palettes/index.js';
 import { easeLinear } from '../math/easing.js';
-import { logDebug, logError, logWarn } from '../utils/logging.js';
+import { isDebugLogEnabled } from '../../../shared/util/debug.js';
 import chroma from '../../../../assets/js/chroma/3.2.0/chroma.min.cjs';
+import { RNG } from '../../classes/rng.js';
+import { cubicBezier } from '../../classes/cubicBezier.js';
 
 export var COLOR_COLLECTIONS = [];
 export var COLOR_PALETTES = allPalettes;
+
+/**
+ * Constrain a value between a minimum and maximum
+ * Local implementation to avoid dependency on p5.js
+ * @param {number} value - The value to constrain
+ * @param {number} min - Minimum value
+ * @param {number} max - Maximum value
+ * @returns {number} Constrained value
+ */
+function _constrain (value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
 
 /**
  * Initialize the color system and preprocess all palettes
@@ -24,13 +38,13 @@ export function initColor () {
 //  validate incoming color options
 //
 export function _validateColorOptions (colorOptions) {
-  // merge with default options
-  constants.DEFAULT_COLOR_OPTIONS.easing = easeLinear;
-  colorOptions = Object.assign({}, constants.DEFAULT_COLOR_OPTIONS, colorOptions);
+  // merge with default options (copy defaults to avoid mutating the shared object)
+  let defaults = Object.assign({}, constants.DEFAULT_COLOR_OPTIONS, { easing: easeLinear });
+  colorOptions = Object.assign({}, defaults, colorOptions);
 
   // add a new RNG if none was defined
   if (colorOptions.rng == undefined) {
-    colorOptions.rng = new Toko.RNG();
+    colorOptions.rng = new RNG();
   }
 
   // set the options validated, so it is not needlessly checked multiple times
@@ -93,7 +107,7 @@ export function _createColorScale (colorSet, colorOptions, extraColors) {
   // set easing function for the scale
   if (colorOptions.useEasing) {
     let par = colorOptions.easingParameters;
-    o.easing = Toko.cubicBezier(par[0], par[1], par[2], par[3]);
+    o.easing = cubicBezier(par[0], par[1], par[2], par[3]);
   } else {
     o.easing = i => {
       return i;
@@ -195,11 +209,16 @@ export function _getColorScale (inPalette, colorOptions) {
   } else if (typeof inPalette === 'string') {
     p = findPaletteByName(inPalette);
 
+    if (!p) {
+      console.error('Toko: palette not found: ' + inPalette);
+      return o;
+    }
+
     //
     //  TO DO - currently this does not work
     //
     if ('sortOrder' in p && colorOptions.useSortOrder) {
-      logDebug('sorting because sortOrder is available and sort is true');
+      if (isDebugLogEnabled(libraryState)) console.log('sorting because sortOrder is available and sort is true');
       colorSet = [p.colors.length];
       for (let i = 0; i < p.colors.length; i++) {
         colorSet[i] = p.colors[p.sortOrder[i] - 1];
@@ -215,7 +234,7 @@ export function _getColorScale (inPalette, colorOptions) {
       extraColors.push(p.background);
     }
   } else {
-    logError('ERROR: palette should be a string or an array');
+    console.error('ERROR: palette should be a string or an array');
   }
   o = _createColorScale(colorSet, colorOptions, extraColors);
 
@@ -229,7 +248,7 @@ export function _getAnotherPalette (inPalette, paletteType = 'all', justPrimary 
   let tempPaletteList = _getPaletteListRaw(paletteType, justPrimary);
   var i = tempPaletteList.findIndex(p => p.name === inPalette);
   if (i === -1) {
-    logWarn('palette not found: ' + inPalette);
+    console.warn('palette not found: ' + inPalette);
     return inPalette;
   } else {
     i += direction;
@@ -266,9 +285,11 @@ export function _getPaletteListRaw (paletteType = 'all', justPrimary = true, sor
   if (!libraryState.initColorDone) {
     initColor();
   }
-  let filtered; // = COLOR_PALETTES;
+  let filtered;
   if (paletteType !== 'all') {
     filtered = COLOR_PALETTES.filter(p => p.type === paletteType);
+  } else {
+    filtered = [...COLOR_PALETTES];
   }
 
   if (justPrimary) {
@@ -405,14 +426,14 @@ export function _defineContrastColors (colorSet, extraColors, constrainContrast 
     if (constrainContrast) {
       hsl = chroma(contrastColors[0]).hsl();
       lightH = hsl[0];
-      lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
-      lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
+      lightS = _constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
+      lightL = _constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
       contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
 
       hsl = chroma(contrastColors[1]).hsl();
       darkH = hsl[0];
-      darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
-      darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
+      darkS = _constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
+      darkL = _constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
       contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
     }
   }
@@ -423,15 +444,15 @@ export function _defineContrastColors (colorSet, extraColors, constrainContrast 
   if (!lightContrastSet) {
     hsl = chroma(sortedColorSet[0]).hsl();
     lightH = hsl[0];
-    lightS = constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
-    lightL = constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
+    lightS = _constrain((hsl[1] - ls.shift) * ls.factor, ls.min, ls.max);
+    lightL = _constrain((hsl[2] - ll.shift) * ll.factor, ll.min, ll.max);
     contrastColors[0] = chroma.hsl(lightH, lightS, lightL).hex();
   }
   if (!darkContrastSet) {
     hsl = chroma(sortedColorSet[n - 1]).hsl();
     darkH = hsl[0];
-    darkS = constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
-    darkL = constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
+    darkS = _constrain((hsl[1] + ds.shift) * ds.factor, ds.min, ds.max);
+    darkL = _constrain((hsl[2] + dl.shift) * dl.factor, dl.min, dl.max);
     contrastColors[1] = chroma.hsl(darkH, darkS, darkL).hex();
   }
 
@@ -648,7 +669,7 @@ export function findPaletteByName (paletteName) {
   }
   var p = COLOR_PALETTES.filter(p => p.name === paletteName)[0];
   if (p === undefined) {
-    logWarn('palette not found: ' + paletteName);
+    console.warn('palette not found: ' + paletteName);
   }
   return p;
 }
@@ -716,4 +737,34 @@ export function formatForTweakpane (inList, propertyName) {
   }
 
   return o;
+}
+
+/**
+ * Get all color palettes
+ * @returns {Array} Array of all palette objects with name, colors, type, etc.
+ * @example
+ * // Get all palettes
+ * const palettes = toko.getAllPalettes();
+ * palettes.forEach(p => console.log(p.name, p.colors));
+ */
+export function getAllPalettes () {
+  if (!libraryState.initColorDone) {
+    initColor();
+  }
+  return COLOR_PALETTES;
+}
+
+/**
+ * Get all collection types
+ * @returns {Array} Array of collection type strings (e.g., 'basic', 'cako', etc.)
+ * @example
+ * // Get all collection types
+ * const collections = toko.getCollections();
+ * // Returns: ['basic', 'cako', 'colourscafe', ...]
+ */
+export function getCollections () {
+  if (!libraryState.initColorDone) {
+    initColor();
+  }
+  return COLOR_COLLECTIONS;
 }

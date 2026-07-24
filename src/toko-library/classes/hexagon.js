@@ -49,7 +49,7 @@ export class Hexagon {
    * @returns {*} The property value or default
    */
   getData (key, defaultValue = undefined) {
-    return Object.hasOwn(this.data, key) ? this.data[key] : defaultValue;
+    return Object.prototype.hasOwnProperty.call(this.data, key) ? this.data[key] : defaultValue;
   }
 
   /**
@@ -58,7 +58,7 @@ export class Hexagon {
    * @returns {boolean} True if property exists
    */
   hasData (key) {
-    return Object.hasOwn(this.data, key);
+    return Object.prototype.hasOwnProperty.call(this.data, key);
   }
 
   /**
@@ -67,7 +67,7 @@ export class Hexagon {
    * @returns {boolean} True if property was removed
    */
   removeData (key) {
-    if (Object.hasOwn(this.data, key)) {
+    if (Object.prototype.hasOwnProperty.call(this.data, key)) {
       delete this.data[key];
       return true;
     }

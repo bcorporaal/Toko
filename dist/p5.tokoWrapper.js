@@ -8,7 +8,7 @@
    * @readonly
    * @enum {string}
    */
-  const VERSION = '1.0.1';
+  const VERSION = '1.1';
 
   /**
    * Library variant constants
@@ -49,6 +49,20 @@
   // Wrapper-specific constants
 
   const LIBRARY_NAME = 'TokoWrapper';
+
+  //
+  //  Div container where the tweakpane is placed
+  //
+  const TWEAKPANE_CONTAINER_ID = 'tweakpane-container';
+  const TWEAKPANE_HIDDEN_CLASS = 'tweakpane-hidden';
+
+  //
+  //  Layout element selectors and class names
+  //
+  const SKETCH_WRAPPER_CLASS = 'sketch-wrapper';
+  const SKETCH_CANVAS_ID = 'sketch-canvas';
+  const LABELS_CLASS = 'labels';
+  const FULLWINDOW_CLASS = 'fullwindow';
 
   //
   //  Set of standard sizes for the canvas and exports
@@ -220,53 +234,12 @@
   const RECORD_BUTTON_LABEL_FRAMES = 'frames';
   const RECORD_BUTTON_LABEL_SETTINGS = ' & settings';
 
-  /**
-   * Logging level constants and utilities
-   *
-   * Provides standard logging levels with numeric hierarchy for comparison.
-   * Levels are ordered from most critical (error) to least critical (debug).
-   */
-
-  // Log level constants with numeric values for comparison
-  const LOG_LEVELS = {
-    ERROR: 'error',
-    WARN: 'warn',
-    INFO: 'info',
-    DEBUG: 'debug',
-  };
-
-  // Numeric hierarchy for level comparison (higher number = more verbose)
-  const LOG_LEVEL_VALUES = {
-    [LOG_LEVELS.ERROR]: 0,
-    [LOG_LEVELS.WARN]: 1,
-    [LOG_LEVELS.INFO]: 2,
-    [LOG_LEVELS.DEBUG]: 3,
-  };
-
-  /**
-   * Check if a log level should be output based on current configuration
-   * @param {string} level - The log level to check
-   * @param {boolean} loggingEnabled - Master logging switch
-   * @param {string} currentLogLevel - Current minimum log level setting
-   * @returns {boolean} True if the level should be logged
-   */
-  function shouldLog (level, loggingEnabled, currentLogLevel) {
-    if (!loggingEnabled) {
-      return false;
-    }
-
-    const levelValue = LOG_LEVEL_VALUES[level];
-    const currentValue = LOG_LEVEL_VALUES[currentLogLevel];
-
-    return levelValue !== undefined && currentValue !== undefined && levelValue <= currentValue;
-  }
-
   //
   //	Default options for setup
   //
   const DEFAULT_OPTIONS = {
     sketchElementId: 'sketch-canvas',
-    renderMode: 'P2D',
+    renderMode: RENDER_MODES.P2D,
     title: 'untitled sketch',
     addInfoToTitle: false,
     showSaveSketchButton: false,
@@ -282,7 +255,7 @@
     seedString: '',
     debounceDelay: 100,
     loggingEnabled: true,
-    logLevel: LOG_LEVELS.INFO,
+    logLevel: 'info',
     showCaptureOptions: false,
     showFPS: false,
     shiftCanvasForWebGL: true,
@@ -323,11 +296,15 @@
     if (typeof p5 !== 'undefined' || (typeof window !== 'undefined' && typeof window.p5 !== 'undefined')) {
       const p5Instance = typeof p5 !== 'undefined' ? p5 : window.p5;
 
+      if (!p5Instance) {
+        return LIBRARY_UNKNOWN;
+      }
+
       // Quick v2 detection
       if (typeof p5Instance.VERSION === 'string' && p5Instance.VERSION.startsWith('2.')) {
         return LIBRARY_P5V2;
       }
-      if (p5Instance && typeof p5Instance.Graphics2D !== 'undefined') {
+      if (typeof p5Instance.Graphics2D !== 'undefined') {
         return LIBRARY_P5V2; // Beta version of p5.js with Graphics2D feature
       }
       return LIBRARY_P5V1;
@@ -337,92 +314,12 @@
   }
 
   /**
-   * Shared logging utility for Toko
-   *
-   * Provides level-based logging functions that work across toko-library and toko-wrapper.
-   * Supports standard log levels: error, warn, info, debug with configurable filtering.
+   * Debug logging helper - only used to gate console.log when debug flag is set.
+   * @param {Object} state - Library state with options.loggingEnabled and options.logLevel
+   * @returns {boolean} True when debug logging is enabled
    */
-
-  /**
-   * Get the current library state for logging configuration
-   * This function will be overridden by each library to provide their specific state
-   * @returns {Object} Library state with options.loggingEnabled and options.logLevel
-   */
-  let getLibraryState = () => ({ options: { loggingEnabled: true, logLevel: LOG_LEVELS.INFO } });
-
-  /**
-   * Set the library state getter function
-   * @param {Function} stateGetter - Function that returns the current library state
-   * @returns {void}
-   * @example
-   * setLibraryStateGetter(() => libraryState);
-   */
-  function setLibraryStateGetter (stateGetter) {
-    getLibraryState = stateGetter;
-  }
-
-  /**
-   * Log an error message
-   * @param {string} message - The error message to log
-   * @returns {void}
-   * @example
-   * logError('Failed to initialize canvas');
-   */
-  function logError (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.ERROR, loggingEnabled, logLevel)) {
-      console.error(message);
-    }
-  }
-
-  /**
-   * Log a warning message
-   * @param {string} message - The warning message to log
-   * @returns {void}
-   * @example
-   * logWarn('Canvas size exceeds recommended limits');
-   */
-  function logWarn (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.WARN, loggingEnabled, logLevel)) {
-      console.warn(message);
-    }
-  }
-
-  /**
-   * Log an info message
-   * @param {string} message - The info message to log
-   * @returns {void}
-   * @example
-   * logInfo('Library initialized successfully');
-   */
-  function logInfo (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.INFO, loggingEnabled, logLevel)) {
-      console.log(message);
-    }
-  }
-
-  /**
-   * Log a debug message
-   * @param {string} message - The debug message to log
-   * @returns {void}
-   * @example
-   * logDebug('Processing frame 42');
-   */
-  function logDebug (message) {
-    const state = getLibraryState();
-    const loggingEnabled = state?.options?.loggingEnabled ?? true;
-    const logLevel = state?.options?.logLevel ?? LOG_LEVELS.INFO;
-    if (shouldLog(LOG_LEVELS.DEBUG, loggingEnabled, logLevel)) {
-      console.log(message);
-    }
+  function isDebugLogEnabled (state) {
+    return !!(state?.options?.loggingEnabled && state?.options?.logLevel === 'debug');
   }
 
   /**
@@ -459,7 +356,7 @@
         case LIBRARY_Q5:
           return this.initializeQ5();
         default:
-          logWarn(`Unsupported p5.js variant: ${this.variant}`);
+          console.warn(`Unsupported p5.js variant: ${this.variant}`);
           return false;
       }
     }
@@ -496,7 +393,7 @@
      * @param {Object} [params.lifecycles] - lifecycles object for v2
      */
     initializeP5v2 (params = null) {
-      logDebug('shared-adapter - initializeP5v2');
+      if (isDebugLogEnabled(this.libraryState)) console.log('shared-adapter - initializeP5v2');
 
       // If no parameters provided, return the adapter function for later use
       if (!params) {
@@ -506,6 +403,12 @@
       }
 
       const { p5, fn, lifecycles } = params;
+
+      // Validate required parameters
+      if (!p5 || !fn || !lifecycles) {
+        console.warn('shared-adapter - initializeP5v2: missing required parameters (p5, fn, or lifecycles)');
+        return false;
+      }
 
       // Set the prototype reference
       this.libraryState.p5 = p5;
@@ -583,9 +486,6 @@
     // prototypeFunctionsRegistered: false,
   };
 
-  // Set up the library state getter for the shared logging system
-  setLibraryStateGetter(() => libraryState);
-
   /**
    * Canvas management for TokoWrapper
    *
@@ -594,6 +494,8 @@
    *
    * @namespace Canvas
    */
+
+  let resizeListenerAttached = false;
 
   /**
    * Set up the canvas with initial configuration
@@ -612,12 +514,25 @@
       sketchTitle += ' - ' + libraryState.variant + ' - ' + libraryState.options.renderMode;
     }
 
-    document.getElementById('sketch-title').innerText = sketchTitle;
+    const sketchTitleElement = document.getElementById('sketch-title');
+    if (sketchTitleElement) {
+      sketchTitleElement.innerText = sketchTitle;
+    }
     document.title = sketchTitle;
     //
     //  listen to resizes
     //
-    window.addEventListener('resize', windowResized);
+    if (!resizeListenerAttached) {
+      window.addEventListener('resize', windowResized);
+      resizeListenerAttached = true;
+    }
+  }
+
+  function tearDownCanvas () {
+    if (resizeListenerAttached) {
+      window.removeEventListener('resize', windowResized);
+      resizeListenerAttached = false;
+    }
   }
 
   /**
@@ -626,60 +541,163 @@
    * @param {Object} inSize - Size configuration object with width, height, and other properties
    */
   function setCanvasSize (inSize) {
+    if (!inSize) {
+      console.error('TokoWrapper: setCanvasSize called with null or undefined size configuration');
+      return;
+    }
+
+    const pixelDensity = Number(inSize.pixelDensity);
+    if (!Number.isFinite(pixelDensity) || pixelDensity <= 0) {
+      console.error('TokoWrapper: setCanvasSize called with invalid pixelDensity');
+      return;
+    }
+    if (!Number.isFinite(inSize.width) || !Number.isFinite(inSize.height) || inSize.width <= 0 || inSize.height <= 0) {
+      console.error('TokoWrapper: setCanvasSize called with invalid width/height');
+      return;
+    }
+
     const MARGIN = 80;
-    const DISPLAY_FACTOR = inSize.pixelDensity / 2;
+    const DISPLAY_FACTOR = pixelDensity / 2;
     let zoomFactor = 1;
     let newWidthString = '',
       newHeightString = '';
 
     if (typeof window.innerWidth === 'undefined' || typeof window.innerHeight === 'undefined') {
-      logError('window.innerWidth or window.innerHeight is not defined');
+      console.error('window.innerWidth or window.innerHeight is not defined');
+      return;
+    }
+    if (window.innerWidth <= 0 || window.innerHeight <= 0) {
+      console.error('window.innerWidth or window.innerHeight is invalid');
       return;
     }
 
+    // Get references to layout elements for fullwindow class toggling
+    const sketchWrapper = document.querySelector('.' + SKETCH_WRAPPER_CLASS);
+    const tweakpaneContainer = document.getElementById(TWEAKPANE_CONTAINER_ID);
+    const sketchCanvas = document.getElementById(SKETCH_CANVAS_ID);
+    const labels = document.querySelector('.' + LABELS_CLASS);
+
     if (!inSize.fullWindow) {
+      // Constrain sketch container so canvas and any wrapper (e.g. Q5) scale with the viewport.
+      if (sketchCanvas) {
+        sketchCanvas.style.maxWidth = '100%';
+        sketchCanvas.style.overflow = 'hidden';
+      }
       zoomFactor = Math.min(1, ((window.innerWidth - MARGIN) / inSize.width) * DISPLAY_FACTOR);
       zoomFactor = Math.min(zoomFactor, ((window.innerHeight - MARGIN) / inSize.height) * DISPLAY_FACTOR);
 
       newWidthString = Math.floor((inSize.width * zoomFactor) / DISPLAY_FACTOR) + 'px';
       newHeightString = Math.floor((inSize.height * zoomFactor) / DISPLAY_FACTOR) + 'px';
+
+      // Remove fullwindow classes for fixed canvas mode
+      sketchWrapper?.classList.remove(FULLWINDOW_CLASS);
+      tweakpaneContainer?.classList.remove(FULLWINDOW_CLASS);
+      sketchCanvas?.classList.remove(FULLWINDOW_CLASS);
+      labels?.classList.remove(FULLWINDOW_CLASS);
     } else {
       inSize.width = window.innerWidth;
       inSize.height = window.innerHeight;
 
       newWidthString = '100vw';
       newHeightString = '100vh';
+
+      if (sketchCanvas) {
+        sketchCanvas.style.maxWidth = '';
+        sketchCanvas.style.overflow = '';
+      }
+
+      // Add fullwindow classes for full-screen canvas mode
+      sketchWrapper?.classList.add(FULLWINDOW_CLASS);
+      tweakpaneContainer?.classList.add(FULLWINDOW_CLASS);
+      sketchCanvas?.classList.add(FULLWINDOW_CLASS);
+      labels?.classList.add(FULLWINDOW_CLASS);
     }
 
-    resizeCanvas(inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
+    const resizeFn = libraryState.p5Canvas?.resizeCanvas ?? (typeof window !== 'undefined' ? window.resizeCanvas : null);
+    if (typeof resizeFn === 'function') {
+      resizeFn.call(libraryState.p5Canvas ?? window, inSize.width * DISPLAY_FACTOR, inSize.height * DISPLAY_FACTOR, true);
+    } else {
+      console.error('TokoWrapper: resizeCanvas is not available');
+      return;
+    }
 
-    libraryState.p5Canvas.canvas.style.width = newWidthString;
-    libraryState.p5Canvas.canvas.style.height = newHeightString;
+    if (libraryState.p5Canvas && libraryState.p5Canvas.canvas) {
+      const canvasEl = libraryState.p5Canvas.canvas;
+      canvasEl.style.width = newWidthString;
+      canvasEl.style.height = newHeightString;
+
+      // Ensure canvas scales down in small windows and keeps aspect ratio when constrained.
+      // Use max-width + aspect-ratio + height:auto so when the container narrows, the canvas
+      // shrinks proportionally (not just in width). Q5 may wrap the canvas in a div that
+      // doesn't constrain; we constrain the wrapper so layout is consistent across variants.
+      if (!inSize.fullWindow) {
+        canvasEl.style.aspectRatio = String(inSize.width) + ' / ' + String(inSize.height);
+        canvasEl.style.maxWidth = '100%';
+        canvasEl.style.height = 'auto';
+        canvasEl.style.boxSizing = 'border-box';
+
+        // If the canvas has a wrapper (e.g. Q5 appends to a div inside the sketch container),
+        // constrain that wrapper so the canvas scales with the container.
+        if (libraryState.variant === LIBRARY_Q5 && sketchCanvas) {
+          const canvasParent = canvasEl.parentElement;
+          if (canvasParent && canvasParent !== sketchCanvas && sketchCanvas.contains(canvasParent)) {
+            canvasParent.style.maxWidth = '100%';
+            canvasParent.style.boxSizing = 'border-box';
+            canvasParent.style.overflow = 'hidden';
+          }
+        }
+      } else {
+        canvasEl.style.aspectRatio = '';
+        canvasEl.style.maxWidth = '';
+        canvasEl.style.height = '';
+        canvasEl.style.boxSizing = '';
+      }
+    }
   }
 
   /**
    * Handle window resize events
-   * Checks if the sketch element dimensions have changed and triggers canvas resize if needed
+   * Recalculates proportional canvas display size so the canvas keeps the same aspect ratio
+   * when the window is resized (works for all variants including Q5).
    */
   function windowResized () {
-    let sketchElementId = libraryState.options.sketchElementId;
+    if (!libraryState.p5Canvas) return;
 
-    let newWidth = document.getElementById(sketchElementId).offsetWidth;
-    let newHeight = document.getElementById(sketchElementId).offsetHeight;
+    const sketchElementId = libraryState.options?.sketchElementId;
+    if (!sketchElementId) return;
 
-    if (newWidth != width || newHeight != height) {
+    const sketchElement = document.getElementById(sketchElementId);
+    if (!sketchElement) return;
+
+    const newWidth = sketchElement.offsetWidth;
+    const newHeight = sketchElement.offsetHeight;
+
+    const hasGlobalSize = typeof width === 'number' && typeof height === 'number';
+    const currentWidth = hasGlobalSize ? width : (libraryState.p5Canvas?.width ?? null);
+    const currentHeight = hasGlobalSize ? height : (libraryState.p5Canvas?.height ?? null);
+    if (currentWidth === null || currentHeight === null) return;
+
+    if (newWidth !== currentWidth || newHeight !== currentHeight) {
+      // Re-run setCanvasSize so zoomFactor and display dimensions are recalculated
+      // for the new window size, keeping the canvas proportional.
+      setCanvasSize(libraryState.options.canvasSize);
       canvasResized();
     }
   }
 
   /**
    * Handle canvas resize events
-   * Called when the canvas dimensions need to be updated
-   * @todo Determine how to best call the appropriate resize function
+   * Called when the canvas dimensions have been updated (e.g. after window resize).
+   * Calls refresh() and redraw() so that noLoop() sketches redraw with the new size;
+   * p5v1/p5v2 with P2D do not auto-redraw on resize, unlike Q5 and WebGL/WebGPU/SVG.
    */
   function canvasResized () {
-    // TO DO - determine how to best call the right function
-    logInfo('TokoWrapper - canvasResized');
+    if (typeof window !== 'undefined' && typeof window.refresh === 'function') {
+      window.refresh();
+    }
+    if (typeof window !== 'undefined' && typeof window.redraw === 'function') {
+      window.redraw();
+    }
   }
 
   /**
@@ -692,7 +710,23 @@
    * recenterCanvas();
    */
   function recenterCanvas () {
-    translate(-width / 2, -height / 2);
+    const hasGlobalSize = typeof width === 'number' && typeof height === 'number';
+    const currentWidth = hasGlobalSize ? width : (libraryState.p5Canvas?.width ?? null);
+    const currentHeight = hasGlobalSize ? height : (libraryState.p5Canvas?.height ?? null);
+    const translateFn = hasGlobalSize && typeof translate === 'function'
+      ? translate
+      : (libraryState.p5Canvas?.translate ?? null);
+
+    if (currentWidth === null || currentHeight === null || typeof translateFn !== 'function') {
+      console.error('TokoWrapper: recenterCanvas requires a valid drawing context');
+      return;
+    }
+
+    if (hasGlobalSize && typeof translate === 'function') {
+      translate(-currentWidth / 2, -currentHeight / 2);
+    } else {
+      libraryState.p5Canvas.translate(-currentWidth / 2, -currentHeight / 2);
+    }
   }
 
   /**
@@ -710,7 +744,7 @@
 
     function traverse (obj) {
       for (const key in obj) {
-        if (Object.hasOwn(obj, key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           // check if the current property is 'binding' and an object
           if (key === 'binding' && typeof obj[key] === 'object') {
             // if it is, extract the key value combination and add it to the presets
@@ -747,11 +781,11 @@
 
     function traverse (obj) {
       for (const key in obj) {
-        if (Object.hasOwn(obj, key)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
           // check if the current property is 'binding' and an object
           if (key === 'binding' && typeof obj[key] === 'object') {
             // update the 'binding' object with values from newPreset
-            if (Object.hasOwn(presetObject, obj[key].key)) {
+            if (Object.prototype.hasOwnProperty.call(presetObject, obj[key].key)) {
               obj[key].value = presetObject[obj[key].key];
             }
           } else if (typeof obj[key] === 'object') {
@@ -817,7 +851,7 @@
           break;
 
         default:
-          logWarn('a non-existing button was pressed:', ev.index[0]);
+          console.warn('a non-existing button was pressed:', ev.index[0]);
           break;
       }
       libraryState.tweakpane.base.refresh();
@@ -907,7 +941,12 @@
     let isCanvas = null;
     let isSVG = null;
 
-    let sketchElement = document.getElementById(libraryState.options.sketchElementId).firstChild;
+    let sketchContainer = document.getElementById(libraryState.options.sketchElementId);
+    if (!sketchContainer || !sketchContainer.firstChild) {
+      console.warn('Toko - saveSketch: sketch element not found');
+      return;
+    }
+    let sketchElement = sketchContainer.firstChild;
     isCanvas = sketchElement instanceof HTMLCanvasElement;
     if (sketchElement.firstChild != null) {
       isSVG = sketchElement.firstChild.nodeName == 'svg';
@@ -918,18 +957,27 @@
       //  save canvas as png
       //
       let filename = libraryState.toko.generateFilename('png');
-      saveCanvas(filename, 'png');
+      const saveCanvasFn = libraryState.p5Canvas?.saveCanvas ?? (typeof saveCanvas === 'function' ? saveCanvas : null);
+      if (typeof saveCanvasFn !== 'function') {
+        console.warn('Toko - saveSketch: saveCanvas is not available');
+        return;
+      }
+      saveCanvasFn.call(libraryState.p5Canvas ?? window, filename, 'png');
       return filename;
     } else if (isSVG) {
       //
       // add attributes to ensure proper preview of the SVG file in the Finder
       //
-      let svgTemp = document.getElementById('sketch-canvas').firstChild.firstChild.firstChild;
-      svgTemp.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-      svgTemp.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      const svgElement = sketchContainer.querySelector('svg');
+      if (!svgElement) {
+        console.warn('Toko - saveSketch: SVG element not found');
+        return;
+      }
+      svgElement.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+      svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
       let filename = libraryState.toko.generateFilename('svg');
-      let svgString = document.getElementById(libraryState.options.sketchElementId).firstChild.innerHTML;
+      let svgString = svgElement.outerHTML;
 
       let blob = new Blob([svgString], { type: 'image/svg+xml' });
       let url = window.URL.createObjectURL(blob);
@@ -947,7 +995,7 @@
 
       return filename;
     } else {
-      logWarn('Toko - saveSketch: unknown type');
+      console.warn('Toko - saveSketch: unknown type');
       return;
     }
   }
@@ -958,6 +1006,9 @@
    */
   function saveSketchAndSettings () {
     let filename = saveSketch();
+    if (!filename || typeof filename !== 'string') {
+      return;
+    }
     //
     //  strip the extension of the filename so we can reuse it.
     //
@@ -985,7 +1036,12 @@
     const settings = _stateToPreset(state);
 
     // save with p5.js native saver
-    saveJSON(settings, filename);
+    const saveJsonFn = libraryState.p5Canvas?.saveJSON ?? (typeof saveJSON === 'function' ? saveJSON : null);
+    if (typeof saveJsonFn !== 'function') {
+      console.warn('Toko - saveSettings: saveJSON is not available');
+      return;
+    }
+    saveJsonFn.call(libraryState.p5Canvas ?? window, settings, filename);
   }
 
   //
@@ -994,18 +1050,27 @@
   function setUpCapture () {
     libraryState.currentlyCapturing = false;
 
-    P5Capture.setDefaultOptions(libraryState.options.captureOptions);
-    hideP5CaptureControls();
+    if (typeof P5Capture !== 'undefined') {
+      P5Capture.setDefaultOptions(libraryState.options.captureOptions);
+      hideP5CaptureControls();
+    }
   }
 
   function hideP5CaptureControls () {
-    document.querySelector('.p5c-container').style.display = 'none';
+    const container = document.querySelector('.p5c-container');
+    if (container) {
+      container.style.display = 'none';
+    }
   }
 
   //
   //  called when the capture is started
   //
   function initCapture () {
+    if (typeof P5Capture === 'undefined') {
+      console.warn('TokoWrapper: P5Capture is not loaded. Capture functionality is unavailable.');
+      return;
+    }
     libraryState.capturer = P5Capture.getInstance();
 
     //  just in case the duration was not set properly
@@ -1020,7 +1085,11 @@
 
     //  refresh the sketch before capture
     if (libraryState.options.captureOptions.refreshBeforeCapture) {
-      refresh();
+      if (typeof window.refresh === 'function') {
+        window.refresh();
+      } else if (typeof window.tokoWrapper === 'function' && window.tokoWrapper()) {
+        window.tokoWrapper().updateParameters();
+      }
     }
   }
 
@@ -1151,18 +1220,43 @@
       justPrimary: true,
       sorted: true,
       navButtons: true,
+      collectionKey: 'collection',
+      paletteKey: 'palette',
+      collectionsListKey: 'collections',
     };
 
     // merge incoming with default options
     o = Object.assign({}, o, incomingOptions);
+
+    if (!paneRef || !pObject) {
+      console.warn('Toko - addPaletteSelector: paneRef or pObject is missing');
+      return;
+    }
 
     // store references
     o.paneRef = paneRef;
     o.pObject = pObject;
 
     // get the data for the controls
+    if (!o.collectionKey || !o.paletteKey || !o.collectionsListKey) {
+      console.warn('Toko - addPaletteSelector: missing required option keys');
+      return;
+    }
+    if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionKey)) {
+      console.warn('Toko - addPaletteSelector: collectionKey not found on parameter object');
+      return;
+    }
+    if (!Object.prototype.hasOwnProperty.call(o.pObject, o.paletteKey)) {
+      console.warn('Toko - addPaletteSelector: paletteKey not found on parameter object');
+      return;
+    }
+    if (!Object.prototype.hasOwnProperty.call(o.pObject, o.collectionsListKey)) {
+      console.warn('Toko - addPaletteSelector: collectionsListKey not found on parameter object');
+      return;
+    }
+
     o.colorPalettes = libraryState.toko.getPaletteSelection(o.pObject[o.collectionKey], o.justPrimary, o.sorted);
-    o.collectionsList = libraryState.toko.formatForTweakpane(o.pObject[o.collectionsList]);
+    o.collectionsList = libraryState.toko.formatForTweakpane(o.pObject[o.collectionsListKey]);
 
     // add the collection control
     o.collectionInput = o.paneRef
@@ -1204,10 +1298,12 @@
    * updatePaletteSelector('warm', 'sunset');
    */
   function updatePaletteSelector (receivedCollection, receivedPalette) {
-    let o;
-
     // get references to the controls
-    o = libraryState.paletteSelectorData;
+    const o = libraryState.paletteSelectorData;
+    if (!o || !o.paneRef || !o.pObject) {
+      console.warn('Toko - updatePaletteSelector: palette selector not initialized');
+      return;
+    }
 
     // get the palettes for the selected collection
     o.colorPalettes = libraryState.toko.getPaletteSelection(receivedCollection, o.justPrimary, o.sorted);
@@ -1350,7 +1446,7 @@
           pObject[o.seedStringKey] = o.rng.randomSeed();
           break;
         default:
-          logWarn('a non-existing button was pressed:', ev.index[0]);
+          console.warn('a non-existing button was pressed:', ev.index[0]);
           break;
       }
 
@@ -1410,6 +1506,7 @@
 
   // Global references to the main Tweakpane panel and tab container
   let basePane, basePaneTab;
+  let paneToggleHandler = null;
 
   /**
    * Initializes the Tweakpane UI panel with tabs and controls based on configuration options
@@ -1417,10 +1514,17 @@
    * @returns {void}
    */
   function setUpTweakpane () {
-    // Create the main Tweakpane panel if enabled
-    if (libraryState.options.useParameterPanel) {
-      basePane = new Tweakpane.Pane({});
+    // Skip Tweakpane setup entirely when the parameter panel is disabled
+    if (!libraryState.options.useParameterPanel) {
+      libraryState.tweakpane = null;
+      return;
     }
+
+    // Create the main Tweakpane panel
+    basePane = new Tweakpane.Pane({
+      container: document.getElementById(TWEAKPANE_CONTAINER_ID),
+      title: 'Sketch options (p to toggle)',
+    });
 
     // Build array of tabs to add based on configuration
     const tabs = buildTabList();
@@ -1522,7 +1626,7 @@
 
     // Call user-defined setup function if available
     if (typeof window.setupPanelControls === 'function') {
-      logDebug(`${LIBRARY_NAME} - setupPanelControls`);
+      if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - setupPanelControls`);
       window.setupPanelControls(libraryState.tweakpane);
     }
   }
@@ -1538,15 +1642,22 @@
 
   /**
    * Adds keyboard shortcut (P key) to toggle panel visibility
-   * Replaces any existing keydown handler on the document
    * @returns {void}
    */
   function addPaneToggle () {
-    document.onkeydown = function (event) {
+    if (paneToggleHandler) return;
+    paneToggleHandler = function (event) {
       if (event.key.toLowerCase() === 'p') {
         togglePaneVisibility();
       }
     };
+    document.addEventListener('keydown', paneToggleHandler);
+  }
+
+  function removePaneToggle () {
+    if (!paneToggleHandler) return;
+    document.removeEventListener('keydown', paneToggleHandler);
+    paneToggleHandler = null;
   }
 
   /**
@@ -1555,15 +1666,15 @@
    * @returns {void}
    */
   function togglePaneVisibility (makeVisible = null) {
-    const panelElement = document.getElementsByClassName('tp-dfwv')[0];
+    const panelElement = document.getElementById(TWEAKPANE_CONTAINER_ID);
     if (!panelElement) return;
 
-    const isCurrentlyVisible = panelElement.style.display === 'block' || panelElement.style.display === '';
+    const isCurrentlyVisible = !panelElement.classList.contains(TWEAKPANE_HIDDEN_CLASS);
 
     if (makeVisible === true || (makeVisible === null && !isCurrentlyVisible)) {
-      panelElement.style.display = 'block';
+      panelElement.classList.remove(TWEAKPANE_HIDDEN_CLASS);
     } else if (makeVisible === false || (makeVisible === null && isCurrentlyVisible)) {
-      panelElement.style.display = 'none';
+      panelElement.classList.add(TWEAKPANE_HIDDEN_CLASS);
     }
   }
 
@@ -1581,7 +1692,7 @@
         if (typeof window.tokoWrapper === 'function' && window.tokoWrapper()) {
           window.tokoWrapper().updateParameters();
         } else {
-          logError('tokoWrapper instance not available to update parameters');
+          console.error('tokoWrapper instance not available to update parameters');
         }
       }, libraryState.debounceDelay);
     };
@@ -1798,13 +1909,18 @@
     }
   }
 
+  let nativeDropElement = null;
+  let dragOverHandler = null;
+  let dragEnterHandler = null;
+  let dropHandler = null;
+
   /**
    * Set up native drag and drop event listeners
    * Used as fallback when p5.js drop() method is not available (e.g., p5v2 SVG, Q5)
    */
   function setUpNativeDrop () {
     if (!libraryState.p5Canvas) {
-      logWarn('Cannot set up file drop: canvas not available');
+      console.warn('Cannot set up file drop: canvas not available');
       return;
     }
 
@@ -1837,22 +1953,29 @@
     }
 
     if (!canvasElement) {
-      logWarn('Cannot set up file drop: canvas element not found');
+      console.warn('Cannot set up file drop: canvas element not found');
       return;
     }
 
+    if (nativeDropElement) {
+      tearDownReceiveFile();
+    }
+    nativeDropElement = canvasElement;
+
     // Prevent default drag behaviors
-    canvasElement.addEventListener('dragover', e => {
+    dragOverHandler = e => {
       e.preventDefault();
       e.stopPropagation();
-    });
+    };
+    canvasElement.addEventListener('dragover', dragOverHandler);
 
-    canvasElement.addEventListener('dragenter', e => {
+    dragEnterHandler = e => {
       e.preventDefault();
       e.stopPropagation();
-    });
+    };
+    canvasElement.addEventListener('dragenter', dragEnterHandler);
 
-    canvasElement.addEventListener('drop', e => {
+    dropHandler = e => {
       e.preventDefault();
       e.stopPropagation();
 
@@ -1861,7 +1984,25 @@
         const file = files[0];
         processDroppedFile(file);
       }
-    });
+    };
+    canvasElement.addEventListener('drop', dropHandler);
+  }
+
+  function tearDownReceiveFile () {
+    if (!nativeDropElement) return;
+    if (dragOverHandler) {
+      nativeDropElement.removeEventListener('dragover', dragOverHandler);
+    }
+    if (dragEnterHandler) {
+      nativeDropElement.removeEventListener('dragenter', dragEnterHandler);
+    }
+    if (dropHandler) {
+      nativeDropElement.removeEventListener('drop', dropHandler);
+    }
+    nativeDropElement = null;
+    dragOverHandler = null;
+    dragEnterHandler = null;
+    dropHandler = null;
   }
 
   /**
@@ -1882,7 +2023,7 @@
         try {
           fileData = JSON.parse(fileData);
         } catch (error) {
-          logWarn('Failed to parse JSON file: ' + error.message);
+          console.warn('Failed to parse JSON file: ' + error.message);
           return;
         }
       }
@@ -1901,7 +2042,7 @@
     };
 
     reader.onerror = function () {
-      logWarn('Failed to read dropped file');
+      console.warn('Failed to read dropped file');
     };
 
     // Read file as text for JSON, or as data URL for images
@@ -1969,12 +2110,22 @@
     addFPSToggle();
   }
 
+  let fpsToggleHandler = null;
+
   function addFPSToggle () {
-    document.onkeydown = function (event) {
+    if (fpsToggleHandler) return;
+    fpsToggleHandler = function (event) {
       if (event.key.toLowerCase() === 'f') {
         libraryState.toko.toggleFPS();
       }
     };
+    document.addEventListener('keydown', fpsToggleHandler);
+  }
+
+  function removeFPSToggle () {
+    if (!fpsToggleHandler) return;
+    document.removeEventListener('keydown', fpsToggleHandler);
+    fpsToggleHandler = null;
   }
 
   /**
@@ -2007,8 +2158,9 @@
    * Initializes the wrapper state and logs version information
    */
   function preSetupHook () {
-    logInfo(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${libraryState.options.renderMode})`);
-    logDebug('tokoWrapper - preSetupHook');
+    const renderMode = libraryState.options?.renderMode ?? 'unknown';
+    console.log(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant} - ${renderMode})`);
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - preSetupHook');
     libraryState.initialized = true;
   }
 
@@ -2018,7 +2170,7 @@
    */
   function postSetupHook () {
     // window.createCanvasNow(); // = createCanvasNow;
-    logDebug('tokoWrapper - postSetupHook');
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - postSetupHook');
     setUpWrapper();
 
     // Call refresh() if available, otherwise call tokoWrapper updateParameters
@@ -2034,11 +2186,11 @@
    * Currently logs debug information
    */
   function preDrawHook () {
-    logDebug('tokoWrapper - preDrawHook');
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - preDrawHook');
     //
     //  shift the canvas for webgl if enabled
     //
-    if (libraryState.options.shiftCanvasForWebGL) {
+    if (libraryState.options?.shiftCanvasForWebGL) {
       const isP5AndWebGL =
         (libraryState.variant === LIBRARY_P5V1 || libraryState.variant === LIBRARY_P5V2) &&
         libraryState.options.renderMode === RENDER_MODES.WEBGL;
@@ -2056,7 +2208,7 @@
    * Currently unused but available for per-frame tasks
    */
   function postDrawHook () {
-    logDebug('tokoWrapper - postDrawHook');
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - postDrawHook');
   }
 
   /**
@@ -2064,7 +2216,11 @@
    * Performs cleanup tasks and resets wrapper state
    */
   function removeHook () {
-    logDebug(`${LIBRARY_NAME} - Cleanup on sketch removal`);
+    if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - Cleanup on sketch removal`);
+    tearDownCanvas();
+    removePaneToggle();
+    removeFPSToggle();
+    tearDownReceiveFile();
     libraryState.initialized = false;
   }
 
@@ -2092,7 +2248,7 @@
   }
 
   const p5v2Adapter = function (p5, fn, lifecycles) {
-    logDebug('tokoWrapper - shared-adapter - p5v2Adapter');
+    if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - shared-adapter - p5v2Adapter', libraryState);
     return adapter.initialize({ p5, fn, lifecycles });
   };
 
@@ -2135,6 +2291,10 @@
    * @param {Object} inSize - Size object with name and dimensions
    */
   function addCanvasSize (inSize) {
+    if (!inSize || !inSize.name) {
+      console.warn('TokoWrapper: addCanvasSize requires a size object with a name property.');
+      return;
+    }
     SIZES.push(inSize);
     SIZES_LIST[inSize.name] = inSize.name;
   }
@@ -2153,6 +2313,11 @@
    * @param {Object} options - User-provided options to merge with defaults
    */
   function parseOptions (options) {
+    // Guard against null/undefined options
+    if (options == null) {
+      options = {};
+    }
+
     if (libraryState.options != null) {
       libraryState.options = { ...libraryState.options, ...options };
     } else {
@@ -2174,7 +2339,7 @@
     };
 
     // Handle canvas-specific options if they exist
-    if (options.additionalCanvasSizes != undefined && options.additionalCanvasSizes.length != 0) {
+    if (options && options.additionalCanvasSizes != undefined && options.additionalCanvasSizes.length != 0) {
       parseAdditionalCanvasSizes(options);
     }
   }
@@ -2193,6 +2358,9 @@
    * @note SVG render mode is automatically converted to P2D when using Q5 variant
    */
   function parseUrlParameters (options) {
+    if (typeof document === 'undefined' || !document.location) {
+      return options;
+    }
     const params = new URLSearchParams(document.location.search);
     const renderModeParam = params.get('r');
 
@@ -2214,7 +2382,9 @@
         case 'webgl':
           if (libraryState.toko?.variant === LIBRARY_Q5) {
             renderMode = RENDER_MODES.WEBGPU;
-            Q5.WebGPU();
+            if (typeof Q5 !== 'undefined' && typeof Q5.WebGPU === 'function') {
+              Q5.WebGPU();
+            }
           } else {
             renderMode = RENDER_MODES.WEBGL;
           }
@@ -2222,7 +2392,9 @@
         case 'webgpu':
           if (libraryState.toko?.variant === LIBRARY_Q5) {
             renderMode = RENDER_MODES.WEBGPU;
-            Q5.WebGPU();
+            if (typeof Q5 !== 'undefined' && typeof Q5.WebGPU === 'function') {
+              Q5.WebGPU();
+            }
           } else {
             renderMode = RENDER_MODES.WEBGL;
           }
@@ -2326,12 +2498,12 @@
 
     // Save sketch functions (simplified)
     function saveSketchWrapper () {
-      logDebug('saveSketch');
+      if (isDebugLogEnabled(libraryState)) console.log('saveSketch');
       // Implementation would go here
     }
 
     function saveSketchAndSettingsWrapper () {
-      logDebug('saveSketchAndSettings');
+      if (isDebugLogEnabled(libraryState)) console.log('saveSketchAndSettings');
       // Implementation would go here
     }
 
@@ -2361,10 +2533,12 @@
         this.saveSketch = this.saveSketch.bind(this);
         this.saveSketchAndSettings = this.saveSketchAndSettings.bind(this);
         this.updateParameters = this.updateParameters.bind(this);
-        this.logError = logError.bind(this);
-        this.logWarn = logWarn.bind(this);
-        this.logInfo = logInfo.bind(this);
-        this.logDebug = logDebug.bind(this);
+        this.logError = console.error.bind(console);
+        this.logWarn = console.warn.bind(console);
+        this.logInfo = console.log.bind(console);
+        this.logDebug = function (msg) {
+          if (isDebugLogEnabled(libraryState)) console.log(msg);
+        };
       }
 
       bindClasses () {
@@ -2410,7 +2584,7 @@
       initializeLibrary () {
         // Prevent multiple initializations
         if (this.initialized) {
-          logWarn(`${this.name}: Already initialized`);
+          console.warn(`${this.name}: Already initialized`);
           return this;
         }
 
@@ -2420,7 +2594,7 @@
           initializeP5v1,
           initializeQ5,
           p5v2Adapter,
-          logWarn,
+          logWarn: console.warn.bind(console),
           libraryName: LIBRARY_NAME,
         });
         this.variant = variant;
@@ -2453,8 +2627,21 @@
         libraryState.options.sketchElementId = value;
       }
 
+      /**
+       * Returns the renderer value for use with createCanvas().
+       * Resolves internal render mode string to the p5/Q5 renderer constant when available,
+       * so createCanvas(w, h, tokoWrapper.renderMode) works with p5.js and extensions (e.g. p5.svg).
+       * @returns {Object|string} p5 renderer constant (P2D, WEBGL, SVG) or internal string if not yet available
+       */
       get renderMode () {
-        return libraryState.options.renderMode;
+        const mode = libraryState.options.renderMode;
+        if (typeof window !== 'undefined') {
+          if (mode === RENDER_MODES.P2D && typeof window.P2D !== 'undefined') return window.P2D;
+          if (mode === RENDER_MODES.WEBGL && typeof window.WEBGL !== 'undefined') return window.WEBGL;
+          if (mode === RENDER_MODES.WEBGPU && typeof window.WEBGPU !== 'undefined') return window.WEBGPU;
+          if (mode === RENDER_MODES.SVG && typeof window.SVG !== 'undefined') return window.SVG;
+        }
+        return mode;
       }
 
       // set renderMode (value) {
@@ -2462,22 +2649,22 @@
       // }
 
       test () {
-        logDebug('testing');
+        if (isDebugLogEnabled(libraryState)) console.log('testing');
       }
 
       saveSketch () {
-        logDebug('saveSketch');
+        if (isDebugLogEnabled(libraryState)) console.log('saveSketch');
         saveSketchWrapper();
       }
 
       saveSketchAndSettings () {
-        logDebug('saveSketchAndSettings');
+        if (isDebugLogEnabled(libraryState)) console.log('saveSketchAndSettings');
         saveSketchAndSettingsWrapper();
       }
 
       // Called by the UI to update the parameters
       updateParameters () {
-        logDebug('tokoWrapper - updateParameters');
+        if (isDebugLogEnabled(libraryState)) console.log('tokoWrapper - updateParameters');
 
         // Call refresh() if available to parse the parameters
         if (typeof window.refresh === 'function') {

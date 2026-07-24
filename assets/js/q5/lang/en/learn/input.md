@@ -1,5 +1,9 @@
 # input
 
+q5's input handling is very basic.
+
+For better input handling, including game controller support, consider using the [q5play](https://q5play.org/) addon with q5.
+
 Note that input responses inside `draw` can be delayed by
 up to one frame cycle: from the exact moment an input event occurs
 to the next time a frame is drawn.
@@ -20,6 +24,15 @@ q5.draw = function () {
 	textSize(64);
 	text(round(mouseX), -50, 20);
 };
+```
+
+### python
+
+```py
+def draw():
+	background(0.8)
+	textSize(64)
+	text(round(mouseX), -50, 20)
 ```
 
 ### c2d
@@ -43,6 +56,14 @@ q5.draw = function () {
 	background(0.8);
 	circle(0, mouseY, 100);
 };
+```
+
+### python
+
+```py
+def draw():
+	background(0.8)
+	circle(0, mouseY, 100)
 ```
 
 ### c2d
@@ -78,6 +99,15 @@ q5.draw = function () {
 };
 ```
 
+### python
+
+```py
+def draw():
+	background(0.8)
+	textSize(64)
+	text(mouseButton, -80, 20)
+```
+
 ### c2d
 
 ```js
@@ -101,6 +131,14 @@ q5.draw = function () {
 };
 ```
 
+### python
+
+```py
+def draw():
+	if mouseIsPressed: background(0.4)
+	else: background(0.8)
+```
+
 ### c2d
 
 ```js
@@ -117,13 +155,24 @@ Define this function to respond to mouse down events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.mousePressed = function () {
-	background(gray);
-	gray = (gray + 0.1) % 1;
+	background(gray % 1);
+	gray += 0.1;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def mousePressed():
+	background(gray % 1)
+	gray += 0.1
 ```
 
 ### c2d
@@ -145,13 +194,24 @@ Define this function to respond to mouse up events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.mouseReleased = function () {
-	background(gray);
-	gray = (gray + 0.1) % 1;
+	background(gray % 1);
+	gray += 0.1;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def mouseReleased():
+	background(gray % 1)
+	gray += 0.1
 ```
 
 ### c2d
@@ -176,13 +236,24 @@ when the user drags their finger on the screen.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.mouseMoved = function () {
-	background(gray);
-	gray = (gray + 0.005) % 1;
+	background(gray % 1);
+	gray += 0.005;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def mouseMoved():
+	background(gray % 1)
+	gray += 0.005
 ```
 
 ### c2d
@@ -207,13 +278,24 @@ while a mouse button is pressed.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.mouseDragged = function () {
-	background(gray);
-	gray = (gray + 0.005) % 1;
+	background(gray % 1);
+	gray += 0.005;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def mouseDragged():
+	background(gray % 1)
+	gray += 0.005
 ```
 
 ### c2d
@@ -235,13 +317,24 @@ Define this function to respond to mouse double click events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.doubleClicked = function () {
-	background(gray);
-	gray = (gray + 0.1) % 1;
+	background(gray % 1);
+	gray += 0.1;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def doubleClicked():
+	background(gray % 1)
+	gray += 0.1
 ```
 
 ### c2d
@@ -270,6 +363,15 @@ q5.draw = function () {
 };
 ```
 
+### python
+
+```py
+def draw():
+	background(0.8)
+	textSize(64)
+	text(key, -80, 20)
+```
+
 ### c2d
 
 ```js
@@ -291,6 +393,14 @@ q5.draw = function () {
 	if (keyIsPressed) background(0.4);
 	else background(0.8);
 };
+```
+
+### python
+
+```py
+def draw():
+	if keyIsPressed: background(0.4)
+	else: background(0.8)
 ```
 
 ### c2d
@@ -324,6 +434,16 @@ q5.draw = function () {
 };
 ```
 
+### python
+
+```py
+def draw():
+	background(0.8)
+
+	if keyIsDown('f': && keyIsDown('j'))
+		rect(-50, -50, 100, 100)
+```
+
 ### c2d
 
 ```js
@@ -343,13 +463,24 @@ Define this function to respond to key down events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.keyPressed = function () {
-	background(gray);
-	gray = (gray + 0.1) % 1;
+	background(gray % 1);
+	gray += 0.1;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def keyPressed():
+	background(gray % 1)
+	gray += 0.1
 ```
 
 ### c2d
@@ -371,13 +502,24 @@ Define this function to respond to key up events.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.keyReleased = function () {
-	background(gray);
-	gray = (gray + 0.1) % 1;
+	background(gray % 1);
+	gray += 0.1;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def keyReleased():
+	background(gray % 1)
+	gray += 0.1
 ```
 
 ### c2d
@@ -398,15 +540,27 @@ Array containing all current touch points within the
 browser window. Each touch being an object with
 `id`, `x`, and `y` properties.
 
+Consider using the `pointers` array instead,
+which includes mouse, touch, and pen input.
+
 ### webgpu
 
 ```js
 q5.draw = function () {
 	background(0.8);
-	for (let touch of touches) {
-		circle(touch.x, touch.y, 100);
+	for (let pt of pointers) {
+		circle(pt.x, pt.y, 100);
 	}
 };
+```
+
+### python
+
+```py
+def draw():
+	background(0.8)
+	for (let pt of pointers)
+		circle(pt.x, pt.y, 100)
 ```
 
 ### c2d
@@ -414,8 +568,8 @@ q5.draw = function () {
 ```js
 function draw() {
 	background(200);
-	for (let touch of touches) {
-		circle(touch.x, touch.y, 100);
+	for (let pt of pointers) {
+		circle(pt.x, pt.y, 100);
 	}
 }
 ```
@@ -431,13 +585,24 @@ and scroll, which q5 disables on the canvas by default.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.touchStarted = function () {
-	background(gray);
-	gray = (gray + 0.1) % 1;
+	background(gray % 1);
+	gray += 0.1;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def touchStarted():
+	background(gray % 1)
+	gray += 0.1
 ```
 
 ### c2d
@@ -463,13 +628,24 @@ and scroll, which q5 disables on the canvas by default.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.touchEnded = function () {
-	background(gray);
-	gray = (gray + 0.1) % 1;
+	background(gray % 1);
+	gray += 0.1;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def touchEnded():
+	background(gray % 1)
+	gray += 0.1
 ```
 
 ### c2d
@@ -495,13 +671,24 @@ and scroll, which q5 disables on the canvas by default.
 ### webgpu
 
 ```js
-await createCanvas(200);
+await Canvas(200);
 let gray = 0.4;
 
 q5.touchMoved = function () {
-	background(gray);
-	gray = (gray + 0.005) % 1;
+	background(gray % 1);
+	gray += 0.005;
 };
+```
+
+### python
+
+```py
+Canvas(200)
+gray = 0.4
+
+def touchMoved():
+	background(gray % 1)
+	gray += 0.005
 ```
 
 ### c2d
@@ -513,42 +700,6 @@ let gray = 95;
 function touchMoved() {
 	background(gray % 256);
 	gray++;
-}
-```
-
-## pointers
-
-Object containing all current pointers within the
-browser window.
-
-This includes mouse, touch, and pen pointers.
-
-Each pointer is an object with
-`event`, `x`, and `y` properties.
-The `event` property contains the original
-[PointerEvent](https://developer.mozilla.org/docs/Web/API/PointerEvent).
-
-### webgpu
-
-```js
-q5.draw = function () {
-	background(0.8);
-	for (let pointerID in pointers) {
-		let pointer = pointers[pointerID];
-		circle(pointer.x, pointer.y, 100);
-	}
-};
-```
-
-### c2d
-
-```js
-function draw() {
-	background(200);
-	for (let pointerID in pointers) {
-		let pointer = pointers[pointerID];
-		circle(pointer.x, pointer.y, 100);
-	}
 }
 ```
 
@@ -567,8 +718,15 @@ specify the active point of the cursor.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 cursor('pointer');
+```
+
+### python
+
+```py
+Canvas(200, 100)
+cursor('pointer')
 ```
 
 ### c2d
@@ -585,8 +743,15 @@ Hides the cursor within the bounds of the canvas.
 ### webgpu
 
 ```js
-await createCanvas(200, 100);
+await Canvas(200, 100);
 noCursor();
+```
+
+### python
+
+```py
+Canvas(200, 100)
+noCursor()
 ```
 
 ### c2d
@@ -608,7 +773,8 @@ Return true to allow the default behavior of scrolling the page.
 ### webgpu
 
 ```js
-let x = (y = 0);
+let x = 0;
+let y = 0;
 q5.draw = function () {
 	circle(x, y, 10);
 };
@@ -619,10 +785,24 @@ q5.mouseWheel = function (e) {
 };
 ```
 
+### python
+
+```py
+x = 0
+y = 0
+def draw():
+	circle(x, y, 10)
+def mouseWheel(e):
+	x += e.deltaX
+	y += e.deltaY
+	return False
+```
+
 ### c2d
 
 ```js
-let x = (y = 100);
+let x = 100;
+let y = 100;
 function draw() {
 	circle(x, y, 10);
 }
@@ -631,6 +811,52 @@ function mouseWheel(e) {
 	y += e.deltaY;
 	return false;
 }
+```
+
+## movedX
+
+Distance the mouse has moved since the last frame in the horizontal direction.
+
+### webgpu
+
+```js
+q5.draw = function () {
+	background(0.8);
+	if (movedX > 0) text('>>', 0, 0);
+	if (movedX < 0) text('<<', 0, 0);
+};
+```
+
+### python
+
+```py
+def draw():
+	background(0.8)
+	if movedX > 0: text('>>', 0, 0)
+	if movedX < 0: text('<<', 0, 0)
+```
+
+## movedY
+
+Distance the mouse has moved since the last frame in the vertical direction.
+
+### webgpu
+
+```js
+q5.draw = function () {
+	background(0.8);
+	if (movedY > 0) text('vv', 0, 0);
+	if (movedY < 0) text('^^', 0, 0);
+};
+```
+
+### python
+
+```py
+def draw():
+	background(0.8)
+	if movedY > 0: text('vv', 0, 0)
+	if movedY < 0: text('^^', 0, 0)
 ```
 
 ## pointerLock
@@ -660,6 +886,19 @@ q5.doubleClicked = function () {
 		document.exitPointerLock();
 	}
 };
+```
+
+### python
+
+```py
+def draw():
+	circle(mouseX / 10, mouseY / 10, 10)
+
+def doubleClicked():
+	if !document.pointerLockElement:
+		pointerLock()
+		} else
+			document.exitPointerLock()
 ```
 
 ### c2d

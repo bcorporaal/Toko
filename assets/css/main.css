@@ -22,6 +22,8 @@
   --tp-monitor-background-color: hsla(230, 7%, 0%, 0.2);
   --tp-monitor-foreground-color: hsla(230, 7%, 75%, 0.7);
   --tp-base-font-family: 'Udon mono Web';
+  --tp-base-border-radius: 0;
+  --tp-width: 300px;
 }
 
 .tp-rotv {
@@ -34,7 +36,7 @@
 }
 
 .tp-dfwv {
-  width: 300px !important; /* Make tweakpane a little wider */
+  width: var(--tp-width) !important; /* Make tweakpane a little wider */
 }
 
 @font-face {
@@ -76,45 +78,98 @@ body {
 html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 main {
   display: none;
 }
 
-.sketch-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh; 
-  margin: 0;
-  padding: 0;
-}
-
 .p5Canvas {
   margin-bottom: -4px;
 }
 
-.sketch--full {
+/* Main wrapper - fills entire window */
+.sketch-wrapper {
+  display: flex;
   width: 100vw;
   height: 100vh;
-  background: #f1f3f5;
+  overflow: hidden;
 }
 
-.sketch--fixed {
-  max-width: calc(100vw - 2*1.2em);
-  max-height: calc(100vh - 2*1.2em);
-  background: #f1f3f5;
-  width: 1200px;
-  height: 800px;
+/* Flexible sketch container - takes remaining space on the left */
+.sketch--flexible {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4em 1em 4em 1em;
+  box-sizing: border-box;
+  overflow: hidden;
+  order: 1;
 }
 
-.sketch--square {
-  max-width: 800px;
-  max-height: 800px;
-  background: #f1f3f5;
-  width: 80vw;
-  height: 80vw;
+/* P5.js canvas - scales down only, maintains aspect ratio, centered */
+.p5Canvas {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
+  display: block;
+}
+
+/* Tweakpane panel - fixed 300px on the right */
+.sketch-tweakpane-container {
+  width: var(--tp-width);
+  height: 100%;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background-color: var(--tp-base-background-color);
+  order: 2; /* Explicitly place on the right */
+  transition: margin-right 0.5s ease-in-out;
+}
+
+/* Hidden state - slides off to the right */
+.sketch-tweakpane-container.tweakpane-hidden {
+  margin-right: calc(-1 * var(--tp-width));
+}
+
+/* Full window mode - tweakpane floats over full-screen canvas */
+.sketch-wrapper.fullwindow {
+  position: relative;
+}
+
+.sketch-tweakpane-container.fullwindow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: auto;
+  z-index: 100;
+}
+
+.sketch--flexible.fullwindow {
+  width: 100vw;
+  height: 100vh;
+  padding: 0;
+  flex: none;
+  display: block;
+}
+
+.sketch--flexible.fullwindow .p5Canvas {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+}
+
+.labels.fullwindow {
+  display: none;
 }
 
 .p5Canvas svg {
@@ -128,7 +183,6 @@ main {
   font-size: var(--fs-base);
   font-weight: 400;
 }
-
 
 .labels a:hover {
   border-bottom: 1px solid #343a40;
@@ -145,7 +199,7 @@ main {
   position: absolute;
   float: left;
   top: 1.2em;
-  left: 50%;
+  left: calc((100vw - var(--tp-width)) / 2);
   transform: translateX(-50%);
   font-size: var(--fs-base);
   font-weight: 400;
@@ -198,11 +252,22 @@ main {
   border-bottom: 1px solid #343a40;
 }
 
+.sketchlist-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1em;
+}
+
+.sketchlist-title-row a {
+  font-size: var(--fs-base);
+}
+
 .sketchlist h1 {
   font-size: var(--fs-base);
   font-weight: 700;
   text-transform: uppercase;
-  padding-bottom: 0.75em;
+  margin: 0;
 }
 
 .sketchlist h2 {
@@ -241,4 +306,166 @@ main {
 }
 .sketchlist p {
   font-size: var(--fs-base);
+}
+
+/* Color palettes page */
+html.colors-page,
+body.colors-page {
+  overflow-y: auto;
+  height: auto;
+}
+
+.palette-container {
+  padding: 10px 40px;
+  margin: 0px auto;
+  text-align: left;
+}
+
+.palette-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 2em;
+}
+
+.palette-title-row a {
+  font-size: var(--fs-base);
+}
+
+.palette-container h1 {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.palette-container p {
+  font-size: var(--fs-base);
+  margin-bottom: 2em;
+}
+
+.palette-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2em;
+}
+
+.palette-header p {
+  margin: 0;
+}
+
+.palette-toggle {
+  font-size: var(--fs-base);
+}
+
+.palette-toggle-current {
+  font-weight: 700;
+}
+
+.palette-toggle-other {
+  font-weight: 400;
+}
+
+.palette-toggles {
+  display: flex;
+  gap: 2em;
+}
+
+.palette-container a {
+  text-decoration: none;
+  color: #343a40;
+  border-bottom: 1px solid #dedede;
+}
+
+.palette-container a:hover {
+  border-bottom: 1px solid #343a40;
+}
+
+.collection-section {
+  margin-bottom: 3em;
+}
+
+.collection-section h2 {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid #343a40;
+}
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5em;
+}
+
+.palette-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  padding: 0.75em;
+}
+
+.palette-colors {
+  display: flex;
+  width: 100%;
+  height: 20px;
+}
+
+.color-swatch {
+  flex: 1;
+  height: 100%;
+}
+
+.palette-name {
+  font-size: var(--fs-base);
+  font-weight: 400;
+}
+
+.palette-footer {
+  margin-top: 3em;
+  padding-top: 1.5em;
+  border-top: 1px solid #343a40;
+}
+
+.palette-footer ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 2em;
+}
+
+.palette-footer li {
+  font-size: var(--fs-base);
+}
+
+/* Dark mode for colors page */
+body.colors-page.dark-mode {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.dark-mode .palette-container h1 {
+  color: #e0e0e0;
+}
+
+.dark-mode .palette-container a {
+  color: #e0e0e0;
+  border-bottom-color: #555;
+}
+
+.dark-mode .palette-container a:hover {
+  border-bottom-color: #e0e0e0;
+}
+
+.dark-mode .collection-section h2 {
+  color: #e0e0e0;
+  border-bottom-color: #e0e0e0;
+}
+
+.dark-mode .palette-footer {
+  border-top-color: #e0e0e0;
 }
