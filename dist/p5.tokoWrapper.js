@@ -1508,12 +1508,86 @@
   let basePane, basePaneTab;
   let paneToggleHandler = null;
 
+  // Object to hold preset size display value
+  const presetSizeDisplayState = {
+    value: null, // Initialize to null to force first update
+  };
+
+  // Object to hold displayed size value
+  const displayedSizeState = {
+    value: null,
+  };
+
+  // Flag to track size display updates
+  let isUpdatingSizeDisplays = false;
+
+  /**
+   * Returns the formatted preset size display string
+   * @returns {string} '100%' for fullWindow mode, or 'width x height x pixelDensity' for fixed sizes
+   */
+  function getPresetSizeDisplayString() {
+    const size = libraryState.options.canvasSize;
+    if (size.fullWindow) {
+      return '100%';
+    }
+    let result = `${size.width} x ${size.height}`;
+    if (size.pixelDensity && size.pixelDensity !== 1) {
+      result += ` x ${size.pixelDensity}`;
+    }
+    return result;
+  }
+
+  /**
+   * Returns the formatted displayed size (actual on-screen canvas dimensions)
+   * @returns {string} Formatted size as "width x height"
+   */
+  function getDisplayedSizeString() {
+    const canvas = document.querySelector('canvas');
+    if (canvas) {
+      return `${canvas.clientWidth} x ${canvas.clientHeight}`;
+    }
+    return 'N/A';
+  }
+
+  /**
+   * Updates both size displays (preset and displayed)
+   */
+  function updateSizeDisplays() {
+    const newPresetValue = getPresetSizeDisplayString();
+    const newDisplayedValue = getDisplayedSizeString();
+
+    if (presetSizeDisplayState.value !== newPresetValue) {
+      isUpdatingSizeDisplays = true;
+      presetSizeDisplayState.value = newPresetValue;
+      if (libraryState.tweakpane?.presetSizeBlade) {
+        libraryState.tweakpane.presetSizeBlade.refresh();
+      }
+      isUpdatingSizeDisplays = false;
+    }
+
+    if (displayedSizeState.value !== newDisplayedValue) {
+      displayedSizeState.value = newDisplayedValue;
+      if (libraryState.tweakpane?.displayedSizeBlade) {
+        libraryState.tweakpane.displayedSizeBlade.refresh();
+      }
+    }
+  }
+
+  /**
+   * Sets up window resize handler to update size displays
+   */
+  function addCanvasSizeDisplayResizeHandler() {
+    window.addEventListener('resize', () => {
+      updateSizeDisplays();
+    });
+  }
+
   /**
    * Initializes the Tweakpane UI panel with tabs and controls based on configuration options
    * Sets up the main panel, registers plugins, and adds conditional tabs and controls
    * @returns {void}
    */
-  function setUpTweakpane () {
+  function setUpTweakpane() {
     // Skip Tweakpane setup entirely when the parameter panel is disabled
     if (!libraryState.options.useParameterPanel) {
       libraryState.tweakpane = null;
@@ -1553,7 +1627,7 @@
    * Builds the list of tabs to display based on configuration options
    * @returns {Array} Array of tab objects with titles
    */
-  function buildTabList () {
+  function buildTabList() {
     const tabs = [{ title: TABS_PARAMETERS }];
 
     if (libraryState.options.showCanvasSizeOptions) {
@@ -1570,7 +1644,7 @@
   /**
    * Registers Tweakpane plugins for enhanced functionality
    */
-  function registerTweakpanePlugins () {
+  function registerTweakpanePlugins() {
     basePane.registerPlugin(TweakpaneEssentialsPlugin);
     basePane.registerPlugin(TweakpaneCamerakitPlugin);
   }
@@ -1578,7 +1652,7 @@
   /**
    * Sets up the tweakpane object in library state with all necessary references
    */
-  function setupTweakpaneReferences () {
+  function setupTweakpaneReferences() {
     libraryState.tweakpane = {
       base: basePane,
       basePaneTab: basePaneTab,
@@ -1594,9 +1668,10 @@
    * Adds conditional controls based on configuration options (excluding buttons)
    * Buttons are added separately to ensure they appear at the bottom
    */
-  function addConditionalControlsWithoutButtons () {
+  function addConditionalControlsWithoutButtons() {
     if (libraryState.options.showCanvasSizeOptions) {
       addSizeOptions();
+      addCanvasSizeDisplayResizeHandler();
     }
 
     if (libraryState.options.showCaptureOptions) {
@@ -1607,7 +1682,7 @@
   /**
    * Adds buttons that should appear at the bottom of the interface
    */
-  function addBottomButtons () {
+  function addBottomButtons() {
     if (libraryState.options.showSaveSketchButton) {
       addSaveSketchButton();
     }
@@ -1620,7 +1695,7 @@
   /**
    * Adds event handlers for panel interactions
    */
-  function addEventHandlers () {
+  function addEventHandlers() {
     addRefreshHandler();
     addPaneToggle();
 
@@ -1634,7 +1709,7 @@
   /**
    * Initializes the panel's initial state based on configuration
    */
-  function initializePanelState () {
+  function initializePanelState() {
     if (libraryState.options.hideParameterPanelOnStart) {
       togglePaneVisibility(false);
     }
@@ -1644,7 +1719,7 @@
    * Adds keyboard shortcut (P key) to toggle panel visibility
    * @returns {void}
    */
-  function addPaneToggle () {
+  function addPaneToggle() {
     if (paneToggleHandler) return;
     paneToggleHandler = function (event) {
       if (event.key.toLowerCase() === 'p') {
@@ -1654,7 +1729,7 @@
     document.addEventListener('keydown', paneToggleHandler);
   }
 
-  function removePaneToggle () {
+  function removePaneToggle() {
     if (!paneToggleHandler) return;
     document.removeEventListener('keydown', paneToggleHandler);
     paneToggleHandler = null;
@@ -1665,7 +1740,7 @@
    * @param {boolean|null} makeVisible - Force visibility state (true=show, false=hide, null=toggle)
    * @returns {void}
    */
-  function togglePaneVisibility (makeVisible = null) {
+  function togglePaneVisibility(makeVisible = null) {
     const panelElement = document.getElementById(TWEAKPANE_CONTAINER_ID);
     if (!panelElement) return;
 
@@ -1683,10 +1758,15 @@
    * Prevents excessive updates during rapid parameter changes
    * @returns {void}
    */
-  function addRefreshHandler () {
+  function addRefreshHandler() {
     let refreshTimeout;
 
     const debouncedRefresh = () => {
+      // Skip refresh if updating size displays
+      if (isUpdatingSizeDisplays) {
+        return;
+      }
+
       clearTimeout(refreshTimeout);
       refreshTimeout = setTimeout(() => {
         if (typeof window.tokoWrapper === 'function' && window.tokoWrapper()) {
@@ -1705,21 +1785,57 @@
    * Allows users to change canvas dimensions from predefined options
    * @returns {void}
    */
-  function addSizeOptions () {
+  function addSizeOptions() {
     if (!libraryState.options.showCanvasSizeOptions) return;
 
     // Extract name from canvas size object for the dropdown
     libraryState.options.canvasSizeName = libraryState.options.canvasSize.name;
 
-    basePaneTab.pages[TAB_ID_ADVANCED].addBinding(libraryState.options, 'canvasSizeName', {
-      options: SIZES_LIST,
+    const sizeTab = basePaneTab.pages[TAB_ID_ADVANCED];
+
+    // Add canvas size dropdown
+    sizeTab
+      .addBinding(libraryState.options, 'canvasSizeName', {
+        options: SIZES_LIST,
+        label: 'size preset',
+      })
+      .on('change', (event) => {
+        const selectedSize = SIZES.find((size) => size.name === event.value);
+        if (selectedSize) {
+          // Update the canvas size reference
+          libraryState.options.canvasSize = selectedSize;
+          setCanvasSize(selectedSize);
+          updateSizeDisplays();
+        }
+      });
+
+    // Add separator between dropdown and size displays
+    sizeTab.addBlade({ view: 'separator' });
+
+    // Initialize preset size display state
+    presetSizeDisplayState.value = getPresetSizeDisplayString();
+
+    // Add preset size text display as a disabled binding
+    libraryState.tweakpane.presetSizeBlade = sizeTab.addBinding(presetSizeDisplayState, 'value', {
       label: 'canvas size',
-    }).on('change', event => {
-      const selectedSize = SIZES.find(size => size.name === event.value);
-      if (selectedSize) {
-        setCanvasSize(selectedSize);
-      }
+      disabled: true,
     });
+
+    // Keep backward compatibility reference
+    libraryState.tweakpane.sizeDisplayBlade = libraryState.tweakpane.presetSizeBlade;
+
+    // Add separator between preset and displayed sizes
+    sizeTab.addBlade({ view: 'separator' });
+
+    // Initialize and add displayed size binding
+    displayedSizeState.value = getDisplayedSizeString();
+    libraryState.tweakpane.displayedSizeBlade = sizeTab.addBinding(displayedSizeState, 'value', {
+      label: 'displayed size',
+      disabled: true,
+    });
+
+    // Force initial update
+    updateSizeDisplays();
   }
 
   /**
@@ -1727,9 +1843,9 @@
    * Buttons are added separately to ensure they appear at the bottom
    * @returns {void}
    */
-  function addCaptureOptions () {
+  function addCaptureOptions() {
     // Find the actual capture tab index dynamically
-    const captureTabIndex = basePaneTab.pages.findIndex(page => page.title === TABS_CAPTURE);
+    const captureTabIndex = basePaneTab.pages.findIndex((page) => page.title === TABS_CAPTURE);
 
     if (captureTabIndex === -1) {
       console.error('ERROR: Capture tab not found in pages array');
@@ -1749,11 +1865,11 @@
    * Adds capture buttons that should appear at the bottom
    * @returns {void}
    */
-  function addCaptureButtons () {
+  function addCaptureButtons() {
     if (!libraryState.options.showCaptureOptions) return;
 
     // Find the actual capture tab index dynamically
-    const captureTabIndex = basePaneTab.pages.findIndex(page => page.title === TABS_CAPTURE);
+    const captureTabIndex = basePaneTab.pages.findIndex((page) => page.title === TABS_CAPTURE);
     if (captureTabIndex === -1) {
       console.error('ERROR: Capture tab not found in pages array for buttons');
       return;
@@ -1774,7 +1890,7 @@
    * @param {Object} captureTab - The capture options tab
    * @returns {Object} The tab to add buttons to
    */
-  function getButtonTab (captureTab) {
+  function getButtonTab(captureTab) {
     if (libraryState.options.captureOptions.recordButtonOnMainTab) {
       const primaryTab = libraryState.tweakpane.primaryTab;
       primaryTab.addBlade({ view: 'separator' });
@@ -1787,7 +1903,7 @@
    * Adds format and framerate selection controls
    * @param {Object} tab - The tab to add controls to
    */
-  function addCaptureFormatControls (tab) {
+  function addCaptureFormatControls(tab) {
     if (!tab) {
       console.error('ERROR: tab is null or undefined, cannot add controls');
       return;
@@ -1814,7 +1930,7 @@
    * Adds duration and refresh controls
    * @param {Object} tab - The tab to add controls to
    */
-  function addCaptureDurationControls (tab) {
+  function addCaptureDurationControls(tab) {
     tab
       .addBinding(libraryState.options.captureOptions, 'refreshBeforeCapture', {
         label: 'refresh first',
@@ -1844,7 +1960,7 @@
    * Adds record and stop buttons to the specified tab
    * @param {Object} tab - The tab to add buttons to
    */
-  function addCaptureButtonsToTab (tab) {
+  function addCaptureButtonsToTab(tab) {
     if (!libraryState.options.captureOptions.recordButtonOnMainTab) {
       tab.addBlade({ view: 'separator' });
     }
@@ -1865,7 +1981,7 @@
   /**
    * Initializes the initial state of capture controls
    */
-  function initializeCaptureControls () {
+  function initializeCaptureControls() {
     updateCaptureFixedDuration({ value: libraryState.options.captureOptions.fixedDuration });
     updateRecordButtonLabel(libraryState.options.captureOptions.refreshBeforeCapture);
     libraryState.options.captureOptions.stopCaptureButton.hidden = true;
@@ -1876,7 +1992,7 @@
    * Button behavior changes based on whether settings should be saved with the sketch
    * @returns {void}
    */
-  function addSaveSketchButton () {
+  function addSaveSketchButton() {
     const parametersTab = basePaneTab.pages[TAB_ID_PARAMETERS];
 
     parametersTab.addBlade({ view: 'separator' });
