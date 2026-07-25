@@ -30,14 +30,41 @@ const lifecycleHandlers = {
 const adapter = new BaseAdapter(libraryState, lifecycleHandlers, registrationFunctions);
 
 // Export the adapter functions
-export function initializeP5v1 () {
+/**
+ * Initialize Toko for p5.js v1
+ * Registers library functions and lifecycle hooks on the p5.js v1 prototype
+ * @returns {boolean} True if initialization was successful
+ * @example
+ * // Automatically called by Toko during initialization
+ * // No direct usage needed in user code
+ */
+export function initializeP5v1() {
   return adapter.initialize();
 }
 
+/**
+ * Adapter function for p5.js v2
+ * Creates an adapter function that can be called with p5, fn, and lifecycles parameters
+ * @param {Object} p5 - p5 instance for v2
+ * @param {Object} fn - p5 function for v2
+ * @param {Object} lifecycles - lifecycles object for v2
+ * @returns {boolean} True if initialization was successful
+ * @example
+ * // Automatically called by Toko during initialization
+ * // No direct usage needed in user code
+ */
 export const p5v2Adapter = function (p5, fn, lifecycles) {
   return adapter.initialize({ p5, fn, lifecycles });
 };
 
-export function initializeQ5 () {
+/**
+ * Initialize Toko for Q5
+ * Registers library functions and lifecycle hooks on the Q5 prototype
+ * @returns {boolean} True if initialization was successful
+ * @example
+ * // Automatically called by Toko during initialization
+ * // No direct usage needed in user code
+ */
+export function initializeQ5() {
   return adapter.initialize();
 }

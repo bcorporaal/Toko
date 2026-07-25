@@ -6043,7 +6043,7 @@
      * Create a new RNG instance
      * @param {string} [seedString] - Initial seed string. If not provided, a random seed is generated
      */
-    constructor (seedString) {
+    constructor(seedString) {
       this._currentSeed = 0;
       this._seedString = '';
       this.reset(seedString);
@@ -6054,7 +6054,7 @@
      * @private
      * @returns {void}
      */
-    _dump () {
+    _dump() {
       if (isDebugLogEnabled(libraryState)) {
         console.log(this._seedString, this._currentSeed);
         console.log(this._seedHistory, this._seedHistoryIndex);
@@ -6067,7 +6067,7 @@
      * @returns {void}
      * @private
      */
-    _pushSeed (newSeed) {
+    _pushSeed(newSeed) {
       if (newSeed != this._seedString) {
         // ignore if it is the same string
         if (this._seedHistory.length > 0 && this._seedHistoryIndex >= 0) {
@@ -6087,7 +6087,7 @@
      * @returns {string} Cleaned and validated seed string
      * @private
      */
-    _validateSeedString (inSeedString) {
+    _validateSeedString(inSeedString) {
       let cleanSeedString;
       if (inSeedString == undefined || inSeedString == '') {
         cleanSeedString = this._randomSeedString();
@@ -6107,7 +6107,7 @@
      * @param {string} [newSeed] - New seed string. If not provided, a random seed is generated
      * @returns {string} The validated seed string
      */
-    reset (newSeed) {
+    reset(newSeed) {
       this._seedHistory = [];
       this._seedHistoryIndex = -1;
       newSeed = this._validateSeedString(newSeed);
@@ -6120,7 +6120,7 @@
      * Effectively resets the sequence of random numbers
      * @returns {string} The current seed string
      */
-    resetSeed () {
+    resetSeed() {
       this._currentSeed = this._base62ToBase10(this._seedString);
       return this._seedString;
     }
@@ -6129,7 +6129,7 @@
      * Navigate to the previous seed in the history
      * @returns {string} The previous seed string
      */
-    previousSeed () {
+    previousSeed() {
       if (this._seedHistoryIndex >= 1) {
         this._seedHistoryIndex--;
         this._seedString = this._seedHistory[this._seedHistoryIndex];
@@ -6142,7 +6142,7 @@
      * Navigate to the next seed in the history
      * @returns {string} The next seed string
      */
-    nextSeed () {
+    nextSeed() {
       if (this._seedHistoryIndex < this._seedHistory.length - 1) {
         this._seedHistoryIndex++;
         this._seedString = this._seedHistory[this._seedHistoryIndex];
@@ -6155,7 +6155,7 @@
      * Set seed to random and push to the history
      * @returns {string} The new random seed string
      */
-    randomSeed () {
+    randomSeed() {
       this._pushSeed(this._randomSeedString());
       return this._seedString;
     }
@@ -6170,7 +6170,7 @@
      * Get the current seed string
      * @returns {string} The current seed string
      */
-    get seed () {
+    get seed() {
       return this._seedString;
     }
 
@@ -6179,7 +6179,7 @@
      * @param {string} newSeed - The new seed string
      * @returns {void}
      */
-    set seed (newSeed) {
+    set seed(newSeed) {
       newSeed = this._validateSeedString(newSeed);
       this._pushSeed(newSeed);
     }
@@ -6196,7 +6196,7 @@
      * @returns {string} Random seed string
      * @private
      */
-    _randomSeedString (stringLength = 6) {
+    _randomSeedString(stringLength = 6) {
       const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
       let result = '';
 
@@ -6214,7 +6214,7 @@
      * @throws {Error} If input contains invalid characters
      * @private
      */
-    _base62ToBase10 (input) {
+    _base62ToBase10(input) {
       const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
         base = 62;
       let result = 0;
@@ -6224,7 +6224,7 @@
           charValue = BASE62_ALPHABET.indexOf(char);
 
         if (charValue === -1) {
-          throw new Error('Invalid character in the input string.');
+          throw new Error('Toko: RNG randomChar() requires a non-empty string. Provide a string of valid characters.');
         }
 
         result = result * base + charValue;
@@ -6245,7 +6245,7 @@
      * @returns {number} Random number between 0 and 1
      * @private
      */
-    _rng () {
+    _rng() {
       let t = (this._currentSeed += 0x6d2b79f5);
       t = Math.imul(t ^ (t >>> 15), t | 1);
       t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
@@ -6270,7 +6270,7 @@
      * rng.random(5, 15);      // Random number between 5 and 15
      * rng.random(['a', 'b']); // Random element from array
      */
-    random (min, max) {
+    random(min, max) {
       let rand = this._rng();
 
       if (typeof min === 'undefined') {
@@ -6298,7 +6298,7 @@
      * @param {number} [max=100] - Maximum value (exclusive)
      * @returns {number} Random integer in the range
      */
-    intRange (min = 0, max = 100) {
+    intRange(min = 0, max = 100) {
       let rand = this._rng();
 
       min = Math.floor(min);
@@ -6323,7 +6323,7 @@
      * Return a random boolean
      * @returns {boolean} Random boolean value
      */
-    randomBool () {
+    randomBool() {
       if (this._rng() < 0.5) {
         return true;
       } else {
@@ -6338,9 +6338,11 @@
      * @returns {string} Random character from the string
      * @throws {Error} If input string is empty
      */
-    randomChar (inString = 'abcdefghijklmnopqrstuvwxyz') {
+    randomChar(inString = 'abcdefghijklmnopqrstuvwxyz') {
       if (inString.length === 0) {
-        throw new Error('randomChar: Input string cannot be empty.');
+        throw new Error(
+          'Toko: RNG randomChar() requires a non-empty string. Provide at least one character to choose from.',
+        );
       }
       let r = Math.floor(this.random(0, inString.length));
       return inString.charAt(r);
@@ -6353,9 +6355,11 @@
      * @returns {string} Random string of specified length
      * @throws {Error} If input string is empty
      */
-    randomString (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+    randomString(count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
       if (inString.length === 0) {
-        throw new Error('randomString: Input string cannot be empty.');
+        throw new Error(
+          'Toko: RNG randomString() requires a non-empty character set. Provide at least one character to choose from.',
+        );
       }
       let output = '';
       for (var i = 0; i < count; i++) {
@@ -6371,7 +6375,7 @@
      * @param {number} [step=0.1] - Step size
      * @returns {number} Random number snapped to the nearest step
      */
-    steppedRandom (min = 0, max = 1, step = 0.1) {
+    steppedRandom(min = 0, max = 1, step = 0.1) {
       // Swap if min > max
       if (min > max) {
         const tmp = min;
@@ -6398,7 +6402,7 @@
      * @param {Array} array - Array to shuffle
      * @returns {Array} The shuffled array (same reference)
      */
-    shuffle (array) {
+    shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
         let j = Math.floor(this._rng() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
@@ -6413,7 +6417,7 @@
      * @param {number} [max=100] - Maximum value (exclusive)
      * @returns {number[]} Shuffled array of integers in the range
      */
-    intSequence (min = 0, max = 100) {
+    intSequence(min = 0, max = 100) {
       min = Math.floor(min);
       max = Math.floor(max);
       if (max < min) {
@@ -6429,7 +6433,7 @@
      * Create a 2D unit p5 vector in a random direction
      * @returns {p5.Vector} Random 2D unit vector
      */
-    random2DVector () {
+    random2DVector() {
       let v = createVector(1, 0);
       let h = this.random() * TWO_PI;
       v.setHeading(h);
@@ -6444,7 +6448,7 @@
      * @param {number} inRadius - Minimum distance between points
      * @returns {p5.Vector[]} Array of points generated using Poisson disk sampling
      */
-    poissonDisk (inWidth, inHeight, inRadius) {
+    poissonDisk(inWidth, inHeight, inRadius) {
       let r = inRadius;
       let nrSamples = 30;
       let grid = [];
@@ -6519,7 +6523,7 @@
       //
       //  take out undefined points
       //
-      ordered = ordered.filter(n => n !== undefined);
+      ordered = ordered.filter((n) => n !== undefined);
 
       return ordered;
     }
@@ -6550,12 +6554,10 @@
    * @param {number} [y2=1] - Y coordinate of second control point
    * @param {string} [customName=null] - Custom name for the easing function
    * @returns {Function} Easing function that takes t (0-1) and returns eased value
-   *
-   * @author thednp (original), Bob Corporaal (adapted)
    */
-  function cubicBezier (x1 = 0, y1 = 0, x2 = 1, y2 = 1, customName = null) {
+  function cubicBezier(x1 = 0, y1 = 0, x2 = 1, y2 = 1, customName = null) {
     // Validate inputs
-    const isNumber = val => typeof val === 'number';
+    const isNumber = (val) => typeof val === 'number';
     const allNumbers = [x1, y1, x2, y2].every(isNumber);
 
     // Store control points
@@ -6574,22 +6576,22 @@
     const ay = 1 - cy - by;
 
     // Sample the curve at parameter t for X coordinate
-    function sampleCurveX (t) {
+    function sampleCurveX(t) {
       return ((ax * t + bx) * t + cx) * t;
     }
 
     // Sample the curve at parameter t for Y coordinate
-    function sampleCurveY (t) {
+    function sampleCurveY(t) {
       return ((ay * t + by) * t + cy) * t;
     }
 
     // Calculate the derivative of the curve at parameter t for X coordinate
-    function sampleCurveDerivativeX (t) {
+    function sampleCurveDerivativeX(t) {
       return (3 * ax * t + 2 * bx) * t + cx;
     }
 
     // Solve for t given x using Newton-Raphson method with bisection fallback
-    function solveCurveX (x) {
+    function solveCurveX(x) {
       if (x <= 0) return 0;
       if (x >= 1) return 1;
 
@@ -6629,7 +6631,7 @@
     }
 
     // Main easing function - given input t (0-1), return eased value
-    function easingFunction (t) {
+    function easingFunction(t) {
       if (t <= 0) return 0;
       if (t >= 1) return 1;
       return sampleCurveY(solveCurveX(t));
@@ -8334,11 +8336,23 @@
   //  GENERAL MATH FUNCTIONS
   //
 
-  //
-  //  wrap a number around if it goes above the maximum or below the minimum
-  //
-  // This function ensures a number stays within a range by wrapping it around if it exceeds the bounds.
-  function wrap (value, min = 0, max = 100) {
+  /**
+   * Wraps a number around when it exceeds the specified range.
+   * If the value goes above the maximum, it wraps around to the minimum.
+   * If the value goes below the minimum, it wraps around to the maximum.
+   * @param {number} value - The value to wrap
+   * @param {number} [min=0] - Minimum value of the range
+   * @param {number} [max=100] - Maximum value of the range
+   * @returns {number} The wrapped value within the range
+   * @example
+   * // Wrap around a 0-100 range
+   * toko.wrap(120, 0, 100); // Returns 20
+   * toko.wrap(-10, 0, 100); // Returns 90
+   *
+   * // Default range is 0-100
+   * toko.wrap(150); // Returns 50
+   */
+  function wrap(value, min = 0, max = 100) {
     let vw = value;
 
     if (value < min) {
@@ -8350,13 +8364,20 @@
     return vw;
   }
 
-  //
-  //  return number of integer digits of a value
-  //
-  //  Note: This implementation uses Math.log10, which may introduce slight inaccuracies
-  //  for very large or very small numbers due to floating-point precision.
-  //
-  function numDigits (x) {
+  /**
+   * Returns the number of integer digits in a value.
+   * Works for positive and negative numbers.
+   * @param {number} x - The value to count digits of
+   * @returns {number} The count of integer digits
+   * @example
+   * // Count digits in positive numbers
+   * toko.numDigits(1234); // Returns 4
+   * toko.numDigits(7); // Returns 1
+   *
+   * // Count digits in negative numbers
+   * toko.numDigits(-123); // Returns 3
+   */
+  function numDigits(x) {
     return (Math.log10(Math.abs(x)) | 0) + 1;
   }
 
@@ -8367,8 +8388,14 @@
    * @param {number} segments - Number of segments to divide the range into
    * @param {boolean} includeEndpoints - Whether to include start and end values (default: true)
    * @returns {Array<number>} Array of evenly distributed values
+   * @example
+   * // Create 5 evenly spaced values between 0 and 10
+   * toko.interpolate(0, 10, 5); // Returns [0, 2.5, 5, 7.5, 10]
+   *
+   * // Create values without endpoints
+   * toko.interpolate(0, 10, 5, false); // Returns [2, 4, 6, 8]
    */
-  function interpolate (a, b, segments, includeEndpoints = true) {
+  function interpolate(a, b, segments, includeEndpoints = true) {
     // Minimal validation - only check segments validity
     if (!Number.isInteger(segments) || segments < 0 || (segments == 0 && !includeEndpoints)) {
       throw new Error('Segments must be a positive integer');
@@ -8401,8 +8428,12 @@
    * @param {number} segments - Number of segments to divide the path into
    * @param {boolean} includeEndpoints - Whether to include start and end points (default: true)
    * @returns {Array<Object>} Array of coordinate objects with interpolated x and y values
+   * @example
+   * // Create 5 points between (0,0) and (100,50)
+   * toko.interpolateCoordinates({x: 0, y: 0}, {x: 100, y: 50}, 5);
+   * // Returns [{x: 0, y: 0}, {x: 25, y: 12.5}, {x: 50, y: 25}, {x: 75, y: 37.5}, {x: 100, y: 50}]
    */
-  function interpolateCoordinates (pointA, pointB, segments, includeEndpoints = true) {
+  function interpolateCoordinates(pointA, pointB, segments, includeEndpoints = true) {
     // Minimal validation
     if (!Number.isInteger(segments) || segments < 0 || (segments == 0 && !includeEndpoints)) {
       throw new Error('Segments must be a positive integer');
@@ -8436,7 +8467,20 @@
     return result;
   }
 
-  function lerpCoordinates (p0, p1, fraction) {
+  /**
+   * Linear interpolation between two coordinates at a given fraction.
+   * @param {Object} p0 - Start coordinate {x, y}
+   * @param {Object} p1 - End coordinate {x, y}
+   * @param {number} fraction - Interpolation fraction between 0 and 1
+   * @returns {Object} Interpolated coordinate {x, y}
+   * @example
+   * // Get the midpoint between (0,0) and (100,50)
+   * toko.lerpCoordinates({x: 0, y: 0}, {x: 100, y: 50}, 0.5); // Returns {x: 50, y: 25}
+   *
+   * // Get a point 25% of the way
+   * toko.lerpCoordinates({x: 0, y: 0}, {x: 100, y: 50}, 0.25); // Returns {x: 25, y: 12.5}
+   */
+  function lerpCoordinates(p0, p1, fraction) {
     let newVector = {
       x: (p1.x - p0.x) * fraction + p0.x,
       y: (p1.y - p0.y) * fraction + p0.y,
@@ -9987,7 +10031,7 @@
      * @param {number} s - The s coordinate (optional, will be calculated if not provided)
      * @param {Object} data - Optional custom data object to store with this hexagon
      */
-    constructor (q, r, s = null, data = {}) {
+    constructor(q, r, s = null, data = {}) {
       this.q = q;
       this.r = r;
       this.s = s !== null ? s : -q - r;
@@ -9995,7 +10039,9 @@
 
       // Validate cube coordinate constraint
       if (Math.round(this.q + this.r + this.s) !== 0) {
-        throw new Error('Hexagon cube coordinates must satisfy q + r + s = 0');
+        throw new Error(
+          'Toko: Hexagon cube coordinates must satisfy q + r + s = 0. This is a fundamental property of cube coordinates.',
+        );
       }
     }
 
@@ -10005,7 +10051,7 @@
      * @param {*} value - The property value
      * @returns {this} Returns this hexagon for method chaining
      */
-    setData (key, value) {
+    setData(key, value) {
       this.data[key] = value;
       return this;
     }
@@ -10016,7 +10062,7 @@
      * @param {*} defaultValue - Default value if key doesn't exist
      * @returns {*} The property value or default
      */
-    getData (key, defaultValue = undefined) {
+    getData(key, defaultValue = undefined) {
       return Object.prototype.hasOwnProperty.call(this.data, key) ? this.data[key] : defaultValue;
     }
 
@@ -10025,7 +10071,7 @@
      * @param {string} key - The property key
      * @returns {boolean} True if property exists
      */
-    hasData (key) {
+    hasData(key) {
       return Object.prototype.hasOwnProperty.call(this.data, key);
     }
 
@@ -10034,7 +10080,7 @@
      * @param {string} key - The property key
      * @returns {boolean} True if property was removed
      */
-    removeData (key) {
+    removeData(key) {
       if (Object.prototype.hasOwnProperty.call(this.data, key)) {
         delete this.data[key];
         return true;
@@ -10046,7 +10092,7 @@
      * Get all data keys
      * @returns {string[]} Array of all data property keys
      */
-    getDataKeys () {
+    getDataKeys() {
       return Object.keys(this.data);
     }
 
@@ -10054,7 +10100,7 @@
      * Clear all custom data
      * @returns {this} Returns this hexagon for method chaining
      */
-    clearData () {
+    clearData() {
       this.data = {};
       return this;
     }
@@ -10067,7 +10113,7 @@
      * @param {Object} data - New data object (optional, defaults to copy of current)
      * @returns {Hexagon} New hexagon with copied or new values
      */
-    clone (q = this.q, r = this.r, s = this.s, data = this.data) {
+    clone(q = this.q, r = this.r, s = this.s, data = this.data) {
       return new Hexagon(q, r, s, data);
     }
 
@@ -10076,7 +10122,7 @@
      * @param {Hexagon} other - The hexagon to add
      * @returns {Hexagon} New hexagon with summed coordinates and empty data
      */
-    add (other) {
+    add(other) {
       return new Hexagon(this.q + other.q, this.r + other.r, this.s + other.s);
     }
 
@@ -10085,7 +10131,7 @@
      * @param {Hexagon} other - The hexagon to subtract
      * @returns {Hexagon} New hexagon with difference coordinates and empty data
      */
-    subtract (other) {
+    subtract(other) {
       return new Hexagon(this.q - other.q, this.r - other.r, this.s - other.s);
     }
 
@@ -10094,7 +10140,7 @@
      * @param {number} k - The scaling factor
      * @returns {Hexagon} New scaled hexagon with empty data
      */
-    scale (k) {
+    scale(k) {
       return new Hexagon(this.q * k, this.r * k, this.s * k);
     }
 
@@ -10102,7 +10148,7 @@
      * Rotate this hexagon left (counterclockwise) by 60 degrees
      * @returns {Hexagon} New rotated hexagon with empty data
      */
-    rotateLeft () {
+    rotateLeft() {
       return new Hexagon(-this.s, -this.q, -this.r);
     }
 
@@ -10110,7 +10156,7 @@
      * Rotate this hexagon right (clockwise) by 60 degrees
      * @returns {Hexagon} New rotated hexagon with empty data
      */
-    rotateRight () {
+    rotateRight() {
       return new Hexagon(-this.r, -this.s, -this.q);
     }
 
@@ -10119,9 +10165,9 @@
      * @param {number} direction - Direction index (0-5)
      * @returns {Hexagon} Direction vector
      */
-    static direction (direction) {
+    static direction(direction) {
       if (direction < 0 || direction > 5) {
-        throw new Error('Direction must be between 0 and 5');
+        throw new Error('Toko: Direction must be between 0 and 5. Hexagons have 6 directions (0-5).');
       }
       return Hexagon.DIRECTIONS[direction];
     }
@@ -10130,7 +10176,7 @@
      * Get all direction vectors
      * @returns {Hexagon[]} Array of all 6 direction vectors
      */
-    static getAllDirections () {
+    static getAllDirections() {
       return [...Hexagon.DIRECTIONS];
     }
 
@@ -10139,7 +10185,7 @@
      * @param {number} direction - Direction index (0-5)
      * @returns {Hexagon} Neighboring hexagon coordinates (no data)
      */
-    neighbor (direction) {
+    neighbor(direction) {
       return this.add(Hexagon.direction(direction));
     }
 
@@ -10147,8 +10193,8 @@
      * Get all 6 neighbors of this hexagon
      * @returns {Hexagon[]} Array of all neighboring hexagon coordinates (no data)
      */
-    getAllNeighbors () {
-      return Hexagon.DIRECTIONS.map(dir => this.add(dir));
+    getAllNeighbors() {
+      return Hexagon.DIRECTIONS.map((dir) => this.add(dir));
     }
 
     /**
@@ -10156,9 +10202,9 @@
      * @param {number} direction - Direction index (0-5)
      * @returns {Hexagon} Diagonal neighboring hexagon coordinates (no data)
      */
-    diagonalNeighbor (direction) {
+    diagonalNeighbor(direction) {
       if (direction < 0 || direction > 5) {
-        throw new Error('Direction must be between 0 and 5');
+        throw new Error('Toko: Direction must be between 0 and 5. Hexagons have 6 directions (0-5).');
       }
       return this.add(Hexagon.DIAGONALS[direction]);
     }
@@ -10167,15 +10213,15 @@
      * Get all 6 diagonal neighbors
      * @returns {Hexagon[]} Array of all diagonal neighbor coordinates (no data)
      */
-    getAllDiagonalNeighbors () {
-      return Hexagon.DIAGONALS.map(diag => this.add(diag));
+    getAllDiagonalNeighbors() {
+      return Hexagon.DIAGONALS.map((diag) => this.add(diag));
     }
 
     /**
      * Calculate the Manhattan distance from origin (0,0,0)
      * @returns {number} Distance from origin
      */
-    length () {
+    length() {
       return (Math.abs(this.q) + Math.abs(this.r) + Math.abs(this.s)) / 2;
     }
 
@@ -10184,7 +10230,7 @@
      * @param {Hexagon} other - The other hexagon
      * @returns {number} Distance between hexagons
      */
-    distanceTo (other) {
+    distanceTo(other) {
       return this.subtract(other).length();
     }
 
@@ -10192,7 +10238,7 @@
      * Round fractional cube coordinates to nearest integer coordinates
      * @returns {Hexagon} Hexagon with rounded coordinates and empty data
      */
-    round () {
+    round() {
       let qi = Math.round(this.q);
       let ri = Math.round(this.r);
       let si = Math.round(this.s);
@@ -10218,7 +10264,7 @@
      * @param {number} t - Interpolation parameter (0-1)
      * @returns {Hexagon} Interpolated hexagon with empty data
      */
-    lerp (target, t) {
+    lerp(target, t) {
       return new Hexagon(
         this.q * (1 - t) + target.q * t,
         this.r * (1 - t) + target.r * t,
@@ -10231,7 +10277,7 @@
      * @param {Hexagon} target - Target hexagon
      * @returns {Hexagon[]} Array of hexagon coordinates forming a line (no data)
      */
-    lineTo (target) {
+    lineTo(target) {
       const distance = this.distanceTo(target);
       const nudgeA = new Hexagon(this.q + 1e-6, this.r + 1e-6, this.s - 2e-6);
       const nudgeB = new Hexagon(target.q + 1e-6, target.r + 1e-6, target.s - 2e-6);
@@ -10251,7 +10297,7 @@
      * @param {number} range - The range/radius
      * @returns {Hexagon[]} Array of hexagon coordinates within range (no data)
      */
-    getHexagonsInRange (range) {
+    getHexagonsInRange(range) {
       const results = [];
       for (let q = -range; q <= range; q++) {
         const r1 = Math.max(-range, -q - range);
@@ -10268,7 +10314,7 @@
      * @param {number} range - The range/radius
      * @returns {Hexagon[]} Array of hexagon coordinates at the ring border (no data)
      */
-    getHexagonsAtRange (range) {
+    getHexagonsAtRange(range) {
       if (range === 0) return [new Hexagon(this.q, this.r, this.s)];
 
       const results = [];
@@ -10289,7 +10335,7 @@
      * @param {Hexagon} other - The other hexagon
      * @returns {boolean} True if coordinates are equal
      */
-    equals (other) {
+    equals(other) {
       return this.q === other.q && this.r === other.r && this.s === other.s;
     }
 
@@ -10302,7 +10348,7 @@
      * @param {Object} data - Optional custom data
      * @returns {Hexagon} New hexagon
      */
-    static fromOffset (col, row, offset, type = 'q', data = {}) {
+    static fromOffset(col, row, offset, type = 'q', data = {}) {
       if (type === 'q') {
         const parity = col & 1;
         const q = col;
@@ -10314,7 +10360,7 @@
         const r = row;
         return new Hexagon(q, r, -q - r, data);
       } else {
-        throw new Error('Offset type must be "q" or "r"');
+        throw new Error('Toko: Offset type must be "q" or "r".');
       }
     }
 
@@ -10324,7 +10370,7 @@
      * @param {string} type - 'q' for q-offset, 'r' for r-offset
      * @returns {Object} Object with col and row properties
      */
-    toOffset (offset, type = 'q') {
+    toOffset(offset, type = 'q') {
       if (type === 'q') {
         const parity = this.q & 1;
         return {
@@ -10338,7 +10384,7 @@
           row: this.r,
         };
       } else {
-        throw new Error('Offset type must be "q" or "r"');
+        throw new Error('Toko: Offset type must be "q" or "r".');
       }
     }
 
@@ -10346,7 +10392,7 @@
      * Convert to string representation
      * @returns {string} String representation of the hexagon
      */
-    toString () {
+    toString() {
       return `Hex(${this.q}, ${this.r}, ${this.s})`;
     }
 
@@ -10354,7 +10400,7 @@
      * Convert to hash string for use as Map/Set key
      * @returns {string} Hash string
      */
-    toHash () {
+    toHash() {
       return `${this.q},${this.r},${this.s}`;
     }
 
@@ -10364,7 +10410,7 @@
      * @param {Object} data - Optional custom data
      * @returns {Hexagon} New hexagon
      */
-    static fromHash (hash, data = {}) {
+    static fromHash(hash, data = {}) {
       const [q, r, s] = hash.split(',').map(Number);
       return new Hexagon(q, r, s, data);
     }
@@ -10375,7 +10421,6 @@
    * Based on Red Blob Games hexagon grid implementation
    * Provides classes for managing hexagonal grids and individual hexagons with custom data storage
    *
-   * @author Based on Red Blob Games (redblobgames.com)
    * @license CC0 - No Rights Reserved
    */
 
@@ -10415,7 +10460,7 @@
      * @param {number} b3 - Backward transformation matrix element
      * @param {number} startAngle - Starting angle for corner calculations
      */
-    constructor (f0, f1, f2, f3, b0, b1, b2, b3, startAngle) {
+    constructor(f0, f1, f2, f3, b0, b1, b2, b3, startAngle) {
       this.f0 = f0;
       this.f1 = f1;
       this.f2 = f2;
@@ -10439,9 +10484,11 @@
      * @param {HexPoint} size - Size of hexagons (width and height scaling)
      * @param {HexPoint} origin - Origin point of the grid in pixel coordinates
      */
-    constructor (orientation = 'pointy', size = new HexPoint(100, 100), origin = new HexPoint(0, 0)) {
+    constructor(orientation = 'pointy', size = new HexPoint(100, 100), origin = new HexPoint(0, 0)) {
       if (orientation !== HexGrid.ORIENTATION_POINTY && orientation !== HexGrid.ORIENTATION_FLAT) {
-        throw new Error('Orientation must be "pointy" or "flat"');
+        throw new Error(
+          'Toko: Orientation must be "pointy" or "flat". Use HexGrid.ORIENTATION_POINTY or HexGrid.ORIENTATION_FLAT.',
+        );
       }
 
       this.orientation = orientation === HexGrid.ORIENTATION_POINTY ? HexGrid.POINTY : HexGrid.FLAT;
@@ -10457,7 +10504,7 @@
      * @param {Hexagon} hexagon - The hexagon to add
      * @returns {this} Returns this grid for method chaining
      */
-    addHexagon (hexagon) {
+    addHexagon(hexagon) {
       this.hexagons.set(hexagon.toHash(), hexagon);
       return this;
     }
@@ -10470,7 +10517,7 @@
      * @param {Object} data - Optional custom data
      * @returns {Hexagon} The created hexagon
      */
-    createHexagon (q, r, s = null, data = {}) {
+    createHexagon(q, r, s = null, data = {}) {
       const hexagon = new Hexagon(q, r, s, data);
       this.addHexagon(hexagon);
       return hexagon;
@@ -10483,7 +10530,7 @@
      * @param {number} s - The s coordinate (optional)
      * @returns {Hexagon|null} The hexagon or null if not found
      */
-    getHexagon (q, r, s = null) {
+    getHexagon(q, r, s = null) {
       const testHex = new Hexagon(q, r, s);
       return this.hexagons.get(testHex.toHash()) || null;
     }
@@ -10493,7 +10540,7 @@
      * @param {string} hash - The coordinate hash
      * @returns {Hexagon|null} The hexagon or null if not found
      */
-    getHexagonByHash (hash) {
+    getHexagonByHash(hash) {
       return this.hexagons.get(hash) || null;
     }
 
@@ -10504,7 +10551,7 @@
      * @param {number} s - The s coordinate (optional)
      * @returns {boolean} True if hexagon exists
      */
-    hasHexagon (q, r, s = null) {
+    hasHexagon(q, r, s = null) {
       const testHex = new Hexagon(q, r, s);
       return this.hexagons.has(testHex.toHash());
     }
@@ -10516,7 +10563,7 @@
      * @param {number} s - The s coordinate (optional)
      * @returns {boolean} True if hexagon was removed
      */
-    removeHexagon (q, r, s = null) {
+    removeHexagon(q, r, s = null) {
       const testHex = new Hexagon(q, r, s);
       return this.hexagons.delete(testHex.toHash());
     }
@@ -10525,7 +10572,7 @@
      * Clear all hexagons from the grid
      * @returns {this} Returns this grid for method chaining
      */
-    clear () {
+    clear() {
       this.hexagons.clear();
       return this;
     }
@@ -10534,7 +10581,7 @@
      * Get the number of hexagons in the grid
      * @returns {number} Number of hexagons
      */
-    gridSize () {
+    gridSize() {
       return this.hexagons.size;
     }
 
@@ -10542,7 +10589,7 @@
      * Get all hexagons in the grid
      * @returns {Hexagon[]} Array of all hexagons
      */
-    getAllHexagons () {
+    getAllHexagons() {
       return Array.from(this.hexagons.values());
     }
 
@@ -10550,7 +10597,7 @@
      * Get all hexagon coordinates (without data)
      * @returns {string[]} Array of all coordinate hashes
      */
-    getAllCoordinates () {
+    getAllCoordinates() {
       return Array.from(this.hexagons.keys());
     }
 
@@ -10559,7 +10606,7 @@
      * @param {Function} callback - Function to call for each hexagon (hexagon, hash) => {...}
      * @returns {this} Returns this grid for method chaining
      */
-    forEach (callback) {
+    forEach(callback) {
       this.hexagons.forEach(callback);
       return this;
     }
@@ -10569,7 +10616,7 @@
      * @param {Function} predicate - Function to test each hexagon (hexagon) => boolean
      * @returns {Hexagon[]} Array of hexagons that pass the test
      */
-    filter (predicate) {
+    filter(predicate) {
       return this.getAllHexagons().filter(predicate);
     }
 
@@ -10578,7 +10625,7 @@
      * @param {Function} predicate - Function to test each hexagon (hexagon) => boolean
      * @returns {Hexagon|null} First matching hexagon or null
      */
-    find (predicate) {
+    find(predicate) {
       for (const hexagon of this.hexagons.values()) {
         if (predicate(hexagon)) {
           return hexagon;
@@ -10594,7 +10641,7 @@
      * @param {number} s - The s coordinate (optional)
      * @returns {Hexagon[]} Array of neighboring hexagons that exist in the grid
      */
-    getNeighbors (q, r, s = null) {
+    getNeighbors(q, r, s = null) {
       const neighbors = [];
       const directions = Hexagon.DIRECTIONS;
 
@@ -10621,7 +10668,7 @@
      * @param {number} s - The s coordinate (optional)
      * @returns {Hexagon[]} Array of neighboring hexagon coordinates that don't exist in the grid
      */
-    getEmptyNeighbors (q, r, s = null) {
+    getEmptyNeighbors(q, r, s = null) {
       const hex = new Hexagon(q, r, s);
       const emptyNeighbors = [];
 
@@ -10643,7 +10690,7 @@
      * @param {boolean} includeCenter - Whether to include the center hexagon
      * @returns {Hexagon[]} Array of hexagons within range that exist in the grid
      */
-    getHexagonsInRange (centerQ, centerR, range, includeCenter = true) {
+    getHexagonsInRange(centerQ, centerR, range, includeCenter = true) {
       const center = new Hexagon(centerQ, centerR);
       const candidateCoords = center.getHexagonsInRange(range);
       const results = [];
@@ -10667,7 +10714,7 @@
      * @param {number} range - Range/radius
      * @returns {Hexagon[]} Array of hexagons at the ring border that exist in the grid
      */
-    getHexagonsAtRange (centerQ, centerR, range) {
+    getHexagonsAtRange(centerQ, centerR, range) {
       const center = new Hexagon(centerQ, centerR);
       const candidateCoords = center.getHexagonsAtRange(range);
       const results = [];
@@ -10693,7 +10740,7 @@
      * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
      * @returns {HexPoint} Pixel coordinates of the hexagon center
      */
-    hexToPixel (hex, r = null, s = null) {
+    hexToPixel(hex, r = null, s = null) {
       // Handle both Hexagon object and separate coordinate parameters
       const hexagon = hex instanceof Hexagon ? hex : new Hexagon(hex, r, s);
 
@@ -10710,7 +10757,7 @@
      * @param {number} s - The s coordinate (optional)
      * @returns {HexPoint|null} Pixel coordinates of center, or null if hexagon doesn't exist in grid
      */
-    getHexagonCenterPixel (q, r, s = null) {
+    getHexagonCenterPixel(q, r, s = null) {
       const hexagon = this.getHexagon(q, r, s);
       if (!hexagon) {
         return null;
@@ -10723,9 +10770,9 @@
      * @param {number} corner - Corner index (0-5)
      * @returns {HexPoint} Offset to corner from center
      */
-    getCornerOffset (corner, scaling = 1) {
+    getCornerOffset(corner, scaling = 1) {
       if (corner < 0 || corner > 5) {
-        throw new Error('Corner index must be between 0 and 5');
+        throw new Error('Toko: Corner index must be between 0 and 5. Hexagons have 6 corners (0-5).');
       }
       const M = this.orientation;
       const angle = (2.0 * Math.PI * (M.startAngle - corner)) / 6.0;
@@ -10739,7 +10786,7 @@
      * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
      * @returns {HexPoint[]} Array of 6 corner points in pixel coordinates
      */
-    getHexCorners (hex, r = null, s = null, scaling = 1) {
+    getHexCorners(hex, r = null, s = null, scaling = 1) {
       // Handle both Hexagon object and separate coordinate parameters
       const hexagon = hex instanceof Hexagon ? hex : new Hexagon(hex, r, s);
 
@@ -10761,7 +10808,7 @@
      * @param {number} s - The s coordinate (optional)
      * @returns {HexPoint[]|null} Array of 6 corner points, or null if hexagon doesn't exist in grid
      */
-    getHexagonCornerPixels (q, r, s = null, scaling = 1) {
+    getHexagonCornerPixels(q, r, s = null, scaling = 1) {
       const hexagon = this.getHexagon(q, r, s);
       if (!hexagon) {
         return null;
@@ -10777,7 +10824,7 @@
      * @param {number} [s] - The s coordinate (optional, if using separate coordinates)
      * @returns {HexPoint} The specified corner point in pixel coordinates
      */
-    getHexCorner (hex, corner, r = null, s = null) {
+    getHexCorner(hex, corner, r = null, s = null) {
       let hexagon, cornerIndex;
 
       // Handle different parameter combinations
@@ -10789,11 +10836,11 @@
         hexagon = new Hexagon(hex, r, s);
         cornerIndex = corner;
       } else {
-        throw new Error('Invalid parameters: expected (Hexagon, corner) or (q, corner, r, [s])');
+        throw new Error('Toko: Invalid parameters. Expected (Hexagon, corner) or (q, corner, r, [s]).');
       }
 
       if (cornerIndex < 0 || cornerIndex > 5) {
-        throw new Error('Corner index must be between 0 and 5');
+        throw new Error('Toko: Corner index must be between 0 and 5. Hexagons have 6 corners (0-5).');
       }
 
       const center = this.hexToPixel(hexagon);
@@ -10808,7 +10855,7 @@
      * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
      * @returns {HexPoint[]} Array of 6 facet midpoint coordinates in pixel coordinates
      */
-    getHexMidpoints (hex, r = null, s = null) {
+    getHexMidpoints(hex, r = null, s = null) {
       // Handle both Hexagon object and separate coordinate parameters
       const hexagon = hex instanceof Hexagon ? hex : new Hexagon(hex, r, s);
 
@@ -10836,7 +10883,7 @@
      * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
      * @returns {Object} Object with 'center' and 'corners' properties containing pixel coordinates
      */
-    getHexagonPixelCoordinates (hex, r = null, s = null, scaling = 1) {
+    getHexagonPixelCoordinates(hex, r = null, s = null, scaling = 1) {
       // Handle both Hexagon object and separate coordinate parameters
       const hexagon = hex instanceof Hexagon ? hex : new Hexagon(hex, r, s);
       const center = this.hexToPixel(hexagon);
@@ -10855,7 +10902,7 @@
      * @param {number} s - The s coordinate (optional)
      * @returns {Object|null} Object with 'center' and 'corners' properties, or null if hexagon doesn't exist
      */
-    getGridHexagonPixelCoordinates (q, r, s = null, scaling = 1) {
+    getGridHexagonPixelCoordinates(q, r, s = null, scaling = 1) {
       const hexagon = this.getHexagon(q, r, s);
       if (!hexagon) {
         return null;
@@ -10868,15 +10915,15 @@
      * @param {Hexagon[]|Array} hexagons - Array of hexagons or coordinate arrays [[q,r,s], ...]
      * @returns {Array} Array of objects with hexagon coordinates and pixel data
      */
-    getMultipleHexagonPixels (hexagons) {
-      return hexagons.map(hex => {
+    getMultipleHexagonPixels(hexagons) {
+      return hexagons.map((hex) => {
         let hexagon;
         if (hex instanceof Hexagon) {
           hexagon = hex;
         } else if (Array.isArray(hex)) {
           hexagon = new Hexagon(hex[0], hex[1], hex[2] || null);
         } else {
-          throw new Error('Invalid hexagon format in array');
+          throw new Error('Toko: Invalid hexagon format in array. Expected [q, r, s] or [q, r] cube coordinates.');
         }
 
         return {
@@ -10891,9 +10938,9 @@
      * Get pixel coordinates for all hexagons in the grid
      * @returns {Array} Array of objects with hexagon data and pixel coordinates
      */
-    getAllHexagonPixels () {
+    getAllHexagonPixels() {
       const result = [];
-      this.forEach(hexagon => {
+      this.forEach((hexagon) => {
         result.push({
           hexagon: hexagon,
           coordinates: { q: hexagon.q, r: hexagon.r, s: hexagon.s },
@@ -10919,7 +10966,7 @@
      * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
      * @returns {Object} Bounding box with minX, minY, maxX, maxY, width, height
      */
-    getHexagonBounds (hex, r = null, s = null) {
+    getHexagonBounds(hex, r = null, s = null) {
       const corners = this.getHexCorners(hex, r, s);
 
       let minX = corners[0].x,
@@ -10948,7 +10995,7 @@
      * Get the bounding box for all hexagons in the grid
      * @returns {Object|null} Overall bounding box or null if grid is empty
      */
-    getGridBounds () {
+    getGridBounds() {
       const hexagons = this.getAllHexagons();
       if (hexagons.length === 0) {
         return null;
@@ -10987,7 +11034,7 @@
      * @param {HexPoint} bottomRight - Bottom-right corner of rectangle
      * @returns {Hexagon[]} Array of hexagons in the area that exist in the grid
      */
-    getHexagonsInRectangle (topLeft, bottomRight) {
+    getHexagonsInRectangle(topLeft, bottomRight) {
       const hexagonHashes = new Set();
 
       // Sample points throughout the rectangle to find all intersecting hexagons
@@ -11019,7 +11066,7 @@
      * @param {number} radius - Radius in pixels
      * @returns {Hexagon[]} Array of hexagons in the circle that exist in the grid
      */
-    getHexagonsInCircle (center, radius) {
+    getHexagonsInCircle(center, radius) {
       const centerHex = this.pixelToHex(center);
       const hexRadius = Math.ceil(radius / Math.min(this.size.x, this.size.y));
 
@@ -11047,7 +11094,7 @@
      * @param {Function} dataFactory - Optional function to create data for each hex (q, r, s) => data
      * @returns {Hexagon[]} Array of created hexagons
      */
-    createRectangularGrid (width, height, startHex = new Hexagon(0, 0, 0), dataFactory = null) {
+    createRectangularGrid(width, height, startHex = new Hexagon(0, 0, 0), dataFactory = null) {
       const hexagons = [];
 
       for (let r = 0; r < height; r++) {
@@ -11073,7 +11120,7 @@
      * @param {Function} dataFactory - Optional function to create data for each hex (q, r, s) => data
      * @returns {Hexagon[]} Array of created hexagons
      */
-    createHexagonalGrid (radius, centerHex = new Hexagon(0, 0, 0), dataFactory = null) {
+    createHexagonalGrid(radius, centerHex = new Hexagon(0, 0, 0), dataFactory = null) {
       const coordinateList = centerHex.getHexagonsInRange(radius);
       const hexagons = [];
 
@@ -11093,7 +11140,7 @@
      * @param {Function} dataFactory - Optional function to create data for each hex (q, r, s) => data
      * @returns {Hexagon[]} Array of created hexagons along the line
      */
-    createLineOfHexagons (startHex, endHex, dataFactory = null) {
+    createLineOfHexagons(startHex, endHex, dataFactory = null) {
       const coordinateList = startHex.lineTo(endHex);
       const hexagons = [];
 
@@ -11111,7 +11158,7 @@
      * @param {string} newOrientation - 'pointy' or 'flat'
      * @returns {HexGrid} New grid with different orientation (hexagons not copied)
      */
-    withOrientation (newOrientation) {
+    withOrientation(newOrientation) {
       return new HexGrid(newOrientation, this.size, this.origin);
     }
 
@@ -11120,7 +11167,7 @@
      * @param {HexPoint} newSize - New size
      * @returns {HexGrid} New grid with different size (hexagons not copied)
      */
-    withSize (newSize) {
+    withSize(newSize) {
       const orientationName = this.orientation === HexGrid.POINTY ? 'pointy' : 'flat';
       return new HexGrid(orientationName, newSize, this.origin);
     }
@@ -11130,7 +11177,7 @@
      * @param {HexPoint} newOrigin - New origin
      * @returns {HexGrid} New grid with different origin (hexagons not copied)
      */
-    withOrigin (newOrigin) {
+    withOrigin(newOrigin) {
       const orientationName = this.orientation === HexGrid.POINTY ? 'pointy' : 'flat';
       return new HexGrid(orientationName, this.size, newOrigin);
     }
@@ -11139,12 +11186,12 @@
      * Clone this grid with all hexagons
      * @returns {HexGrid} New grid with copied hexagons
      */
-    clone () {
+    clone() {
       const orientationName = this.orientation === HexGrid.POINTY ? 'pointy' : 'flat';
       const newGrid = new HexGrid(orientationName, this.size, this.origin);
 
       // Copy all hexagons
-      this.forEach(hexagon => {
+      this.forEach((hexagon) => {
         newGrid.addHexagon(hexagon.clone());
       });
 
@@ -11155,7 +11202,7 @@
      * Get grid statistics
      * @returns {Object} Object with grid statistics
      */
-    getStats () {
+    getStats() {
       const hexagons = this.getAllHexagons();
 
       if (hexagons.length === 0) {
@@ -11208,7 +11255,7 @@
      * @returns {Hexagon} The hexagon containing this pixel point
      * OPTIMIZED: Added caching for frequently accessed coordinates
      */
-    pixelToHex (point) {
+    pixelToHex(point) {
       const M = this.orientation;
       const pt = new HexPoint((point.x - this.origin.x) / this.size.x, (point.y - this.origin.y) / this.size.y);
       const q = M.b0 * pt.x + M.b1 * pt.y;
@@ -11225,7 +11272,7 @@
      * @param {HexPoint} point - Pixel coordinates to convert
      * @returns {HexPoint} Pixel coordinates of the hexagon center that contains the input point
      */
-    snapToPixelCenter (point) {
+    snapToPixelCenter(point) {
       const inputPoint = new HexPoint(point.x, point.y);
       const containingHex = this.pixelToHex(inputPoint);
       return this.hexToPixel(containingHex);
@@ -11241,18 +11288,18 @@
      * @param {boolean} includePartial - If true, includes hexagons partially in rectangle; if false, only fully contained hexagons
      * @returns {Hexagon[]} Array of created hexagons
      */
-    createRectangularGridFromPixels (x, y, width, height, dataFactory = null, includePartial = true) {
+    createRectangularGridFromPixels(x, y, width, height, dataFactory = null, includePartial = true) {
       // Input validation
       if (typeof x !== 'number' || typeof y !== 'number' || typeof width !== 'number' || typeof height !== 'number') {
-        throw new Error('x, y, width, and height must be numbers');
+        throw new Error('Toko: x, y, width, and height must be numbers.');
       }
 
       if (width <= 0 || height <= 0) {
-        throw new Error('width and height must be positive');
+        throw new Error('Toko: width and height must be positive numbers.');
       }
 
       if (dataFactory && typeof dataFactory !== 'function') {
-        throw new Error('dataFactory must be a function or null');
+        throw new Error('Toko: dataFactory must be a function or null.');
       }
 
       const topLeft = new HexPoint(x, y);
@@ -11267,10 +11314,10 @@
       ];
 
       // Find hex coordinate bounds with padding to ensure we don't miss any
-      let minQ = Math.min(...cornerHexes.map(h => h.q)) - 1;
-      let maxQ = Math.max(...cornerHexes.map(h => h.q)) + 1;
-      let minR = Math.min(...cornerHexes.map(h => h.r)) - 1;
-      let maxR = Math.max(...cornerHexes.map(h => h.r)) + 1;
+      let minQ = Math.min(...cornerHexes.map((h) => h.q)) - 1;
+      let maxQ = Math.max(...cornerHexes.map((h) => h.q)) + 1;
+      let minR = Math.min(...cornerHexes.map((h) => h.r)) - 1;
+      let maxR = Math.max(...cornerHexes.map((h) => h.r)) + 1;
 
       const hexagons = [];
       const processedHashes = new Set();
@@ -11318,7 +11365,7 @@
      * @param {HexPoint} rectBottomRight - Bottom-right corner of rectangle
      * @returns {boolean} True if hexagon intersects with rectangle
      */
-    _hexagonIntersectsRectangle (hex, rectTopLeft, rectBottomRight) {
+    _hexagonIntersectsRectangle(hex, rectTopLeft, rectBottomRight) {
       // Quick bounding box check first (early rejection)
       const hexBounds = this.getHexagonBounds(hex);
       if (
@@ -11370,11 +11417,11 @@
      * @param {HexPoint} rectBottomRight - Bottom-right corner of rectangle
      * @returns {boolean} True if hexagon is fully within rectangle
      */
-    _hexagonFullyInRectangle (hex, rectTopLeft, rectBottomRight) {
+    _hexagonFullyInRectangle(hex, rectTopLeft, rectBottomRight) {
       // Check if all hexagon corners are within rectangle bounds
       const corners = this.getHexCorners(hex);
       return corners.every(
-        corner =>
+        (corner) =>
           corner.x >= rectTopLeft.x &&
           corner.x <= rectBottomRight.x &&
           corner.y >= rectTopLeft.y &&
@@ -11389,7 +11436,7 @@
      * @param {Hexagon} hex - Hexagon to test against
      * @returns {boolean} True if point is inside hexagon
      */
-    _pointInHexagon (point, hex) {
+    _pointInHexagon(point, hex) {
       // Convert point to hex coordinates and check if it rounds to the same hex
       const testHex = this.pixelToHex(point);
       return testHex.equals(hex);
@@ -11404,17 +11451,17 @@
      * @param {HexPoint[]} hexCorners - Array of hexagon corner points
      * @returns {boolean} True if edges intersect
      */
-    _rectangleEdgesCrossHexagon (rectTopLeft, rectBottomRight, hexCorners) {
+    _rectangleEdgesCrossHexagon(rectTopLeft, rectBottomRight, hexCorners) {
       // This is a simplified check - in most practical cases,
       // the corner checks above will catch intersections
       // For a complete implementation, you would need line-line intersection tests
 
       // Check if rectangle spans across hexagon horizontally or vertically
       const hexBounds = {
-        minX: Math.min(...hexCorners.map(c => c.x)),
-        maxX: Math.max(...hexCorners.map(c => c.x)),
-        minY: Math.min(...hexCorners.map(c => c.y)),
-        maxY: Math.max(...hexCorners.map(c => c.y)),
+        minX: Math.min(...hexCorners.map((c) => c.x)),
+        maxX: Math.max(...hexCorners.map((c) => c.x)),
+        minY: Math.min(...hexCorners.map((c) => c.y)),
+        maxY: Math.max(...hexCorners.map((c) => c.y)),
       };
 
       // Rectangle spans hexagon horizontally and overlaps vertically
@@ -12038,16 +12085,22 @@
   /**
    * Initialize hook - called when p5.js/Q5.js initializes
    * Note: Not used since it is not available for p5.js v2
+   * @example
+   * // This hook is automatically registered by Toko and called by p5.js v1
+   * // No direct usage needed in user code
    */
-  function initHook () {
-    // not used since it is not available for p5 v2
+  function initHook() {
+    // not used since it is not available for p5.js v2
   }
 
   /**
    * Pre-setup hook - called before p5.js setup() function
    * Initializes the library state and color system
+   * @example
+   * // This hook is automatically registered by Toko
+   * // No direct usage needed in user code
    */
-  function preSetupHook () {
+  function preSetupHook() {
     console.log(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant})`);
     libraryState.initialized = true;
     initColor();
@@ -12056,22 +12109,31 @@
   /**
    * Post-setup hook - called after p5.js setup() function
    * Currently unused but available for future initialization tasks
+   * @example
+   * // This hook is automatically registered by Toko
+   * // No direct usage needed in user code
    */
-  function postSetupHook () {}
+  function postSetupHook() {}
 
   /**
    * Pre-draw hook - called before each draw() cycle
    * Currently unused but available for per-frame setup tasks
+   * @example
+   * // This hook is automatically registered by Toko
+   * // No direct usage needed in user code
    */
-  function preDrawHook () {
+  function preDrawHook() {
     // not used yet
   }
 
   /**
    * Post-draw hook - called after each draw() cycle
    * Tracks when the first draw cycle has completed
+   * @example
+   * // This hook is automatically registered by Toko
+   * // No direct usage needed in user code
    */
-  function postDrawHook () {
+  function postDrawHook() {
     if (!libraryState.initialDrawDone) {
       libraryState.initialDrawDone = true;
     }
@@ -12086,8 +12148,11 @@
   /**
    * Remove hook - called when the sketch is removed or destroyed
    * Performs cleanup tasks and resets library state
+   * @example
+   * // This hook is automatically registered by Toko
+   * // No direct usage needed in user code
    */
-  function removeHook () {
+  function removeHook() {
     if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - Cleanup on sketch removal`);
     libraryState.initialized = false;
   }
@@ -12117,15 +12182,42 @@
   const adapter = new BaseAdapter(libraryState, lifecycleHandlers, registrationFunctions);
 
   // Export the adapter functions
-  function initializeP5v1 () {
+  /**
+   * Initialize Toko for p5.js v1
+   * Registers library functions and lifecycle hooks on the p5.js v1 prototype
+   * @returns {boolean} True if initialization was successful
+   * @example
+   * // Automatically called by Toko during initialization
+   * // No direct usage needed in user code
+   */
+  function initializeP5v1() {
     return adapter.initialize();
   }
 
+  /**
+   * Adapter function for p5.js v2
+   * Creates an adapter function that can be called with p5, fn, and lifecycles parameters
+   * @param {Object} p5 - p5 instance for v2
+   * @param {Object} fn - p5 function for v2
+   * @param {Object} lifecycles - lifecycles object for v2
+   * @returns {boolean} True if initialization was successful
+   * @example
+   * // Automatically called by Toko during initialization
+   * // No direct usage needed in user code
+   */
   const p5v2Adapter = function (p5, fn, lifecycles) {
     return adapter.initialize({ p5, fn, lifecycles });
   };
 
-  function initializeQ5 () {
+  /**
+   * Initialize Toko for Q5
+   * Registers library functions and lifecycle hooks on the Q5 prototype
+   * @returns {boolean} True if initialization was successful
+   * @example
+   * // Automatically called by Toko during initialization
+   * // No direct usage needed in user code
+   */
+  function initializeQ5() {
     return adapter.initialize();
   }
 

@@ -23,12 +23,10 @@
  * @param {number} [y2=1] - Y coordinate of second control point
  * @param {string} [customName=null] - Custom name for the easing function
  * @returns {Function} Easing function that takes t (0-1) and returns eased value
- *
- * @author thednp (original), Bob Corporaal (adapted)
  */
-export function cubicBezier (x1 = 0, y1 = 0, x2 = 1, y2 = 1, customName = null) {
+export function cubicBezier(x1 = 0, y1 = 0, x2 = 1, y2 = 1, customName = null) {
   // Validate inputs
-  const isNumber = val => typeof val === 'number';
+  const isNumber = (val) => typeof val === 'number';
   const allNumbers = [x1, y1, x2, y2].every(isNumber);
 
   // Store control points
@@ -47,22 +45,22 @@ export function cubicBezier (x1 = 0, y1 = 0, x2 = 1, y2 = 1, customName = null) 
   const ay = 1 - cy - by;
 
   // Sample the curve at parameter t for X coordinate
-  function sampleCurveX (t) {
+  function sampleCurveX(t) {
     return ((ax * t + bx) * t + cx) * t;
   }
 
   // Sample the curve at parameter t for Y coordinate
-  function sampleCurveY (t) {
+  function sampleCurveY(t) {
     return ((ay * t + by) * t + cy) * t;
   }
 
   // Calculate the derivative of the curve at parameter t for X coordinate
-  function sampleCurveDerivativeX (t) {
+  function sampleCurveDerivativeX(t) {
     return (3 * ax * t + 2 * bx) * t + cx;
   }
 
   // Solve for t given x using Newton-Raphson method with bisection fallback
-  function solveCurveX (x) {
+  function solveCurveX(x) {
     if (x <= 0) return 0;
     if (x >= 1) return 1;
 
@@ -102,7 +100,7 @@ export function cubicBezier (x1 = 0, y1 = 0, x2 = 1, y2 = 1, customName = null) 
   }
 
   // Main easing function - given input t (0-1), return eased value
-  function easingFunction (t) {
+  function easingFunction(t) {
     if (t <= 0) return 0;
     if (t >= 1) return 1;
     return sampleCurveY(solveCurveX(t));

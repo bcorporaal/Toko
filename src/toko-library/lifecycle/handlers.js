@@ -8,16 +8,22 @@ import { ContextManager } from '../core/context.js';
 /**
  * Initialize hook - called when p5.js/Q5.js initializes
  * Note: Not used since it is not available for p5.js v2
+ * @example
+ * // This hook is automatically registered by Toko and called by p5.js v1
+ * // No direct usage needed in user code
  */
-export function initHook () {
-  // not used since it is not available for p5 v2
+export function initHook() {
+  // not used since it is not available for p5.js v2
 }
 
 /**
  * Pre-setup hook - called before p5.js setup() function
  * Initializes the library state and color system
+ * @example
+ * // This hook is automatically registered by Toko
+ * // No direct usage needed in user code
  */
-export function preSetupHook () {
+export function preSetupHook() {
   console.log(`${LIBRARY_NAME} v${VERSION} (${libraryState.variant})`);
   libraryState.initialized = true;
   initColor();
@@ -26,22 +32,31 @@ export function preSetupHook () {
 /**
  * Post-setup hook - called after p5.js setup() function
  * Currently unused but available for future initialization tasks
+ * @example
+ * // This hook is automatically registered by Toko
+ * // No direct usage needed in user code
  */
-export function postSetupHook () {}
+export function postSetupHook() {}
 
 /**
  * Pre-draw hook - called before each draw() cycle
  * Currently unused but available for per-frame setup tasks
+ * @example
+ * // This hook is automatically registered by Toko
+ * // No direct usage needed in user code
  */
-export function preDrawHook () {
+export function preDrawHook() {
   // not used yet
 }
 
 /**
  * Post-draw hook - called after each draw() cycle
  * Tracks when the first draw cycle has completed
+ * @example
+ * // This hook is automatically registered by Toko
+ * // No direct usage needed in user code
  */
-export function postDrawHook () {
+export function postDrawHook() {
   if (!libraryState.initialDrawDone) {
     libraryState.initialDrawDone = true;
   }
@@ -56,8 +71,11 @@ export function postDrawHook () {
 /**
  * Remove hook - called when the sketch is removed or destroyed
  * Performs cleanup tasks and resets library state
+ * @example
+ * // This hook is automatically registered by Toko
+ * // No direct usage needed in user code
  */
-export function removeHook () {
+export function removeHook() {
   if (isDebugLogEnabled(libraryState)) console.log(`${LIBRARY_NAME} - Cleanup on sketch removal`);
   libraryState.initialized = false;
 }

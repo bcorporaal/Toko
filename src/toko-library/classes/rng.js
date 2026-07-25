@@ -25,7 +25,7 @@ export class RNG {
    * Create a new RNG instance
    * @param {string} [seedString] - Initial seed string. If not provided, a random seed is generated
    */
-  constructor (seedString) {
+  constructor(seedString) {
     this._currentSeed = 0;
     this._seedString = '';
     this.reset(seedString);
@@ -36,7 +36,7 @@ export class RNG {
    * @private
    * @returns {void}
    */
-  _dump () {
+  _dump() {
     if (isDebugLogEnabled(libraryState)) {
       console.log(this._seedString, this._currentSeed);
       console.log(this._seedHistory, this._seedHistoryIndex);
@@ -49,7 +49,7 @@ export class RNG {
    * @returns {void}
    * @private
    */
-  _pushSeed (newSeed) {
+  _pushSeed(newSeed) {
     if (newSeed != this._seedString) {
       // ignore if it is the same string
       if (this._seedHistory.length > 0 && this._seedHistoryIndex >= 0) {
@@ -69,7 +69,7 @@ export class RNG {
    * @returns {string} Cleaned and validated seed string
    * @private
    */
-  _validateSeedString (inSeedString) {
+  _validateSeedString(inSeedString) {
     let cleanSeedString;
     if (inSeedString == undefined || inSeedString == '') {
       cleanSeedString = this._randomSeedString();
@@ -89,7 +89,7 @@ export class RNG {
    * @param {string} [newSeed] - New seed string. If not provided, a random seed is generated
    * @returns {string} The validated seed string
    */
-  reset (newSeed) {
+  reset(newSeed) {
     this._seedHistory = [];
     this._seedHistoryIndex = -1;
     newSeed = this._validateSeedString(newSeed);
@@ -102,7 +102,7 @@ export class RNG {
    * Effectively resets the sequence of random numbers
    * @returns {string} The current seed string
    */
-  resetSeed () {
+  resetSeed() {
     this._currentSeed = this._base62ToBase10(this._seedString);
     return this._seedString;
   }
@@ -111,7 +111,7 @@ export class RNG {
    * Navigate to the previous seed in the history
    * @returns {string} The previous seed string
    */
-  previousSeed () {
+  previousSeed() {
     if (this._seedHistoryIndex >= 1) {
       this._seedHistoryIndex--;
       this._seedString = this._seedHistory[this._seedHistoryIndex];
@@ -124,7 +124,7 @@ export class RNG {
    * Navigate to the next seed in the history
    * @returns {string} The next seed string
    */
-  nextSeed () {
+  nextSeed() {
     if (this._seedHistoryIndex < this._seedHistory.length - 1) {
       this._seedHistoryIndex++;
       this._seedString = this._seedHistory[this._seedHistoryIndex];
@@ -137,7 +137,7 @@ export class RNG {
    * Set seed to random and push to the history
    * @returns {string} The new random seed string
    */
-  randomSeed () {
+  randomSeed() {
     this._pushSeed(this._randomSeedString());
     return this._seedString;
   }
@@ -152,7 +152,7 @@ export class RNG {
    * Get the current seed string
    * @returns {string} The current seed string
    */
-  get seed () {
+  get seed() {
     return this._seedString;
   }
 
@@ -161,7 +161,7 @@ export class RNG {
    * @param {string} newSeed - The new seed string
    * @returns {void}
    */
-  set seed (newSeed) {
+  set seed(newSeed) {
     newSeed = this._validateSeedString(newSeed);
     this._pushSeed(newSeed);
   }
@@ -178,7 +178,7 @@ export class RNG {
    * @returns {string} Random seed string
    * @private
    */
-  _randomSeedString (stringLength = 6) {
+  _randomSeedString(stringLength = 6) {
     const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
     let result = '';
 
@@ -196,7 +196,7 @@ export class RNG {
    * @throws {Error} If input contains invalid characters
    * @private
    */
-  _base62ToBase10 (input) {
+  _base62ToBase10(input) {
     const BASE62_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
       base = 62;
     let result = 0;
@@ -206,7 +206,7 @@ export class RNG {
         charValue = BASE62_ALPHABET.indexOf(char);
 
       if (charValue === -1) {
-        throw new Error('Invalid character in the input string.');
+        throw new Error('Toko: RNG randomChar() requires a non-empty string. Provide a string of valid characters.');
       }
 
       result = result * base + charValue;
@@ -227,7 +227,7 @@ export class RNG {
    * @returns {number} Random number between 0 and 1
    * @private
    */
-  _rng () {
+  _rng() {
     let t = (this._currentSeed += 0x6d2b79f5);
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
@@ -252,7 +252,7 @@ export class RNG {
    * rng.random(5, 15);      // Random number between 5 and 15
    * rng.random(['a', 'b']); // Random element from array
    */
-  random (min, max) {
+  random(min, max) {
     let rand = this._rng();
 
     if (typeof min === 'undefined') {
@@ -280,7 +280,7 @@ export class RNG {
    * @param {number} [max=100] - Maximum value (exclusive)
    * @returns {number} Random integer in the range
    */
-  intRange (min = 0, max = 100) {
+  intRange(min = 0, max = 100) {
     let rand = this._rng();
 
     min = Math.floor(min);
@@ -305,7 +305,7 @@ export class RNG {
    * Return a random boolean
    * @returns {boolean} Random boolean value
    */
-  randomBool () {
+  randomBool() {
     if (this._rng() < 0.5) {
       return true;
     } else {
@@ -320,9 +320,11 @@ export class RNG {
    * @returns {string} Random character from the string
    * @throws {Error} If input string is empty
    */
-  randomChar (inString = 'abcdefghijklmnopqrstuvwxyz') {
+  randomChar(inString = 'abcdefghijklmnopqrstuvwxyz') {
     if (inString.length === 0) {
-      throw new Error('randomChar: Input string cannot be empty.');
+      throw new Error(
+        'Toko: RNG randomChar() requires a non-empty string. Provide at least one character to choose from.',
+      );
     }
     let r = Math.floor(this.random(0, inString.length));
     return inString.charAt(r);
@@ -335,9 +337,11 @@ export class RNG {
    * @returns {string} Random string of specified length
    * @throws {Error} If input string is empty
    */
-  randomString (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+  randomString(count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
     if (inString.length === 0) {
-      throw new Error('randomString: Input string cannot be empty.');
+      throw new Error(
+        'Toko: RNG randomString() requires a non-empty character set. Provide at least one character to choose from.',
+      );
     }
     let output = '';
     for (var i = 0; i < count; i++) {
@@ -353,7 +357,7 @@ export class RNG {
    * @param {number} [step=0.1] - Step size
    * @returns {number} Random number snapped to the nearest step
    */
-  steppedRandom (min = 0, max = 1, step = 0.1) {
+  steppedRandom(min = 0, max = 1, step = 0.1) {
     // Swap if min > max
     if (min > max) {
       const tmp = min;
@@ -380,7 +384,7 @@ export class RNG {
    * @param {Array} array - Array to shuffle
    * @returns {Array} The shuffled array (same reference)
    */
-  shuffle (array) {
+  shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
       let j = Math.floor(this._rng() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];
@@ -395,7 +399,7 @@ export class RNG {
    * @param {number} [max=100] - Maximum value (exclusive)
    * @returns {number[]} Shuffled array of integers in the range
    */
-  intSequence (min = 0, max = 100) {
+  intSequence(min = 0, max = 100) {
     min = Math.floor(min);
     max = Math.floor(max);
     if (max < min) {
@@ -411,7 +415,7 @@ export class RNG {
    * Create a 2D unit p5 vector in a random direction
    * @returns {p5.Vector} Random 2D unit vector
    */
-  random2DVector () {
+  random2DVector() {
     let v = createVector(1, 0);
     let h = this.random() * TWO_PI;
     v.setHeading(h);
@@ -426,7 +430,7 @@ export class RNG {
    * @param {number} inRadius - Minimum distance between points
    * @returns {p5.Vector[]} Array of points generated using Poisson disk sampling
    */
-  poissonDisk (inWidth, inHeight, inRadius) {
+  poissonDisk(inWidth, inHeight, inRadius) {
     let r = inRadius;
     let nrSamples = 30;
     let grid = [];
@@ -501,7 +505,7 @@ export class RNG {
     //
     //  take out undefined points
     //
-    ordered = ordered.filter(n => n !== undefined);
+    ordered = ordered.filter((n) => n !== undefined);
 
     return ordered;
   }

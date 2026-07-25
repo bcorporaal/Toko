@@ -3,7 +3,6 @@
  * Based on Red Blob Games hexagon grid implementation
  * Provides classes for managing hexagonal grids and individual hexagons with custom data storage
  *
- * @author Based on Red Blob Games (redblobgames.com)
  * @license CC0 - No Rights Reserved
  */
 
@@ -46,7 +45,7 @@ export class Orientation {
    * @param {number} b3 - Backward transformation matrix element
    * @param {number} startAngle - Starting angle for corner calculations
    */
-  constructor (f0, f1, f2, f3, b0, b1, b2, b3, startAngle) {
+  constructor(f0, f1, f2, f3, b0, b1, b2, b3, startAngle) {
     this.f0 = f0;
     this.f1 = f1;
     this.f2 = f2;
@@ -70,9 +69,11 @@ export class HexGrid {
    * @param {HexPoint} size - Size of hexagons (width and height scaling)
    * @param {HexPoint} origin - Origin point of the grid in pixel coordinates
    */
-  constructor (orientation = 'pointy', size = new HexPoint(100, 100), origin = new HexPoint(0, 0)) {
+  constructor(orientation = 'pointy', size = new HexPoint(100, 100), origin = new HexPoint(0, 0)) {
     if (orientation !== HexGrid.ORIENTATION_POINTY && orientation !== HexGrid.ORIENTATION_FLAT) {
-      throw new Error('Orientation must be "pointy" or "flat"');
+      throw new Error(
+        'Toko: Orientation must be "pointy" or "flat". Use HexGrid.ORIENTATION_POINTY or HexGrid.ORIENTATION_FLAT.',
+      );
     }
 
     this.orientation = orientation === HexGrid.ORIENTATION_POINTY ? HexGrid.POINTY : HexGrid.FLAT;
@@ -88,7 +89,7 @@ export class HexGrid {
    * @param {Hexagon} hexagon - The hexagon to add
    * @returns {this} Returns this grid for method chaining
    */
-  addHexagon (hexagon) {
+  addHexagon(hexagon) {
     this.hexagons.set(hexagon.toHash(), hexagon);
     return this;
   }
@@ -101,7 +102,7 @@ export class HexGrid {
    * @param {Object} data - Optional custom data
    * @returns {Hexagon} The created hexagon
    */
-  createHexagon (q, r, s = null, data = {}) {
+  createHexagon(q, r, s = null, data = {}) {
     const hexagon = new Hexagon(q, r, s, data);
     this.addHexagon(hexagon);
     return hexagon;
@@ -114,7 +115,7 @@ export class HexGrid {
    * @param {number} s - The s coordinate (optional)
    * @returns {Hexagon|null} The hexagon or null if not found
    */
-  getHexagon (q, r, s = null) {
+  getHexagon(q, r, s = null) {
     const testHex = new Hexagon(q, r, s);
     return this.hexagons.get(testHex.toHash()) || null;
   }
@@ -124,7 +125,7 @@ export class HexGrid {
    * @param {string} hash - The coordinate hash
    * @returns {Hexagon|null} The hexagon or null if not found
    */
-  getHexagonByHash (hash) {
+  getHexagonByHash(hash) {
     return this.hexagons.get(hash) || null;
   }
 
@@ -135,7 +136,7 @@ export class HexGrid {
    * @param {number} s - The s coordinate (optional)
    * @returns {boolean} True if hexagon exists
    */
-  hasHexagon (q, r, s = null) {
+  hasHexagon(q, r, s = null) {
     const testHex = new Hexagon(q, r, s);
     return this.hexagons.has(testHex.toHash());
   }
@@ -147,7 +148,7 @@ export class HexGrid {
    * @param {number} s - The s coordinate (optional)
    * @returns {boolean} True if hexagon was removed
    */
-  removeHexagon (q, r, s = null) {
+  removeHexagon(q, r, s = null) {
     const testHex = new Hexagon(q, r, s);
     return this.hexagons.delete(testHex.toHash());
   }
@@ -156,7 +157,7 @@ export class HexGrid {
    * Clear all hexagons from the grid
    * @returns {this} Returns this grid for method chaining
    */
-  clear () {
+  clear() {
     this.hexagons.clear();
     return this;
   }
@@ -165,7 +166,7 @@ export class HexGrid {
    * Get the number of hexagons in the grid
    * @returns {number} Number of hexagons
    */
-  gridSize () {
+  gridSize() {
     return this.hexagons.size;
   }
 
@@ -173,7 +174,7 @@ export class HexGrid {
    * Get all hexagons in the grid
    * @returns {Hexagon[]} Array of all hexagons
    */
-  getAllHexagons () {
+  getAllHexagons() {
     return Array.from(this.hexagons.values());
   }
 
@@ -181,7 +182,7 @@ export class HexGrid {
    * Get all hexagon coordinates (without data)
    * @returns {string[]} Array of all coordinate hashes
    */
-  getAllCoordinates () {
+  getAllCoordinates() {
     return Array.from(this.hexagons.keys());
   }
 
@@ -190,7 +191,7 @@ export class HexGrid {
    * @param {Function} callback - Function to call for each hexagon (hexagon, hash) => {...}
    * @returns {this} Returns this grid for method chaining
    */
-  forEach (callback) {
+  forEach(callback) {
     this.hexagons.forEach(callback);
     return this;
   }
@@ -200,7 +201,7 @@ export class HexGrid {
    * @param {Function} predicate - Function to test each hexagon (hexagon) => boolean
    * @returns {Hexagon[]} Array of hexagons that pass the test
    */
-  filter (predicate) {
+  filter(predicate) {
     return this.getAllHexagons().filter(predicate);
   }
 
@@ -209,7 +210,7 @@ export class HexGrid {
    * @param {Function} predicate - Function to test each hexagon (hexagon) => boolean
    * @returns {Hexagon|null} First matching hexagon or null
    */
-  find (predicate) {
+  find(predicate) {
     for (const hexagon of this.hexagons.values()) {
       if (predicate(hexagon)) {
         return hexagon;
@@ -225,7 +226,7 @@ export class HexGrid {
    * @param {number} s - The s coordinate (optional)
    * @returns {Hexagon[]} Array of neighboring hexagons that exist in the grid
    */
-  getNeighbors (q, r, s = null) {
+  getNeighbors(q, r, s = null) {
     const neighbors = [];
     const directions = Hexagon.DIRECTIONS;
 
@@ -252,7 +253,7 @@ export class HexGrid {
    * @param {number} s - The s coordinate (optional)
    * @returns {Hexagon[]} Array of neighboring hexagon coordinates that don't exist in the grid
    */
-  getEmptyNeighbors (q, r, s = null) {
+  getEmptyNeighbors(q, r, s = null) {
     const hex = new Hexagon(q, r, s);
     const emptyNeighbors = [];
 
@@ -274,7 +275,7 @@ export class HexGrid {
    * @param {boolean} includeCenter - Whether to include the center hexagon
    * @returns {Hexagon[]} Array of hexagons within range that exist in the grid
    */
-  getHexagonsInRange (centerQ, centerR, range, includeCenter = true) {
+  getHexagonsInRange(centerQ, centerR, range, includeCenter = true) {
     const center = new Hexagon(centerQ, centerR);
     const candidateCoords = center.getHexagonsInRange(range);
     const results = [];
@@ -298,7 +299,7 @@ export class HexGrid {
    * @param {number} range - Range/radius
    * @returns {Hexagon[]} Array of hexagons at the ring border that exist in the grid
    */
-  getHexagonsAtRange (centerQ, centerR, range) {
+  getHexagonsAtRange(centerQ, centerR, range) {
     const center = new Hexagon(centerQ, centerR);
     const candidateCoords = center.getHexagonsAtRange(range);
     const results = [];
@@ -324,7 +325,7 @@ export class HexGrid {
    * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
    * @returns {HexPoint} Pixel coordinates of the hexagon center
    */
-  hexToPixel (hex, r = null, s = null) {
+  hexToPixel(hex, r = null, s = null) {
     // Handle both Hexagon object and separate coordinate parameters
     const hexagon = hex instanceof Hexagon ? hex : new Hexagon(hex, r, s);
 
@@ -341,7 +342,7 @@ export class HexGrid {
    * @param {number} s - The s coordinate (optional)
    * @returns {HexPoint|null} Pixel coordinates of center, or null if hexagon doesn't exist in grid
    */
-  getHexagonCenterPixel (q, r, s = null) {
+  getHexagonCenterPixel(q, r, s = null) {
     const hexagon = this.getHexagon(q, r, s);
     if (!hexagon) {
       return null;
@@ -354,9 +355,9 @@ export class HexGrid {
    * @param {number} corner - Corner index (0-5)
    * @returns {HexPoint} Offset to corner from center
    */
-  getCornerOffset (corner, scaling = 1) {
+  getCornerOffset(corner, scaling = 1) {
     if (corner < 0 || corner > 5) {
-      throw new Error('Corner index must be between 0 and 5');
+      throw new Error('Toko: Corner index must be between 0 and 5. Hexagons have 6 corners (0-5).');
     }
     const M = this.orientation;
     const angle = (2.0 * Math.PI * (M.startAngle - corner)) / 6.0;
@@ -370,7 +371,7 @@ export class HexGrid {
    * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
    * @returns {HexPoint[]} Array of 6 corner points in pixel coordinates
    */
-  getHexCorners (hex, r = null, s = null, scaling = 1) {
+  getHexCorners(hex, r = null, s = null, scaling = 1) {
     // Handle both Hexagon object and separate coordinate parameters
     const hexagon = hex instanceof Hexagon ? hex : new Hexagon(hex, r, s);
 
@@ -392,7 +393,7 @@ export class HexGrid {
    * @param {number} s - The s coordinate (optional)
    * @returns {HexPoint[]|null} Array of 6 corner points, or null if hexagon doesn't exist in grid
    */
-  getHexagonCornerPixels (q, r, s = null, scaling = 1) {
+  getHexagonCornerPixels(q, r, s = null, scaling = 1) {
     const hexagon = this.getHexagon(q, r, s);
     if (!hexagon) {
       return null;
@@ -408,7 +409,7 @@ export class HexGrid {
    * @param {number} [s] - The s coordinate (optional, if using separate coordinates)
    * @returns {HexPoint} The specified corner point in pixel coordinates
    */
-  getHexCorner (hex, corner, r = null, s = null) {
+  getHexCorner(hex, corner, r = null, s = null) {
     let hexagon, cornerIndex;
 
     // Handle different parameter combinations
@@ -420,11 +421,11 @@ export class HexGrid {
       hexagon = new Hexagon(hex, r, s);
       cornerIndex = corner;
     } else {
-      throw new Error('Invalid parameters: expected (Hexagon, corner) or (q, corner, r, [s])');
+      throw new Error('Toko: Invalid parameters. Expected (Hexagon, corner) or (q, corner, r, [s]).');
     }
 
     if (cornerIndex < 0 || cornerIndex > 5) {
-      throw new Error('Corner index must be between 0 and 5');
+      throw new Error('Toko: Corner index must be between 0 and 5. Hexagons have 6 corners (0-5).');
     }
 
     const center = this.hexToPixel(hexagon);
@@ -439,7 +440,7 @@ export class HexGrid {
    * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
    * @returns {HexPoint[]} Array of 6 facet midpoint coordinates in pixel coordinates
    */
-  getHexMidpoints (hex, r = null, s = null) {
+  getHexMidpoints(hex, r = null, s = null) {
     // Handle both Hexagon object and separate coordinate parameters
     const hexagon = hex instanceof Hexagon ? hex : new Hexagon(hex, r, s);
 
@@ -467,7 +468,7 @@ export class HexGrid {
    * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
    * @returns {Object} Object with 'center' and 'corners' properties containing pixel coordinates
    */
-  getHexagonPixelCoordinates (hex, r = null, s = null, scaling = 1) {
+  getHexagonPixelCoordinates(hex, r = null, s = null, scaling = 1) {
     // Handle both Hexagon object and separate coordinate parameters
     const hexagon = hex instanceof Hexagon ? hex : new Hexagon(hex, r, s);
     const center = this.hexToPixel(hexagon);
@@ -486,7 +487,7 @@ export class HexGrid {
    * @param {number} s - The s coordinate (optional)
    * @returns {Object|null} Object with 'center' and 'corners' properties, or null if hexagon doesn't exist
    */
-  getGridHexagonPixelCoordinates (q, r, s = null, scaling = 1) {
+  getGridHexagonPixelCoordinates(q, r, s = null, scaling = 1) {
     const hexagon = this.getHexagon(q, r, s);
     if (!hexagon) {
       return null;
@@ -499,15 +500,15 @@ export class HexGrid {
    * @param {Hexagon[]|Array} hexagons - Array of hexagons or coordinate arrays [[q,r,s], ...]
    * @returns {Array} Array of objects with hexagon coordinates and pixel data
    */
-  getMultipleHexagonPixels (hexagons) {
-    return hexagons.map(hex => {
+  getMultipleHexagonPixels(hexagons) {
+    return hexagons.map((hex) => {
       let hexagon;
       if (hex instanceof Hexagon) {
         hexagon = hex;
       } else if (Array.isArray(hex)) {
         hexagon = new Hexagon(hex[0], hex[1], hex[2] || null);
       } else {
-        throw new Error('Invalid hexagon format in array');
+        throw new Error('Toko: Invalid hexagon format in array. Expected [q, r, s] or [q, r] cube coordinates.');
       }
 
       return {
@@ -522,9 +523,9 @@ export class HexGrid {
    * Get pixel coordinates for all hexagons in the grid
    * @returns {Array} Array of objects with hexagon data and pixel coordinates
    */
-  getAllHexagonPixels () {
+  getAllHexagonPixels() {
     const result = [];
-    this.forEach(hexagon => {
+    this.forEach((hexagon) => {
       result.push({
         hexagon: hexagon,
         coordinates: { q: hexagon.q, r: hexagon.r, s: hexagon.s },
@@ -550,7 +551,7 @@ export class HexGrid {
    * @param {number} [s] - The s coordinate (optional, if hex is q coordinate)
    * @returns {Object} Bounding box with minX, minY, maxX, maxY, width, height
    */
-  getHexagonBounds (hex, r = null, s = null) {
+  getHexagonBounds(hex, r = null, s = null) {
     const corners = this.getHexCorners(hex, r, s);
 
     let minX = corners[0].x,
@@ -579,7 +580,7 @@ export class HexGrid {
    * Get the bounding box for all hexagons in the grid
    * @returns {Object|null} Overall bounding box or null if grid is empty
    */
-  getGridBounds () {
+  getGridBounds() {
     const hexagons = this.getAllHexagons();
     if (hexagons.length === 0) {
       return null;
@@ -618,7 +619,7 @@ export class HexGrid {
    * @param {HexPoint} bottomRight - Bottom-right corner of rectangle
    * @returns {Hexagon[]} Array of hexagons in the area that exist in the grid
    */
-  getHexagonsInRectangle (topLeft, bottomRight) {
+  getHexagonsInRectangle(topLeft, bottomRight) {
     const hexagonHashes = new Set();
 
     // Sample points throughout the rectangle to find all intersecting hexagons
@@ -650,7 +651,7 @@ export class HexGrid {
    * @param {number} radius - Radius in pixels
    * @returns {Hexagon[]} Array of hexagons in the circle that exist in the grid
    */
-  getHexagonsInCircle (center, radius) {
+  getHexagonsInCircle(center, radius) {
     const centerHex = this.pixelToHex(center);
     const hexRadius = Math.ceil(radius / Math.min(this.size.x, this.size.y));
 
@@ -678,7 +679,7 @@ export class HexGrid {
    * @param {Function} dataFactory - Optional function to create data for each hex (q, r, s) => data
    * @returns {Hexagon[]} Array of created hexagons
    */
-  createRectangularGrid (width, height, startHex = new Hexagon(0, 0, 0), dataFactory = null) {
+  createRectangularGrid(width, height, startHex = new Hexagon(0, 0, 0), dataFactory = null) {
     const hexagons = [];
 
     for (let r = 0; r < height; r++) {
@@ -704,7 +705,7 @@ export class HexGrid {
    * @param {Function} dataFactory - Optional function to create data for each hex (q, r, s) => data
    * @returns {Hexagon[]} Array of created hexagons
    */
-  createHexagonalGrid (radius, centerHex = new Hexagon(0, 0, 0), dataFactory = null) {
+  createHexagonalGrid(radius, centerHex = new Hexagon(0, 0, 0), dataFactory = null) {
     const coordinateList = centerHex.getHexagonsInRange(radius);
     const hexagons = [];
 
@@ -724,7 +725,7 @@ export class HexGrid {
    * @param {Function} dataFactory - Optional function to create data for each hex (q, r, s) => data
    * @returns {Hexagon[]} Array of created hexagons along the line
    */
-  createLineOfHexagons (startHex, endHex, dataFactory = null) {
+  createLineOfHexagons(startHex, endHex, dataFactory = null) {
     const coordinateList = startHex.lineTo(endHex);
     const hexagons = [];
 
@@ -742,7 +743,7 @@ export class HexGrid {
    * @param {string} newOrientation - 'pointy' or 'flat'
    * @returns {HexGrid} New grid with different orientation (hexagons not copied)
    */
-  withOrientation (newOrientation) {
+  withOrientation(newOrientation) {
     return new HexGrid(newOrientation, this.size, this.origin);
   }
 
@@ -751,7 +752,7 @@ export class HexGrid {
    * @param {HexPoint} newSize - New size
    * @returns {HexGrid} New grid with different size (hexagons not copied)
    */
-  withSize (newSize) {
+  withSize(newSize) {
     const orientationName = this.orientation === HexGrid.POINTY ? 'pointy' : 'flat';
     return new HexGrid(orientationName, newSize, this.origin);
   }
@@ -761,7 +762,7 @@ export class HexGrid {
    * @param {HexPoint} newOrigin - New origin
    * @returns {HexGrid} New grid with different origin (hexagons not copied)
    */
-  withOrigin (newOrigin) {
+  withOrigin(newOrigin) {
     const orientationName = this.orientation === HexGrid.POINTY ? 'pointy' : 'flat';
     return new HexGrid(orientationName, this.size, newOrigin);
   }
@@ -770,12 +771,12 @@ export class HexGrid {
    * Clone this grid with all hexagons
    * @returns {HexGrid} New grid with copied hexagons
    */
-  clone () {
+  clone() {
     const orientationName = this.orientation === HexGrid.POINTY ? 'pointy' : 'flat';
     const newGrid = new HexGrid(orientationName, this.size, this.origin);
 
     // Copy all hexagons
-    this.forEach(hexagon => {
+    this.forEach((hexagon) => {
       newGrid.addHexagon(hexagon.clone());
     });
 
@@ -786,7 +787,7 @@ export class HexGrid {
    * Get grid statistics
    * @returns {Object} Object with grid statistics
    */
-  getStats () {
+  getStats() {
     const hexagons = this.getAllHexagons();
 
     if (hexagons.length === 0) {
@@ -839,7 +840,7 @@ export class HexGrid {
    * @returns {Hexagon} The hexagon containing this pixel point
    * OPTIMIZED: Added caching for frequently accessed coordinates
    */
-  pixelToHex (point) {
+  pixelToHex(point) {
     const M = this.orientation;
     const pt = new HexPoint((point.x - this.origin.x) / this.size.x, (point.y - this.origin.y) / this.size.y);
     const q = M.b0 * pt.x + M.b1 * pt.y;
@@ -856,7 +857,7 @@ export class HexGrid {
    * @param {HexPoint} point - Pixel coordinates to convert
    * @returns {HexPoint} Pixel coordinates of the hexagon center that contains the input point
    */
-  snapToPixelCenter (point) {
+  snapToPixelCenter(point) {
     const inputPoint = new HexPoint(point.x, point.y);
     const containingHex = this.pixelToHex(inputPoint);
     return this.hexToPixel(containingHex);
@@ -872,18 +873,18 @@ export class HexGrid {
    * @param {boolean} includePartial - If true, includes hexagons partially in rectangle; if false, only fully contained hexagons
    * @returns {Hexagon[]} Array of created hexagons
    */
-  createRectangularGridFromPixels (x, y, width, height, dataFactory = null, includePartial = true) {
+  createRectangularGridFromPixels(x, y, width, height, dataFactory = null, includePartial = true) {
     // Input validation
     if (typeof x !== 'number' || typeof y !== 'number' || typeof width !== 'number' || typeof height !== 'number') {
-      throw new Error('x, y, width, and height must be numbers');
+      throw new Error('Toko: x, y, width, and height must be numbers.');
     }
 
     if (width <= 0 || height <= 0) {
-      throw new Error('width and height must be positive');
+      throw new Error('Toko: width and height must be positive numbers.');
     }
 
     if (dataFactory && typeof dataFactory !== 'function') {
-      throw new Error('dataFactory must be a function or null');
+      throw new Error('Toko: dataFactory must be a function or null.');
     }
 
     const topLeft = new HexPoint(x, y);
@@ -898,10 +899,10 @@ export class HexGrid {
     ];
 
     // Find hex coordinate bounds with padding to ensure we don't miss any
-    let minQ = Math.min(...cornerHexes.map(h => h.q)) - 1;
-    let maxQ = Math.max(...cornerHexes.map(h => h.q)) + 1;
-    let minR = Math.min(...cornerHexes.map(h => h.r)) - 1;
-    let maxR = Math.max(...cornerHexes.map(h => h.r)) + 1;
+    let minQ = Math.min(...cornerHexes.map((h) => h.q)) - 1;
+    let maxQ = Math.max(...cornerHexes.map((h) => h.q)) + 1;
+    let minR = Math.min(...cornerHexes.map((h) => h.r)) - 1;
+    let maxR = Math.max(...cornerHexes.map((h) => h.r)) + 1;
 
     const hexagons = [];
     const processedHashes = new Set();
@@ -949,7 +950,7 @@ export class HexGrid {
    * @param {HexPoint} rectBottomRight - Bottom-right corner of rectangle
    * @returns {boolean} True if hexagon intersects with rectangle
    */
-  _hexagonIntersectsRectangle (hex, rectTopLeft, rectBottomRight) {
+  _hexagonIntersectsRectangle(hex, rectTopLeft, rectBottomRight) {
     // Quick bounding box check first (early rejection)
     const hexBounds = this.getHexagonBounds(hex);
     if (
@@ -1001,11 +1002,11 @@ export class HexGrid {
    * @param {HexPoint} rectBottomRight - Bottom-right corner of rectangle
    * @returns {boolean} True if hexagon is fully within rectangle
    */
-  _hexagonFullyInRectangle (hex, rectTopLeft, rectBottomRight) {
+  _hexagonFullyInRectangle(hex, rectTopLeft, rectBottomRight) {
     // Check if all hexagon corners are within rectangle bounds
     const corners = this.getHexCorners(hex);
     return corners.every(
-      corner =>
+      (corner) =>
         corner.x >= rectTopLeft.x &&
         corner.x <= rectBottomRight.x &&
         corner.y >= rectTopLeft.y &&
@@ -1020,7 +1021,7 @@ export class HexGrid {
    * @param {Hexagon} hex - Hexagon to test against
    * @returns {boolean} True if point is inside hexagon
    */
-  _pointInHexagon (point, hex) {
+  _pointInHexagon(point, hex) {
     // Convert point to hex coordinates and check if it rounds to the same hex
     const testHex = this.pixelToHex(point);
     return testHex.equals(hex);
@@ -1035,17 +1036,17 @@ export class HexGrid {
    * @param {HexPoint[]} hexCorners - Array of hexagon corner points
    * @returns {boolean} True if edges intersect
    */
-  _rectangleEdgesCrossHexagon (rectTopLeft, rectBottomRight, hexCorners) {
+  _rectangleEdgesCrossHexagon(rectTopLeft, rectBottomRight, hexCorners) {
     // This is a simplified check - in most practical cases,
     // the corner checks above will catch intersections
     // For a complete implementation, you would need line-line intersection tests
 
     // Check if rectangle spans across hexagon horizontally or vertically
     const hexBounds = {
-      minX: Math.min(...hexCorners.map(c => c.x)),
-      maxX: Math.max(...hexCorners.map(c => c.x)),
-      minY: Math.min(...hexCorners.map(c => c.y)),
-      maxY: Math.max(...hexCorners.map(c => c.y)),
+      minX: Math.min(...hexCorners.map((c) => c.x)),
+      maxX: Math.max(...hexCorners.map((c) => c.x)),
+      minY: Math.min(...hexCorners.map((c) => c.y)),
+      maxY: Math.max(...hexCorners.map((c) => c.y)),
     };
 
     // Rectangle spans hexagon horizontally and overlaps vertically

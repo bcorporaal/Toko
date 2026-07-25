@@ -196,7 +196,7 @@ import { initializeP5Variant } from '../shared/util/initialization.js';
       if (typeof window !== 'undefined') {
         if (mode === RENDER_MODES.P2D && typeof window.P2D !== 'undefined') return window.P2D;
         if (mode === RENDER_MODES.WEBGL && typeof window.WEBGL !== 'undefined') return window.WEBGL;
-        if (mode === RENDER_MODES.WEBGPU && typeof window.WEBGPU !== 'undefined') return window.WEBGL;
+        if (mode === RENDER_MODES.WEBGPU && typeof window.WEBGPU !== 'undefined') return window.WEBGPU;
         if (mode === RENDER_MODES.SVG && typeof window.SVG !== 'undefined') return window.SVG;
       }
       return mode;
