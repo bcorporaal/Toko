@@ -9,7 +9,7 @@
   --tp-button-foreground-color: hsla(230, 7%, 17%, 1);
   --tp-container-background-color: hsla(230, 7%, 75%, 0.1);
   --tp-container-background-color-active: hsla(230, 7%, 75%, 0.25);
-  --tp-container-background-color-focus: hsla(230, 7%, 75%, 0.20);
+  --tp-container-background-color-focus: hsla(230, 7%, 75%, 0.2);
   --tp-container-background-color-hover: hsla(230, 7%, 75%, 0.15);
   --tp-container-foreground-color: hsla(230, 7%, 75%, 1);
   --tp-groove-foreground-color: hsla(230, 7%, 75%, 0.1);
@@ -40,27 +40,31 @@
 }
 
 @font-face {
-	font-family: 'Udon mono Web';
-	font-display: swap;
-	font-weight: 400;
-	font-stretch: normal;
-	font-style: normal;
-	src: url('../fonts/woff2/UdonMonoWeb-Regular.woff2') format('woff2'), url('../fonts/ttf/UdonMonoWeb-Regular.ttf') format('truetype');
+  font-family: 'Udon mono Web';
+  font-display: swap;
+  font-weight: 400;
+  font-stretch: normal;
+  font-style: normal;
+  src:
+    url('../fonts/woff2/UdonMonoWeb-Regular.woff2') format('woff2'),
+    url('../fonts/ttf/UdonMonoWeb-Regular.ttf') format('truetype');
 }
 
 @font-face {
-	font-family: 'Udon mono Web';
-	font-display: swap;
-	font-weight: 700;
-	font-stretch: normal;
-	font-style: normal;
-	src: url('../fonts/woff2/UdonMonoWeb-Bold.woff2') format('woff2'), url('../fonts/ttf/UdonMonoWeb-Bold.ttf') format('truetype');
+  font-family: 'Udon mono Web';
+  font-display: swap;
+  font-weight: 700;
+  font-stretch: normal;
+  font-style: normal;
+  src:
+    url('../fonts/woff2/UdonMonoWeb-Bold.woff2') format('woff2'),
+    url('../fonts/ttf/UdonMonoWeb-Bold.ttf') format('truetype');
 }
 
 :root {
   /* Font sizes - made with https://www.fluid-type-scale.com/ */
   --fs-sm: clamp(0.6rem, 0.15vi + 0.54rem, 0.66rem);
-  --fs-base: clamp(0.75rem, 0.33vi + 0.63rem, 0.88rem);
+  --fs-base: clamp(0.65rem, 0.33vi + 0.55rem, 0.75rem);
   --fs-md: clamp(0.94rem, 0.61vi + 0.71rem, 1.17rem);
   --fs-lg: clamp(1.17rem, 1.02vi + 0.79rem, 1.55rem);
   --fs-xl: clamp(1.46rem, 1.62vi + 0.86rem, 2.07rem);
@@ -70,12 +74,13 @@
 
 body {
   background-color: #f8f9fa;
-  font-family: "Udon mono Web";
+  font-family: 'Udon mono Web';
   color: #343a40;
   font-weight: 400;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -177,7 +182,8 @@ main {
   height: 100%;
 }
 
-.labels a,.labels{
+.labels a,
+.labels {
   color: #343a40;
   text-decoration: none;
   font-size: var(--fs-base);
@@ -263,6 +269,11 @@ main {
   font-size: var(--fs-base);
 }
 
+.sketchlist-nav {
+  display: flex;
+  gap: 2em;
+}
+
 .sketchlist h1 {
   font-size: var(--fs-base);
   font-weight: 700;
@@ -330,6 +341,11 @@ body.colors-page {
 
 .palette-title-row a {
   font-size: var(--fs-base);
+}
+
+.palette-nav {
+  display: flex;
+  gap: 2em;
 }
 
 .palette-container h1 {
@@ -468,4 +484,302 @@ body.colors-page.dark-mode {
 
 .dark-mode .palette-footer {
   border-top-color: #e0e0e0;
+}
+
+/* Functions page */
+html.functions-page,
+body.functions-page {
+  overflow: visible;
+  height: auto;
+}
+
+.functions-container {
+  padding: 10px 40px;
+  margin: 0px auto;
+  text-align: left;
+}
+
+.functions-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 2em;
+}
+
+.functions-title-row h1 {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.functions-nav {
+  display: flex;
+  gap: 2em;
+}
+
+.functions-nav a {
+  font-size: var(--fs-base);
+  text-decoration: none;
+  color: #343a40;
+  border-bottom: 1px solid #dedede;
+}
+
+.functions-nav a:hover {
+  border-bottom: 1px solid #343a40;
+}
+
+.functions-layout {
+  display: flex;
+  gap: 3em;
+}
+
+.functions-toc {
+  flex: 0 0 250px;
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding-right: 1em;
+}
+
+.functions-toc nav {
+  display: block;
+}
+
+.functions-toc ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.functions-toc li {
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  padding-left: 0;
+}
+
+.functions-toc li li {
+  font-size: var(--fs-base);
+  padding-left: 1em;
+}
+
+.functions-toc a {
+  text-decoration: none;
+  color: #343a40;
+  display: block;
+  padding: 0.2em 0;
+  border-bottom: 1px solid #dedede;
+}
+
+.functions-toc a:hover {
+  border-bottom: 1px solid #343a40;
+}
+
+.functions-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.functions-content h1,
+.functions-content h2,
+.functions-content h3 {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+
+.functions-content h2 {
+  font-size: var(--fs-base);
+  margin-top: 2.5em;
+  border-bottom: 1px solid #343a40;
+  padding-bottom: 0.5em;
+}
+
+.functions-content h3 {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 2em;
+}
+
+.functions-content p {
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  margin-bottom: 1em;
+}
+
+.functions-content ul {
+  list-style-type: none;
+  margin: 0 0 1em 0;
+  padding: 0;
+}
+
+.functions-content li {
+  font-size: var(--fs-base);
+  line-height: 1.5;
+}
+
+.functions-content li li {
+  font-size: var(--fs-base);
+}
+
+.functions-content code {
+  font-family: monospace;
+  font-size: var(--fs-base);
+  line-height: 1.4;
+}
+
+.functions-content pre {
+  background-color: #f0f0f0;
+  padding: 1em;
+  overflow-x: auto;
+  margin: 1em 0;
+  font-family: monospace;
+  font-size: var(--fs-base);
+  line-height: 1.4;
+  border-radius: 0;
+}
+
+.functions-content pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: var(--fs-base);
+  white-space: pre;
+}
+
+.functions-content section {
+  margin-bottom: 1.5em;
+}
+
+.functions-content strong {
+  font-weight: 700;
+}
+
+.functions-content em {
+  font-style: italic;
+}
+
+.functions-content a {
+  text-decoration: none;
+  color: #343a40;
+  border-bottom: 1px solid #dedede;
+}
+
+.functions-content a:hover {
+  border-bottom: 1px solid #343a40;
+}
+
+.functions-footer {
+  margin-top: 3em;
+  padding-top: 1.5em;
+  border-top: 1px solid #343a40;
+}
+
+.functions-footer ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 2em;
+}
+
+.functions-footer li {
+  font-size: var(--fs-base);
+}
+
+/* Dark mode for functions page */
+body.functions-page.dark-mode {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.dark-mode .functions-container h1 {
+  color: #e0e0e0;
+}
+
+.dark-mode .functions-title-row h1 {
+  color: #e0e0e0;
+}
+
+.dark-mode .functions-nav a {
+  color: #e0e0e0;
+  border-bottom-color: #555;
+}
+
+.dark-mode .functions-nav a:hover {
+  border-bottom-color: #e0e0e0;
+}
+
+.dark-mode .functions-toc a {
+  color: #e0e0e0;
+  border-bottom-color: #555;
+}
+
+.dark-mode .functions-toc a:hover {
+  border-bottom-color: #e0e0e0;
+}
+
+.dark-mode .functions-content h2 {
+  color: #e0e0e0;
+  border-bottom-color: #e0e0e0;
+}
+
+.dark-mode .functions-content h3 {
+  color: #e0e0e0;
+}
+
+.dark-mode .functions-content p {
+  color: #e0e0e0;
+}
+
+.dark-mode .functions-content li {
+  color: #e0e0e0;
+}
+
+.dark-mode .functions-content code {
+  color: #e0e0e0;
+  background-color: #2a2a2a;
+  font-size: var(--fs-base);
+}
+
+.dark-mode .functions-content pre {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  font-size: var(--fs-base);
+}
+
+.dark-mode .functions-content pre code {
+  background-color: transparent;
+  color: #e0e0e0;
+  font-size: var(--fs-base);
+}
+
+.dark-mode .functions-content a {
+  color: #e0e0e0;
+  border-bottom-color: #555;
+}
+
+.dark-mode .functions-content a:hover {
+  border-bottom-color: #e0e0e0;
+}
+
+.dark-mode .functions-footer {
+  border-top-color: #e0e0e0;
+}
+
+.dark-mode .functions-footer li {
+  color: #e0e0e0;
+}
+
+.dark-mode .functions-footer a {
+  color: #e0e0e0;
+  border-bottom-color: #555;
+}
+
+.dark-mode .functions-footer a:hover {
+  border-bottom-color: #e0e0e0;
 }
