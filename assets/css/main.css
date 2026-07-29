@@ -64,12 +64,18 @@
 :root {
   /* Font sizes - made with https://www.fluid-type-scale.com/ */
   --fs-sm: clamp(0.6rem, 0.15vi + 0.54rem, 0.66rem);
-  --fs-base: clamp(0.65rem, 0.33vi + 0.55rem, 0.75rem);
+  --fs-base: clamp(0.75rem, 0.33vi + 0.65rem, 0.85rem);
+  --fs-md: clamp(0.75rem, 0.33vi + 0.65rem, 0.85rem);
+  --fs-lg: clamp(0.75rem, 0.33vi + 0.65rem, 0.85rem);
+  --fs-xl: clamp(0.75rem, 0.33vi + 0.65rem, 0.85rem);
+  --fs-xxl: clamp(0.75rem, 0.33vi + 0.65rem, 0.85rem);
+
+  /* 
   --fs-md: clamp(0.94rem, 0.61vi + 0.71rem, 1.17rem);
   --fs-lg: clamp(1.17rem, 1.02vi + 0.79rem, 1.55rem);
   --fs-xl: clamp(1.46rem, 1.62vi + 0.86rem, 2.07rem);
   --fs-xxl: clamp(1.83rem, 2.48vi + 0.9rem, 2.76rem);
-  --fs-xxxl: clamp(2.29rem, 3.72vi + 0.9rem, 3.68rem);
+  --fs-xxxl: clamp(2.29rem, 3.72vi + 0.9rem, 3.68rem); */
 }
 
 body {
@@ -409,7 +415,7 @@ body.functions-page .container {
 
 .sketchlist-footer li,
 .sketchlist-footer ul > li:first-child {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
@@ -564,7 +570,7 @@ body.functions-page .container {
 
 .palette-footer li,
 .functions-footer li {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
 }
 
 .palette-footer a,
