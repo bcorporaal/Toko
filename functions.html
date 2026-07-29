@@ -223,82 +223,264 @@ TokoWrapper.RENDER_MODES.SVG; // 'svg' - vector renderer (converted to P2D on Q5
 
               <section id="instance-properties--methods">
                 <h3>Instance Properties & Methods</h3>
+
+                <h4><code>wrapper.renderMode</code></h4>
+                <p>
+                  Read-only getter that resolves to the actual p5/Q5 renderer constant, so it can be passed straight
+                  into <code>createCanvas()</code>.
+                </p>
+                <p><strong>Returns:</strong></p>
+                <ul>
+                  <li>
+                    <code>{Object|string}</code> - p5 renderer constant (<code>P2D</code>, <code>WEBGL</code>,
+                    <code>SVG</code>, <code>WEBGPU</code>) or the internal mode string if not yet available
+                  </li>
+                </ul>
+
+                <h4><code>wrapper.sketchElementId</code></h4>
+                <p>Gets or sets the canvas container element id.</p>
+                <p><strong>Returns:</strong></p>
+                <ul>
+                  <li><code>{string}</code> - Current sketch element id</li>
+                </ul>
+
+                <h4><code>wrapper.storeCanvas(canvas)</code></h4>
+                <p>Stores the p5/Q5 canvas instance so TokoWrapper can manage capture, drop, and save.</p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                  <li><code>{Object} canvas</code> - Canvas returned by <code>createCanvas()</code></li>
+                </ul>
+
+                <h4><code>wrapper.getCanvas()</code></h4>
+                <p>Returns the stored canvas instance.</p>
+                <p><strong>Returns:</strong></p>
+                <ul>
+                  <li><code>{Object}</code> - Stored p5/Q5 canvas</li>
+                </ul>
+
+                <h4><code>wrapper.updateParameters()</code></h4>
+                <p>Re-parses the parameter panel values and refreshes the sketch.</p>
+
+                <h4><code>wrapper.saveSketch()</code></h4>
+                <p>Saves the current canvas (png or svg, depending on render mode).</p>
+
+                <h4><code>wrapper.saveSketchAndSettings()</code></h4>
+                <p>Saves the canvas together with the current parameter settings.</p>
+
+                <p><strong>Example:</strong></p>
                 <pre><code>const wrapper = new TokoWrapper({ renderMode: TokoWrapper.RENDER_MODES.SVG });
 
-// renderMode getter resolves to the actual p5/Q5 renderer constant,
-// so it can be passed straight into createCanvas()
 function setup() {
-  createCanvas(800, 800, wrapper.renderMode);
+  const p5Canvas = createCanvas(800, 800, wrapper.renderMode);
+  p5Canvas.parent(wrapper.sketchElementId);
+  wrapper.storeCanvas(p5Canvas);
 }
 
-// Get or set the canvas container element id
-const id = wrapper.sketchElementId;
 wrapper.sketchElementId = 'my-canvas';
-
-// Re-parse the parameter panel values and refresh the sketch
 wrapper.updateParameters();
-
-// Save the current canvas (png or svg, depending on render mode)
 wrapper.saveSketch();
-
-// Save the canvas together with the current parameter settings
 wrapper.saveSketchAndSettings();</code></pre>
               </section>
 
               <section id="parameter-panel-integration">
                 <h3>Parameter Panel Integration</h3>
-                <p>TokoWrapper integrates with Tweakpane to provide interactive parameter controls:</p>
-                <pre><code>// Add controls to the parameter panel
-function addPanelControls(panel) {
-  // Basic controls
+                <p>
+                  TokoWrapper integrates with Tweakpane. Define a global <code>setupPanelControls(panel)</code>
+                  function; TokoWrapper calls it with the panel object when the sketch starts.
+                </p>
+
+                <h4><code>panel.addPaletteSelector(paneRef, params, [options])</code></h4>
+                <p>Adds collection and palette dropdowns (optionally with prev/next/random nav buttons).</p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                  <li><code>{Object} paneRef</code> - Tweakpane tab or folder to add controls to</li>
+                  <li>
+                    <code>{Object} params</code> - Parameter object that holds collection/palette values (and a
+                    collections list)
+                  </li>
+                  <li>
+                    <code>{Object} [options]</code> - Selector options
+                    <ul>
+                      <li><code>{number} [options.index=1]</code> - Insertion index for the controls</li>
+                      <li>
+                        <code>{boolean} [options.justPrimary=true]</code> - Show only primary palettes
+                      </li>
+                      <li><code>{boolean} [options.sorted=true]</code> - Sort the palette list</li>
+                      <li>
+                        <code>{boolean} [options.navButtons=true]</code> - Add previous/next/random buttons
+                      </li>
+                      <li>
+                        <code>{string} [options.collectionKey='collection']</code> - Key on
+                        <code>params</code> for the selected collection
+                      </li>
+                      <li>
+                        <code>{string} [options.paletteKey='palette']</code> - Key on <code>params</code> for the
+                        selected palette
+                      </li>
+                      <li>
+                        <code>{string} [options.collectionsListKey='collections']</code> - Key on
+                        <code>params</code> for the list of available collections
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+
+                <h4><code>panel.addBlendModeSelector(paneRef, params, [options])</code></h4>
+                <p>Adds a blend mode dropdown bound to a key on the parameter object.</p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                  <li><code>{Object} paneRef</code> - Tweakpane tab or folder</li>
+                  <li><code>{Object} params</code> - Parameter object</li>
+                  <li>
+                    <code>{Object} [options]</code> - Selector options
+                    <ul>
+                      <li>
+                        <code>{string} options.blendModeKey</code> - Key on <code>params</code> for the blend mode
+                        value
+                      </li>
+                      <li>
+                        <code>{boolean} [options.showAllModes=false]</code> - Include additional CSS blend modes
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+
+                <h4><code>panel.addEasingSelector(paneRef, params, options)</code></h4>
+                <p>
+                  Adds easing type and direction dropdowns. Direction is hidden automatically for
+                  <code>Linear</code> and <code>Smooth</code>.
+                </p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                  <li><code>{Object} paneRef</code> - Tweakpane tab or folder</li>
+                  <li><code>{Object} params</code> - Parameter object</li>
+                  <li>
+                    <code>{Object} options</code> - Selector options
+                    <ul>
+                      <li>
+                        <code>{string} options.typeKey</code> - Key on <code>params</code> for the easing type
+                      </li>
+                      <li>
+                        <code>{string} options.directionKey</code> - Key on <code>params</code> for the easing
+                        direction
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+
+                <p><strong>Example:</strong></p>
+                <pre><code>function setupPanelControls(panel) {
   panel.primaryTab.addBinding(p, 'steps', { min: 2, max: 20 });
   panel.primaryTab.addBinding(p, 'rotation', { min: 0, max: TWO_PI });
 
-  // Color palette selector
   panel.addPaletteSelector(panel.primaryTab, p, {
     collectionKey: 'collection',
     paletteKey: 'palette',
+    collectionsListKey: 'collections',
     sorted: true,
     navButtons: true,
   });
 
-  // Blend mode selector
-  panel.addBlendModeSelector(panel.primaryTab, p, 'blendMode');
+  panel.addBlendModeSelector(panel.primaryTab, p, {
+    blendModeKey: 'blendMode',
+  });
+
+  panel.addEasingSelector(panel.primaryTab, p, {
+    typeKey: 'easingType',
+    directionKey: 'easingDirection',
+  });
 }</code></pre>
               </section>
 
               <section id="capture-system">
                 <h3>Capture System</h3>
-                <p>TokoWrapper includes a capture system for recording videos and saving images:</p>
-                <pre><code>// Capture options
-const wrapper = new TokoWrapper({
+                <p>
+                  TokoWrapper includes a capture system for recording videos and saving image sequences. Enable it
+                  with <code>captureFrames: true</code> and configure via <code>captureOptions</code>.
+                </p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                  <li>
+                    <code>{Object} [options.captureOptions]</code> - Capture configuration
+                    <ul>
+                      <li>
+                        <code>{string} [format='png']</code> - Output format:
+                        <code>mp4</code>, <code>webm</code>, <code>png</code>, <code>jpg</code>,
+                        <code>gif</code>, or <code>webp</code>
+                      </li>
+                      <li>
+                        <code>{number} [framerate=30]</code> - Capture framerate:
+                        <code>15</code>, <code>24</code>, <code>25</code>, <code>30</code>, or <code>60</code>
+                      </li>
+                      <li><code>{number} [duration=100]</code> - Number of frames to record when fixed</li>
+                      <li>
+                        <code>{boolean} [fixedDuration=false]</code> - Record a fixed number of frames
+                      </li>
+                      <li>
+                        <code>{boolean} [refreshBeforeCapture=true]</code> - Refresh the sketch before recording
+                      </li>
+                      <li>
+                        <code>{boolean} [recordButtonOnMainTab=true]</code> - Place the record button on the main
+                        tab
+                      </li>
+                      <li><code>{number} [bitrate=5000]</code> - Video bitrate</li>
+                      <li><code>{number} [quality=0.95]</code> - Image/video quality (0–1)</li>
+                    </ul>
+                  </li>
+                </ul>
+                <p>
+                  Set <code>showCaptureOptions: true</code> to expose format, framerate, and duration controls in
+                  the parameter panel.
+                </p>
+                <p><strong>Example:</strong></p>
+                <pre><code>const wrapper = new TokoWrapper({
   captureFrames: true,
+  showCaptureOptions: true,
   captureOptions: {
-    format: 'mp4', // mp4, webm, png, jpg, gif, webp
-    framerate: 30, // 15, 24, 25, 30, 60
-    duration: 300, // Number of frames to record
-    fixedDuration: true, // Use fixed duration
-    refreshBeforeCapture: true, // Refresh sketch before recording
+    format: 'mp4',
+    framerate: 30,
+    duration: 300,
+    fixedDuration: true,
+    refreshBeforeCapture: true,
   },
 });</code></pre>
               </section>
 
               <section id="file-handling">
                 <h3>File Handling</h3>
-                <p>TokoWrapper supports drag-and-drop functionality:</p>
+                <p>
+                  TokoWrapper supports drag-and-drop. Dropped JSON settings are applied automatically when
+                  <code>acceptDroppedSettings</code> is enabled. Other files are forwarded to a global
+                  <code>receivedFile(file)</code> callback when <code>acceptDroppedFiles</code> is enabled.
+                </p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                  <li>
+                    <code>{boolean} [options.acceptDroppedSettings=false]</code> - Accept dropped
+                    <code>.json</code> settings files and import them into the parameter panel
+                  </li>
+                  <li>
+                    <code>{boolean} [options.acceptDroppedFiles=false]</code> - Accept other dropped files and call
+                    <code>receivedFile(file)</code>
+                  </li>
+                </ul>
+                <p><strong>Callback:</strong></p>
+                <ul>
+                  <li>
+                    <code>receivedFile(file)</code> - Global function called for non-settings drops. The
+                    <code>file</code> object includes <code>subtype</code> (e.g. <code>png</code>,
+                    <code>jpg</code>) and <code>data</code> (file contents or data URL).
+                  </li>
+                </ul>
+                <p><strong>Example:</strong></p>
                 <pre><code>const wrapper = new TokoWrapper({
-  acceptDroppedSettings: true, // Accept .json settings files
-  acceptDroppedFiles: true, // Accept image files
+  acceptDroppedSettings: true,
+  acceptDroppedFiles: true,
 });
 
-// Handle dropped files
-function fileDropped(file) {
-  if (file.type === 'application/json') {
-    // Load settings
-    loadSettings(file);
-  } else if (file.type.startsWith('image/')) {
-    // Load image
-    loadImage(file, img => {
+function receivedFile(file) {
+  if (file.subtype === 'png' || file.subtype === 'jpg' || file.subtype === 'jpeg') {
+    loadImage(file.data, img => {
       // Use the image in your sketch
     });
   }
@@ -307,13 +489,30 @@ function fileDropped(file) {
 
               <section id="save-functionality">
                 <h3>Save Functionality</h3>
+                <p>
+                  Save controls can be added to the parameter panel, or invoked programmatically via
+                  <code>wrapper.saveSketch()</code> / <code>wrapper.saveSketchAndSettings()</code>.
+                </p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                  <li>
+                    <code>{boolean} [options.showSaveSketchButton=false]</code> - Show a save button in the
+                    parameter panel
+                  </li>
+                  <li>
+                    <code>{boolean} [options.saveSettingsWithSketch=false]</code> - Also save parameter settings
+                    when using the panel save button
+                  </li>
+                </ul>
+                <p><strong>Example:</strong></p>
                 <pre><code>const wrapper = new TokoWrapper({
   showSaveSketchButton: true,
   saveSettingsWithSketch: true,
 });
 
-// Save functions are automatically added to the parameter panel
-// when showSaveSketchButton is true</code></pre>
+// Or save programmatically
+wrapper.saveSketch();
+wrapper.saveSketchAndSettings();</code></pre>
               </section>
             </section>
 
@@ -323,9 +522,6 @@ function fileDropped(file) {
               <section id="toko-getinfo">
                 <h3><code>toko.getInfo()</code></h3>
                 <p>Returns information about the toko library and detected p5.js variant.</p>
-                <pre><code>const info = toko.getInfo();
-console.log(`Using ${info.name} v${info.version} with ${info.variant}`);
-// Output: "Using Toko v1.1 with p5v2"</code></pre>
                 <p><strong>Returns:</strong></p>
                 <ul>
                   <li>
@@ -337,11 +533,20 @@ console.log(`Using ${info.name} v${info.version} with ${info.variant}`);
                     </ul>
                   </li>
                 </ul>
+                <p><strong>Example:</strong></p>
+                <pre><code>const info = toko.getInfo();
+console.log(`Using ${info.name} v${info.version} with ${info.variant}`);
+// Output: "Using Toko v1.1 with p5v2"</code></pre>
               </section>
 
               <section id="toko-detectvariant">
                 <h3><code>toko.detectVariant()</code></h3>
                 <p>Detects the current p5.js variant.</p>
+                <p><strong>Returns:</strong></p>
+                <ul>
+                  <li><code>{string}</code> The detected p5.js variant (<code>p5v1</code>, <code>p5v2</code>, <code>q5</code>, or <code>unknown</code>)</li>
+                </ul>
+                <p><strong>Example:</strong></p>
                 <pre><code>const variant = toko.detectVariant();
 switch (variant) {
   case 'q5':
@@ -356,10 +561,6 @@ switch (variant) {
   default:
     console.log('No supported library detected');
 }</code></pre>
-                <p><strong>Returns:</strong></p>
-                <ul>
-                  <li><code>{string}</code> The detected p5.js variant</li>
-                </ul>
               </section>
             </section>
 
@@ -2256,14 +2457,45 @@ const smoother = toko.easeInOutSmoother(0.5);</code></pre>
 
               <section id="get-easing-function-by-type">
                 <h3>Get Easing Function by Type</h3>
+
+                <h4><code>toko.getEasingFunction([easeType], [easeDirection])</code></h4>
+                <p>
+                  Returns an easing function dynamically from type and direction constants. Useful when the easing
+                  choice comes from the parameter panel.
+                </p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                  <li>
+                    <code>{string} [easeType=toko.EASE_QUAD]</code> - Easing type constant:
+                    <code>EASE_LINEAR</code>, <code>EASE_SMOOTH</code>, <code>EASE_QUAD</code>,
+                    <code>EASE_CUBIC</code>, <code>EASE_QUART</code>, <code>EASE_QUINT</code>,
+                    <code>EASE_EXPO</code>, <code>EASE_CIRC</code>, <code>EASE_ELASTIC</code>,
+                    <code>EASE_BOUNCE</code>, or <code>EASE_BACK</code>
+                  </li>
+                  <li>
+                    <code>{string} [easeDirection=toko.EASE_IN_OUT]</code> - Direction constant:
+                    <code>EASE_IN</code>, <code>EASE_OUT</code>, or <code>EASE_IN_OUT</code> (ignored for
+                    <code>EASE_LINEAR</code> and <code>EASE_SMOOTH</code>)
+                  </li>
+                </ul>
+                <p><strong>Returns:</strong></p>
+                <ul>
+                  <li>
+                    <code>{Function|null}</code> - Easing function that takes <code>t</code> (0–1), or
+                    <code>null</code> if no matching function is found
+                  </li>
+                </ul>
+                <p><strong>Example:</strong></p>
                 <pre><code>// Get easing function dynamically
 const easeFunc = toko.getEasingFunction(toko.EASE_QUAD, toko.EASE_IN_OUT);
 const result = easeFunc(0.5);
 
-// Use in animation
+// Use with parameter-panel values
+const ease = toko.getEasingFunction(p.easingType, p.easingDirection);
+
 function draw() {
   const t = (frameCount % 120) / 120; // 0 to 1 over 120 frames
-  const eased = toko.easeInOutQuad(t);
+  const eased = ease(t);
   const x = eased * width;
   circle(x, height / 2, 50);
 }</code></pre>
@@ -2275,12 +2507,52 @@ function draw() {
                   Create your own easing function from cubic Bézier control points (see
                   <a href="https://cubic-bezier.com/">cubic-bezier.com</a> to find values).
                 </p>
-                <pre><code>// Returns an easing function that takes t (0-1) and returns an eased value
+
+                <h4><code>toko.cubicBezier([x1], [y1], [x2], [y2], [customName])</code></h4>
+                <p>Creates a cubic Bézier easing function from two control points.</p>
+                <p><strong>Parameters:</strong></p>
+                <ul>
+                  <li><code>{number} [x1=0]</code> - X coordinate of the first control point (0–1)</li>
+                  <li><code>{number} [y1=0]</code> - Y coordinate of the first control point</li>
+                  <li><code>{number} [x2=1]</code> - X coordinate of the second control point (0–1)</li>
+                  <li><code>{number} [y2=1]</code> - Y coordinate of the second control point</li>
+                  <li>
+                    <code>{string} [customName=null]</code> - Optional name for the returned function
+                  </li>
+                </ul>
+                <p><strong>Returns:</strong></p>
+                <ul>
+                  <li>
+                    <code>{Function}</code> - Easing function that takes <code>t</code> (0–1) and returns an eased
+                    value. Also exposes <code>x1</code>, <code>y1</code>, <code>x2</code>, <code>y2</code>,
+                    <code>controlPoints</code>, and <code>name</code>.
+                  </li>
+                </ul>
+
+                <h4><code>toko.cubicBezier.presets</code></h4>
+                <p>Built-in presets that each return a ready-to-use easing function:</p>
+                <ul>
+                  <li><code>linear()</code></li>
+                  <li><code>ease()</code></li>
+                  <li><code>easeIn()</code></li>
+                  <li><code>easeOut()</code></li>
+                  <li><code>easeInOut()</code></li>
+                  <li><code>easeInBack()</code></li>
+                  <li><code>easeOutBack()</code></li>
+                  <li><code>easeInOutBack()</code></li>
+                </ul>
+
+                <p><strong>Example:</strong></p>
+                <pre><code>// Custom control points
 const easing = toko.cubicBezier(0.25, 0.1, 0.25, 1);
 const value = easing(0.5);
 
 // Optionally give it a custom name
-const named = toko.cubicBezier(0.68, -0.55, 0.27, 1.55, 'overshoot');</code></pre>
+const named = toko.cubicBezier(0.68, -0.55, 0.27, 1.55, 'overshoot');
+
+// Use a built-in preset
+const easeInOut = toko.cubicBezier.presets.easeInOut();
+const eased = easeInOut(0.3);</code></pre>
               </section>
             </section>
 
