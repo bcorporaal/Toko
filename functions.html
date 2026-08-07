@@ -129,70 +129,79 @@
                 <h3 class="doc-signature"><code>new TokoWrapper(options)</code></h3>
                 <p>Creates a new TokoWrapper instance with the specified configuration options.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{Object} [options={}]</code> - Configuration options
-                    <ul>
-                      <li><code>{string} [options.title='untitled sketch']</code> - Title for the sketch</li>
-                      <li>
-                        <code>{boolean} [options.addInfoToTitle=false]</code> - Append variant and render mode to the
-                        title
-                      </li>
-                      <li>
-                        <code>{string} [options.sketchElementId='sketch-canvas']</code> - ID of the canvas container
-                        element
-                      </li>
-                      <li>
-                        <code>{Object} [options.canvasSize=TokoWrapper.SIZE_DEFAULT]</code> - Canvas size configuration
-                      </li>
-                      <li>
-                        <code>{string} [options.renderMode=TokoWrapper.RENDER_MODES.P2D]</code> - Render mode
-                        (<code>P2D</code>, <code>WEBGL</code>, <code>SVG</code>, or <code>WEBGPU</code>)
-                      </li>
-                      <li>
-                        <code>{boolean} [options.shiftCanvasForWebGL=true]</code> - Shift the origin to the top-left for
-                        WebGL (so coordinates match P2D)
-                      </li>
-                      <li><code>{boolean} [options.useParameterPanel=true]</code> - Enable parameter panel</li>
-                      <li><code>{boolean} [options.hideParameterPanelOnStart=false]</code> - Hide panel initially</li>
-                      <li><code>{boolean} [options.showCanvasSizeOptions=false]</code> - Show canvas size controls</li>
-                      <li><code>{boolean} [options.showSaveSketchButton=false]</code> - Show save button</li>
-                      <li><code>{boolean} [options.saveSettingsWithSketch=false]</code> - Save settings with sketch</li>
-                      <li>
-                        <code>{boolean} [options.acceptDroppedSettings=false]</code> - Accept dropped settings files
-                      </li>
-                      <li><code>{boolean} [options.acceptDroppedFiles=false]</code> - Accept dropped image files</li>
-                      <li><code>{boolean} [options.captureFrames=false]</code> - Enable frame capture</li>
-                      <li>
-                        <code>{boolean} [options.showCaptureOptions=false]</code> - Show capture controls in the panel
-                      </li>
-                      <li>
-                        <code>{Object} [options.captureOptions]</code> - Capture configuration (see
-                        <a href="#capture-system">Capture System</a>)
-                      </li>
-                      <li><code>{boolean} [options.showFPS=false]</code> - Show the FPS counter on start</li>
-                      <li><code>{Array} [options.additionalCanvasSizes=[]]</code> - Additional canvas size options</li>
-                      <li><code>{string} [options.seedString='']</code> - Default seed string</li>
-                      <li><code>{number} [options.debounceDelay=100]</code> - Debounce delay for parameter changes</li>
-                      <li><code>{boolean} [options.loggingEnabled=true]</code> - Enable console logging</li>
-                      <li>
-                        <code>{string} [options.logLevel='info']</code> - Log level (<code>error</code>,
-                        <code>warn</code>, <code>info</code>, or <code>debug</code>)
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{Object} [options={}]</code> - Configuration options
+                      <ul>
+                        <li><code>{string} [options.title='untitled sketch']</code> - Title for the sketch</li>
+                        <li>
+                          <code>{boolean} [options.addInfoToTitle=false]</code> - Append variant and render mode to the
+                          title
+                        </li>
+                        <li>
+                          <code>{string} [options.sketchElementId='sketch-canvas']</code> - ID of the canvas container
+                          element
+                        </li>
+                        <li>
+                          <code>{Object} [options.canvasSize=TokoWrapper.SIZE_DEFAULT]</code> - Canvas size
+                          configuration
+                        </li>
+                        <li>
+                          <code>{string} [options.renderMode=TokoWrapper.RENDER_MODES.P2D]</code> - Render mode
+                          (<code>P2D</code>, <code>WEBGL</code>, <code>SVG</code>, or <code>WEBGPU</code>)
+                        </li>
+                        <li>
+                          <code>{boolean} [options.shiftCanvasForWebGL=true]</code> - Shift the origin to the top-left
+                          for WebGL (so coordinates match P2D)
+                        </li>
+                        <li><code>{boolean} [options.useParameterPanel=true]</code> - Enable parameter panel</li>
+                        <li><code>{boolean} [options.hideParameterPanelOnStart=false]</code> - Hide panel initially</li>
+                        <li>
+                          <code>{boolean} [options.showCanvasSizeOptions=false]</code> - Show canvas size controls
+                        </li>
+                        <li><code>{boolean} [options.showSaveSketchButton=false]</code> - Show save button</li>
+                        <li>
+                          <code>{boolean} [options.saveSettingsWithSketch=false]</code> - Save settings with sketch
+                        </li>
+                        <li>
+                          <code>{boolean} [options.acceptDroppedSettings=false]</code> - Accept dropped settings files
+                        </li>
+                        <li><code>{boolean} [options.acceptDroppedFiles=false]</code> - Accept dropped image files</li>
+                        <li><code>{boolean} [options.captureFrames=false]</code> - Enable frame capture</li>
+                        <li>
+                          <code>{boolean} [options.showCaptureOptions=false]</code> - Show capture controls in the panel
+                        </li>
+                        <li>
+                          <code>{Object} [options.captureOptions]</code> - Capture configuration (see
+                          <a href="#capture-system">Capture System</a>)
+                        </li>
+                        <li><code>{boolean} [options.showFPS=false]</code> - Show the FPS counter on start</li>
+                        <li>
+                          <code>{Array} [options.additionalCanvasSizes=[]]</code> - Additional canvas size options
+                        </li>
+                        <li><code>{string} [options.seedString='']</code> - Default seed string</li>
+                        <li>
+                          <code>{number} [options.debounceDelay=100]</code> - Debounce delay for parameter changes
+                        </li>
+                        <li><code>{boolean} [options.loggingEnabled=true]</code> - Enable console logging</li>
+                        <li>
+                          <code>{string} [options.logLevel='info']</code> - Log level (<code>error</code>,
+                          <code>warn</code>, <code>info</code>, or <code>debug</code>)
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const wrapper = new TokoWrapper({
+                  <p class="doc-label">Example</p>
+                  <pre><code>const wrapper = new TokoWrapper({
   title: 'My Sketch',
   canvasSize: TokoWrapper.SIZE_4K,
   useParameterPanel: true,
   showSaveSketchButton: true,
 });</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="canvas-size-constants">
@@ -234,41 +243,41 @@ TokoWrapper.RENDER_MODES.SVG; // 'svg' - vector renderer (converted to P2D on Q5
                   into <code>createCanvas()</code>.
                 </p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{Object|string}</code> - p5 renderer constant (<code>P2D</code>, <code>WEBGL</code>,
-                    <code>SVG</code>, <code>WEBGPU</code>) or the internal mode string if not yet available
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{Object|string}</code> - p5 renderer constant (<code>P2D</code>, <code>WEBGL</code>,
+                      <code>SVG</code>, <code>WEBGPU</code>) or the internal mode string if not yet available
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>wrapper.sketchElementId</code></h4>
                 <p>Gets or sets the canvas container element id.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string}</code> - Current sketch element id</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{string}</code> - Current sketch element id</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>wrapper.storeCanvas(canvas)</code></h4>
                 <p>Stores the p5/Q5 canvas instance so TokoWrapper can manage capture, drop, and save.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Object} canvas</code> - Canvas returned by <code>createCanvas()</code></li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Object} canvas</code> - Canvas returned by <code>createCanvas()</code></li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>wrapper.getCanvas()</code></h4>
                 <p>Returns the stored canvas instance.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Object}</code> - Stored p5/Q5 canvas</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Object}</code> - Stored p5/Q5 canvas</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>wrapper.updateParameters()</code></h4>
                 <p>Re-parses the parameter panel values and refreshes the sketch.</p>
@@ -280,8 +289,8 @@ TokoWrapper.RENDER_MODES.SVG; // 'svg' - vector renderer (converted to P2D on Q5
                 <p>Saves the canvas together with the current parameter settings.</p>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const wrapper = new TokoWrapper({ renderMode: TokoWrapper.RENDER_MODES.SVG });
+                  <p class="doc-label">Example</p>
+                  <pre><code>const wrapper = new TokoWrapper({ renderMode: TokoWrapper.RENDER_MODES.SVG });
 
 function setup() {
   const p5Canvas = createCanvas(800, 800, wrapper.renderMode);
@@ -293,7 +302,7 @@ wrapper.sketchElementId = 'my-canvas';
 wrapper.updateParameters();
 wrapper.saveSketch();
 wrapper.saveSketchAndSettings();</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="parameter-panel-integration">
@@ -306,62 +315,58 @@ wrapper.saveSketchAndSettings();</code></pre>
                 <h4 class="doc-signature"><code>panel.addPaletteSelector(paneRef, params, [options])</code></h4>
                 <p>Adds collection and palette dropdowns (optionally with prev/next/random nav buttons).</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Object} paneRef</code> - Tweakpane tab or folder to add controls to</li>
-                  <li>
-                    <code>{Object} params</code> - Parameter object that holds collection/palette values (and a
-                    collections list)
-                  </li>
-                  <li>
-                    <code>{Object} [options]</code> - Selector options
-                    <ul>
-                      <li><code>{number} [options.index=1]</code> - Insertion index for the controls</li>
-                      <li>
-                        <code>{boolean} [options.justPrimary=true]</code> - Show only primary palettes
-                      </li>
-                      <li><code>{boolean} [options.sorted=true]</code> - Sort the palette list</li>
-                      <li>
-                        <code>{boolean} [options.navButtons=true]</code> - Add previous/next/random buttons
-                      </li>
-                      <li>
-                        <code>{string} [options.collectionKey='collection']</code> - Key on
-                        <code>params</code> for the selected collection
-                      </li>
-                      <li>
-                        <code>{string} [options.paletteKey='palette']</code> - Key on <code>params</code> for the
-                        selected palette
-                      </li>
-                      <li>
-                        <code>{string} [options.collectionsListKey='collections']</code> - Key on
-                        <code>params</code> for the list of available collections
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Object} paneRef</code> - Tweakpane tab or folder to add controls to</li>
+                    <li>
+                      <code>{Object} params</code> - Parameter object that holds collection/palette values (and a
+                      collections list)
+                    </li>
+                    <li>
+                      <code>{Object} [options]</code> - Selector options
+                      <ul>
+                        <li><code>{number} [options.index=1]</code> - Insertion index for the controls</li>
+                        <li><code>{boolean} [options.justPrimary=true]</code> - Show only primary palettes</li>
+                        <li><code>{boolean} [options.sorted=true]</code> - Sort the palette list</li>
+                        <li><code>{boolean} [options.navButtons=true]</code> - Add previous/next/random buttons</li>
+                        <li>
+                          <code>{string} [options.collectionKey='collection']</code> - Key on <code>params</code> for
+                          the selected collection
+                        </li>
+                        <li>
+                          <code>{string} [options.paletteKey='palette']</code> - Key on <code>params</code> for the
+                          selected palette
+                        </li>
+                        <li>
+                          <code>{string} [options.collectionsListKey='collections']</code> - Key on
+                          <code>params</code> for the list of available collections
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>panel.addBlendModeSelector(paneRef, params, [options])</code></h4>
                 <p>Adds a blend mode dropdown bound to a key on the parameter object.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Object} paneRef</code> - Tweakpane tab or folder</li>
-                  <li><code>{Object} params</code> - Parameter object</li>
-                  <li>
-                    <code>{Object} [options]</code> - Selector options
-                    <ul>
-                      <li>
-                        <code>{string} options.blendModeKey</code> - Key on <code>params</code> for the blend mode
-                        value
-                      </li>
-                      <li>
-                        <code>{boolean} [options.showAllModes=false]</code> - Include additional CSS blend modes
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Object} paneRef</code> - Tweakpane tab or folder</li>
+                    <li><code>{Object} params</code> - Parameter object</li>
+                    <li>
+                      <code>{Object} [options]</code> - Selector options
+                      <ul>
+                        <li>
+                          <code>{string} options.blendModeKey</code> - Key on <code>params</code> for the blend mode
+                          value
+                        </li>
+                        <li>
+                          <code>{boolean} [options.showAllModes=false]</code> - Include additional CSS blend modes
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>panel.addEasingSelector(paneRef, params, options)</code></h4>
                 <p>
@@ -369,28 +374,26 @@ wrapper.saveSketchAndSettings();</code></pre>
                   <code>Linear</code> and <code>Smooth</code>.
                 </p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Object} paneRef</code> - Tweakpane tab or folder</li>
-                  <li><code>{Object} params</code> - Parameter object</li>
-                  <li>
-                    <code>{Object} options</code> - Selector options
-                    <ul>
-                      <li>
-                        <code>{string} options.typeKey</code> - Key on <code>params</code> for the easing type
-                      </li>
-                      <li>
-                        <code>{string} options.directionKey</code> - Key on <code>params</code> for the easing
-                        direction
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Object} paneRef</code> - Tweakpane tab or folder</li>
+                    <li><code>{Object} params</code> - Parameter object</li>
+                    <li>
+                      <code>{Object} options</code> - Selector options
+                      <ul>
+                        <li><code>{string} options.typeKey</code> - Key on <code>params</code> for the easing type</li>
+                        <li>
+                          <code>{string} options.directionKey</code> - Key on <code>params</code> for the easing
+                          direction
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>function setupPanelControls(panel) {
+                  <p class="doc-label">Example</p>
+                  <pre><code>function setupPanelControls(panel) {
   panel.primaryTab.addBinding(p, 'steps', { min: 2, max: 20 });
   panel.primaryTab.addBinding(p, 'rotation', { min: 0, max: TWO_PI });
 
@@ -411,54 +414,50 @@ wrapper.saveSketchAndSettings();</code></pre>
     directionKey: 'easingDirection',
   });
 }</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="capture-system">
                 <h3>Capture System</h3>
                 <p>
-                  TokoWrapper includes a capture system for recording videos and saving image sequences. Enable it
-                  with <code>captureFrames: true</code> and configure via <code>captureOptions</code>.
+                  TokoWrapper includes a capture system for recording videos and saving image sequences. Enable it with
+                  <code>captureFrames: true</code> and configure via <code>captureOptions</code>.
                 </p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{Object} [options.captureOptions]</code> - Capture configuration
-                    <ul>
-                      <li>
-                        <code>{string} [format='png']</code> - Output format:
-                        <code>mp4</code>, <code>webm</code>, <code>png</code>, <code>jpg</code>,
-                        <code>gif</code>, or <code>webp</code>
-                      </li>
-                      <li>
-                        <code>{number} [framerate=30]</code> - Capture framerate:
-                        <code>15</code>, <code>24</code>, <code>25</code>, <code>30</code>, or <code>60</code>
-                      </li>
-                      <li><code>{number} [duration=100]</code> - Number of frames to record when fixed</li>
-                      <li>
-                        <code>{boolean} [fixedDuration=false]</code> - Record a fixed number of frames
-                      </li>
-                      <li>
-                        <code>{boolean} [refreshBeforeCapture=true]</code> - Refresh the sketch before recording
-                      </li>
-                      <li>
-                        <code>{boolean} [recordButtonOnMainTab=true]</code> - Place the record button on the main
-                        tab
-                      </li>
-                      <li><code>{number} [bitrate=5000]</code> - Video bitrate</li>
-                      <li><code>{number} [quality=0.95]</code> - Image/video quality (0–1)</li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{Object} [options.captureOptions]</code> - Capture configuration
+                      <ul>
+                        <li>
+                          <code>{string} [format='png']</code> - Output format: <code>mp4</code>, <code>webm</code>,
+                          <code>png</code>, <code>jpg</code>, <code>gif</code>, or <code>webp</code>
+                        </li>
+                        <li>
+                          <code>{number} [framerate=30]</code> - Capture framerate: <code>15</code>, <code>24</code>,
+                          <code>25</code>, <code>30</code>, or <code>60</code>
+                        </li>
+                        <li><code>{number} [duration=100]</code> - Number of frames to record when fixed</li>
+                        <li><code>{boolean} [fixedDuration=false]</code> - Record a fixed number of frames</li>
+                        <li>
+                          <code>{boolean} [refreshBeforeCapture=true]</code> - Refresh the sketch before recording
+                        </li>
+                        <li>
+                          <code>{boolean} [recordButtonOnMainTab=true]</code> - Place the record button on the main tab
+                        </li>
+                        <li><code>{number} [bitrate=5000]</code> - Video bitrate</li>
+                        <li><code>{number} [quality=0.95]</code> - Image/video quality (0–1)</li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
                 <p>
-                  Set <code>showCaptureOptions: true</code> to expose format, framerate, and duration controls in
-                  the parameter panel.
+                  Set <code>showCaptureOptions: true</code> to expose format, framerate, and duration controls in the
+                  parameter panel.
                 </p>
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const wrapper = new TokoWrapper({
+                  <p class="doc-label">Example</p>
+                  <pre><code>const wrapper = new TokoWrapper({
   captureFrames: true,
   showCaptureOptions: true,
   captureOptions: {
@@ -469,7 +468,7 @@ wrapper.saveSketchAndSettings();</code></pre>
     refreshBeforeCapture: true,
   },
 });</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="file-handling">
@@ -480,31 +479,31 @@ wrapper.saveSketchAndSettings();</code></pre>
                   <code>receivedFile(file)</code> callback when <code>acceptDroppedFiles</code> is enabled.
                 </p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{boolean} [options.acceptDroppedSettings=false]</code> - Accept dropped
-                    <code>.json</code> settings files and import them into the parameter panel
-                  </li>
-                  <li>
-                    <code>{boolean} [options.acceptDroppedFiles=false]</code> - Accept other dropped files and call
-                    <code>receivedFile(file)</code>
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{boolean} [options.acceptDroppedSettings=false]</code> - Accept dropped
+                      <code>.json</code> settings files and import them into the parameter panel
+                    </li>
+                    <li>
+                      <code>{boolean} [options.acceptDroppedFiles=false]</code> - Accept other dropped files and call
+                      <code>receivedFile(file)</code>
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Callback</p>
-                <ul>
-                  <li>
-                    <code>receivedFile(file)</code> - Global function called for non-settings drops. The
-                    <code>file</code> object includes <code>subtype</code> (e.g. <code>png</code>,
-                    <code>jpg</code>) and <code>data</code> (file contents or data URL).
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Callback</p>
+                  <ul>
+                    <li>
+                      <code>receivedFile(file)</code> - Global function called for non-settings drops. The
+                      <code>file</code> object includes <code>subtype</code> (e.g. <code>png</code>, <code>jpg</code>)
+                      and <code>data</code> (file contents or data URL).
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const wrapper = new TokoWrapper({
+                  <p class="doc-label">Example</p>
+                  <pre><code>const wrapper = new TokoWrapper({
   acceptDroppedSettings: true,
   acceptDroppedFiles: true,
 });
@@ -516,7 +515,7 @@ function receivedFile(file) {
     });
   }
 }</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="save-functionality">
@@ -526,21 +525,21 @@ function receivedFile(file) {
                   <code>wrapper.saveSketch()</code> / <code>wrapper.saveSketchAndSettings()</code>.
                 </p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{boolean} [options.showSaveSketchButton=false]</code> - Show a save button in the
-                    parameter panel
-                  </li>
-                  <li>
-                    <code>{boolean} [options.saveSettingsWithSketch=false]</code> - Also save parameter settings
-                    when using the panel save button
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{boolean} [options.showSaveSketchButton=false]</code> - Show a save button in the parameter
+                      panel
+                    </li>
+                    <li>
+                      <code>{boolean} [options.saveSettingsWithSketch=false]</code> - Also save parameter settings when
+                      using the panel save button
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const wrapper = new TokoWrapper({
+                  <p class="doc-label">Example</p>
+                  <pre><code>const wrapper = new TokoWrapper({
   showSaveSketchButton: true,
   saveSettingsWithSketch: true,
 });
@@ -548,7 +547,7 @@ function receivedFile(file) {
 // Or save programmatically
 wrapper.saveSketch();
 wrapper.saveSketchAndSettings();</code></pre>
-              </div>
+                </div>
               </section>
             </section>
 
@@ -559,38 +558,41 @@ wrapper.saveSketchAndSettings();</code></pre>
                 <h3 class="doc-signature"><code>toko.getInfo()</code></h3>
                 <p>Returns information about the toko library and detected p5.js variant.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{Object}</code> Library information object
-                    <ul>
-                      <li><code>{string} name</code> - The library name ("Toko")</li>
-                      <li><code>{string} version</code> - The library version</li>
-                      <li><code>{string} variant</code> - The detected p5.js variant (p5v1, p5v2, q5, or unknown)</li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{Object}</code> Library information object
+                      <ul>
+                        <li><code>{string} name</code> - The library name ("Toko")</li>
+                        <li><code>{string} version</code> - The library version</li>
+                        <li><code>{string} variant</code> - The detected p5.js variant (p5v1, p5v2, q5, or unknown)</li>
+                      </ul>
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const info = toko.getInfo();
+                  <p class="doc-label">Example</p>
+                  <pre><code>const info = toko.getInfo();
 console.log(`Using ${info.name} v${info.version} with ${info.variant}`);
 // Output: "Using Toko v1.1 with p5v2"</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="toko-detectvariant">
                 <h3 class="doc-signature"><code>toko.detectVariant()</code></h3>
                 <p>Detects the current p5.js variant.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string}</code> The detected p5.js variant (<code>p5v1</code>, <code>p5v2</code>, <code>q5</code>, or <code>unknown</code>)</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{string}</code> The detected p5.js variant (<code>p5v1</code>, <code>p5v2</code>,
+                      <code>q5</code>, or <code>unknown</code>)
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const variant = toko.detectVariant();
+                  <p class="doc-label">Example</p>
+                  <pre><code>const variant = toko.detectVariant();
 switch (variant) {
   case 'q5':
     console.log('Using q5.js');
@@ -604,7 +606,7 @@ switch (variant) {
   default:
     console.log('No supported library detected');
 }</code></pre>
-              </div>
+                </div>
               </section>
             </section>
 
@@ -618,29 +620,29 @@ switch (variant) {
                 <h4 class="doc-signature"><code>setSeed(seed)</code></h4>
                 <p>Sets a specific seed for reproducible randomness.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string|number} seed</code> - Seed value to use for random number generation</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string|number} seed</code> - Seed value to use for random number generation</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>getSeed()</code></h4>
                 <p>Returns the current seed value.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string|number}</code> - The current seed</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{string|number}</code> - The current seed</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>randomSeed()</code></h4>
                 <p>Generates a new random seed string.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string}</code> - A new random seed</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{string}</code> - A new random seed</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>resetSeed()</code></h4>
                 <p>Resets the random number generator seed to restart the sequence from the beginning.</p>
@@ -648,35 +650,35 @@ switch (variant) {
                 <h4 class="doc-signature"><code>resetRNG([seed])</code></h4>
                 <p>Resets the global RNG with a new seed.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{string|number} [seed]</code> - Optional seed value. If omitted, a random seed is generated.
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{string|number} [seed]</code> - Optional seed value. If omitted, a random seed is generated.
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>nextSeed()</code></h4>
                 <p>Advances to the next seed in the sequence.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string}</code> - The next seed value</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{string}</code> - The next seed value</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>previousSeed()</code></h4>
                 <p>Goes back to the previous seed in the sequence.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string}</code> - The previous seed value</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{string}</code> - The previous seed value</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Set a specific seed for reproducible randomness
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Set a specific seed for reproducible randomness
 setSeed('mySeed');
 const num1 = random(0, 100);
 setSeed('mySeed');
@@ -698,7 +700,7 @@ resetRNG('mySeed'); // pass a seed, or call without arguments for a random one
 // Navigate through seed sequence
 const next = nextSeed();
 const prev = previousSeed();</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="random-number-generation">
@@ -707,64 +709,79 @@ const prev = previousSeed();</code></pre>
                 <h4 class="doc-signature"><code>random([min], [max])</code></h4>
                 <p>Generates a random number.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} [min=0]</code> - Minimum value (inclusive)</li>
-                  <li><code>{number} [max=1]</code> - Maximum value (exclusive)</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} [min=0]</code> - Minimum value (inclusive)</li>
+                    <li><code>{number} [max=1]</code> - Maximum value (exclusive)</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{number}</code> - Random number between min and max</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{number}</code> - Random number between min and max</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>intRange(min, max)</code></h4>
                 <p>Generates a random integer between min and max (inclusive).</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} min</code> - Minimum value (inclusive)</li>
-                  <li><code>{number} max</code> - Maximum value (inclusive)</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} min</code> - Minimum value (inclusive)</li>
+                    <li><code>{number} max</code> - Maximum value (inclusive)</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{number}</code> - Random integer</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{number}</code> - Random integer</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>randomBool()</code></h4>
                 <p>Returns a random boolean value.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{boolean}</code> - Random true or false</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{boolean}</code> - Random true or false</li>
+                  </ul>
+                </div>
+
+                <h4 class="doc-signature"><code>chance([probability])</code></h4>
+                <p>Returns true with the given probability.</p>
+                <div class="doc-block doc-params">
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} [probability=0.5]</code> - Chance of returning true (0 to 1)</li>
+                  </ul>
+                </div>
+                <div class="doc-block doc-returns">
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{boolean}</code> - True with the given probability, otherwise false</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>steppedRandom(min, max, step)</code></h4>
                 <p>Returns a random value from a stepped sequence.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} min</code> - Minimum value</li>
-                  <li><code>{number} max</code> - Maximum value</li>
-                  <li><code>{number} step</code> - Step size between values</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} min</code> - Minimum value</li>
+                    <li><code>{number} max</code> - Maximum value</li>
+                    <li><code>{number} step</code> - Step size between values</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{number}</code> - Random value from the stepped sequence</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{number}</code> - Random value from the stepped sequence</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Basic random numbers
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Basic random numbers
 const decimal = random(); // 0 to 1
 const ranged = random(10, 20); // 10 to 20
 
@@ -777,9 +794,14 @@ if (randomBool()) {
   console.log('Heads!');
 }
 
+// Probability check
+if (chance(0.2)) {
+  console.log('Rare event (20% chance)!');
+}
+
 // Stepped random numbers
 const stepped = steppedRandom(0, 10, 2); // Returns 0, 2, 4, 6, 8, or 10</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="string-and-character-generation">
@@ -788,48 +810,48 @@ const stepped = steppedRandom(0, 10, 2); // Returns 0, 2, 4, 6, 8, or 10</code><
                 <h4 class="doc-signature"><code>randomChar([chars])</code></h4>
                 <p>Returns a random character.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{string} [chars='abcdefghijklmnopqrstuvwxyz']</code> - String of characters to choose from
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{string} [chars='abcdefghijklmnopqrstuvwxyz']</code> - String of characters to choose from
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string}</code> - A single random character from the set</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{string}</code> - A single random character from the set</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>randomString(length, [chars])</code></h4>
                 <p>Generates a random string of the specified length.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} length</code> - Length of the string to generate</li>
-                  <li>
-                    <code>{string} [chars='abcdefghijklmnopqrstuvwxyz']</code> - String of characters to choose from
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} length</code> - Length of the string to generate</li>
+                    <li>
+                      <code>{string} [chars='abcdefghijklmnopqrstuvwxyz']</code> - String of characters to choose from
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string}</code> - Random string</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{string}</code> - Random string</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Random characters
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Random characters
 const letter = randomChar(); // Random lowercase letter
 const digit = randomChar('0123456789'); // Random digit
 
 // Random strings
 const word = randomString(5); // Random 5-letter word
 const password = randomString(8, 'abcdefghijklmnopqrstuvwxyz0123456789');</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="array-and-sequence-functions">
@@ -838,40 +860,40 @@ const password = randomString(8, 'abcdefghijklmnopqrstuvwxyz0123456789');</code>
                 <h4 class="doc-signature"><code>shuffle(array)</code></h4>
                 <p>Shuffles the elements of an array in place.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Array} array</code> - Array to shuffle</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Array} array</code> - Array to shuffle</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>intSequence(min, max)</code></h4>
                 <p>Generates an array of integers from min to max in random order.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} min</code> - Minimum value (inclusive)</li>
-                  <li><code>{number} max</code> - Maximum value (inclusive)</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} min</code> - Minimum value (inclusive)</li>
+                    <li><code>{number} max</code> - Maximum value (inclusive)</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of integers in random order</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of integers in random order</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>random2DVector()</code></h4>
                 <p>Generates a random 2D unit vector.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{p5.Vector}</code> - Random unit vector</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{p5.Vector}</code> - Random unit vector</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Shuffle arrays
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Shuffle arrays
 const cards = ['A', 'K', 'Q', 'J'];
 shuffle(cards); // Shuffles in place
 
@@ -880,7 +902,7 @@ const sequence = intSequence(1, 5); // [3, 1, 5, 2, 4] (random order)
 
 // Random vectors
 const direction = random2DVector(); // Random 2D unit vector</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="poisson-disk-sampling">
@@ -889,30 +911,30 @@ const direction = random2DVector(); // Random 2D unit vector</code></pre>
                 <h4 class="doc-signature"><code>poissonDisk(width, height, radius)</code></h4>
                 <p>Generates evenly distributed points using Poisson disk sampling algorithm.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} width</code> - Width of the sampling area</li>
-                  <li><code>{number} height</code> - Height of the sampling area</li>
-                  <li><code>{number} radius</code> - Minimum distance between points</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} width</code> - Width of the sampling area</li>
+                    <li><code>{number} height</code> - Height of the sampling area</li>
+                    <li><code>{number} radius</code> - Minimum distance between points</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{Array}</code> - Array of point objects with <code>x</code> and <code>y</code> properties
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{Array}</code> - Array of point objects with <code>x</code> and <code>y</code> properties
+                    </li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Generate evenly distributed points
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Generate evenly distributed points
 const points = poissonDisk(400, 300, 20);
 points.forEach(point => {
   circle(point.x, point.y, 5);
 });</code></pre>
-              </div>
+                </div>
               </section>
             </section>
 
@@ -926,32 +948,32 @@ points.forEach(point => {
                 <h4 class="doc-signature"><code>toko.getColorScale(name, [options])</code></h4>
                 <p>Creates a color scale from a named palette.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string} name</code> - Palette name (e.g., 'viridis', 'inferno')</li>
-                  <li><code>{Object} [options]</code> - Color scale options</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string} name</code> - Palette name (e.g., 'viridis', 'inferno')</li>
+                    <li><code>{Object} [options]</code> - Color scale options</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{ColorScale}</code> - Color scale object with methods for accessing colors</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{ColorScale}</code> - Color scale object with methods for accessing colors</li>
+                  </ul>
+                </div>
 
                 <h4>ColorScale methods</h4>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Methods</p>
-                <ul>
-                  <li><code>scale(t)</code> - Get color at position t (0-1)</li>
-                  <li><code>backgroundColor()</code> - Get the background color for this palette</li>
-                  <li><code>drawColor()</code> - Get the drawing color for this palette</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Methods</p>
+                  <ul>
+                    <li><code>scale(t)</code> - Get color at position t (0-1)</li>
+                    <li><code>backgroundColor()</code> - Get the background color for this palette</li>
+                    <li><code>drawColor()</code> - Get the drawing color for this palette</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Get a color scale
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Get a color scale
 const colors = toko.getColorScale('viridis', { steps: 10 });
 
 // Use colors with scale function
@@ -962,7 +984,7 @@ fill(colors.scale(1.0)); // Last color (at domain end)
 // Get background and draw colors
 const bgColor = colors.backgroundColor();
 const drawColor = colors.drawColor();</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="create-custom-color-scale">
@@ -971,30 +993,30 @@ const drawColor = colors.drawColor();</code></pre>
                 <h4 class="doc-signature"><code>toko.createColorScale(colors, [options], [extraColors])</code></h4>
                 <p>Creates a custom color scale from an array of color values.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Array} colors</code> - Array of color strings (hex, rgb, etc.)</li>
-                  <li><code>{Object} [options]</code> - Color scale options (same as <code>getColorScale</code>)</li>
-                  <li><code>{Array} [extraColors]</code> - Additional colors for contrast/background</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Array} colors</code> - Array of color strings (hex, rgb, etc.)</li>
+                    <li><code>{Object} [options]</code> - Color scale options (same as <code>getColorScale</code>)</li>
+                    <li><code>{Array} [extraColors]</code> - Additional colors for contrast/background</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{ColorScale}</code> - Color scale object</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{ColorScale}</code> - Color scale object</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Create scale from custom colors
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Create scale from custom colors
 const customColors = ['#ff0000', '#00ff00', '#0000ff'];
 const scale = toko.createColorScale(customColors);
 
 // Create scale with extra contrast colors
 const extraColors = ['#ffffff', '#000000'];
 const scaleWithContrast = toko.createColorScale(customColors, {}, extraColors);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="palette-navigation">
@@ -1003,56 +1025,56 @@ const scaleWithContrast = toko.createColorScale(customColors, {}, extraColors);<
                 <h4 class="doc-signature"><code>toko.getNextPalette(name, [type], [sorted])</code></h4>
                 <p>Gets the next palette in the collection.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string} name</code> - Current palette name</li>
-                  <li><code>{string} [type]</code> - Optional palette type filter</li>
-                  <li><code>{boolean} [sorted=false]</code> - Whether to use sorted palette order</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string} name</code> - Current palette name</li>
+                    <li><code>{string} [type]</code> - Optional palette type filter</li>
+                    <li><code>{boolean} [sorted=false]</code> - Whether to use sorted palette order</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Object}</code> - Next palette object</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Object}</code> - Next palette object</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.getPreviousPalette(name, [type], [sorted])</code></h4>
                 <p>Gets the previous palette in the collection.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string} name</code> - Current palette name</li>
-                  <li><code>{string} [type]</code> - Optional palette type filter</li>
-                  <li><code>{boolean} [sorted=false]</code> - Whether to use sorted palette order</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string} name</code> - Current palette name</li>
+                    <li><code>{string} [type]</code> - Optional palette type filter</li>
+                    <li><code>{boolean} [sorted=false]</code> - Whether to use sorted palette order</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Object}</code> - Previous palette object</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Object}</code> - Previous palette object</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.getRandomPalette([name], [type])</code></h4>
                 <p>Gets a random palette from the collection.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string} [name]</code> - Optional starting palette name</li>
-                  <li><code>{string} [type]</code> - Optional palette type filter</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string} [name]</code> - Optional starting palette name</li>
+                    <li><code>{string} [type]</code> - Optional palette type filter</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Object}</code> - Random palette object</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Object}</code> - Random palette object</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Get next palette
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Get next palette
 const next = toko.getNextPalette('viridis');
 
 // Get previous palette
@@ -1063,7 +1085,7 @@ const random = toko.getRandomPalette('viridis');
 
 // Get palette of specific type
 const nextWarm = toko.getNextPalette('viridis', 'warm', true);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="querying-palettes--collections">
@@ -1072,80 +1094,80 @@ const nextWarm = toko.getNextPalette('viridis', 'warm', true);</code></pre>
                 <h4 class="doc-signature"><code>toko.getAllPalettes()</code></h4>
                 <p>Returns all available palette objects.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of palette objects with name, colors, type, etc.</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of palette objects with name, colors, type, etc.</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.getCollections()</code></h4>
                 <p>Returns all available collection type names.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of collection type strings</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of collection type strings</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.findPaletteByName(name)</code></h4>
                 <p>Finds a palette object by its name.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string} name</code> - Palette name to find</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string} name</code> - Palette name to find</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Object|null}</code> - Palette object or null if not found</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Object|null}</code> - Palette object or null if not found</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.getPaletteList([type], [primaryOnly], [sorted])</code></h4>
                 <p>Returns a palette list formatted for Tweakpane.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string} [type='all']</code> - Collection type filter</li>
-                  <li><code>{boolean} [primaryOnly=false]</code> - Only include primary palettes</li>
-                  <li><code>{boolean} [sorted=false]</code> - Sort the list alphabetically</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string} [type='all']</code> - Collection type filter</li>
+                    <li><code>{boolean} [primaryOnly=false]</code> - Only include primary palettes</li>
+                    <li><code>{boolean} [sorted=false]</code> - Sort the list alphabetically</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Object}</code> - Tweakpane-formatted palette list</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Object}</code> - Tweakpane-formatted palette list</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.getPaletteSelection(names)</code></h4>
                 <p>Returns a Tweakpane-formatted selection from a comma-separated list of palette names.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string} names</code> - Comma-separated palette names</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string} names</code> - Comma-separated palette names</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Object}</code> - Tweakpane-formatted selection</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Object}</code> - Tweakpane-formatted selection</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.getColorModeList()</code></h4>
                 <p>Returns the list of available color interpolation modes for Tweakpane.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of interpolation mode strings</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of interpolation mode strings</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Get every palette object (name, colors, type, ...)
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Get every palette object (name, colors, type, ...)
 const allPalettes = toko.getAllPalettes();
 allPalettes.forEach(p => console.log(p.name, p.colors));
 
@@ -1167,7 +1189,7 @@ const selection = toko.getPaletteSelection('viridis,inferno,magma');
 
 // Get the list of available color interpolation modes (for Tweakpane)
 const modes = toko.getColorModeList();</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="available-palettes">
@@ -1205,22 +1227,24 @@ const modes = toko.getColorModeList();</code></pre>
                   object with the following properties:
                 </p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Options</p>
-                <ul>
-                  <li><code>{number} [steps=5]</code> - Number of color steps in the scale</li>
-                  <li><code>{boolean} [reverse=false]</code> - Reverse the palette order</li>
-                  <li><code>{boolean} [sort=false]</code> - Sort colors by brightness</li>
-                  <li><code>{boolean} [constrainContrast=false]</code> - Limit contrast between colors</li>
-                  <li><code>{Array} [domain=[0, 1]]</code> - Input domain for the scale</li>
-                  <li><code>{string} [mode='oklab']</code> - Color space for interpolation (oklab, rgb, hsl, etc.)</li>
-                  <li><code>{boolean} [useEasing=false]</code> - Use easing for color interpolation</li>
-                  <li><code>{Function} [easing]</code> - Easing function for interpolation</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Options</p>
+                  <ul>
+                    <li><code>{number} [steps=5]</code> - Number of color steps in the scale</li>
+                    <li><code>{boolean} [reverse=false]</code> - Reverse the palette order</li>
+                    <li><code>{boolean} [sort=false]</code> - Sort colors by brightness</li>
+                    <li><code>{boolean} [constrainContrast=false]</code> - Limit contrast between colors</li>
+                    <li><code>{Array} [domain=[0, 1]]</code> - Input domain for the scale</li>
+                    <li>
+                      <code>{string} [mode='oklab']</code> - Color space for interpolation (oklab, rgb, hsl, etc.)
+                    </li>
+                    <li><code>{boolean} [useEasing=false]</code> - Use easing for color interpolation</li>
+                    <li><code>{Function} [easing]</code> - Easing function for interpolation</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const colors = toko.getColorScale('viridis', {
+                  <p class="doc-label">Example</p>
+                  <pre><code>const colors = toko.getColorScale('viridis', {
   steps: 10, // Number of color steps
   reverse: false, // Reverse the palette
   sort: false, // Sort colors by brightness
@@ -1230,7 +1254,7 @@ const modes = toko.getColorModeList();</code></pre>
   useEasing: false, // Use easing for color interpolation
   easing: toko.easeInOutQuad, // Easing function
 });</code></pre>
-              </div>
+                </div>
               </section>
             </section>
 
@@ -1243,63 +1267,65 @@ const modes = toko.getColorModeList();</code></pre>
                 <h4 class="doc-signature"><code>new toko.Grid(x, y, width, height)</code></h4>
                 <p>Creates a new grid.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - X position of the grid</li>
-                  <li><code>{number} y</code> - Y position of the grid</li>
-                  <li><code>{number} width</code> - Width of the grid</li>
-                  <li><code>{number} height</code> - Height of the grid</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - X position of the grid</li>
+                    <li><code>{number} y</code> - Y position of the grid</li>
+                    <li><code>{number} width</code> - Width of the grid</li>
+                    <li><code>{number} height</code> - Height of the grid</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>grid.setBaseGrid(cols, rows)</code></h4>
                 <p>Sets a base grid structure with the specified number of columns and rows.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} cols</code> - Number of columns</li>
-                  <li><code>{number} rows</code> - Number of rows</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} cols</code> - Number of columns</li>
+                    <li><code>{number} rows</code> - Number of rows</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>grid.splitRecursive(depth, ratio, maxDepth, splitMethod)</code></h4>
                 <p>Recursively splits the grid cells.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} depth</code> - Split depth</li>
-                  <li><code>{number} ratio</code> - Split ratio (0-1)</li>
-                  <li><code>{number} maxDepth</code> - Maximum recursion depth</li>
-                  <li>
-                    <code>{string} splitMethod</code> - Split method constant (e.g.,
-                    <code>toko.Grid.SPLIT_LONGEST</code>)
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} depth</code> - Split depth</li>
+                    <li><code>{number} ratio</code> - Split ratio (0-1)</li>
+                    <li><code>{number} maxDepth</code> - Maximum recursion depth</li>
+                    <li>
+                      <code>{string} splitMethod</code> - Split method constant (e.g.,
+                      <code>toko.Grid.SPLIT_LONGEST</code>)
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>grid.gatherPoints()</code></h4>
                 <p>Gathers all unique corner points from the grid cells.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{Array}</code> - Array of point objects with <code>x</code> and <code>y</code> properties
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{Array}</code> - Array of point objects with <code>x</code> and <code>y</code> properties
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>grid.packGrid(width, height, cellShapes, shuffle, rotate)</code></h4>
                 <p>Packs the grid with cells of different shapes.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} width</code> - Total width to pack</li>
-                  <li><code>{number} height</code> - Total height to pack</li>
-                  <li><code>{Array} cellShapes</code> - Array of shape definitions as <code>[width, height]</code></li>
-                  <li><code>{boolean} shuffle</code> - Whether to shuffle cell shapes</li>
-                  <li><code>{boolean} rotate</code> - Whether to allow rotation of cells</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} width</code> - Total width to pack</li>
+                    <li><code>{number} height</code> - Total height to pack</li>
+                    <li>
+                      <code>{Array} cellShapes</code> - Array of shape definitions as <code>[width, height]</code>
+                    </li>
+                    <li><code>{boolean} shuffle</code> - Whether to shuffle cell shapes</li>
+                    <li><code>{boolean} rotate</code> - Whether to allow rotation of cells</li>
+                  </ul>
+                </div>
 
                 <p><strong>Properties:</strong></p>
                 <ul>
@@ -1318,8 +1344,8 @@ const modes = toko.getColorModeList();</code></pre>
                 </ul>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Create a grid
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Create a grid
 const grid = new toko.Grid(0, 0, width, height);
 
 // Set base grid structure
@@ -1349,7 +1375,7 @@ const cellShapes = [
   [2, 2],
 ];
 grid.packGrid(20, 20, cellShapes, true, true);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="hexgrid">
@@ -1358,135 +1384,135 @@ grid.packGrid(20, 20, cellShapes, true, true);</code></pre>
                 <h4 class="doc-signature"><code>new toko.HexGrid(orientation, hexSize, center)</code></h4>
                 <p>Creates a new hexagonal grid.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{string} orientation</code> - Grid orientation: <code>'pointy'</code> or <code>'flat'</code>
-                  </li>
-                  <li><code>{HexPoint} hexSize</code> - Size of each hexagon as a HexPoint</li>
-                  <li><code>{HexPoint} center</code> - Center position of the grid</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{string} orientation</code> - Grid orientation: <code>'pointy'</code> or <code>'flat'</code>
+                    </li>
+                    <li><code>{HexPoint} hexSize</code> - Size of each hexagon as a HexPoint</li>
+                    <li><code>{HexPoint} center</code> - Center position of the grid</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>hexGrid.createHexagon(q, r, s, [data])</code></h4>
                 <p>Creates and adds a hexagon to the grid.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} q</code> - Cube coordinate q</li>
-                  <li><code>{number} r</code> - Cube coordinate r</li>
-                  <li><code>{number} s</code> - Cube coordinate s</li>
-                  <li><code>{Object} [data]</code> - Optional data to attach to the hexagon</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} q</code> - Cube coordinate q</li>
+                    <li><code>{number} r</code> - Cube coordinate r</li>
+                    <li><code>{number} s</code> - Cube coordinate s</li>
+                    <li><code>{Object} [data]</code> - Optional data to attach to the hexagon</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Hexagon}</code> - The created hexagon</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Hexagon}</code> - The created hexagon</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>hexGrid.getHexagon(q, r, s)</code></h4>
                 <p>Gets the hexagon at the specified cube coordinates.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} q</code> - Cube coordinate q</li>
-                  <li><code>{number} r</code> - Cube coordinate r</li>
-                  <li><code>{number} s</code> - Cube coordinate s</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} q</code> - Cube coordinate q</li>
+                    <li><code>{number} r</code> - Cube coordinate r</li>
+                    <li><code>{number} s</code> - Cube coordinate s</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Hexagon|null}</code> - The hexagon or null if not found</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Hexagon|null}</code> - The hexagon or null if not found</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>hexGrid.getHexCorners(hex)</code></h4>
                 <p>Gets the pixel coordinates of the hexagon's corners.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Hexagon} hex</code> - The hexagon</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Hexagon} hex</code> - The hexagon</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of HexPoint objects representing corners</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of HexPoint objects representing corners</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>hexGrid.hexToPixel(hex)</code></h4>
                 <p>Converts hex coordinates to pixel coordinates.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Hexagon} hex</code> - The hexagon</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Hexagon} hex</code> - The hexagon</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{HexPoint}</code> - Pixel coordinates</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{HexPoint}</code> - Pixel coordinates</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>hexGrid.pixelToHex(point)</code></h4>
                 <p>Converts pixel coordinates to hex coordinates.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{HexPoint} point</code> - Pixel coordinates</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{HexPoint} point</code> - Pixel coordinates</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Hexagon}</code> - Hex coordinates</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Hexagon}</code> - Hex coordinates</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>hexGrid.createRectangularGrid(cols, rows)</code></h4>
                 <p>Creates a rectangular grid of hexagons.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} cols</code> - Number of columns</li>
-                  <li><code>{number} rows</code> - Number of rows</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} cols</code> - Number of columns</li>
+                    <li><code>{number} rows</code> - Number of rows</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>hexGrid.createHexagonalGrid(radius)</code></h4>
                 <p>Creates a hexagonal grid pattern.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} radius</code> - Radius of the hexagonal grid</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} radius</code> - Radius of the hexagonal grid</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>hexGrid.getNeighbors(q, r, s)</code></h4>
                 <p>Gets the neighboring hexagons.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} q</code> - Cube coordinate q</li>
-                  <li><code>{number} r</code> - Cube coordinate r</li>
-                  <li><code>{number} s</code> - Cube coordinate s</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} q</code> - Cube coordinate q</li>
+                    <li><code>{number} r</code> - Cube coordinate r</li>
+                    <li><code>{number} s</code> - Cube coordinate s</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of neighboring Hexagon objects</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of neighboring Hexagon objects</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Create a hexagonal grid
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Create a hexagonal grid
 const hexGrid = new toko.HexGrid('pointy', new toko.HexPoint(30, 30), new toko.HexPoint(width / 2, height / 2));
 
 // Create and add hexagons
@@ -1515,7 +1541,7 @@ hexGrid.createHexagonalGrid(5); // radius of 5
 
 // Get neighbors
 const neighbors = hexGrid.getNeighbors(0, 0, 0);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="quadtree">
@@ -1524,102 +1550,102 @@ const neighbors = hexGrid.getNeighbors(0, 0, 0);</code></pre>
                 <h4 class="doc-signature"><code>new toko.QuadTree(boundary, capacity)</code></h4>
                 <p>Creates a new QuadTree.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{QuadTreeRectangle} boundary</code> - Boundary rectangle for the tree</li>
-                  <li><code>{number} capacity</code> - Maximum number of points per node before subdivision</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{QuadTreeRectangle} boundary</code> - Boundary rectangle for the tree</li>
+                    <li><code>{number} capacity</code> - Maximum number of points per node before subdivision</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>new toko.QuadTreeRectangle(x, y, width, height)</code></h4>
                 <p>Creates a rectangle for QuadTree boundaries or queries.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - X position</li>
-                  <li><code>{number} y</code> - Y position</li>
-                  <li><code>{number} width</code> - Width</li>
-                  <li><code>{number} height</code> - Height</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - X position</li>
+                    <li><code>{number} y</code> - Y position</li>
+                    <li><code>{number} width</code> - Width</li>
+                    <li><code>{number} height</code> - Height</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>new toko.QuadTreePoint(x, y, [data])</code></h4>
                 <p>Creates a point for insertion into the QuadTree.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - X coordinate</li>
-                  <li><code>{number} y</code> - Y coordinate</li>
-                  <li><code>{Object} [data]</code> - Optional data to attach to the point</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - X coordinate</li>
+                    <li><code>{number} y</code> - Y coordinate</li>
+                    <li><code>{Object} [data]</code> - Optional data to attach to the point</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>new toko.QuadTreeCircle(x, y, radius)</code></h4>
                 <p>Creates a circle for circular queries.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - Center X coordinate</li>
-                  <li><code>{number} y</code> - Center Y coordinate</li>
-                  <li><code>{number} radius</code> - Radius of the circle</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - Center X coordinate</li>
+                    <li><code>{number} y</code> - Center Y coordinate</li>
+                    <li><code>{number} radius</code> - Radius of the circle</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>quadTree.insert(point)</code></h4>
                 <p>Inserts a point into the QuadTree.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{QuadTreePoint} point</code> - Point to insert</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{QuadTreePoint} point</code> - Point to insert</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>quadTree.query(region)</code></h4>
                 <p>Queries points within a region.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{QuadTreeRectangle|QuadTreeCircle} region</code> - Region to query (rectangle or circle)
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{QuadTreeRectangle|QuadTreeCircle} region</code> - Region to query (rectangle or circle)
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of QuadTreePoint objects in the region</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of QuadTreePoint objects in the region</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>quadTree.closest(point, [count], [maxDistance])</code></h4>
                 <p>Finds the closest points to a given point.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{QuadTreePoint} point</code> - Reference point</li>
-                  <li><code>{number} [count=1]</code> - Number of closest points to return</li>
-                  <li><code>{number} [maxDistance]</code> - Maximum distance to consider</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{QuadTreePoint} point</code> - Reference point</li>
+                    <li><code>{number} [count=1]</code> - Number of closest points to return</li>
+                    <li><code>{number} [maxDistance]</code> - Maximum distance to consider</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of closest QuadTreePoint objects</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of closest QuadTreePoint objects</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>quadTree.forEach(callback)</code></h4>
                 <p>Iterates over all points in the tree.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Function} callback</code> - Function to call for each point</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Function} callback</code> - Function to call for each point</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Create a quadtree with boundary rectangle
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Create a quadtree with boundary rectangle
 const boundary = new toko.QuadTreeRectangle(width / 2, height / 2, width, height);
 const quadTree = new toko.QuadTree(boundary, 4); // capacity of 4
 
@@ -1642,7 +1668,7 @@ const closest = quadTree.closest(new toko.QuadTreePoint(100, 100), 3, 100);
 quadTree.forEach(point => {
   circle(point.x, point.y, 5);
 });</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="rng-random-number-generator">
@@ -1651,33 +1677,33 @@ quadTree.forEach(point => {
                 <h4 class="doc-signature"><code>new toko.RNG([seed])</code></h4>
                 <p>Creates a custom random number generator instance.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string|number} [seed]</code> - Optional seed for reproducible randomness</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string|number} [seed]</code> - Optional seed for reproducible randomness</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-params">
-                <p class="doc-label">Methods</p>
-                <ul>
-                  <li><code>rng.random([min], [max])</code> - Random number between min and max</li>
-                  <li><code>rng.randomBool()</code> - Random boolean</li>
-                  <li><code>rng.randomChar([chars])</code> - Random character</li>
-                  <li><code>rng.randomInt(min, max)</code> - Random integer</li>
-                  <li><code>rng.randomFloat([min], [max])</code> - Random float</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Methods</p>
+                  <ul>
+                    <li><code>rng.random([min], [max])</code> - Random number between min and max</li>
+                    <li><code>rng.randomBool()</code> - Random boolean</li>
+                    <li><code>rng.randomChar([chars])</code> - Random character</li>
+                    <li><code>rng.randomInt(min, max)</code> - Random integer</li>
+                    <li><code>rng.randomFloat([min], [max])</code> - Random float</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Create a custom RNG instance
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Create a custom RNG instance
 const rng = new toko.RNG(42);
 
 // Use the RNG
 const num = rng.random(0, 100);
 const bool = rng.randomBool();
 const char = rng.randomChar();</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="camera">
@@ -1690,46 +1716,46 @@ const char = rng.randomChar();</code></pre>
                 <h4 class="doc-signature"><code>new toko.Camera(width, height)</code></h4>
                 <p>Creates a new Camera.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} width</code> - Width of the canvas</li>
-                  <li><code>{number} height</code> - Height of the canvas</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} width</code> - Width of the canvas</li>
+                    <li><code>{number} height</code> - Height of the canvas</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>camera.setWorld(worldWidth, worldHeight)</code></h4>
                 <p>Sets the world size.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} worldWidth</code> - Total width of the world</li>
-                  <li><code>{number} worldHeight</code> - Total height of the world</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} worldWidth</code> - Total width of the world</li>
+                    <li><code>{number} worldHeight</code> - Total height of the world</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Camera}</code> - Returns this for chaining</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Camera}</code> - Returns this for chaining</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>camera.setFocus(x, y, width, height)</code></h4>
                 <p>Sets the focus area to fit into view.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - X position of focus area</li>
-                  <li><code>{number} y</code> - Y position of focus area</li>
-                  <li><code>{number} width</code> - Width of focus area</li>
-                  <li><code>{number} height</code> - Height of focus area</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - X position of focus area</li>
+                    <li><code>{number} y</code> - Y position of focus area</li>
+                    <li><code>{number} width</code> - Width of focus area</li>
+                    <li><code>{number} height</code> - Height of focus area</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Camera}</code> - Returns this for chaining</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Camera}</code> - Returns this for chaining</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>camera.apply()</code></h4>
                 <p>Applies the camera transform (pushes the transformation matrix).</p>
@@ -1740,76 +1766,78 @@ const char = rng.randomChar();</code></pre>
                 <h4 class="doc-signature"><code>camera.worldToScreen(x, y)</code></h4>
                 <p>Converts world coordinates to screen coordinates.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - World X coordinate</li>
-                  <li><code>{number} y</code> - World Y coordinate</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - World X coordinate</li>
+                    <li><code>{number} y</code> - World Y coordinate</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Object}</code> - Screen coordinates with <code>x</code> and <code>y</code> properties</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{Object}</code> - Screen coordinates with <code>x</code> and <code>y</code> properties
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>camera.screenToWorld(x, y)</code></h4>
                 <p>Converts screen coordinates to world coordinates.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - Screen X coordinate</li>
-                  <li><code>{number} y</code> - Screen Y coordinate</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - Screen X coordinate</li>
+                    <li><code>{number} y</code> - Screen Y coordinate</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Object}</code> - World coordinates with <code>x</code> and <code>y</code> properties</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Object}</code> - World coordinates with <code>x</code> and <code>y</code> properties</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>camera.isVisible(x, y)</code></h4>
                 <p>Checks if a world coordinate is currently visible in the viewport.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - World X coordinate</li>
-                  <li><code>{number} y</code> - World Y coordinate</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - World X coordinate</li>
+                    <li><code>{number} y</code> - World Y coordinate</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{boolean}</code> - True if the point is visible</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{boolean}</code> - True if the point is visible</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>camera.getViewBounds()</code></h4>
                 <p>Returns the current viewport bounds in world coordinates.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{Object}</code> - Bounds with <code>x</code>, <code>y</code>, <code>width</code>,
-                    <code>height</code> properties
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{Object}</code> - Bounds with <code>x</code>, <code>y</code>, <code>width</code>,
+                      <code>height</code> properties
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>camera.setCanvas(width, height)</code></h4>
                 <p>Updates the camera after a canvas resize.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} width</code> - New canvas width</li>
-                  <li><code>{number} height</code> - New canvas height</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} width</code> - New canvas width</li>
+                    <li><code>{number} height</code> - New canvas height</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Create a camera for the current canvas
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Create a camera for the current canvas
 const camera = new toko.Camera(width, height);
 
 // Define the world size and the area to fit into view (methods are chainable)
@@ -1833,7 +1861,7 @@ function draw() {
 
 // Update after a canvas resize
 camera.setCanvas(width, height);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="imageloader">
@@ -1843,14 +1871,14 @@ camera.setCanvas(width, height);</code></pre>
                 <h4 class="doc-signature"><code>new toko.ImageLoader(items)</code></h4>
                 <p>Creates a new ImageLoader.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{Array} items</code> - Array of item objects with <code>id</code> and
-                    <code>url</code> properties
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{Array} items</code> - Array of item objects with <code>id</code> and
+                      <code>url</code> properties
+                    </li>
+                  </ul>
+                </div>
                 <p><strong>Item Properties:</strong></p>
                 <ul>
                   <li><code>id</code> - Unique identifier for the asset</li>
@@ -1864,33 +1892,33 @@ camera.setCanvas(width, height);</code></pre>
                 <h4 class="doc-signature"><code>loader.preloadAll([callback])</code></h4>
                 <p>Preloads all assets. Can be used in p5.js <code>preload()</code> function.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Function} [callback]</code> - Callback function when all assets are loaded</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Function} [callback]</code> - Callback function when all assets are loaded</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>loader.get(id)</code></h4>
                 <p>Retrieves a loaded asset by its ID.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number|string} id</code> - The ID of the asset to retrieve</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number|string} id</code> - The ID of the asset to retrieve</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{p5.Image|p5.Element|null}</code> - The loaded image/SVG, or null if not found or not yet
-                    loaded
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{p5.Image|p5.Element|null}</code> - The loaded image/SVG, or null if not found or not yet
+                      loaded
+                    </li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Provide items with an id and url (type is auto-detected from the extension)
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Provide items with an id and url (type is auto-detected from the extension)
 const loader = new toko.ImageLoader([
   { id: 1, url: 'assets/image.png' },
   { id: 2, url: 'assets/logo.svg' },
@@ -1910,7 +1938,7 @@ async function setup() {
 // Retrieve a loaded asset by id (returns null if missing / not yet loaded)
 const img = loader.get(1);
 if (img) image(img, 0, 0);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="hexpoint">
@@ -1920,27 +1948,27 @@ if (img) image(img, 0, 0);</code></pre>
                 <h4 class="doc-signature"><code>new toko.HexPoint(x, y)</code></h4>
                 <p>Creates a new HexPoint.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - X coordinate</li>
-                  <li><code>{number} y</code> - Y coordinate</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - X coordinate</li>
+                    <li><code>{number} y</code> - Y coordinate</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-params">
-                <p class="doc-label">Methods</p>
-                <ul>
-                  <li><code>add(other)</code> - Vector addition</li>
-                  <li><code>subtract(other)</code> - Vector subtraction</li>
-                  <li><code>scale(factor)</code> - Scales the point</li>
-                  <li><code>distanceTo(other)</code> - Distance to another point</li>
-                  <li><code>equals(other)</code> - Checks equality with another point</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Methods</p>
+                  <ul>
+                    <li><code>add(other)</code> - Vector addition</li>
+                    <li><code>subtract(other)</code> - Vector subtraction</li>
+                    <li><code>scale(factor)</code> - Scales the point</li>
+                    <li><code>distanceTo(other)</code> - Distance to another point</li>
+                    <li><code>equals(other)</code> - Checks equality with another point</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const a = new toko.HexPoint(30, 30);
+                  <p class="doc-label">Example</p>
+                  <pre><code>const a = new toko.HexPoint(30, 30);
 const b = new toko.HexPoint(10, 5);
 
 const sum = a.add(b);
@@ -1948,7 +1976,7 @@ const diff = a.subtract(b);
 const scaled = a.scale(2);
 const dist = a.distanceTo(b);
 const same = a.equals(b);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="hexagon">
@@ -1961,14 +1989,14 @@ const same = a.equals(b);</code></pre>
                 <h4 class="doc-signature"><code>new toko.Hexagon(q, r, s, [data])</code></h4>
                 <p>Creates a new Hexagon.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} q</code> - Cube coordinate q</li>
-                  <li><code>{number} r</code> - Cube coordinate r</li>
-                  <li><code>{number} s</code> - Cube coordinate s</li>
-                  <li><code>{Object} [data]</code> - Optional data to attach to the hexagon</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} q</code> - Cube coordinate q</li>
+                    <li><code>{number} r</code> - Cube coordinate r</li>
+                    <li><code>{number} s</code> - Cube coordinate s</li>
+                    <li><code>{Object} [data]</code> - Optional data to attach to the hexagon</li>
+                  </ul>
+                </div>
 
                 <p><strong>Data Methods:</strong></p>
                 <ul>
@@ -1988,8 +2016,8 @@ const same = a.equals(b);</code></pre>
                 </ul>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>const hex = new toko.Hexagon(0, 0, 0, { value: 42 });
+                  <p class="doc-label">Example</p>
+                  <pre><code>const hex = new toko.Hexagon(0, 0, 0, { value: 42 });
 
 // Attached data
 hex.setData('color', '#ff0000');
@@ -2003,7 +2031,7 @@ const neighbors = hex.getAllNeighbors();
 const distance = hex.distanceTo(new toko.Hexagon(2, -1, -1));
 const line = hex.lineTo(new toko.Hexagon(3, 0, -3));
 const inRange = hex.getHexagonsInRange(2);</code></pre>
-              </div>
+                </div>
               </section>
             </section>
 
@@ -2021,75 +2049,75 @@ const inRange = hex.getHexagonsInRange(2);</code></pre>
                 <h4 class="doc-signature"><code>toko.linearGradient(x1, y1, x2, y2, stops)</code></h4>
                 <p>Creates a linear gradient fill.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x1</code> - Start X coordinate</li>
-                  <li><code>{number} y1</code> - Start Y coordinate</li>
-                  <li><code>{number} x2</code> - End X coordinate</li>
-                  <li><code>{number} y2</code> - End Y coordinate</li>
-                  <li><code>{Array} stops</code> - Array of gradient stop objects</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x1</code> - Start X coordinate</li>
+                    <li><code>{number} y1</code> - Start Y coordinate</li>
+                    <li><code>{number} x2</code> - End X coordinate</li>
+                    <li><code>{number} y2</code> - End Y coordinate</li>
+                    <li><code>{Array} stops</code> - Array of gradient stop objects</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.radialGradient(x1, y1, r1, x2, y2, r2, stops)</code></h4>
                 <p>Creates a radial gradient fill.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x1</code> - Start circle X</li>
-                  <li><code>{number} y1</code> - Start circle Y</li>
-                  <li><code>{number} r1</code> - Start circle radius</li>
-                  <li><code>{number} x2</code> - End circle X</li>
-                  <li><code>{number} y2</code> - End circle Y</li>
-                  <li><code>{number} r2</code> - End circle radius</li>
-                  <li><code>{Array} stops</code> - Array of gradient stop objects</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x1</code> - Start circle X</li>
+                    <li><code>{number} y1</code> - Start circle Y</li>
+                    <li><code>{number} r1</code> - Start circle radius</li>
+                    <li><code>{number} x2</code> - End circle X</li>
+                    <li><code>{number} y2</code> - End circle Y</li>
+                    <li><code>{number} r2</code> - End circle radius</li>
+                    <li><code>{Array} stops</code> - Array of gradient stop objects</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.conicGradient(startAngle, x, y, stops)</code></h4>
                 <p>Creates a conic (conical) gradient fill.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} startAngle</code> - Starting angle in radians</li>
-                  <li><code>{number} x</code> - Center X coordinate</li>
-                  <li><code>{number} y</code> - Center Y coordinate</li>
-                  <li><code>{Array} stops</code> - Array of gradient stop objects</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} startAngle</code> - Starting angle in radians</li>
+                    <li><code>{number} x</code> - Center X coordinate</li>
+                    <li><code>{number} y</code> - Center Y coordinate</li>
+                    <li><code>{Array} stops</code> - Array of gradient stop objects</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.makeGradientStops(colorScale, steps)</code></h4>
                 <p>Creates gradient stops from a Toko color scale.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{ColorScale} colorScale</code> - Color scale object</li>
-                  <li><code>{number} steps</code> - Number of gradient stops to create</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{ColorScale} colorScale</code> - Color scale object</li>
+                    <li><code>{number} steps</code> - Number of gradient stops to create</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of gradient stop objects</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of gradient stop objects</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.gradientCircle(x, y, diameter, color1, color2)</code></h4>
                 <p>Draws a circle with a radial gradient from center to edge. Works in any render mode.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - Center X coordinate</li>
-                  <li><code>{number} y</code> - Center Y coordinate</li>
-                  <li><code>{number} diameter</code> - Diameter of the circle</li>
-                  <li><code>{string} color1</code> - Center color</li>
-                  <li><code>{string} color2</code> - Edge color</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - Center X coordinate</li>
+                    <li><code>{number} y</code> - Center Y coordinate</li>
+                    <li><code>{number} diameter</code> - Diameter of the circle</li>
+                    <li><code>{string} color1</code> - Center color</li>
+                    <li><code>{string} color2</code> - Edge color</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Linear gradient
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Linear gradient
 const stops = [
   { offset: 0, color: '#ff0000' },
   { offset: 1, color: '#0000ff' },
@@ -2137,7 +2165,7 @@ rect(0, 0, width, height);
 // (works in any render mode, unlike the gradient fills above)
 toko.gradientCircle(width / 2, height / 2, 200, 'white', 'black');
 toko.gradientCircle(300, 200, 150, '#ff6b6b', '#4ecdc4');</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="shadow-effects">
@@ -2146,18 +2174,18 @@ toko.gradientCircle(300, 200, 150, '#ff6b6b', '#4ecdc4');</code></pre>
                 <h4 class="doc-signature"><code>toko.shadow(xOffset, yOffset, blur, color)</code></h4>
                 <p>Adds a drop shadow effect to subsequently drawn shapes.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} xOffset</code> - Horizontal shadow offset</li>
-                  <li><code>{number} yOffset</code> - Vertical shadow offset</li>
-                  <li><code>{number} blur</code> - Blur radius of the shadow</li>
-                  <li><code>{string} color</code> - Shadow color (accepts rgba)</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} xOffset</code> - Horizontal shadow offset</li>
+                    <li><code>{number} yOffset</code> - Vertical shadow offset</li>
+                    <li><code>{number} blur</code> - Blur radius of the shadow</li>
+                    <li><code>{string} color</code> - Shadow color (accepts rgba)</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Simple drop shadow
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Simple drop shadow
 toko.shadow(5, 5, 10, 'rgba(0, 0, 0, 0.3)');
 fill(255, 0, 0);
 rect(50, 50, 100, 100);
@@ -2166,7 +2194,7 @@ rect(50, 50, 100, 100);
 toko.shadow(0, 0, 20, 'rgba(255, 255, 0, 0.8)');
 fill(255, 255, 0);
 ellipse(100, 100, 80, 80);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="grain-effect">
@@ -2175,27 +2203,27 @@ ellipse(100, 100, 80, 80);</code></pre>
                 <h4 class="doc-signature"><code>toko.addSimpleGrain(amount)</code></h4>
                 <p>Adds simple monochromatic grain to the canvas.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} amount</code> - Grain intensity (0-255)</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} amount</code> - Grain intensity (0-255)</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.addChannelGrain(strengths, shifts)</code></h4>
                 <p>Adds channel-specific grain with per-channel strength and color shift.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{Object} strengths</code> - Grain strength per channel: <code>{ red, green, blue }</code>
-                  </li>
-                  <li><code>{Object} shifts</code> - Color shift per channel: <code>{ red, green, blue }</code></li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{Object} strengths</code> - Grain strength per channel: <code>{ red, green, blue }</code>
+                    </li>
+                    <li><code>{Object} shifts</code> - Color shift per channel: <code>{ red, green, blue }</code></li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Add simple grain to the canvas
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Add simple grain to the canvas
 toko.addSimpleGrain(10); // Light grain (0-255 range)
 
 // Add channel-specific grain
@@ -2206,7 +2234,7 @@ toko.addChannelGrain(
 
 // Create warm grain effect
 toko.addChannelGrain({ red: 15, green: 10, blue: 5 }, { red: 10, green: 5, blue: 0 });</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="shapes">
@@ -2215,66 +2243,66 @@ toko.addChannelGrain({ red: 15, green: 10, blue: 5 }, { red: 10, green: 5, blue:
                 <h4 class="doc-signature"><code>toko.plotPolygon(x, y, radius, sides, [angle])</code></h4>
                 <p>Draws a polygon with the specified number of sides.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - Center X coordinate</li>
-                  <li><code>{number} y</code> - Center Y coordinate</li>
-                  <li><code>{number} radius</code> - Radius of the polygon</li>
-                  <li><code>{number} sides</code> - Number of sides</li>
-                  <li><code>{number} [angle=0]</code> - Starting angle offset in radians</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - Center X coordinate</li>
+                    <li><code>{number} y</code> - Center Y coordinate</li>
+                    <li><code>{number} radius</code> - Radius of the polygon</li>
+                    <li><code>{number} sides</code> - Number of sides</li>
+                    <li><code>{number} [angle=0]</code> - Starting angle offset in radians</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.polygonVertices(x, y, radius, sides, [angle])</code></h4>
                 <p>Returns the vertices of a polygon.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - Center X coordinate</li>
-                  <li><code>{number} y</code> - Center Y coordinate</li>
-                  <li><code>{number} radius</code> - Radius of the polygon</li>
-                  <li><code>{number} sides</code> - Number of sides</li>
-                  <li><code>{number} [angle=0]</code> - Starting angle offset in radians</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - Center X coordinate</li>
+                    <li><code>{number} y</code> - Center Y coordinate</li>
+                    <li><code>{number} radius</code> - Radius of the polygon</li>
+                    <li><code>{number} sides</code> - Number of sides</li>
+                    <li><code>{number} [angle=0]</code> - Starting angle offset in radians</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{Array}</code> - Array of vertex objects with <code>x</code> and <code>y</code> properties
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{Array}</code> - Array of vertex objects with <code>x</code> and <code>y</code> properties
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.plotVertices(vertices, [shapeMode])</code></h4>
                 <p>Draws a shape from an array of vertices.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{Array} vertices</code> - Array of vertex objects or p5.Vectors</li>
-                  <li>
-                    <code>{constant} [shapeMode=CLOSE]</code> - Shape mode: <code>CLOSE</code> or <code>OPEN</code>
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{Array} vertices</code> - Array of vertex objects or p5.Vectors</li>
+                    <li>
+                      <code>{constant} [shapeMode=CLOSE]</code> - Shape mode: <code>CLOSE</code> or <code>OPEN</code>
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.plotRoundedVertices(points, radius, [closed])</code></h4>
                 <p>Draws a polygon/polyline with rounded corners.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{Array} points</code> - Array of point objects with <code>x</code>, <code>y</code>, and
-                    optional <code>radius</code>
-                  </li>
-                  <li><code>{number} radius</code> - Default corner radius</li>
-                  <li><code>{boolean} [closed=true]</code> - Whether to close the shape</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{Array} points</code> - Array of point objects with <code>x</code>, <code>y</code>, and
+                      optional <code>radius</code>
+                    </li>
+                    <li><code>{number} radius</code> - Default corner radius</li>
+                    <li><code>{boolean} [closed=true]</code> - Whether to close the shape</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Draw polygons
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Draw polygons
 toko.plotPolygon(width / 2, height / 2, 50, 6, 0); // Hexagon
 toko.plotPolygon(200, 200, 80, 3, PI / 4); // Rotated triangle
 
@@ -2301,7 +2329,7 @@ const roundedPoints = [
 ];
 toko.plotRoundedVertices(roundedPoints, 20); // closed polygon, 20px default radius
 toko.plotRoundedVertices(roundedPoints, 20, false); // open polyline</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="transformations">
@@ -2310,28 +2338,28 @@ toko.plotRoundedVertices(roundedPoints, 20, false); // open polyline</code></pre
                 <h4 class="doc-signature"><code>toko.rotateAround(x, y, angle)</code></h4>
                 <p>Rotates the canvas around a specific point.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - Pivot X coordinate</li>
-                  <li><code>{number} y</code> - Pivot Y coordinate</li>
-                  <li><code>{number} angle</code> - Rotation angle in radians</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - Pivot X coordinate</li>
+                    <li><code>{number} y</code> - Pivot Y coordinate</li>
+                    <li><code>{number} angle</code> - Rotation angle in radians</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.scaleAround(x, y, scale)</code></h4>
                 <p>Scales the canvas around a specific point.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} x</code> - Pivot X coordinate</li>
-                  <li><code>{number} y</code> - Pivot Y coordinate</li>
-                  <li><code>{number} scale</code> - Scale factor</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} x</code> - Pivot X coordinate</li>
+                    <li><code>{number} y</code> - Pivot Y coordinate</li>
+                    <li><code>{number} scale</code> - Scale factor</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Rotate around a specific point
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Rotate around a specific point
 toko.rotateAround(width / 2, height / 2, PI / 4);
 rect(0, 0, 100, 100);
 
@@ -2347,7 +2375,7 @@ rect(0, 0, 100, 100);
 let scale = 1 + sin(frameCount * 0.1) * 0.5;
 toko.scaleAround(mouseX, mouseY, scale);
 ellipse(0, 0, 50, 50);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="color-utilities">
@@ -2356,27 +2384,27 @@ ellipse(0, 0, 50, 50);</code></pre>
                 <h4 class="doc-signature"><code>toko.colorAlpha(color, [alpha])</code></h4>
                 <p>Creates a color with alpha transparency.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string} color</code> - Color value (hex, rgb, etc.)</li>
-                  <li><code>{number} [alpha=255]</code> - Alpha value (0-255)</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string} color</code> - Color value (hex, rgb, etc.)</li>
+                    <li><code>{number} [alpha=255]</code> - Alpha value (0-255)</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{color}</code> - p5.js color with alpha channel</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{color}</code> - p5.js color with alpha channel</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Create color with alpha transparency
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Create color with alpha transparency
 const redWithAlpha = toko.colorAlpha('#ff0000', 128); // 50% opacity
 const blue = toko.colorAlpha('#0000ff'); // Full opacity
 fill(redWithAlpha);
 rect(50, 50, 100, 100);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="pixel-access">
@@ -2386,44 +2414,44 @@ rect(50, 50, 100, 100);</code></pre>
                 <h4 class="doc-signature"><code>toko.getPixelColor(img, x, y, imgWidth)</code></h4>
                 <p>Gets the [r, g, b, a] color values of a pixel.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{p5.Image} img</code> - The image (must have <code>loadPixels()</code> called first)</li>
-                  <li><code>{number} x</code> - Pixel X coordinate</li>
-                  <li><code>{number} y</code> - Pixel Y coordinate</li>
-                  <li><code>{number} imgWidth</code> - Width of the image</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{p5.Image} img</code> - The image (must have <code>loadPixels()</code> called first)</li>
+                    <li><code>{number} x</code> - Pixel X coordinate</li>
+                    <li><code>{number} y</code> - Pixel Y coordinate</li>
+                    <li><code>{number} imgWidth</code> - Width of the image</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{Array}</code> - Array of [r, g, b, a] values (0-255)</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{Array}</code> - Array of [r, g, b, a] values (0-255)</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.pixelThreshold(img, x, y, imgWidth, minVal, maxVal)</code></h4>
                 <p>Tests whether a pixel's average brightness falls within a range.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{p5.Image} img</code> - The image</li>
-                  <li><code>{number} x</code> - Pixel X coordinate</li>
-                  <li><code>{number} y</code> - Pixel Y coordinate</li>
-                  <li><code>{number} imgWidth</code> - Width of the image</li>
-                  <li><code>{number} minVal</code> - Minimum brightness threshold</li>
-                  <li><code>{number} maxVal</code> - Maximum brightness threshold</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{p5.Image} img</code> - The image</li>
+                    <li><code>{number} x</code> - Pixel X coordinate</li>
+                    <li><code>{number} y</code> - Pixel Y coordinate</li>
+                    <li><code>{number} imgWidth</code> - Width of the image</li>
+                    <li><code>{number} minVal</code> - Minimum brightness threshold</li>
+                    <li><code>{number} maxVal</code> - Maximum brightness threshold</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{boolean}</code> - True if the pixel's brightness is within the range</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{boolean}</code> - True if the pixel's brightness is within the range</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>img.loadPixels();
+                  <p class="doc-label">Example</p>
+                  <pre><code>img.loadPixels();
 
 // Get the [r, g, b, a] color of a pixel at (x, y)
 const color = toko.getPixelColor(img, 100, 50, img.width);
@@ -2431,7 +2459,7 @@ console.log(`R:${color[0]} G:${color[1]} B:${color[2]} A:${color[3]}`);
 
 // Test whether a pixel's average brightness falls within a range (returns boolean)
 const isMidtone = toko.pixelThreshold(img, 100, 50, img.width, 50, 200);</code></pre>
-              </div>
+                </div>
               </section>
             </section>
 
@@ -2444,16 +2472,16 @@ const isMidtone = toko.pixelThreshold(img, 100, 50, img.width, 50, 200);</code><
               <div class="doc-block doc-params">
                 <p class="doc-label">Parameters</p>
                 <ul>
-                <li><code>{number} value</code> - Value to wrap</li>
-                <li><code>{number} [min=0]</code> - Minimum value of range</li>
-                <li><code>{number} [max=100]</code> - Maximum value of range</li>
-              </ul>
+                  <li><code>{number} value</code> - Value to wrap</li>
+                  <li><code>{number} [min=0]</code> - Minimum value of range</li>
+                  <li><code>{number} [max=100]</code> - Maximum value of range</li>
+                </ul>
               </div>
               <div class="doc-block doc-returns">
                 <p class="doc-label">Returns</p>
                 <ul>
-                <li><code>{number}</code> - Wrapped value within the range</li>
-              </ul>
+                  <li><code>{number}</code> - Wrapped value within the range</li>
+                </ul>
               </div>
 
               <h3 class="doc-signature"><code>toko.numDigits(value)</code></h3>
@@ -2461,14 +2489,14 @@ const isMidtone = toko.pixelThreshold(img, 100, 50, img.width, 50, 200);</code><
               <div class="doc-block doc-params">
                 <p class="doc-label">Parameters</p>
                 <ul>
-                <li><code>{number} value</code> - The value to count digits of</li>
-              </ul>
+                  <li><code>{number} value</code> - The value to count digits of</li>
+                </ul>
               </div>
               <div class="doc-block doc-returns">
                 <p class="doc-label">Returns</p>
                 <ul>
-                <li><code>{number}</code> - Number of integer digits</li>
-              </ul>
+                  <li><code>{number}</code> - Number of integer digits</li>
+                </ul>
               </div>
 
               <h3 class="doc-signature"><code>toko.interpolate(start, end, steps, [includeEndpoints])</code></h3>
@@ -2476,17 +2504,17 @@ const isMidtone = toko.pixelThreshold(img, 100, 50, img.width, 50, 200);</code><
               <div class="doc-block doc-params">
                 <p class="doc-label">Parameters</p>
                 <ul>
-                <li><code>{number} start</code> - Starting value</li>
-                <li><code>{number} end</code> - Ending value</li>
-                <li><code>{number} steps</code> - Number of steps</li>
-                <li><code>{boolean} [includeEndpoints=true]</code> - Whether to include start and end values</li>
-              </ul>
+                  <li><code>{number} start</code> - Starting value</li>
+                  <li><code>{number} end</code> - Ending value</li>
+                  <li><code>{number} steps</code> - Number of steps</li>
+                  <li><code>{boolean} [includeEndpoints=true]</code> - Whether to include start and end values</li>
+                </ul>
               </div>
               <div class="doc-block doc-returns">
                 <p class="doc-label">Returns</p>
                 <ul>
-                <li><code>{Array}</code> - Array of interpolated values</li>
-              </ul>
+                  <li><code>{Array}</code> - Array of interpolated values</li>
+                </ul>
               </div>
 
               <h3 class="doc-signature"><code>toko.interpolateCoordinates(start, end, steps)</code></h3>
@@ -2494,16 +2522,16 @@ const isMidtone = toko.pixelThreshold(img, 100, 50, img.width, 50, 200);</code><
               <div class="doc-block doc-params">
                 <p class="doc-label">Parameters</p>
                 <ul>
-                <li><code>{Object} start</code> - Start coordinate with <code>x</code> and <code>y</code></li>
-                <li><code>{Object} end</code> - End coordinate with <code>x</code> and <code>y</code></li>
-                <li><code>{number} steps</code> - Number of points to generate</li>
-              </ul>
+                  <li><code>{Object} start</code> - Start coordinate with <code>x</code> and <code>y</code></li>
+                  <li><code>{Object} end</code> - End coordinate with <code>x</code> and <code>y</code></li>
+                  <li><code>{number} steps</code> - Number of points to generate</li>
+                </ul>
               </div>
               <div class="doc-block doc-returns">
                 <p class="doc-label">Returns</p>
                 <ul>
-                <li><code>{Array}</code> - Array of coordinate objects</li>
-              </ul>
+                  <li><code>{Array}</code> - Array of coordinate objects</li>
+                </ul>
               </div>
 
               <h3 class="doc-signature"><code>toko.lerpCoordinates(start, end, t)</code></h3>
@@ -2511,16 +2539,16 @@ const isMidtone = toko.pixelThreshold(img, 100, 50, img.width, 50, 200);</code><
               <div class="doc-block doc-params">
                 <p class="doc-label">Parameters</p>
                 <ul>
-                <li><code>{Object} start</code> - Start coordinate with <code>x</code> and <code>y</code></li>
-                <li><code>{Object} end</code> - End coordinate with <code>x</code> and <code>y</code></li>
-                <li><code>{number} t</code> - Interpolation factor (0-1)</li>
-              </ul>
+                  <li><code>{Object} start</code> - Start coordinate with <code>x</code> and <code>y</code></li>
+                  <li><code>{Object} end</code> - End coordinate with <code>x</code> and <code>y</code></li>
+                  <li><code>{number} t</code> - Interpolation factor (0-1)</li>
+                </ul>
               </div>
               <div class="doc-block doc-returns">
                 <p class="doc-label">Returns</p>
                 <ul>
-                <li><code>{Object}</code> - Interpolated coordinate with <code>x</code> and <code>y</code></li>
-              </ul>
+                  <li><code>{Object}</code> - Interpolated coordinate with <code>x</code> and <code>y</code></li>
+                </ul>
               </div>
 
               <div class="doc-block doc-example">
@@ -2552,23 +2580,23 @@ const mid = toko.lerpCoordinates({ x: 0, y: 0 }, { x: 100, y: 50 }, 0.5); // { x
               <div class="doc-block doc-params">
                 <p class="doc-label">Parameters</p>
                 <ul>
-                <li><code>{string|number} seed</code> - Seed value for reproducible noise</li>
-              </ul>
+                  <li><code>{string|number} seed</code> - Seed value for reproducible noise</li>
+                </ul>
               </div>
               <div class="doc-block doc-returns">
                 <p class="doc-label">Returns</p>
                 <ul>
-                <li><code>{OpenSimplexNoise}</code> - Noise generator instance</li>
-              </ul>
+                  <li><code>{OpenSimplexNoise}</code> - Noise generator instance</li>
+                </ul>
               </div>
 
               <div class="doc-block doc-params">
                 <p class="doc-label">Methods</p>
                 <ul>
-                <li><code>noise.noise2D(x, y)</code> - 2D noise</li>
-                <li><code>noise.noise3D(x, y, z)</code> - 3D noise</li>
-                <li><code>noise.noise4D(x, y, z, w)</code> - 4D noise</li>
-              </ul>
+                  <li><code>noise.noise2D(x, y)</code> - 2D noise</li>
+                  <li><code>noise.noise3D(x, y, z)</code> - 3D noise</li>
+                  <li><code>noise.noise4D(x, y, z, w)</code> - 4D noise</li>
+                </ul>
               </div>
               <p>Each method returns a noise value in the range -1 to 1.</p>
 
@@ -2608,21 +2636,21 @@ for (let x = 0; x < width; x += 10) {
                 <h4 class="doc-signature"><code>toko.pulse(speed)</code></h4>
                 <p>Creates a pulsing value between 0 and 1 based on frame count.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} speed</code> - Speed of the pulse (higher = faster)</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} speed</code> - Speed of the pulse (higher = faster)</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{number}</code> - Pulsing value between 0 and 1</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{number}</code> - Pulsing value between 0 and 1</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Create a slow pulsing effect
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Create a slow pulsing effect
 const alpha = toko.pulse(0.02);
 fill(255, 255, 255, alpha * 255);
 circle(width / 2, height / 2, 100);
@@ -2630,7 +2658,7 @@ circle(width / 2, height / 2, 100);
 // Create a fast pulsing effect for size
 const size = toko.pulse(0.1) * 50 + 25;
 circle(width / 2, height / 2, size);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="fps-counter">
@@ -2643,13 +2671,13 @@ circle(width / 2, height / 2, size);</code></pre>
                 <h4 class="doc-signature"><code>toko.createFPS([options])</code></h4>
                 <p>Creates the FPS counter.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Options</p>
-                <ul>
-                  <li><code>{boolean} [showMinMax=false]</code> - Show min-avg-max instead of just average</li>
-                  <li><code>{boolean} [showTarget=false]</code> - Append the target frame rate</li>
-                  <li><code>{number} [delay=1500]</code> - Milliseconds to wait before showing</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Options</p>
+                  <ul>
+                    <li><code>{boolean} [showMinMax=false]</code> - Show min-avg-max instead of just average</li>
+                    <li><code>{boolean} [showTarget=false]</code> - Append the target frame rate</li>
+                    <li><code>{number} [delay=1500]</code> - Milliseconds to wait before showing</li>
+                  </ul>
+                </div>
 
                 <h4><code>toko.showFPS()</code> / <code>toko.hideFPS()</code> / <code>toko.toggleFPS()</code></h4>
                 <p>Manually show, hide, or toggle the FPS counter.</p>
@@ -2657,15 +2685,15 @@ circle(width / 2, height / 2, size);</code></pre>
                 <h4 class="doc-signature"><code>toko.isFPSVisible()</code></h4>
                 <p>Queries current visibility state.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{boolean}</code> - True if the FPS counter is visible</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{boolean}</code> - True if the FPS counter is visible</li>
+                  </ul>
+                </div>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Create the counter (options are all optional)
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Create the counter (options are all optional)
 toko.createFPS({
   showMinMax: false, // show min-avg-max instead of just the average
   showTarget: false, // append the target frame rate
@@ -2679,7 +2707,7 @@ toko.toggleFPS();
 
 // Query current visibility
 const visible = toko.isFPSVisible();</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="background-color-toggle">
@@ -2689,10 +2717,10 @@ const visible = toko.isFPSVisible();</code></pre>
                 <p>Cycles the library's default background through a small preset palette.</p>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Cycle the library's default background through a small preset palette
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Cycle the library's default background through a small preset palette
 toko.toggleLibraryBackground();</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="filename--word-generators">
@@ -2702,39 +2730,39 @@ toko.toggleLibraryBackground();</code></pre>
                 <h4 class="doc-signature"><code>toko.randomAdjective()</code></h4>
                 <p>Returns a random adjective from the built-in word list.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string}</code> - Random adjective</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{string}</code> - Random adjective</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.randomNoun()</code></h4>
                 <p>Returns a random noun from the built-in word list.</p>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{string}</code> - Random noun</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{string}</code> - Random noun</li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.generateFilename([extension], [verb])</code></h4>
                 <p>Generates a timestamped filename.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{string} [extension='svg']</code> - File extension</li>
-                  <li><code>{string} [verb='sketched']</code> - Action verb for the filename</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{string} [extension='svg']</code> - File extension</li>
+                    <li><code>{string} [verb='sketched']</code> - Action verb for the filename</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{string}</code> - Filename in format
-                    <code>YYYYMMDD_verb_the_adjective_adjective_noun.extension</code>
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{string}</code> - Filename in format
+                      <code>YYYYMMDD_verb_the_adjective_adjective_noun.extension</code>
+                    </li>
+                  </ul>
+                </div>
                 <p>
                   <em
                     >Note: the word/filename generators use unseeded randomness (so filenames stay unique regardless of
@@ -2743,15 +2771,15 @@ toko.toggleLibraryBackground();</code></pre>
                 </p>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Random words from the built-in word lists
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Random words from the built-in word lists
 const adjective = toko.randomAdjective(); // e.g. 'mysterious'
 const noun = toko.randomNoun(); // e.g. 'mountain'
 
 // Generate a filename: YYYYMMDD_verb_the_adjective_adjective_noun.extension
 const filename = toko.generateFilename(); // e.g. '20260723_sketched_the_mysterious_blue_mountain.svg'
 const png = toko.generateFilename('png', 'painted'); // custom extension and verb</code></pre>
-              </div>
+                </div>
               </section>
             </section>
 
@@ -2766,24 +2794,24 @@ const png = toko.generateFilename('png', 'painted'); // custom extension and ver
                 <h3>Basic Easing Functions</h3>
                 <p>Each easing function takes a normalized time value and returns an eased value (0-1).</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} t</code> - Input value between 0 and 1 representing progress</li>
-                  <li>
-                    <code>{number} [magnitude]</code> - Optional magnitude/amplitude for Back and Elastic easing
-                    functions (default varies by function)
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} t</code> - Input value between 0 and 1 representing progress</li>
+                    <li>
+                      <code>{number} [magnitude]</code> - Optional magnitude/amplitude for Back and Elastic easing
+                      functions (default varies by function)
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li><code>{number}</code> - Eased output value between 0 and 1</li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li><code>{number}</code> - Eased output value between 0 and 1</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Linear (no easing)
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Linear (no easing)
 const linear = toko.easeLinear(0.5); // Returns 0.5
 
 // Sine easing
@@ -2842,7 +2870,7 @@ const inOutBounce = toko.easeInOutBounce(0.5);
 
 // Extra smooth easing (Ken Perlin smoothstep)
 const smoother = toko.easeInOutSmoother(0.5);</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="get-easing-function-by-type">
@@ -2854,34 +2882,33 @@ const smoother = toko.easeInOutSmoother(0.5);</code></pre>
                   choice comes from the parameter panel.
                 </p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li>
-                    <code>{string} [easeType=toko.EASE_QUAD]</code> - Easing type constant:
-                    <code>EASE_LINEAR</code>, <code>EASE_SMOOTH</code>, <code>EASE_QUAD</code>,
-                    <code>EASE_CUBIC</code>, <code>EASE_QUART</code>, <code>EASE_QUINT</code>,
-                    <code>EASE_EXPO</code>, <code>EASE_CIRC</code>, <code>EASE_ELASTIC</code>,
-                    <code>EASE_BOUNCE</code>, or <code>EASE_BACK</code>
-                  </li>
-                  <li>
-                    <code>{string} [easeDirection=toko.EASE_IN_OUT]</code> - Direction constant:
-                    <code>EASE_IN</code>, <code>EASE_OUT</code>, or <code>EASE_IN_OUT</code> (ignored for
-                    <code>EASE_LINEAR</code> and <code>EASE_SMOOTH</code>)
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li>
+                      <code>{string} [easeType=toko.EASE_QUAD]</code> - Easing type constant: <code>EASE_LINEAR</code>,
+                      <code>EASE_SMOOTH</code>, <code>EASE_QUAD</code>, <code>EASE_CUBIC</code>,
+                      <code>EASE_QUART</code>, <code>EASE_QUINT</code>, <code>EASE_EXPO</code>, <code>EASE_CIRC</code>,
+                      <code>EASE_ELASTIC</code>, <code>EASE_BOUNCE</code>, or <code>EASE_BACK</code>
+                    </li>
+                    <li>
+                      <code>{string} [easeDirection=toko.EASE_IN_OUT]</code> - Direction constant: <code>EASE_IN</code>,
+                      <code>EASE_OUT</code>, or <code>EASE_IN_OUT</code> (ignored for <code>EASE_LINEAR</code> and
+                      <code>EASE_SMOOTH</code>)
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{Function|null}</code> - Easing function that takes <code>t</code> (0–1), or
-                    <code>null</code> if no matching function is found
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{Function|null}</code> - Easing function that takes <code>t</code> (0–1), or
+                      <code>null</code> if no matching function is found
+                    </li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Get easing function dynamically
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Get easing function dynamically
 const easeFunc = toko.getEasingFunction(toko.EASE_QUAD, toko.EASE_IN_OUT);
 const result = easeFunc(0.5);
 
@@ -2894,7 +2921,7 @@ function draw() {
   const x = eased * width;
   circle(x, height / 2, 50);
 }</code></pre>
-              </div>
+                </div>
               </section>
 
               <section id="custom-cubic-bézier-easing">
@@ -2907,27 +2934,25 @@ function draw() {
                 <h4 class="doc-signature"><code>toko.cubicBezier([x1], [y1], [x2], [y2], [customName])</code></h4>
                 <p>Creates a cubic Bézier easing function from two control points.</p>
                 <div class="doc-block doc-params">
-                <p class="doc-label">Parameters</p>
-                <ul>
-                  <li><code>{number} [x1=0]</code> - X coordinate of the first control point (0–1)</li>
-                  <li><code>{number} [y1=0]</code> - Y coordinate of the first control point</li>
-                  <li><code>{number} [x2=1]</code> - X coordinate of the second control point (0–1)</li>
-                  <li><code>{number} [y2=1]</code> - Y coordinate of the second control point</li>
-                  <li>
-                    <code>{string} [customName=null]</code> - Optional name for the returned function
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Parameters</p>
+                  <ul>
+                    <li><code>{number} [x1=0]</code> - X coordinate of the first control point (0–1)</li>
+                    <li><code>{number} [y1=0]</code> - Y coordinate of the first control point</li>
+                    <li><code>{number} [x2=1]</code> - X coordinate of the second control point (0–1)</li>
+                    <li><code>{number} [y2=1]</code> - Y coordinate of the second control point</li>
+                    <li><code>{string} [customName=null]</code> - Optional name for the returned function</li>
+                  </ul>
+                </div>
                 <div class="doc-block doc-returns">
-                <p class="doc-label">Returns</p>
-                <ul>
-                  <li>
-                    <code>{Function}</code> - Easing function that takes <code>t</code> (0–1) and returns an eased
-                    value. Also exposes <code>x1</code>, <code>y1</code>, <code>x2</code>, <code>y2</code>,
-                    <code>controlPoints</code>, and <code>name</code>.
-                  </li>
-                </ul>
-              </div>
+                  <p class="doc-label">Returns</p>
+                  <ul>
+                    <li>
+                      <code>{Function}</code> - Easing function that takes <code>t</code> (0–1) and returns an eased
+                      value. Also exposes <code>x1</code>, <code>y1</code>, <code>x2</code>, <code>y2</code>,
+                      <code>controlPoints</code>, and <code>name</code>.
+                    </li>
+                  </ul>
+                </div>
 
                 <h4 class="doc-signature"><code>toko.cubicBezier.presets</code></h4>
                 <p>Built-in presets that each return a ready-to-use easing function:</p>
@@ -2943,8 +2968,8 @@ function draw() {
                 </ul>
 
                 <div class="doc-block doc-example">
-                <p class="doc-label">Example</p>
-                <pre><code>// Custom control points
+                  <p class="doc-label">Example</p>
+                  <pre><code>// Custom control points
 const easing = toko.cubicBezier(0.25, 0.1, 0.25, 1);
 const value = easing(0.5);
 
@@ -2954,7 +2979,7 @@ const named = toko.cubicBezier(0.68, -0.55, 0.27, 1.55, 'overshoot');
 // Use a built-in preset
 const easeInOut = toko.cubicBezier.presets.easeInOut();
 const eased = easeInOut(0.3);</code></pre>
-              </div>
+                </div>
               </section>
             </section>
 
@@ -2974,7 +2999,7 @@ const eased = easeInOut(0.3);</code></pre>
         </div>
       </div>
     </div>
-  
+
     <script>
       (function () {
         const toc = document.querySelector('.functions-toc');
@@ -2999,13 +3024,12 @@ const eased = easeInOut(0.3);</code></pre>
               .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
             if (visible[0]) setActive(visible[0].target.id);
           },
-          { rootMargin: '-10% 0px -70% 0px', threshold: [0, 0.1, 0.25, 0.5, 1] }
+          { rootMargin: '-10% 0px -70% 0px', threshold: [0, 0.1, 0.25, 0.5, 1] },
         );
 
         sections.forEach(({ el }) => observer.observe(el));
         if (location.hash) setActive(decodeURIComponent(location.hash.slice(1)));
       })();
     </script>
-
   </body>
 </html>

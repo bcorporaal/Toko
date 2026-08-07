@@ -1417,9 +1417,11 @@
    * Ensure the global RNG is initialized before use
    * @private
    */
-  function _ensureRNG () {
+  function _ensureRNG() {
     if (!libraryState.RNG) {
-      throw new Error('Toko: RNG is not initialized. Make sure toko.init() has been called before using random functions.');
+      throw new Error(
+        'Toko: RNG is not initialized. Make sure toko.init() has been called before using random functions.',
+      );
     }
   }
 
@@ -1428,7 +1430,7 @@
    * @param {string} [seed] - New seed string. If not provided, a random seed is generated
    * @returns {string} The validated seed string
    */
-  function resetRNG (seed) {
+  function resetRNG(seed) {
     _ensureRNG();
     libraryState.RNG.reset(seed);
   }
@@ -1437,7 +1439,7 @@
    * Set the current seed for the global RNG
    * @param {string} seed - New seed string
    */
-  function setSeed (seed) {
+  function setSeed(seed) {
     _ensureRNG();
     libraryState.RNG.seed = seed;
   }
@@ -1446,7 +1448,7 @@
    * Get the current seed of the global RNG
    * @returns {string} Current seed string
    */
-  function getSeed () {
+  function getSeed() {
     _ensureRNG();
     return libraryState.RNG.seed;
   }
@@ -1455,7 +1457,7 @@
    * Move to the next seed in the seed history
    * @returns {string} The next seed string
    */
-  function nextSeed () {
+  function nextSeed() {
     _ensureRNG();
     return libraryState.RNG.nextSeed();
   }
@@ -1464,7 +1466,7 @@
    * Move to the previous seed in the seed history
    * @returns {string} The previous seed string
    */
-  function previousSeed () {
+  function previousSeed() {
     _ensureRNG();
     return libraryState.RNG.previousSeed();
   }
@@ -1473,7 +1475,7 @@
    * Generate a new random seed and add it to history
    * @returns {string} The new random seed string
    */
-  function randomSeed () {
+  function randomSeed() {
     _ensureRNG();
     return libraryState.RNG.randomSeed();
   }
@@ -1482,7 +1484,7 @@
    * Reset the RNG to the current seed string
    * @returns {string} The current seed string
    */
-  function resetSeed () {
+  function resetSeed() {
     _ensureRNG();
     return libraryState.RNG.resetSeed();
   }
@@ -1493,7 +1495,7 @@
    * @param {number} [max] - Maximum value when min is a number
    * @returns {number|*} Random number or array element
    */
-  function random$1 (min, max) {
+  function random$1(min, max) {
     _ensureRNG();
     return libraryState.RNG.random(min, max);
   }
@@ -1504,7 +1506,7 @@
    * @param {number} [max=100] - Maximum value (exclusive)
    * @returns {number} Random integer
    */
-  function intRange (min = 0, max = 100) {
+  function intRange(min = 0, max = 100) {
     _ensureRNG();
     return libraryState.RNG.intRange(min, max);
   }
@@ -1513,9 +1515,19 @@
    * Generate a random boolean value
    * @returns {boolean} Random true or false
    */
-  function randomBool () {
+  function randomBool() {
     _ensureRNG();
     return libraryState.RNG.randomBool();
+  }
+
+  /**
+   * Return true with a given probability
+   * @param {number} [probability=0.5] - Chance of returning true (0-1)
+   * @returns {boolean} True with the given probability, otherwise false
+   */
+  function chance(probability = 0.5) {
+    _ensureRNG();
+    return libraryState.RNG.random() < probability;
   }
 
   /**
@@ -1523,7 +1535,7 @@
    * @param {string} [inString='abcdefghijklmnopqrstuvwxyz'] - String to select from
    * @returns {string} Random character
    */
-  function randomChar (inString = 'abcdefghijklmnopqrstuvwxyz') {
+  function randomChar(inString = 'abcdefghijklmnopqrstuvwxyz') {
     _ensureRNG();
     return libraryState.RNG.randomChar(inString);
   }
@@ -1534,7 +1546,7 @@
    * @param {string} [inString='abcdefghijklmnopqrstuvwxyz'] - Characters to choose from
    * @returns {string} Random string
    */
-  function randomString (count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
+  function randomString(count = 1, inString = 'abcdefghijklmnopqrstuvwxyz') {
     _ensureRNG();
     return libraryState.RNG.randomString(count, inString);
   }
@@ -1546,7 +1558,7 @@
    * @param {number} [step=0.1] - Step size
    * @returns {number} Random number snapped to steps
    */
-  function steppedRandom (min = 0, max = 1, step = 0.1) {
+  function steppedRandom(min = 0, max = 1, step = 0.1) {
     _ensureRNG();
     return libraryState.RNG.steppedRandom(min, max, step);
   }
@@ -1556,7 +1568,7 @@
    * @param {Array} inArray - Array to shuffle
    * @returns {Array} The shuffled array (same reference)
    */
-  function shuffle (inArray) {
+  function shuffle(inArray) {
     _ensureRNG();
     return libraryState.RNG.shuffle(inArray);
   }
@@ -1567,7 +1579,7 @@
    * @param {number} [max=100] - Maximum value (exclusive)
    * @returns {number[]} Array of integers in random order
    */
-  function intSequence (min = 0, max = 100) {
+  function intSequence(min = 0, max = 100) {
     _ensureRNG();
     return libraryState.RNG.intSequence(min, max);
   }
@@ -1576,7 +1588,7 @@
    * Generate a 2D unit vector in a random direction
    * @returns {p5.Vector} Random 2D unit vector
    */
-  function random2DVector () {
+  function random2DVector() {
     _ensureRNG();
     return libraryState.RNG.random2DVector();
   }
@@ -1590,7 +1602,7 @@
    * @param {number} inRadius - Minimum distance between points
    * @returns {p5.Vector[]} Array of randomly distributed points
    */
-  function poissonDisk (inWidth, inHeight, inRadius) {
+  function poissonDisk(inWidth, inHeight, inRadius) {
     _ensureRNG();
     return libraryState.RNG.poissonDisk(inWidth, inHeight, inRadius);
   }
@@ -8508,6 +8520,7 @@
     _validateColorOptions: _validateColorOptions,
     addChannelGrain: addChannelGrain,
     addSimpleGrain: addSimpleGrain,
+    chance: chance,
     colorAlpha: colorAlpha,
     conicGradient: conicGradient,
     createColorScale: createColorScale,
