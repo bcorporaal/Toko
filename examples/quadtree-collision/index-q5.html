@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>to be replaced</title>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" width="device-width," initial-scale="1.0," maximum-scale="1.0," user-scalable="0" />
+    <link rel="stylesheet" href="../../assets/css/main.css" />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
+    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+  </head>
+
+  <body>
+    <div class="sketch-wrapper">
+      <div class="sketch-tweakpane-container" id="tweakpane-container"></div>
+      <div class="sketch--flexible" id="sketch-canvas"></div>
+    </div>
+    <div class="labels">
+      <div class="label--back"><a href="../../index.html"><- back to overview</a></div>
+      <div class="label--title" id="sketch-title">to be replaced</div>
+    </div>
+    <script type="module">
+      import * as Tweakpane from '../../assets/js/tweakpane/4.0.5/tweakpane-4.0.5.min.js';
+      import * as TweakpaneEssentialsPlugin from '../../assets/js/tweakpane/plugin-essentials-0.2.1/tweakpane-plugin-essentials-0.2.1.min.js';
+      import * as TweakpaneCamerakitPlugin from '../../assets/js/tweakpane/plugin-camerakit-0.3.0/tweakpane-plugin-camerakit-0.3.0.min.js';
+      // Export them as a global variable - A bit hacky but this keeps the urls flexible
+      window.Tweakpane = Tweakpane;
+      window.TweakpaneEssentialsPlugin = TweakpaneEssentialsPlugin;
+      window.TweakpaneCamerakitPlugin = TweakpaneCamerakitPlugin;
+    </script>
+    <script src="../../assets/js/q5/q5.js"></script>
+    <script src="../../assets/js/p5.capture/p5.capture.umd.min.js"></script>
+    <script src="../../dist/p5.toko.js"></script>
+    <script src="../../dist/p5.tokoWrapper.js"></script>
+    <script src="./sketch.js"></script>
+  </body>
+</html>
