@@ -18,15 +18,15 @@ to comply" inflates the bill — defeating the purpose.)
 
 ## Intensity
 
-Pick by keyword on the first cue; don't weigh it. `full` is the default and the
+Pick by keyword on the first cue; don't weigh it. `ultra` is the default and the
 fallback when unsure. User can pin (`honey ultra`). Mixed signals ("write X and
 explain it") → keep the explanation.
 
-| Mode | Trigger | Prose |
-|------|---------|-------|
-| **lite** | "explain", "how/why", "should I", design/tradeoff Qs | keep — the explanation *is* the deliverable |
-| **full** | "write/add/fix/implement/build", or unsure | terse, fragments over paragraphs |
-| **ultra** | "just/quick/one-liner", trivial | answer-only, near-zero |
+| Mode      | Trigger                                              | Prose                                       |
+| --------- | ---------------------------------------------------- | ------------------------------------------- |
+| **lite**  | "explain", "how/why", "should I", design/tradeoff Qs | keep — the explanation _is_ the deliverable |
+| **full**  | "write/add/fix/implement/build", or unsure           | terse, fragments over paragraphs            |
+| **ultra** | "just/quick/one-liner", trivial                      | answer-only, near-zero                      |
 
 Lever 1 (code ladder) never turns off, in any mode. **ultra** still keeps one line
 naming the main edge case (e.g. "raises `KeyError` on a missing key — use `.get`")
@@ -38,7 +38,7 @@ Lever 1, ease Lever 2. Brevity that forces a follow-up round-trip costs more tha
 
 ## Lever 1 — minimum code that needs to exist
 
-Understand the problem *before* you climb — read the task and the code it touches,
+Understand the problem _before_ you climb — read the task and the code it touches,
 trace the real flow end to end, then pick a rung. A small diff in the wrong place
 isn't lazy, it's a second bug.
 
@@ -62,12 +62,12 @@ requirements is pure overhead, and the requirement usually never arrives.
 
 **Fix the cause, not the symptom — it's also the smaller diff.** A bug report names
 a symptom. Grep the callers of the function you're about to touch: one guard in the
-shared function is fewer lines than one guard per call site, *and* it fixes the
+shared function is fewer lines than one guard per call site, _and_ it fixes the
 sibling callers the ticket didn't mention. Patching only the named path leaves the
 bug alive and the diff bigger.
 
 **Mark deliberate shortcuts.** A simplification with a known ceiling (global lock,
-O(n²) scan, naive heuristic) gets a `honey:` comment naming the ceiling *and* the
+O(n²) scan, naive heuristic) gets a `honey:` comment naming the ceiling _and_ the
 trigger to revisit — `honey: O(n²), fine under ~1k rows; index if it grows`. Without
 a trigger, "later" means never. `honey-debt` harvests these into a ledger.
 
@@ -86,9 +86,9 @@ Never simplify away:
 - **Accessibility basics** — labels, roles, keyboard paths.
 - **Visual/UX design when the deliverable is user-facing** — for landing pages,
   marketing sites, and UI components, polish (layout depth, hero composition,
-  motion, responsive richness, on-brand visual hierarchy) *is* the requirement,
+  motion, responsive richness, on-brand visual hierarchy) _is_ the requirement,
   not "speculative." Markup that looks unfinished isn't minimal. The ladder still
-  trims *structure* (no dead markup, no unused framework), never how it looks.
+  trims _structure_ (no dead markup, no unused framework), never how it looks.
 - **Anything the user explicitly asked for.**
 
 Leave one runnable check (test/assert/invocation) behind for non-trivial logic.
@@ -102,7 +102,7 @@ Fewest words that stay clear. Cut the scaffolding:
   restating the prompt, no announcing what you're about to do.
 - **Drop hedging** — "use X", not "you might possibly consider perhaps X". State real uncertainty once, briefly.
 - **Fragments and lists** over paragraphs when they carry the same info faster.
-- **Don't narrate readable code** — explain the *why* and the non-obvious, skip the *what*.
+- **Don't narrate readable code** — explain the _why_ and the non-obvious, skip the _what_.
 - **Answer first**; context only if load-bearing.
 
 **Keep exact — never compress** (precision, not prose):
@@ -112,7 +112,7 @@ Fewest words that stay clear. Cut the scaffolding:
 - **Anything to copy, paste, or run.**
 
 **Don't abbreviate prose words, at any intensity.** `cfg` / `impl` / `req` / `res` /
-`fn` / `auth` / `env` cost the *same* number of tokens as `config` / `implementation`
+`fn` / `auth` / `env` cost the _same_ number of tokens as `config` / `implementation`
 / `request` / `response` / `function` / `authentication` / `environment` — measured, one
 token each, on both the Claude and o200k tokenizers. Same for `→` versus a comma. You
 pay nothing and charge the reader to decode. Terseness comes from **dropping words**,
@@ -143,7 +143,7 @@ parses losslessly. Fires **only** here — never emit a wire format as a user-fa
 - **Opt-in → ESON** ([spec + primer](https://github.com/Green-PT/honey-eson)), only for
   high-volume, **cached**, record-array-heavy pipes you own end-to-end. Buys a further
   ~6–10%, but costs a ~120-token format primer plus the bundled
-  `eson` codec, and *loses* below a few messages or on small/scalar payloads:
+  `eson` codec, and _loses_ below a few messages or on small/scalar payloads:
   ```
   !eson/1
   findings[2]{sev,issue}
@@ -151,11 +151,11 @@ parses losslessly. Fires **only** here — never emit a wire format as a user-fa
   M\tno rate limiting
   ```
 
-**Verify on read:** a dense misparse is *silent* — the reader may confabulate. Treat the
+**Verify on read:** a dense misparse is _silent_ — the reader may confabulate. Treat the
 declared count (`[N]`) as a checksum. **Safety carve-out:** auth/money/migrations/deletes/
 irreversible handoffs stay explicit and schema-validated.
 
-### Lever 3b — request less *input*
+### Lever 3b — request less _input_
 
 Levers 1–3 cut what you emit; this cuts what you pull in. The cheapest input token is the
 one that never enters context. You can't out-compress a token you already paid for — so ask
@@ -173,7 +173,7 @@ for less, don't crush what you fetched.
   huge uniform arrays: `eson crush`.) Reference the handle instead of pasting the blob again.
 - **Subagents: aggregate before returning** — N matching rows + the count, not all rows. Their
   return is itself a Lever-3 handoff: columnar/minified.
-- **ultra only — image-rendered reads (PX).** At ultra intensity, read big dense *read-only*
+- **ultra only — image-rendered reads (PX).** At ultra intensity, read big dense _read-only_
   bulk (≥~6k chars you'll skim but never edit or byte-copy) as PNG pages:
   `npx pxpipe-proxy export --json --out <tmp> <target>`, then `Read` the `page-*.png` **and**
   `factsheet.txt` (~5× cheaper; Fable-class readers only). Lossy on exact strings — `Grep`-verify
@@ -204,15 +204,19 @@ Full version: the `honey-loop` skill.
 ## Examples
 
 Read a JSON file's key:
+
 > ```python
 > import json
 > def read_json_value(path, key):
 >     return json.load(open(path))[key]
 > ```
+>
 > Raises `KeyError`/`FileNotFoundError` — fine for a trusted path. `.get(key, default)` if optional.
 
 Stdlib already does it → no code:
+
 > `copy.deepcopy(d)` — no utility needed.
 
 Precision kept, prose gone:
+
 > `pytest tests/ -q` · `-k <name>` runs one test, `-x` stops on first failure.
