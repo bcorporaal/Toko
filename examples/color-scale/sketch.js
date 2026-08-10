@@ -5,6 +5,12 @@
 //---------------------------------------------
 
 let font;
+let setupComplete = false;
+
+// Define preload for all variants - p5.js will call it if it exists
+function preload() {
+  font = loadFont('../../assets/fonts/ttf/UdonMonoWeb-Regular.ttf');
+}
 
 let tokoWrapper = new TokoWrapper({
   title: 'Color scale',
@@ -38,7 +44,7 @@ let p = {
 //  SET UP PANEL CONTROLS
 //
 //---------------------------------------------
-function setupPanelControls (panelObject) {
+function setupPanelControls(panelObject) {
   panelObject.addPaletteSelector(panelObject.primaryTab, p, {
     index: 1,
     justPrimary: true,
@@ -60,7 +66,7 @@ function setupPanelControls (panelObject) {
       label: 'easing',
       picker: 'inline',
     })
-    .on('change', ev => {
+    .on('change', (ev) => {
       p.easingParameters = ev.value.comps_;
     });
 }
@@ -70,11 +76,22 @@ function setupPanelControls (panelObject) {
 //  SETUP - standard p5.js setup function
 //
 //---------------------------------------------
-async function setup () {
+function setup() {
   let p5Canvas = createCanvas(100, 100, tokoWrapper.renderMode);
   p5Canvas.parent(tokoWrapper.sketchElementId);
   tokoWrapper.storeCanvas(p5Canvas);
-  font = await loadFont('../../assets/fonts/ttf/UdonMonoWeb-Regular.ttf');
+
+  // For p5v1, font is already loaded in preload()
+  // For p5v2/q5, preload() may not work, so load async here
+  if (tokoWrapper.variant !== 'p5v1') {
+    loadFont('../../assets/fonts/ttf/UdonMonoWeb-Regular.ttf').then((f) => {
+      font = f;
+      setupComplete = true;
+      redraw();
+    });
+  } else {
+    setupComplete = true;
+  }
 }
 
 //---------------------------------------------
@@ -82,7 +99,7 @@ async function setup () {
 //  REFRESH - called when a parameter changes
 //
 //---------------------------------------------
-function refresh () {
+function refresh() {
   //
   //  palette variation #1
   //
@@ -119,7 +136,9 @@ function refresh () {
 //  DRAW - standard p5.js draw function
 //
 //---------------------------------------------
-function draw () {
+function draw() {
+  if (!setupComplete) return;
+
   clear();
   noStroke();
 
